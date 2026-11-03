@@ -15,6 +15,8 @@ export interface SafeResponse {
   status: number;
   headers: Record<string, string | string[] | undefined>;
   body: Buffer;
+  /** 跟随重定向后的最终地址（短链解析需要） */
+  finalUrl: string;
 }
 
 function isBlockedAddress(ip: string, family: number): boolean {
@@ -111,7 +113,12 @@ function requestOnce(target: URL, headers: Record<string, string>): Promise<Safe
         const chunks: Buffer[] = [];
         res.on("data", (c: Buffer) => chunks.push(c));
         res.on("end", () =>
-          resolve({ status: res.statusCode ?? 0, headers: res.headers, body: Buffer.concat(chunks) })
+          resolve({
+            status: res.statusCode ?? 0,
+            headers: res.headers,
+            body: Buffer.concat(chunks),
+            finalUrl: target.toString(),
+          })
         );
       }
     );
