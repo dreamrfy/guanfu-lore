@@ -1,0 +1,35 @@
+# 系统与编辑器
+Thumbs.db
+Desktop.ini
+.DS_Store
+.idea/
+.vscode/
+
+# 本会话钩子状态
+.mimosa/
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+
+# 需求文档的渲染 QA 中间产物（可由脚本重新生成）
+requirements-v1/qa/
+requirements-v1/*.zip
+
+# 依赖与构建产物（后续开发用）
+node_modules/
+.pnpm-store/
+.dart_tool/
+build/
+dist/
+.gradle/
+*.log
+*.tmp
+
+# 本地密钥与个人配置
+.env
+.env.*
+*.key
+*.pem
+secrets/
+r2-token.txt
