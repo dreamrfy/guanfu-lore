@@ -73,6 +73,13 @@
       "startedAt": "2026-11-04T05:13:00",
       "finishedAt": "2026-11-04T05:20:00",
       "note": "UI 参考清单 12 条（docs/design/参考资料-UI风格.md）"
+    },
+    {
+      "taskId": "任务20",
+      "status": "done",
+      "startedAt": "2026-11-04T05:21:00",
+      "finishedAt": "2026-11-04T05:28:00",
+      "note": "真实感差距清单 12 条（docs/design/真实感差距清单-v1.md）"
     }
   ],
   "deferred": [],
