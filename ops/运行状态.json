@@ -59,6 +59,13 @@
       "startedAt": "2026-11-04T04:53:00",
       "finishedAt": "2026-11-04T05:02:00",
       "note": "视觉规范 v0.1（docs/design/视觉规范-v0.1.md，规则全部注明草图出处）"
+    },
+    {
+      "taskId": "任务11",
+      "status": "done",
+      "startedAt": "2026-11-04T05:03:00",
+      "finishedAt": "2026-11-04T05:12:00",
+      "note": "多来源降级字段（作者/标签抽取，真实样本 16/16，run-all 5/5）"
     }
   ],
   "deferred": [],
