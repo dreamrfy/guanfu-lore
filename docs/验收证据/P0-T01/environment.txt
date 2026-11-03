@@ -1,0 +1,52 @@
+P0-T01 环境验证 - 2026-11-03 15:54:30
+
+## Flutter
+Flutter 3.47.9 • channel stable • https://github.com/flutter/flutter.git
+Framework • revision c197ca5199 (5 days ago) • 2026-10-29 10:10:20 -0400
+Engine • hash 9e025265bef30b838c0c1b68cad19decf97048f2 (revision 89c39edfdf) (6 days ago) • 2026-10-27 19:51:20.000Z
+Tools • Dart 3.13.7 • DevTools 2.60.0
+
+## Flutter doctor
+Doctor summary (to see all details, run flutter doctor -v):
+[√] Flutter (Channel stable, 3.47.9, on Microsoft Windows [版本 10.0.26200.9457], locale zh-CN)
+[√] Windows Version (Windows 11 or higher, 25H2, 2009)
+[√] Android toolchain - develop for Android devices (Android SDK version 36.0.0)
+[√] Chrome - develop for the web
+[X] Visual Studio - develop Windows apps
+    X Visual Studio not installed; this is necessary to develop Windows apps.
+      Download at https://visualstudio.microsoft.com/downloads/.
+      Please install the "Desktop development with C++" workload, including all of its default components
+[√] Connected device (3 available)
+    ! Device 8BF4C20819011732 is not authorized.
+      You might need to check your device for an authorization dialog.
+[!] Network resources
+    X A network error occurred while checking "https://maven.google.com/": 信号灯超时时间已到
+    X A network error occurred while checking "https://github.com/": 信号灯超时时间已到
+
+! Doctor found issues in 2 categories.
+
+## Java
+openjdk version "17.0.20.1" 2026-08-18
+OpenJDK Runtime Environment Temurin-17.0.20.1+1 (build 17.0.20.1+1)
+OpenJDK 64-Bit Server VM Temurin-17.0.20.1+1 (build 17.0.20.1+1, mixed mode, sharing)
+
+## adb
+Android Debug Bridge version 1.0.41
+Version 37.0.1-15733141
+Installed as E:\VBcoding\biyaaozhicheng\dev\android-sdk\platform-tools\adb.exe
+Running on Windows 10.0.26200
+
+## sdkmanager
+
+
+## Android SDK packages
+android-34
+android-36
+34.0.0
+36.0.0
+
+## AVD
+test1
+
+## Artifact SHA256 (flutter_windows_3.47.9-stable.zip)
+d8e2b5977e09082c6440f89dc1aa887b94c8fbcc3b39222797046295a3f68a9e  (matches official)
