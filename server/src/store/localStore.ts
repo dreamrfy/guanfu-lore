@@ -101,6 +101,11 @@ export function getClip(id: string): Clip | null {
   return row ? rowToClip(row) : null;
 }
 
+/** 幂等检查：该 id 是否已入库 */
+export function existsClip(id: string): boolean {
+  return !!getDb().prepare("SELECT id FROM clips WHERE id = ?").get(id);
+}
+
 export function listClips(): Clip[] {
   const rows = getDb().prepare("SELECT id FROM clips ORDER BY saved_at").all() as Array<{ id: string }>;
   return rows.map((r) => getClip(r.id)).filter((c): c is Clip => c !== null);

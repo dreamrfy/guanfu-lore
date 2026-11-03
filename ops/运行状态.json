@@ -7,7 +7,7 @@
     "stopAt": "2026-11-04T08:00:00+08:00",
     "pollIntervalMin": 5,
     "probeCount": 0,
-    "lastProbeAt": "2026-11-04T04:19:12"
+    "lastProbeAt": "2026-11-04T04:26:05"
   },
   "current": null,
   "history": [
@@ -31,6 +31,13 @@
       "startedAt": "2026-11-04T04:10:13",
       "finishedAt": "2026-11-04T04:11:44",
       "note": "本地存储层（SQLite + 资源落盘），自测 5/5"
+    },
+    {
+      "taskId": "任务8",
+      "status": "done",
+      "startedAt": "2026-11-04T04:24:09",
+      "finishedAt": "2026-11-04T04:26:05",
+      "note": "全链串联 + demo（幂等去重实测通过，1 条剪藏入库）"
     }
   ],
   "deferred": [],

@@ -1,4 +1,5 @@
 // CLI 入口（阶段一 · 本地原型）
+import { runDemo } from "./pipeline.ts";
 // 子命令随夜间任务逐步补齐：
 //   demo          —— 任务5（消息 → 剪藏记录 全链）
 //   poll          —— 任务6 之后（只读拉取微信客服消息）
@@ -33,6 +34,18 @@ async function main(): Promise<void> {
 
   if (cmd === "--help" || cmd === "-h" || cmd === "help") {
     printHelp();
+    return;
+  }
+  if (cmd === "demo") {
+    const stats = await runDemo();
+    console.log(JSON.stringify({
+      扫描离线HTML: stats.scanned,
+      新入库: stats.saved,
+      已存在跳过: stats.skippedExisting,
+      失败: stats.failed,
+      失败明细: stats.failures,
+      耗时ms: stats.elapsedMs,
+    }, null, 2));
     return;
   }
 
