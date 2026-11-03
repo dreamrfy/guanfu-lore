@@ -7,9 +7,15 @@
     "stopAt": "2026-11-04T08:00:00+08:00",
     "pollIntervalMin": 5,
     "probeCount": 0,
-    "lastProbeAt": "2026-11-04T03:33:55"
+    "lastProbeAt": "2026-11-04T03:39:34"
   },
-  "current": null,
+  "current": {
+    "taskId": "任务2",
+    "status": "running",
+    "estimateMin": 40,
+    "startedAt": "2026-11-04T03:39:34",
+    "probes": 0
+  },
   "history": [
     {
       "taskId": "任务1",

@@ -3,7 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const BASE_DIR = path.resolve(import.meta.dirname ?? ".");
+const BASE_DIR = path.resolve(import.meta.dirname ?? ".", ".."); // 本文件在 src/ 下，服务端根是上一级
 
 /** 读取环境变量指定的相对路径；显式拒绝 ".."、"\0" 与绝对路径越界 */
 function resolveLocalPath(envName: string, fallbackName: string): string {
