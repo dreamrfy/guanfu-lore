@@ -1,0 +1,100 @@
+{
+  "_说明": "P0-V01 微信客服链路真机实测的原始报文（2026-11-03 实测）。仅含可操作标识，不含任何密钥。",
+  "_来源": "本机临时脚本 E:\\dev\\tmp\\wecom-kf-test\\poll.log 与 callbacks.log",
+  "_实测环境": {
+    "企业微信": "贵州雨北灵大数据服务有限公司",
+    "企业ID(corpid)": "ww3b54982c51698e74",
+    "自建应用": "剪藏助手（AgentId 1000002）",
+    "客服账号open_kfid": "wkTQVsdQAAGYCXSgPlsgIsAo7FJ3TRBw",
+    "客服接入链接": "https://work.weixin.qq.com/kfid/kfcfeedfd447f1edb33"
+  },
+
+  "真机转发得到的消息": [
+    {
+      "_判定": "核心证据 —— 转发一篇公众号文章，微信发来的就是这条",
+      "msgid": "3LFoAdUNjJfWzTQPe6PSXHkAa",
+      "open_kfid": "wkTQVsdQAAGYCXSgPlsgIsAo7FJ3TRBw",
+      "external_userid": "wmTQVsdQAAF5tNwNhEiGi72s94SJ6JvA",
+      "send_time": 1793717889,
+      "origin": 3,
+      "msgtype": "link",
+      "link": {
+        "title": "极简热榜回归初心，更简单更好用了",
+        "desc": "",
+        "url": "https://mp.weixin.qq.com/s?__biz=MzkyNDA5MjgyNw==&mid=2247510388&idx=1&sn=5a8fa81a2ad2b093f87455a9f7a35716&chksm=c01698f083e3d17fca3bdfffe4ef11ed03cf0ed18020babfd1543fc38774d0e57f298e846d6f&mpshare=1&scene=1&srcid=11038a9WbA12ipPxNKSIID5k&sharer_shareinfo=f3095c364c286e6876bf33b86d1fc5db&sharer_shareinfo_first=f3095c364c286e6876bf33b86d1fc5db#rd",
+        "pic_url": "https://wework.qpic.cn/wwpic3az/791378_b8ngB5eBT2muiRA_1793717889/0"
+      },
+      "_结论": "msgtype=link 成立；title 有值、url 完整可用、pic_url 有值；desc 为空"
+    },
+    {
+      "_判定": "用户进入客服会话时收到的系统事件",
+      "msgid": "4SpRehvBzJdi68FHjzoidVWtik4a2bQhtDQ2X5hwjbMf",
+      "send_time": 1793717835,
+      "origin": 4,
+      "msgtype": "event",
+      "event": {
+        "event_type": "enter_session",
+        "scene": "",
+        "open_kfid": "wkTQVsdQAAGYCXSgPlsgIsAo7FJ3TRBw",
+        "external_userid": "wmTQVsdQAAF5tNwNhEiGi72s94SJ6JvA",
+        "welcome_code": "（可用于发送欢迎语，值略）"
+      },
+      "_结论": "enter_session 可用作『用户已进入会话』的信号，可用于欢迎语/回执"
+    },
+    {
+      "_判定": "普通文本消息（用于验证文本通道）",
+      "msgid": "BHf2NMbjUMFV85aGdN3JgLZmYk",
+      "open_kfid": "wkTQVsdQAAGYCXSgPlsgIsAo7FJ3TRBw",
+      "external_userid": "wmTQVsdQAAF5tNwNhEiGi72s94SJ6JvA",
+      "send_time": 1793717860,
+      "origin": 3,
+      "msgtype": "text",
+      "text": { "content": "1", "mentioned_list": [] }
+    }
+  ],
+
+  "微信官方对我们回调URL的真实验证请求": [
+    {
+      "_判定": "nonce 为纯数字，与自测请求（字母前缀）不同 → 这是微信客服发来的真实请求，我们解密后正确返回明文",
+      "at": "2026-11-03T14:43:13.644Z",
+      "stage": "url_verify",
+      "query": {
+        "msg_signature": "e4b5c9c44023c36697139d25e468a474533b2b5a",
+        "timestamp": "1793716981",
+        "nonce": "1793904581",
+        "echostr": "MKTSx36mh2B57RYmxCARtMa28++pNYj59hRsBMKcFHF7rZ0Fe44F4tp/dPNy2Lwpkud3+RvxuDPt7FT5S6oE2A=="
+      },
+      "echostrPlain": "2487050318353793023"
+    },
+    {
+      "at": "2026-11-03T14:44:42.560Z",
+      "stage": "url_verify",
+      "query": {
+        "msg_signature": "b65d4720c105dac1ee3bedf71283f3a3c141aafa",
+        "timestamp": "1793717079",
+        "nonce": "1793542071",
+        "echostr": "ky6oggiNhQc5PzC98NQf2fr+PhSTcdr7Bls8CARIxctfdrjul3nuxUsmIG0LD3IS/bKXFu8sEMlStBZ5rt/KiA=="
+      },
+      "echostrPlain": "3152178278236422135"
+    },
+    {
+      "at": "2026-11-03T14:49:47.042Z",
+      "stage": "url_verify",
+      "query": {
+        "msg_signature": "be4b2d40007a9c0bc585946e8a5fce88524abf83",
+        "timestamp": "1793717384",
+        "nonce": "1794024213",
+        "echostr": "C/DDyyYPTQz6cqzg7QGVne3dTSxe1jPZPW2NCgS13Dt75uUEbAiRCHyMQZQ/sY7h4rHI0udK93rGHrxuNH7dZw=="
+      },
+      "echostrPlain": "1687903066649394906"
+    }
+  ],
+
+  "_字段含义": {
+    "origin": "3 = 客户端（微信用户）发来；4 = 系统事件",
+    "open_kfid": "客服账号 ID，拉取消息时必须指定",
+    "external_userid": "客户（微信用户）标识，可用于『只接受允许的发送者』",
+    "msgtype=link/link.url": "转发文章的核心字段，可直接用于抓取原文",
+    "msgtype=event/event_type=enter_session": "用户进入会话事件"
+  }
+}
