@@ -7,7 +7,7 @@
     "stopAt": "2026-11-04T08:00:00+08:00",
     "pollIntervalMin": 5,
     "probeCount": 0,
-    "lastProbeAt": "2026-11-04T04:09:48"
+    "lastProbeAt": "2026-11-04T04:11:44"
   },
   "current": null,
   "history": [
@@ -24,6 +24,13 @@
       "startedAt": "2026-11-04T04:04:22",
       "finishedAt": "2026-11-04T04:09:48",
       "note": "公众号图片下载与本地落盘（images.ts）"
+    },
+    {
+      "taskId": "任务5",
+      "status": "done",
+      "startedAt": "2026-11-04T04:10:13",
+      "finishedAt": "2026-11-04T04:11:44",
+      "note": "本地存储层（SQLite + 资源落盘），自测 5/5"
     }
   ],
   "deferred": [],
