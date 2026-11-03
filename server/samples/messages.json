@@ -1,0 +1,192 @@
+{
+  "_说明": "微信客服真实消息样本（2026-11-03 实测，用于解析自测；不含密钥）",
+  "count": 14,
+  "messages": [
+    {
+      "msgid": "4SpRehvBzJdi68FHjzoidVWtik4a2bQhtDQ2X5hwjbMf",
+      "send_time": 1793717835,
+      "origin": 4,
+      "msgtype": "event",
+      "event": {
+        "event_type": "enter_session",
+        "scene": "",
+        "open_kfid": "wkTQVsdQAAGYCXSgPlsgIsAo7FJ3TRBw",
+        "external_userid": "wmTQVsdQAAF5tNwNhEiGi72s94SJ6JvA",
+        "welcome_code": "tTCWhDIzRXJEKYe_k5pZIiJA9eekfvtqQkHnKgARRPA"
+      }
+    },
+    {
+      "msgid": "4FuCF47tLck3u7ZgaD6whmMrXeMWipEYQ3R4rdnK8krv",
+      "send_time": 1793717856,
+      "origin": 4,
+      "msgtype": "event",
+      "event": {
+        "event_type": "enter_session",
+        "scene": "",
+        "open_kfid": "wkTQVsdQAAGYCXSgPlsgIsAo7FJ3TRBw",
+        "external_userid": "wmTQVsdQAAF5tNwNhEiGi72s94SJ6JvA",
+        "welcome_code": "Yw7KAJJLXgBjvsvlTSguwdFOuXXps48xosoG7hlOHjs"
+      }
+    },
+    {
+      "msgid": "BHf2NMbjUMFV85aGdN3JgLZmYk",
+      "open_kfid": "wkTQVsdQAAGYCXSgPlsgIsAo7FJ3TRBw",
+      "external_userid": "wmTQVsdQAAF5tNwNhEiGi72s94SJ6JvA",
+      "send_time": 1793717860,
+      "origin": 3,
+      "msgtype": "text",
+      "text": {
+        "content": "1",
+        "mentioned_list": []
+      }
+    },
+    {
+      "msgid": "3LFoAdUNjJfWzTQPe6PSXHkAa",
+      "open_kfid": "wkTQVsdQAAGYCXSgPlsgIsAo7FJ3TRBw",
+      "external_userid": "wmTQVsdQAAF5tNwNhEiGi72s94SJ6JvA",
+      "send_time": 1793717889,
+      "origin": 3,
+      "msgtype": "link",
+      "link": {
+        "title": "极简热榜回归初心，更简单更好用了",
+        "desc": "",
+        "url": "https://mp.weixin.qq.com/s?__biz=MzkyNDA5MjgyNw==&mid=2247510388&idx=1&sn=5a8fa81a2ad2b093f87455a9f7a35716&chksm=c01698f083e3d17fca3bdfffe4ef11ed03cf0ed18020babfd1543fc38774d0e57f298e846d6f&mpshare=1&scene=1&srcid=11038a9WbA12ipPxNKSIID5k&sharer_shareinfo=f3095c364c286e6876bf33b86d1fc5db&sharer_shareinfo_first=f3095c364c286e6876bf33b86d1fc5db#rd",
+        "pic_url": "https://wework.qpic.cn/wwpic3az/791378_b8ngB5eBT2muiRA_1793717889/0"
+      }
+    },
+    {
+      "msgid": "A1NV1AJgJmoQPUUUtAxyeNEe5Z",
+      "open_kfid": "wkTQVsdQAAGYCXSgPlsgIsAo7FJ3TRBw",
+      "external_userid": "wmTQVsdQAAF5tNwNhEiGi72s94SJ6JvA",
+      "send_time": 1793724135,
+      "origin": 3,
+      "msgtype": "link",
+      "link": {
+        "title": "全网最全Python经典代码实例合集，练完你就牛了！",
+        "desc": "",
+        "url": "https://mp.weixin.qq.com/s?__biz=MzYyNTc3Mjc5Nw==&mid=2247485669&idx=1&sn=8b27409199d093a44524f0fc64472bd7&chksm=f12f400441af671dd15107684c6d16228ea97bd6e251f516e018e32b71c4cebe6f1c9521cfdc&mpshare=1&scene=1&srcid=11048HQcdaRZickxwBDQnkO1&sharer_shareinfo=34487b847932708856c2019755e8bbbe&sharer_shareinfo_first=34487b847932708856c2019755e8bbbe#rd",
+        "pic_url": "https://wework.qpic.cn/wwpic3az/823594_frYGgsqFRbOgH2K_1793724135/0"
+      }
+    },
+    {
+      "msgid": "A1L3JJ8VFMCYFZGunKX7d7m7Tz",
+      "open_kfid": "wkTQVsdQAAGYCXSgPlsgIsAo7FJ3TRBw",
+      "external_userid": "wmTQVsdQAAF5tNwNhEiGi72s94SJ6JvA",
+      "send_time": 1793724148,
+      "origin": 3,
+      "msgtype": "link",
+      "link": {
+        "title": "颠覆微信排版！我用代码给公众号换了张脸，HTML+JS直插，告别排版焦虑",
+        "desc": "早就受够了微信编辑器对CSS的限制，无论怎么写样式都难以令人满意，经过多种方式实测后，我终于找到了一个自己用起来舒服的方式：专业工具生成符合微信CSS规范的html+js导入微信编辑器。",
+        "url": "https://mp.weixin.qq.com/s?__biz=MzA4OTY3ODQzNw==&mid=2448501897&idx=1&sn=20eca934c4acaf890a4fd3c94b58253f&chksm=8591e1acd8590a19fd7ef64f48cd9eadabe4d5ef9575c97cbdd5459dc171c4707cfac3619a2e&mpshare=1&scene=1&srcid=1104pzblWRREk3585dxgA1nO&sharer_shareinfo=71141503db3dfc56c000b9d3e409cd7b&sharer_shareinfo_first=71141503db3dfc56c000b9d3e409cd7b#rd",
+        "pic_url": "https://wework.qpic.cn/wwpic3az/777355_KWk4bUX6T0S8_g1_1793724148/0"
+      }
+    },
+    {
+      "msgid": "A1TFtJ1Mypu5Y3WdEQcqeZsamh",
+      "open_kfid": "wkTQVsdQAAGYCXSgPlsgIsAo7FJ3TRBw",
+      "external_userid": "wmTQVsdQAAF5tNwNhEiGi72s94SJ6JvA",
+      "send_time": 1793724339,
+      "origin": 3,
+      "msgtype": "link",
+      "link": {
+        "title": "白送 4 核 8G，还不限时长我让它替我通宵干活",
+        "desc": "",
+        "url": "https://mp.weixin.qq.com/s?__biz=MzU5NjcwNjcxMw==&mid=2247483778&idx=1&sn=de5d3390b4fc69b2e29319a21a2c9cf7&chksm=ffa2eb1ddb30ff7f8185378158dd6180f8e85ca8a844e0b522fc68e168cbffb17d5cdfbc8a21&mpshare=1&scene=1&srcid=1104rkD79AeAYhUhDmDwKCKI&sharer_shareinfo=814b916e687670076a95e76d8da42afc&sharer_shareinfo_first=814b916e687670076a95e76d8da42afc#rd",
+        "pic_url": "https://wework.qpic.cn/wwpic3az/80362_RiAgN0f1RVCazhE_1793724339/0"
+      }
+    },
+    {
+      "msgid": "AvRJ3TCNURAspZwRzkeRzwvnYL",
+      "open_kfid": "wkTQVsdQAAGYCXSgPlsgIsAo7FJ3TRBw",
+      "external_userid": "wmTQVsdQAAF5tNwNhEiGi72s94SJ6JvA",
+      "send_time": 1793724384,
+      "origin": 3,
+      "msgtype": "link",
+      "link": {
+        "title": "空谷 Ondra 项目文档",
+        "desc": "空谷 Ondra中文｜English于无声处，听见共鸣。",
+        "url": "https://mp.weixin.qq.com/s?__biz=MzY4ODMyNDM4Mg==&mid=2247483734&idx=1&sn=1f10757b3b1f4f98d3eddc600d67051e&chksm=f20234540e17542f61ab4c907400a0cd57c4acb35e1235128332160e1db29d1af42f1ee688b2&mpshare=1&scene=1&srcid=1104lAiQnjyM5y4IFWbq5OX5&sharer_shareinfo=9e2c58642312ba285881d85a1a5204c7&sharer_shareinfo_first=9e2c58642312ba285881d85a1a5204c7#rd",
+        "pic_url": "https://wework.qpic.cn/wwpic3az/315579_5k09gFI3QhuAS-k_1793724384/0"
+      }
+    },
+    {
+      "msgid": "B7NPcRzhu9cs324U8rouz1vcV7",
+      "open_kfid": "wkTQVsdQAAGYCXSgPlsgIsAo7FJ3TRBw",
+      "external_userid": "wmTQVsdQAAF5tNwNhEiGi72s94SJ6JvA",
+      "send_time": 1793724396,
+      "origin": 3,
+      "msgtype": "link",
+      "link": {
+        "title": "白送3个月Pro，再领10亿Token",
+        "desc": "前豆包 PC 负责人新做的个人 AI 助理 Today，国内站新用户注册直接送 3 亿 Tokens 加 3 个月 Pro，比上线时的 1 个月翻了 3 倍；讯飞星火新模型 X2.6 也在送 10 亿 Tokens 体验额度。2 条羊毛，左滑看图。1. Today AI：在国内站 todayai.cn 注册即领 3 亿 Tokens 和 3 个月 Pro 权益，基础版永久免费。能连邮件、日历和备忘录，每天给你出晨间简报、主动提醒没办完的事。电脑和手机都有客户端，国内直接用。官方没写活动截止时间。2. 讯飞星火 Spark-X2.6：在讯飞星辰 MaaS 平台注册并实名认证，就能领 10 亿 Tokens 免费体验额度，每人限领一次，开通后 31 天内有效，只能用在 Spark-X2.6 这个模型上。更适合会写代码、想接自己工具的人，普通用户也能在平台上直接体验对话。提醒：额度、有效期和领取条件以 Today、讯飞官方页面实时显示为准，活动可能随时调整；别用多号、借号或虚假信息领取。你还知道哪些 AI 羊毛？欢迎在评论区分享。关注「新未来精选」，有羊毛第一时间告诉你。#AI羊毛 #Today #讯飞星火 #AI助理",
+        "url": "https://mp.weixin.qq.com/s?t=pages/image_detail&scene=1&__biz=MjM5ODQ1ODMwMA==&mid=2247485636&idx=1&sn=465660bc127148400f369f2e8ce9e65c&from_masonry=1&sharer_shareinfo_first=f9a9ed7499a03012086426bc03b816bf&sharer_shareinfo=f9a9ed7499a03012086426bc03b816bf#wechat_redirect",
+        "pic_url": "https://wework.qpic.cn/wwpic3az/69464_Z7qWhDjLSeO-mBT_1793724396/0"
+      }
+    },
+    {
+      "msgid": "BHwuEqZynXHR8MB8uPjK7P136n",
+      "open_kfid": "wkTQVsdQAAGYCXSgPlsgIsAo7FJ3TRBw",
+      "external_userid": "wmTQVsdQAAF5tNwNhEiGi72s94SJ6JvA",
+      "send_time": 1793724422,
+      "origin": 3,
+      "msgtype": "link",
+      "link": {
+        "title": "美团LongCat-2.5模型也能免费用了！",
+        "desc": "今天（11月3日），美团妙手宣布即日起：LongCat-2.5模型在妙手上可限时免费体验！图二关于LongCat-2.5这款模型，特地查了一下：是一款面向长程智能体任务的原生多模态模型，总参数1.6万亿，训练全程由国产算力完成。进入11月，各平台又开始送Token了，根本用不完！#LongCat #妙手 #美团妙手 #免费模型",
+        "url": "https://mp.weixin.qq.com/s?t=pages/image_detail&scene=1&__biz=MzI2NDE2MDg2NQ==&mid=2657113779&idx=1&sn=23b6947d3d6525a61a8b0e20f6bd7fef&from_masonry=1&sharer_shareinfo_first=ac3ae67ab8ff3838095ecf271f498846&sharer_shareinfo=ac3ae67ab8ff3838095ecf271f498846#wechat_redirect",
+        "pic_url": "https://wework.qpic.cn/wwpic3az/122847_I_dUCUKRSQeYj3M_1793724422/0"
+      }
+    },
+    {
+      "msgid": "AjoSgZ6wtXy3W2bHL6HLxM8TvF",
+      "open_kfid": "wkTQVsdQAAGYCXSgPlsgIsAo7FJ3TRBw",
+      "external_userid": "wmTQVsdQAAF5tNwNhEiGi72s94SJ6JvA",
+      "send_time": 1793724556,
+      "origin": 3,
+      "msgtype": "text",
+      "text": {
+        "content": "【【26年11月云服务器选购攻略】5大厂商109款服务器性价比横向对比 不选贵的 只选对的-哔哩哔哩】 https://b23.tv/hnHeMSc",
+        "mentioned_list": []
+      }
+    },
+    {
+      "msgid": "AjoTEfBwq6NFXQHKLfdpGXdp9m",
+      "open_kfid": "wkTQVsdQAAGYCXSgPlsgIsAo7FJ3TRBw",
+      "external_userid": "wmTQVsdQAAF5tNwNhEiGi72s94SJ6JvA",
+      "send_time": 1793724604,
+      "origin": 3,
+      "msgtype": "link",
+      "link": {
+        "title": "12.28基金从业 临时更改通知了",
+        "desc": "@可可姜姜 的笔记\n22人分享",
+        "url": "https://www.xiaohongshu.com/discovery/item/6ae7e002000000001500bd50?app_platform=android&ignoreEngage=true&app_version=9.52.0&share_from_user_hidden=true&xsec_source=app_share&type=normal&xsec_token=CBF0TBTQxssBWcl6vEi0PAeqBBKT0SCdNKCBt057crr3A%3D&author_share=1&xhsshare=WeixinSession&shareRedId=Nz9GQzo-OT84N0o6QU40PElHQjo2Rj1C&apptime=1793724596&share_id=17315b276a234baab4c4f0b56de0b431&share_channel=wechat&track_code=7E2ueTbysvt",
+        "pic_url": "https://wework.qpic.cn/wwpic3az/47481_TUxITvcJSbqzAH4_1793724604/0"
+      }
+    },
+    {
+      "msgid": "AZ9AiWVnLz5rHUprwX6jR1JuAx",
+      "open_kfid": "wkTQVsdQAAGYCXSgPlsgIsAo7FJ3TRBw",
+      "external_userid": "wmTQVsdQAAF5tNwNhEiGi72s94SJ6JvA",
+      "send_time": 1793724632,
+      "origin": 3,
+      "msgtype": "text",
+      "text": {
+        "content": "独家福利｜178 拿下网盘 + B 站双月+1t ✔️百度网盘 ... https://xhslink.cn/o/2l4f0QG4tPC 这篇内容在【小红书】候着你~",
+        "mentioned_list": []
+      }
+    },
+    {
+      "msgid": "A1cudR6Y8zqcVBL8mLggWZ5rZE",
+      "open_kfid": "wkTQVsdQAAGYCXSgPlsgIsAo7FJ3TRBw",
+      "external_userid": "wmTQVsdQAAF5tNwNhEiGi72s94SJ6JvA",
+      "send_time": 1793724683,
+      "origin": 3,
+      "msgtype": "text",
+      "text": {
+        "content": "8.20 复制打开抖音，看看【咖喱的图文作品】莱昂纳少太有腔调了# 小李子 # 莱昂纳多 # 杭... https://v.douyin.com/ytvybpLCkus/ :8pm eBG:/ K@W.Mj 03/16 ",
+        "mentioned_list": []
+      }
+    }
+  ]
+}

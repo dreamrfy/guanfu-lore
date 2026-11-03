@@ -7,15 +7,9 @@
     "stopAt": "2026-11-04T08:00:00+08:00",
     "pollIntervalMin": 5,
     "probeCount": 0,
-    "lastProbeAt": "2026-11-04T03:39:34"
+    "lastProbeAt": "2026-11-04T04:09:48"
   },
-  "current": {
-    "taskId": "任务2",
-    "status": "running",
-    "estimateMin": 40,
-    "startedAt": "2026-11-04T03:39:34",
-    "probes": 0
-  },
+  "current": null,
   "history": [
     {
       "taskId": "任务1",
@@ -23,6 +17,13 @@
       "startedAt": "2026-11-04T03:29:46",
       "finishedAt": "2026-11-04T03:33:55",
       "note": "服务端骨架+数据模型+配置读取"
+    },
+    {
+      "taskId": "任务3",
+      "status": "done",
+      "startedAt": "2026-11-04T04:04:22",
+      "finishedAt": "2026-11-04T04:09:48",
+      "note": "公众号图片下载与本地落盘（images.ts）"
     }
   ],
   "deferred": [],
