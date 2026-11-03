@@ -31,6 +31,14 @@ function getDb(): DatabaseSync {
   return db;
 }
 
+/** 关闭数据库连接（测试收尾用；Windows 下不关连接就无法删目录） */
+export function closeDb(): void {
+  if (db) {
+    db.close();
+    db = null;
+  }
+}
+
 const ASSET_ID_RE = /^[0-9a-f]{8,16}$/;
 const EXT_RE = /^[a-z0-9]{2,5}$/;
 

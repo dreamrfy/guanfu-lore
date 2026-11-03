@@ -1,8 +1,12 @@
 // 任务5 自测：本地存储层（落库 / 读回 / 幂等 / 资源落盘）
 // 用法: node tests/store.selftest.ts
+//
+// 关键：先设 KF_DATA_DIR 再动态 import，确保用【隔离的测试库】，不污染正式数据。
+process.env.KF_DATA_DIR = "data-selftest";
+
+const { saveClip, getClip, listClips, writeAssetFile } = await import("../src/store/localStore.ts");
 import fs from "node:fs";
 import path from "node:path";
-import { saveClip, getClip, listClips } from "../src/store/localStore.ts";
 import type { Clip } from "../src/store/types.ts";
 
 const savedAt = new Date().toISOString();
@@ -49,5 +53,18 @@ for (const [name, ok] of results) {
   console.log((ok ? "✅" : "❌") + " " + name);
   if (!ok) failed++;
 }
+
+// 资源落盘验证：写入一个文件 → 存在 → 读回一致
+const png = Buffer.from("89504e470d0a1a0a", "hex");
+const written = writeAssetFile("abcdef1234567890", "png", png);
+const okFile = fs.existsSync(written) && fs.readFileSync(written).equals(png);
+console.log((okFile ? "✅" : "❌") + " 资源落盘与读回");
+if (!okFile) failed++;
+
 console.log(failed === 0 ? "\n自测全部通过" : `\n自测失败 ${failed} 项`);
 process.exitCode = failed === 0 ? 0 : 1;
+
+// 清理测试库（先关连接，Windows 下不关连接就无法删目录）
+const { closeDb } = await import("../src/store/localStore.ts");
+closeDb();
+fs.rmSync(path.resolve("data-selftest"), { recursive: true, force: true });
