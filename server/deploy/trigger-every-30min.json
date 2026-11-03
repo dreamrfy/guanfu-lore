@@ -1,0 +1,9 @@
+{
+  "triggers": [
+    {
+      "name": "pollEvery30Min",
+      "type": "timer",
+      "config": "0 */30 * * * * *"
+    }
+  ]
+}
