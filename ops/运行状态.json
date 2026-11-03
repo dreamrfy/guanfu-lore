@@ -45,6 +45,13 @@
       "startedAt": "2026-11-04T04:29:05",
       "finishedAt": "2026-11-04T04:30:01",
       "note": "剪藏清单页（5 条）"
+    },
+    {
+      "taskId": "任务18",
+      "status": "done",
+      "startedAt": "2026-11-04T04:45:00",
+      "finishedAt": "2026-11-04T04:52:30",
+      "note": "设计 token v0.1（docs/design/设计token-v0.1.md）"
     }
   ],
   "deferred": [],
