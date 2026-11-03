@@ -1,0 +1,13 @@
+{
+  "name": "bijiapp-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "bijiapp 服务端（阶段一 · 本地原型）。零依赖，Node 24 原生直跑 .ts。",
+  "scripts": {
+    "help": "node src/cli.ts --help"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
