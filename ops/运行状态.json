@@ -1,13 +1,15 @@
 {
   "version": 1,
   "protocol": "探测式调度：定时器每 5 分钟触发一次；探测会话只读本文件做判断，多数轮次秒退。判定规则见 ops/看门狗提示词.md。",
-  "updatedAt": "2026-11-04T02:00:00+08:00",
+  "updatedAt": "2026-11-05T06:15:00+08:00",
   "runtime": {
     "startedAt": "2026-11-04T02:00:00+08:00",
     "stopAt": "2026-11-04T08:00:00+08:00",
+    "stoppedAt": "2026-11-05T06:15:00+08:00",
+    "stopReason": "队列跑空（24/24 完成），提前收工",
     "pollIntervalMin": 5,
     "probeCount": 0,
-    "lastProbeAt": "2026-11-04T04:44:55"
+    "lastProbeAt": "2026-11-05T06:10:00"
   },
   "current": null,
   "history": [
