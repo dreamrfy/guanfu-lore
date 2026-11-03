@@ -80,6 +80,13 @@
       "startedAt": "2026-11-04T05:21:00",
       "finishedAt": "2026-11-04T05:28:00",
       "note": "真实感差距清单 12 条（docs/design/真实感差距清单-v1.md）"
+    },
+    {
+      "taskId": "任务21",
+      "status": "done",
+      "startedAt": "2026-11-04T05:29:00",
+      "finishedAt": "2026-11-04T05:40:00",
+      "note": "字体与图标方案（系统栈主推 + Lucide，授权风险列明）"
     }
   ],
   "deferred": [],
