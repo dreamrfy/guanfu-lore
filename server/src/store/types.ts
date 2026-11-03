@@ -63,6 +63,10 @@ export interface NormalizedItem {
   title: string;
   desc: string;
   coverUrl: string;
+  /** 作者（能从转发文案/卡片描述里抽到时填，如抖音「看看【咖喱的图文作品】」→ 咖喱） */
+  author?: string;
+  /** 话题标签（不含 #，如 小李子；能抽到时填） */
+  tags?: string[];
   /** 该平台本次能抓到什么：full=正文+图；metadata-only=仅标题/描述/封面 */
   capability: "full" | "metadata-only";
   note?: string;
