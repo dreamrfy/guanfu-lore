@@ -1,0 +1,15 @@
+{
+  "messages": 14,
+  "parsed": 11,
+  "skippedUnrecognized": 3,
+  "skippedExisting": 11,
+  "saved": 0,
+  "complete": 0,
+  "partial": 0,
+  "failed": 0,
+  "imagesTotal": 0,
+  "imagesDownloaded": 0,
+  "imagesFailed": 0,
+  "failures": [],
+  "elapsedMs": 4
+}

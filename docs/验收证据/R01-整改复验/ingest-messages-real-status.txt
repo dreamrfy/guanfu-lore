@@ -1,0 +1,14 @@
+source       status    fail_reason          textLen  title
+bilibili     partial   content_missing           74  【【26年11月云服务器选购攻略】5大厂商109款服务器性价比横向对
+douyin       partial   content_missing          110  莱昂纳少太有腔调了
+wechat_mp    complete  -                        516  极简热榜回归初心，更简单更好用了
+wechat_mp    complete  -                      18656  颠覆微信排版！我用代码给公众号换了张脸，HTML+JS直插，告别排版
+wechat_mp    complete  -                       2165  白送 4 核 8G，还不限时长我让它替我通宵干活
+wechat_mp    complete  -                      22047  空谷 Ondra 项目文档
+wechat_mp    failed    content_missing            0  全网最全Python经典代码实例合集，练完你就牛了！
+wechat_mp    failed    content_missing            0  白送3个月Pro，再领10亿Token
+wechat_mp    failed    content_missing            0  美团LongCat-2.5模型也能免费用了！
+xiaohongshu  partial   content_missing           15  12.28基金从业 临时更改通知了
+xiaohongshu  partial   content_missing           83  独家福利｜178 拿下网盘 + B 站双月+1t ✔️百度网盘 ..
+
+汇总: complete=4 failed=3 partial=4

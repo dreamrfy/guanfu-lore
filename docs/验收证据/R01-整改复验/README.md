@@ -24,10 +24,23 @@
 | 《全网最全Python经典代码实例合集…》 | `complete`，`textLength=0` | **`failed`，`fail_reason=content_missing`** |
 | 其余 4 篇 | `complete` | `complete`（正文 516–22047 字） |
 
+## 真实链路一次性冒烟（2026-11-04，非回归测试）
+
+| 文件 | 说明 |
+| --- | --- |
+| `ingest-messages-real-run1.txt` | 首次真实抓取：14 条真实消息 → 识别 11 → 入库 11（4 complete / 4 partial / 3 failed），31 张图片全部成功 |
+| `ingest-messages-real-rerun.txt` | 立刻重跑：`skippedExisting=11`、`saved=0`（真实数据上的幂等验证） |
+| `ingest-messages-real-status.txt` | 入库明细：空正文 3 篇为 `failed/content_missing`；B站/小红书/抖音为 `partial`（阶段一只有元数据） |
+
+说明：
+- 这次**没有使用任何微信凭证**，只抓取公开文章页；不是自动化测试的一部分（结果依赖线上文章是否还在）。
+- 3 篇失败的原因分别是正文容器缺失 / 命中“环境异常、去验证”风控提示——分类正确，不是程序崩溃。
+- 不能据此宣称“微信客服链路已验证”：`poll` 仍未用真实凭证跑过。
+
 ## 本次**未验证**的事（不得当作已完成）
 
 - 真实微信客服凭证下的 `poll`（一次都没跑过；代码已实现，`gettoken`/`sync_msg` 用假 transport 测过）
-- 真实公众号文章的端到端抓取（本机网络不稳定；正文/图片解析由 fixture 与真实离线 HTML 覆盖）
+- 真实公众号抓取的**持续稳定性**（只跑过上面这一次；文章会删除/风控，结果不可逐次复现）
 - CloudBase 部署、R2 存储、Node 24 云函数运行时（详见 `server/deploy/README.md` 的 Runtime 风险）
 - 设计稿的像素级走查（走查清单是待执行工具，不是已完成结果）
 
