@@ -29,6 +29,9 @@ const files: Array<[string, string]> = [
   ["走查清单", "docs/design/视觉走查清单-v1.md"],
   ["真实感差距", "docs/design/真实感差距清单-v1.md"],
   ["字体与图标", "docs/design/字体与图标方案.md"],
+  ["版本标识", "VERSION.md"],
+  ["发布说明", "docs/发布说明-v0.0.1.md"],
+  ["项目 README", "README.md"],
 ];
 
 const contents = new Map<string, string>();
@@ -70,6 +73,10 @@ const required: Array<[string, string, RegExp, string]> = [
   ["视觉规范", "docs/design/视觉规范-v0.1.md", /查看进度/, "任务动作未按状态区分"],
   ["走查清单", "docs/design/视觉走查清单-v1.md", /未覆盖页清单/, "缺少未覆盖页清单"],
   ["字体与图标", "docs/design/字体与图标方案.md", /仍未核对/, "图标覆盖结论未标明未核对范围"],
+  ["版本标识", "VERSION.md", /v0\.0\.1/, "缺少版本号"],
+  ["版本标识", "VERSION.md", /未验证/, "未单列未验证项"],
+  ["发布说明", "docs/发布说明-v0.0.1.md", /已知限制与风险/, "缺少已知限制章节"],
+  ["项目 README", "README.md", /v0\.0\.1/, "README 未写版本"],
 ];
 
 for (const [label, rel, re, why] of required) {

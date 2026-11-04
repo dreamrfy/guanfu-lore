@@ -1,0 +1,63 @@
+# bijiapp
+
+个人知识库软件。**当前版本 v0.0.1**：阶段一「服务端本地原型」——把微信里转发的文章/视频收进自己的知识库。
+
+> 状态：本地可运行原型。**未部署、未接真实微信凭证**；能做什么、不能做什么见 `VERSION.md` 与 `docs/发布说明-v0.0.1.md`。
+
+## 它怎么工作
+
+```
+微信转发 → 企业微信「微信客服」→ 服务端轮询拉取
+        → 解析来源（公众号 / B站 / 小红书 / 抖音）
+        → 公众号：抓正文 + 图片 → SQLite 落库 → 生成本地离线快照
+        → 其他来源：先存标题/描述/封面（正文需浏览器渲染，阶段二）
+        → 清单页可浏览、可打开快照（断网可读）
+```
+
+## 快速开始
+
+需要 Node.js >= 24。
+
+```bash
+cd server
+bash tests/run-all.sh              # 19 个自测
+node src/cli.ts pipeline-test      # 离线 mock 全链（不联网）
+node src/cli.ts demo               # 导入 server/out/offline_*.html
+node src/cli.ts list               # 生成清单页 server/out/剪藏清单.html
+```
+
+拉真实消息（需要仓库外的凭证文件，未验证）：
+
+```bash
+export KF_SECRETS_FILE=/path/outside/repo/wecom-kf.json
+node src/cli.ts poll
+```
+
+## 文档导航
+
+| 想看什么 | 去哪 |
+| --- | --- |
+| 版本与验证结论 | `VERSION.md` |
+| 这版包含什么、限制是什么 | `docs/发布说明-v0.0.1.md` |
+| 命令能力边界与安全设计 | `server/README.md` |
+| 当前进度与遗留问题 | `开发状态.md` |
+| 怎么接云 | `docs/接云清单-v1.md` |
+| 设计规范与草图 | `docs/design/`、`flowus-wireframes-v1/` |
+| 复验证据 | `docs/验收证据/R01~R03-整改复验/` |
+| 历史审计（归档，不在仓库内） | `E:\VBcoding\_archive\bijiapp-v0.0.1-审计归档\` |
+
+## 目录
+
+```
+server/                  服务端（源码 / 自测 / 部署模板）
+docs/                    发布说明、接云清单、设计文档、验收证据
+ops/                     夜间执行报告、任务队列、运行状态
+flowus-wireframes-v1/    18 张高保真草图 + 渲染脚本
+scripts/                 WCAG 对比度核验等工具
+```
+
+## 三条不可破的红线
+
+1. **资源只存编号**（G1）：数据库里不出现完整图片 URL，换存储只改配置。
+2. **不完整不标完成**（SNAP-02）：正文为空、图片缺失或未本地化，只能是 `partial` / `failed`。
+3. **文档只写验证过的事**：没跑过的链路（如真实凭证下的 `poll`）必须标「未验证」。
