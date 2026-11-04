@@ -14,8 +14,8 @@ MUTED = "#7B807E"
 LINE = "#E5E7E4"
 PAPER = "#FFFFFF"
 SIDEBAR = "#F7F8F6"
-BLUE = "#2578D4"
-BLUE_LIGHT = "#EDF5FF"
+BLUE = "#1D4ED8"
+BLUE_LIGHT = "#E9EFFD"
 GREEN = "#47745C"
 AMBER = "#94692F"
 RED = "#AD5C55"
@@ -197,7 +197,7 @@ class Canvas:
             for i, (label, icon, level) in enumerate(pages):
                 yy = 448 + i*36
                 if selected == label:
-                    self.rect((50, yy-7, 260, yy+25), "#E9ECE7", radius=4)
+                    self.rect((50, yy-7, 260, yy+25), "#E6EBF6", radius=4)
                 xx = 62 + level*18
                 self.icon(icon, xx, yy+1, INK if selected == label else MUTED)
                 self.text(xx+27, yy, label, 14, INK if selected == label else "#666C66", selected == label)

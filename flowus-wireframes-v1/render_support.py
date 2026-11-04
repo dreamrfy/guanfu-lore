@@ -15,7 +15,7 @@ def search_page():
         "13", 1250, version="V0.4",
     )
     c.shell("搜索")
-    c.rect((50, 207, 260, 240), "#E9ECE7", radius=4)
+    c.rect((50, 207, 260, 240), "#E6EBF6", radius=4)
     c.icon("search", 62, 215, INK)
     c.text(89, 215, "搜索", 14, INK, True)
     c.text(307, 218, "搜索知识库", 30, INK, True)

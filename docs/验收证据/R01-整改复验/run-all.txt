@@ -1,0 +1,727 @@
+== tests/clipid.selftest.ts ==
+✅ 同一篇（完整 vs 去跟踪参数）→ 同一个 id
+✅ chksm 不同不影响 id
+✅ 不同文章 → 不同 id
+✅ id 有前缀 wx_（公众号）
+✅ 小红书 id 前缀 url_
+✅ id 是 16 位十六进制（wx_ 后）
+✅ 非法 URL 不抛异常
+✅ 其他平台忽略查询串
+✅ 末尾斜杠归一
+✅ shortHash 稳定
+✅ shortHash 长度 16
+✅ sha256Hex 是 64 位十六进制
+✅ 5 万条相似文章无碰撞（实际 0）
+✅ 首字符分布覆盖 16 个桶（实际 16）
+
+自测全部通过
+   -> 通过
+
+== tests/degrade.selftest.ts ==
+
+解析 14 条样本 → 识别 11 条
+
+平台         标题                          作者       标签                  封面
+------------------------------------------------------------------------------------------
+bilibili     【【26年11月云服务器选购攻略】5大厂商109款服   -          -                      -
+xiaohongshu  12.28基金从业 临时更改通知了            可可姜姜       -                      有
+xiaohongshu  独家福利｜178 拿下网盘 + B 站双月+1t ✔   -          -                      -
+douyin       莱昂纳少太有腔调了                    咖喱         小李子/莱昂纳多/杭...          -
+  ✓ 抖音：识别出条目
+  ✓ 抖音：标题取【】后的正文标题
+  ✓ 抖音：作者=咖喱（从「咖喱的图文作品」剥出）
+  ✓ 抖音：标签含 小李子
+  ✓ 抖音：标签含 莱昂纳多
+  ✓ 抖音：无封面（text 形态没有图）
+  ✓ 抖音：note 写明阶段二
+  ✓ 小红书 link：识别出条目
+  ✓ 小红书 link：作者=可可姜姜（从「@xxx 的笔记」抽出）
+  ✓ 小红书 link：标题保留卡片标题
+  ✓ 小红书 link：封面有值
+  ✓ 小红书 link：note 写明阶段二
+  ✓ 小红书 text：识别出短链条目
+  ✓ 小红书 text：标题取第一段
+  ✓ 小红书 text：无封面（text 形态没有图）
+  ✓ 公众号：回归无损（仍识别且 capability=full）
+
+结果：16 通过 / 0 失败
+   -> 通过
+
+== tests/docs-claims.selftest.ts ==
+✅ 夜间执行报告 不含「“5 条 complete”式全链证明」
+✅ 夜间执行报告 不含「“全链已跑通”」
+✅ 夜间执行报告 不含「“改动量 0 行”」
+✅ 夜间执行报告 不含「“0 行改动”」
+✅ 夜间执行报告 不含「图标“10/10 全覆盖”式结论」
+✅ 服务端 README 不含「“5 条 complete”式全链证明」
+✅ 服务端 README 不含「“全链已跑通”」
+✅ 服务端 README 不含「“改动量 0 行”」
+✅ 服务端 README 不含「“0 行改动”」
+✅ 服务端 README 不含「图标“10/10 全覆盖”式结论」
+✅ 服务端 README 不含「“零依赖”表述（已引入 sanitize-html）」
+✅ 接云清单 不含「“5 条 complete”式全链证明」
+✅ 接云清单 不含「“全链已跑通”」
+✅ 接云清单 不含「“改动量 0 行”」
+✅ 接云清单 不含「“0 行改动”」
+✅ 接云清单 不含「图标“10/10 全覆盖”式结论」
+✅ 接云清单 不含「“零依赖”表述（已引入 sanitize-html）」
+✅ 开发状态 不含「“5 条 complete”式全链证明」
+✅ 开发状态 不含「“全链已跑通”」
+✅ 开发状态 不含「“改动量 0 行”」
+✅ 开发状态 不含「“0 行改动”」
+✅ 开发状态 不含「图标“10/10 全覆盖”式结论」
+✅ 开发状态 不含「“零依赖”表述（已引入 sanitize-html）」
+✅ 设计 token 不含「“5 条 complete”式全链证明」
+✅ 设计 token 不含「“全链已跑通”」
+✅ 设计 token 不含「“改动量 0 行”」
+✅ 设计 token 不含「“0 行改动”」
+✅ 设计 token 不含「图标“10/10 全覆盖”式结论」
+✅ 设计 token 不含「“零依赖”表述（已引入 sanitize-html）」
+✅ 深浅色主题 不含「“5 条 complete”式全链证明」
+✅ 深浅色主题 不含「“全链已跑通”」
+✅ 深浅色主题 不含「“改动量 0 行”」
+✅ 深浅色主题 不含「“0 行改动”」
+✅ 深浅色主题 不含「图标“10/10 全覆盖”式结论」
+✅ 深浅色主题 不含「“零依赖”表述（已引入 sanitize-html）」
+✅ 视觉规范 不含「“5 条 complete”式全链证明」
+✅ 视觉规范 不含「“全链已跑通”」
+✅ 视觉规范 不含「“改动量 0 行”」
+✅ 视觉规范 不含「“0 行改动”」
+✅ 视觉规范 不含「图标“10/10 全覆盖”式结论」
+✅ 视觉规范 不含「“零依赖”表述（已引入 sanitize-html）」
+✅ 走查清单 不含「“5 条 complete”式全链证明」
+✅ 走查清单 不含「“全链已跑通”」
+✅ 走查清单 不含「“改动量 0 行”」
+✅ 走查清单 不含「“0 行改动”」
+✅ 走查清单 不含「图标“10/10 全覆盖”式结论」
+✅ 走查清单 不含「“零依赖”表述（已引入 sanitize-html）」
+✅ 真实感差距 不含「“5 条 complete”式全链证明」
+✅ 真实感差距 不含「“全链已跑通”」
+✅ 真实感差距 不含「“改动量 0 行”」
+✅ 真实感差距 不含「“0 行改动”」
+✅ 真实感差距 不含「图标“10/10 全覆盖”式结论」
+✅ 真实感差距 不含「“零依赖”表述（已引入 sanitize-html）」
+✅ 字体与图标 不含「“5 条 complete”式全链证明」
+✅ 字体与图标 不含「“全链已跑通”」
+✅ 字体与图标 不含「“改动量 0 行”」
+✅ 字体与图标 不含「“0 行改动”」
+✅ 字体与图标 不含「图标“10/10 全覆盖”式结论」
+✅ 字体与图标 不含「“零依赖”表述（已引入 sanitize-html）」
+✅ 夜间执行报告：缺少【整改后口径】标注
+✅ 夜间执行报告：未说明当时链路状态
+✅ 服务端 README：未列出离线全链命令
+✅ 服务端 README：未声明 poll 未用真实凭证验证
+✅ 接云清单：未说明凭证注入需要改代码
+✅ 接云清单：cron 段数口径未写明
+✅ 接云清单：未说明抓取代码已在仓库内
+✅ 设计 token：未拆分 placeholder token
+✅ 深浅色主题：未覆盖交互合成底
+✅ 视觉规范：任务动作未按状态区分
+✅ 走查清单：缺少未覆盖页清单
+✅ 字体与图标：图标覆盖结论未标明未核对范围
+✅ package.json 无“零依赖”表述
+✅ package.json 声明 sanitize-html
+✅ CLI 帮助列出 demo
+✅ CLI 实现了 demo
+✅ CLI 帮助列出 list
+✅ CLI 实现了 list
+✅ CLI 帮助列出 pipeline-test
+✅ CLI 实现了 pipeline-test
+✅ CLI 帮助列出 ingest-messages
+✅ CLI 实现了 ingest-messages
+✅ CLI 帮助列出 poll
+✅ CLI 实现了 poll
+
+自测全部通过
+   -> 通过
+
+== tests/failure.selftest.ts ==
+✅ 被平台拦截 → blocked_by_platform
+✅ 正文缺失 → content_missing
+✅ 404 归内容缺失（不可重试） → content_missing
+✅ 5xx 归网络（可重试） → network_timeout
+✅ 429 归网络（可重试） → network_timeout
+✅ 403 归平台拦截 → blocked_by_platform
+✅ 超时 → network_timeout
+✅ 不支持类型 → unsupported_type
+✅ 图片白名单拒绝 → blocked_address
+✅ 数据库错误不重试 → internal_error
+✅ JSON 错误不重试 → internal_error
+✅ 程序错误不重试 → internal_error
+✅ 未知错误不重试 → internal_error
+✅ 连接重置 → network_timeout
+✅ DNS 失败 → network_timeout
+✅ FetchError EBLOCKED → blocked_address
+✅ 响应超限 → response_too_large
+✅ FetchError 超时 → network_timeout
+✅ 协议不允许 → unsupported_type
+✅ FetchError 5xx → network_timeout
+✅ FetchError 4xx → content_missing
+✅ 网络超时可重试
+✅ 5xx 可重试
+✅ 数据库错误不可重试
+✅ SSRF 拒绝不可重试
+✅ 白名单拒绝不可重试
+✅ 超限响应不可重试
+✅ 网络类失败自动重试后成功
+✅ 数据库错误 只尝试 1 次（attempts=1）
+✅ SSRF 拒绝 只尝试 1 次（attempts=1）
+✅ 白名单拒绝 只尝试 1 次（attempts=1）
+✅ 正文缺失 只尝试 1 次（attempts=1）
+✅ 未知错误 只尝试 1 次（attempts=1）
+
+自测全部通过
+   -> 通过
+
+== tests/http-limit.selftest.ts ==
+✅ /with-length 超限被拒绝（ETOOLARGE）
+✅ /chunked 超限被拒绝（ETOOLARGE）
+✅ 正常响应可读取
+✅ 等于上限时放行
+
+自测全部通过
+   -> 通过
+
+== tests/message.selftest.ts ==
+✅ link 非法 URL
+✅ link 空 URL
+✅ link 缺 url 字段
+✅ link 缺 link 字段
+✅ link 未知 host
+✅ link 非 http 协议
+✅ link javascript: 协议
+✅ text 空内容
+✅ text 无链接
+✅ text 只有未知 host 链接
+✅ text 缺 text 字段
+✅ 未知 msgtype
+✅ 事件消息
+✅ 空对象
+✅ null 消息
+✅ 超长 URL
+✅ 正常 link 仍可解析
+✅ 多链接取第一个已知平台
+✅ 小红书短链识别
+✅ safeParseUrl 不抛异常：""
+✅ safeParseUrl 不抛异常："://"
+✅ safeParseUrl 不抛异常："http://"
+✅ safeParseUrl 不抛异常："https://"
+✅ safeParseUrl 不抛异常："http://[::1"
+✅ safeParseUrl 不抛异常："   "
+✅ safeParseUrl 不抛异常："http://a b"
+✅ platformOfHost 未知返回 unknown
+✅ platformOfHost 大小写无关
+✅ 超长文案不抛异常
+
+自测全部通过
+   -> 通过
+
+== tests/parse.selftest.ts ==
+条目  类型            来源平台        标题/内容
+  1  无法识别（msgtype=event）
+  2  无法识别（msgtype=event）
+  3  无法识别（msgtype=text）
+  4  link   wechat_mp    极简热榜回归初心，更简单更好用了
+  5  link   wechat_mp    全网最全Python经典代码实例合集，练完你就牛了！
+  6  link   wechat_mp    颠覆微信排版！我用代码给公众号换了张脸，HTML+JS直插，告别排版焦虑
+  7  link   wechat_mp    白送 4 核 8G，还不限时长我让它替我通宵干活
+  8  link   wechat_mp    空谷 Ondra 项目文档
+  9  link   wechat_mp    白送3个月Pro，再领10亿Token
+ 10  link   wechat_mp    美团LongCat-2.5模型也能免费用了！
+ 11  text   bilibili     【【26年11月云服务器选购攻略】5大厂商109款服务器性价比横向对比 不选贵的 只选对的-
+ 12  link   xiaohongshu  12.28基金从业 临时更改通知了
+ 13  text   xiaohongshu  独家福利｜178 拿下网盘 + B 站双月+1t ✔️百度网盘 ... https://xh
+ 14  text   douyin       莱昂纳少太有腔调了
+
+合计: 样本 14 条 | 识别 11 | 未识别 3
+   -> 通过
+
+== tests/pipeline.selftest.ts ==
+✅ 输入 3 条消息
+✅ 识别 2 条（事件消息跳过）
+✅ 新入库 2 条
+✅ 公众号 → complete
+✅ 抖音 → partial（阶段一只有元数据）
+✅ 图片 2 张全部下载
+✅ 无失败
+✅ 公众号正文非空
+✅ 公众号状态 complete 且无失败原因
+✅ 抖音状态 partial + content_missing
+✅ 抖音 note 写明阶段二
+✅ 记录里没有完整图片 URL
+✅ assets 是 assetId/provider/ext 结构
+✅ 快照 HTML 已落盘
+✅ 快照不含外链图片
+✅ 快照图片是本地引用
+✅ 快照带 CSP
+✅ 快照用 asset 引用而非完整 URL
+✅ 重跑不新增记录
+✅ 重跑全部跳过
+✅ 跟踪参数不产生新记录
+✅ 空正文 → failed
+✅ 空正文 failReason=content_missing
+✅ 空正文不得计入 complete
+✅ 缺 1 张图 → partial
+✅ 缺图 failReason=images_failed
+✅ 缺图 note 写明张数
+✅ 缺图仍保存正文
+✅ 统计缺图数
+✅ SSRF 拒绝 → failed
+✅ SSRF 拒绝 → blocked_address
+✅ SSRF 拒绝只尝试 1 次（calls=1）
+✅ 失败也保留记录
+✅ 网络超时会重试（calls=2）
+✅ 未知平台 → 跳过且不抓取
+✅ 同一图片 URL 只下载一次
+✅ data-src only 图片被下载
+✅ data-src only 快照里是本地引用
+✅ data-src only 记录为 complete
+
+自测全部通过
+   -> 通过
+
+== tests/sanitize.selftest.ts ==
+✅ 无引号 onerror → 无 on* 事件
+✅ 无引号 onerror → 无 onload
+✅ 无引号 onerror → 无 onmouseover
+✅ 无引号 onerror → 无 script
+✅ 无引号 onerror → 无 javascript:
+✅ 无引号 onerror → 无 srcdoc
+✅ 无引号 onerror → 无 iframe
+✅ 无引号 onerror → 无 svg
+✅ 无引号 onerror → 无 object/embed
+✅ 无引号 onerror → 无 data: 地址（非图片场景）
+✅ 无引号 onerror → 无 expression(
+✅ 单引号 onerror → 无 on* 事件
+✅ 单引号 onerror → 无 onload
+✅ 单引号 onerror → 无 onmouseover
+✅ 单引号 onerror → 无 script
+✅ 单引号 onerror → 无 javascript:
+✅ 单引号 onerror → 无 srcdoc
+✅ 单引号 onerror → 无 iframe
+✅ 单引号 onerror → 无 svg
+✅ 单引号 onerror → 无 object/embed
+✅ 单引号 onerror → 无 data: 地址（非图片场景）
+✅ 单引号 onerror → 无 expression(
+✅ 双引号 onerror → 无 on* 事件
+✅ 双引号 onerror → 无 onload
+✅ 双引号 onerror → 无 onmouseover
+✅ 双引号 onerror → 无 script
+✅ 双引号 onerror → 无 javascript:
+✅ 双引号 onerror → 无 srcdoc
+✅ 双引号 onerror → 无 iframe
+✅ 双引号 onerror → 无 svg
+✅ 双引号 onerror → 无 object/embed
+✅ 双引号 onerror → 无 data: 地址（非图片场景）
+✅ 双引号 onerror → 无 expression(
+✅ 大写事件名 → 无 on* 事件
+✅ 大写事件名 → 无 onload
+✅ 大写事件名 → 无 onmouseover
+✅ 大写事件名 → 无 script
+✅ 大写事件名 → 无 javascript:
+✅ 大写事件名 → 无 srcdoc
+✅ 大写事件名 → 无 iframe
+✅ 大写事件名 → 无 svg
+✅ 大写事件名 → 无 object/embed
+✅ 大写事件名 → 无 data: 地址（非图片场景）
+✅ 大写事件名 → 无 expression(
+✅ onload → 无 on* 事件
+✅ onload → 无 onload
+✅ onload → 无 onmouseover
+✅ onload → 无 script
+✅ onload → 无 javascript:
+✅ onload → 无 srcdoc
+✅ onload → 无 iframe
+✅ onload → 无 svg
+✅ onload → 无 object/embed
+✅ onload → 无 data: 地址（非图片场景）
+✅ onload → 无 expression(
+✅ onmouseover → 无 on* 事件
+✅ onmouseover → 无 onload
+✅ onmouseover → 无 onmouseover
+✅ onmouseover → 无 script
+✅ onmouseover → 无 javascript:
+✅ onmouseover → 无 srcdoc
+✅ onmouseover → 无 iframe
+✅ onmouseover → 无 svg
+✅ onmouseover → 无 object/embed
+✅ onmouseover → 无 data: 地址（非图片场景）
+✅ onmouseover → 无 expression(
+✅ script 标签 → 无 on* 事件
+✅ script 标签 → 无 onload
+✅ script 标签 → 无 onmouseover
+✅ script 标签 → 无 script
+✅ script 标签 → 无 javascript:
+✅ script 标签 → 无 srcdoc
+✅ script 标签 → 无 iframe
+✅ script 标签 → 无 svg
+✅ script 标签 → 无 object/embed
+✅ script 标签 → 无 data: 地址（非图片场景）
+✅ script 标签 → 无 expression(
+✅ script 无闭合 → 无 on* 事件
+✅ script 无闭合 → 无 onload
+✅ script 无闭合 → 无 onmouseover
+✅ script 无闭合 → 无 script
+✅ script 无闭合 → 无 javascript:
+✅ script 无闭合 → 无 srcdoc
+✅ script 无闭合 → 无 iframe
+✅ script 无闭合 → 无 svg
+✅ script 无闭合 → 无 object/embed
+✅ script 无闭合 → 无 data: 地址（非图片场景）
+✅ script 无闭合 → 无 expression(
+✅ iframe srcdoc → 无 on* 事件
+✅ iframe srcdoc → 无 onload
+✅ iframe srcdoc → 无 onmouseover
+✅ iframe srcdoc → 无 script
+✅ iframe srcdoc → 无 javascript:
+✅ iframe srcdoc → 无 srcdoc
+✅ iframe srcdoc → 无 iframe
+✅ iframe srcdoc → 无 svg
+✅ iframe srcdoc → 无 object/embed
+✅ iframe srcdoc → 无 data: 地址（非图片场景）
+✅ iframe srcdoc → 无 expression(
+✅ iframe 普通 → 无 on* 事件
+✅ iframe 普通 → 无 onload
+✅ iframe 普通 → 无 onmouseover
+✅ iframe 普通 → 无 script
+✅ iframe 普通 → 无 javascript:
+✅ iframe 普通 → 无 srcdoc
+✅ iframe 普通 → 无 iframe
+✅ iframe 普通 → 无 svg
+✅ iframe 普通 → 无 object/embed
+✅ iframe 普通 → 无 data: 地址（非图片场景）
+✅ iframe 普通 → 无 expression(
+✅ svg onload → 无 on* 事件
+✅ svg onload → 无 onload
+✅ svg onload → 无 onmouseover
+✅ svg onload → 无 script
+✅ svg onload → 无 javascript:
+✅ svg onload → 无 srcdoc
+✅ svg onload → 无 iframe
+✅ svg onload → 无 svg
+✅ svg onload → 无 object/embed
+✅ svg onload → 无 data: 地址（非图片场景）
+✅ svg onload → 无 expression(
+✅ math href → 无 on* 事件
+✅ math href → 无 onload
+✅ math href → 无 onmouseover
+✅ math href → 无 script
+✅ math href → 无 javascript:
+✅ math href → 无 srcdoc
+✅ math href → 无 iframe
+✅ math href → 无 svg
+✅ math href → 无 object/embed
+✅ math href → 无 data: 地址（非图片场景）
+✅ math href → 无 expression(
+✅ object → 无 on* 事件
+✅ object → 无 onload
+✅ object → 无 onmouseover
+✅ object → 无 script
+✅ object → 无 javascript:
+✅ object → 无 srcdoc
+✅ object → 无 iframe
+✅ object → 无 svg
+✅ object → 无 object/embed
+✅ object → 无 data: 地址（非图片场景）
+✅ object → 无 expression(
+✅ embed → 无 on* 事件
+✅ embed → 无 onload
+✅ embed → 无 onmouseover
+✅ embed → 无 script
+✅ embed → 无 javascript:
+✅ embed → 无 srcdoc
+✅ embed → 无 iframe
+✅ embed → 无 svg
+✅ embed → 无 object/embed
+✅ embed → 无 data: 地址（非图片场景）
+✅ embed → 无 expression(
+✅ meta refresh → 无 on* 事件
+✅ meta refresh → 无 onload
+✅ meta refresh → 无 onmouseover
+✅ meta refresh → 无 script
+✅ meta refresh → 无 javascript:
+✅ meta refresh → 无 srcdoc
+✅ meta refresh → 无 iframe
+✅ meta refresh → 无 svg
+✅ meta refresh → 无 object/embed
+✅ meta refresh → 无 data: 地址（非图片场景）
+✅ meta refresh → 无 expression(
+✅ base → 无 on* 事件
+✅ base → 无 onload
+✅ base → 无 onmouseover
+✅ base → 无 script
+✅ base → 无 javascript:
+✅ base → 无 srcdoc
+✅ base → 无 iframe
+✅ base → 无 svg
+✅ base → 无 object/embed
+✅ base → 无 data: 地址（非图片场景）
+✅ base → 无 expression(
+✅ link → 无 on* 事件
+✅ link → 无 onload
+✅ link → 无 onmouseover
+✅ link → 无 script
+✅ link → 无 javascript:
+✅ link → 无 srcdoc
+✅ link → 无 iframe
+✅ link → 无 svg
+✅ link → 无 object/embed
+✅ link → 无 data: 地址（非图片场景）
+✅ link → 无 expression(
+✅ javascript: 链接 → 无 on* 事件
+✅ javascript: 链接 → 无 onload
+✅ javascript: 链接 → 无 onmouseover
+✅ javascript: 链接 → 无 script
+✅ javascript: 链接 → 无 javascript:
+✅ javascript: 链接 → 无 srcdoc
+✅ javascript: 链接 → 无 iframe
+✅ javascript: 链接 → 无 svg
+✅ javascript: 链接 → 无 object/embed
+✅ javascript: 链接 → 无 data: 地址（非图片场景）
+✅ javascript: 链接 → 无 expression(
+✅ javascript: 大小写混写 → 无 on* 事件
+✅ javascript: 大小写混写 → 无 onload
+✅ javascript: 大小写混写 → 无 onmouseover
+✅ javascript: 大小写混写 → 无 script
+✅ javascript: 大小写混写 → 无 javascript:
+✅ javascript: 大小写混写 → 无 srcdoc
+✅ javascript: 大小写混写 → 无 iframe
+✅ javascript: 大小写混写 → 无 svg
+✅ javascript: 大小写混写 → 无 object/embed
+✅ javascript: 大小写混写 → 无 data: 地址（非图片场景）
+✅ javascript: 大小写混写 → 无 expression(
+✅ data: 脚本链接 → 无 on* 事件
+✅ data: 脚本链接 → 无 onload
+✅ data: 脚本链接 → 无 onmouseover
+✅ data: 脚本链接 → 无 script
+✅ data: 脚本链接 → 无 javascript:
+✅ data: 脚本链接 → 无 srcdoc
+✅ data: 脚本链接 → 无 iframe
+✅ data: 脚本链接 → 无 svg
+✅ data: 脚本链接 → 无 object/embed
+✅ data: 脚本链接 → 无 data: 地址（非图片场景）
+✅ data: 脚本链接 → 无 expression(
+✅ data:text/html 图片 → 无 on* 事件
+✅ data:text/html 图片 → 无 onload
+✅ data:text/html 图片 → 无 onmouseover
+✅ data:text/html 图片 → 无 script
+✅ data:text/html 图片 → 无 javascript:
+✅ data:text/html 图片 → 无 srcdoc
+✅ data:text/html 图片 → 无 iframe
+✅ data:text/html 图片 → 无 svg
+✅ data:text/html 图片 → 无 object/embed
+✅ data:text/html 图片 → 无 data: 地址（非图片场景）
+✅ data:text/html 图片 → 无 expression(
+✅ formaction → 无 on* 事件
+✅ formaction → 无 onload
+✅ formaction → 无 onmouseover
+✅ formaction → 无 script
+✅ formaction → 无 javascript:
+✅ formaction → 无 srcdoc
+✅ formaction → 无 iframe
+✅ formaction → 无 svg
+✅ formaction → 无 object/embed
+✅ formaction → 无 data: 地址（非图片场景）
+✅ formaction → 无 expression(
+✅ style 表达式 → 无 on* 事件
+✅ style 表达式 → 无 onload
+✅ style 表达式 → 无 onmouseover
+✅ style 表达式 → 无 script
+✅ style 表达式 → 无 javascript:
+✅ style 表达式 → 无 srcdoc
+✅ style 表达式 → 无 iframe
+✅ style 表达式 → 无 svg
+✅ style 表达式 → 无 object/embed
+✅ style 表达式 → 无 data: 地址（非图片场景）
+✅ style 表达式 → 无 expression(
+✅ style 外链 → 无 on* 事件
+✅ style 外链 → 无 onload
+✅ style 外链 → 无 onmouseover
+✅ style 外链 → 无 script
+✅ style 外链 → 无 javascript:
+✅ style 外链 → 无 srcdoc
+✅ style 外链 → 无 iframe
+✅ style 外链 → 无 svg
+✅ style 外链 → 无 object/embed
+✅ style 外链 → 无 data: 地址（非图片场景）
+✅ style 外链 → 无 expression(
+✅ 隐藏样式 → 无 on* 事件
+✅ 隐藏样式 → 无 onload
+✅ 隐藏样式 → 无 onmouseover
+✅ 隐藏样式 → 无 script
+✅ 隐藏样式 → 无 javascript:
+✅ 隐藏样式 → 无 srcdoc
+✅ 隐藏样式 → 无 iframe
+✅ 隐藏样式 → 无 svg
+✅ 隐藏样式 → 无 object/embed
+✅ 隐藏样式 → 无 data: 地址（非图片场景）
+✅ 隐藏样式 → 无 expression(
+✅ 隐藏样式被清除
+✅ 正常样式保留
+✅ data-src only 补成 src
+✅ data-src 属性不残留
+✅ 保留正常结构 <h2>
+✅ 保留正常结构 <p>
+✅ 保留正常结构 <strong>
+✅ 保留正常结构 <table>
+✅ 保留正常结构 <td
+✅ 保留正常结构 <img
+✅ 保留正常结构 https://mp.weixin.qq.com/s?x=1
+✅ extractJsContent 配对抽取
+✅ htmlToText 实体还原
+✅ 清洗不吞正文
+✅ 整页加固移除 <script
+✅ 整页加固移除 <iframe
+✅ 整页加固移除 <base
+✅ 整页加固移除 <link
+✅ 整页加固移除 onclick
+✅ 整页加固移除 onerror
+✅ 整页加固移除 javascript:
+✅ 整页加固移除 evil.example
+✅ 整页加固保留内嵌图片
+✅ 整页加固保留样式
+✅ 整页加固注入 CSP
+✅ 整页加固保留正文
+
+自测全部通过
+   -> 通过
+
+== tests/ssrf.selftest.ts ==
+✅ 拒绝 127.0.0.1
+✅ 拒绝 127.1.2.3
+✅ 拒绝 10.0.0.1
+✅ 拒绝 172.16.0.1
+✅ 拒绝 172.31.255.255
+✅ 拒绝 192.168.1.1
+✅ 拒绝 169.254.169.254
+✅ 拒绝 100.64.0.1
+✅ 拒绝 0.0.0.0
+✅ 拒绝 198.18.0.1
+✅ 拒绝 224.0.0.1
+✅ 拒绝 255.255.255.255
+✅ 拒绝 ::1
+✅ 拒绝 ::
+✅ 拒绝 fe80::1
+✅ 拒绝 fe90::1
+✅ 拒绝 febf::1
+✅ 拒绝 fc00::1
+✅ 拒绝 fd12:3456::1
+✅ 拒绝 2001:db8::1
+✅ 拒绝 2001::1
+✅ 拒绝 2002::1
+✅ 拒绝 ff02::1
+✅ 拒绝 64:ff9b::7f00:1
+✅ 拒绝 ::ffff:127.0.0.1
+✅ 拒绝 ::ffff:7f00:1
+✅ 拒绝 ::ffff:10.0.0.1
+✅ 拒绝 ::ffff:169.254.169.254
+✅ 拒绝 not-an-ip
+✅ 拒绝 (空串)
+✅ 放行 1.1.1.1
+✅ 放行 8.8.8.8
+✅ 放行 223.5.5.5
+✅ 放行 101.32.0.1
+✅ 放行 2001:4860:4860::8888
+✅ 放行 2400:3200::1
+✅ 放行 ::ffff:8.8.8.8
+✅ parseTarget 拒绝 http://127.0.0.1/
+✅ parseTarget 拒绝 http://[::1]/
+✅ parseTarget 拒绝 http://[fe90::1]/
+✅ parseTarget 拒绝 http://[2001:db8::1]/
+✅ parseTarget 拒绝 http://[::ffff:127.0.0.1]/
+✅ parseTarget 拒绝 http://localhost/
+✅ parseTarget 拒绝 http://foo.localhost/
+✅ parseTarget 拒绝 http://169.254.169.254/latest/meta-data/
+✅ parseTarget 拒绝 http://10.0.0.1:8080/
+✅ parseTarget 拒绝 ftp://example.com/
+✅ parseTarget 拒绝 file:///etc/passwd
+✅ parseTarget 拒绝 http://user:pass@example.com/
+✅ parseTarget 拒绝 not-a-url
+✅ parseTarget 放行 https://mp.weixin.qq.com/s?__biz=x
+✅ parseTarget 放行 https://example.com/a/b?c=1
+
+自测全部通过
+   -> 通过
+
+== tests/status.selftest.ts ==
+✅ 空正文 → failed/content_missing
+✅ 空白正文（trim 后 0）→ failed
+✅ 负数长度 → failed
+✅ NaN 长度 → failed
+✅ 正文 + 缺图 → partial/images_failed
+✅ 正文 + 全部图片失败 → partial
+✅ 正文 + 图片全成功 → complete
+✅ 正文 + 无图 → complete
+✅ 元数据型来源 → partial/content_missing
+✅ 资源落盘失败 → partial/internal_error
+✅ 致命错误 → failed，并保留原因
+✅ 空正文 + 图 0/0 + metadata=false 不得 complete
+✅ 空正文 + 图 0/0 + metadata=true 不得 complete
+✅ 空正文 + 图 0/1 + metadata=false 不得 complete
+✅ 空正文 + 图 0/1 + metadata=true 不得 complete
+✅ 空正文 + 图 0/5 + metadata=false 不得 complete
+✅ 空正文 + 图 0/5 + metadata=true 不得 complete
+✅ 空正文 + 图 1/0 + metadata=false 不得 complete
+✅ 空正文 + 图 1/0 + metadata=true 不得 complete
+✅ 空正文 + 图 1/1 + metadata=false 不得 complete
+✅ 空正文 + 图 1/1 + metadata=true 不得 complete
+✅ 空正文 + 图 1/5 + metadata=false 不得 complete
+✅ 空正文 + 图 1/5 + metadata=true 不得 complete
+✅ 空正文 + 图 5/0 + metadata=false 不得 complete
+✅ 空正文 + 图 5/0 + metadata=true 不得 complete
+✅ 空正文 + 图 5/1 + metadata=false 不得 complete
+✅ 空正文 + 图 5/1 + metadata=true 不得 complete
+✅ 空正文 + 图 5/5 + metadata=false 不得 complete
+✅ 空正文 + 图 5/5 + metadata=true 不得 complete
+✅ 失败原因均有中文说明
+
+自测全部通过
+   -> 通过
+
+== tests/store.selftest.ts ==
+✅ listClips 返回 2 条（幂等去重生效）
+✅ getClip(hash-1) 标题正确
+✅ getClip(hash-1) assets 是编号引用（G1）
+✅ getClip(hash-1) 正文正确
+✅ getClip(hash-2) 存在且无图片
+✅ 资源落盘与读回
+✅ 拒绝非法 assetId：../evil
+✅ 拒绝非法 assetId：abc
+✅ 拒绝非法 assetId：ABCDEF1234567890
+✅ 拒绝非法 assetId：abcdef12345678901234
+✅ 拒绝非法扩展名：../x
+✅ 拒绝非法扩展名：p
+✅ 拒绝非法扩展名：verylongext
+✅ 拒绝非法扩展名：PNG
+✅ 批量 300 条全部读回
+✅ 清单按 saved_at 升序
+✅ 清单读取耗时可接受（3ms）
+
+自测全部通过
+   -> 通过
+
+== tests/wecom.selftest.ts ==
+✅ 第一次拿到消息
+✅ 第二次拿到消息
+✅ token 只请求一次（缓存生效）
+✅ token 请求带 corpId/appSecret
+✅ sync_msg 用 POST
+✅ sync_msg 带 access_token
+✅ limit 传进请求体
+✅ errcode 非 0 抛 WecomError
+✅ 非 JSON 抛出明确错误
+✅ HTTP 500 抛出明确错误
+✅ 凭证缺失抛错
+✅ 游标可写可读
+✅ 游标文件已落盘
+✅ 损坏游标返回 null
+✅ 非法游标读回时被清空
+✅ 非法游标值写入被拒绝
+✅ 游标文件仍在固定路径（未被穿越）
+
+自测全部通过
+   -> 通过
+
+========== 汇总 ==========
+自测脚本: 13 | 失败: 0
+全部通过 ✅

@@ -1,0 +1,19 @@
+bijiapp 服务端（阶段一 · 本地原型）
+
+用法: node src/cli.ts <命令>
+
+命令:
+  --help               显示本帮助
+  demo                 导入 server/out/offline_*.html → 幂等落库
+                       （只覆盖“离线导入”子链路，不等于消息全链）
+  list                 生成剪藏清单页（server/out/剪藏清单.html）
+  pipeline-test        用 mock 依赖离线跑完整链（消息→抓取→图片→状态→落库，不联网）
+  ingest-messages      用 samples/messages.json 跑完整链（真实抓取，需要联网）
+  poll [--limit N]     拉取微信客服增量消息并入库（需要 KF_SECRETS_FILE）
+
+说明:
+  - Node >= 24 原生直跑 .ts（type stripping），无需构建
+  - 依赖：仅 sanitize-html（HTML 白名单清洗）；其余全用 Node 内置模块
+  - 凭证从环境变量 KF_SECRETS_FILE 指向的仓库外文件读取，代码与仓库不落值
+  - 数据落 server/data/，输出落 server/out/（均已 gitignore）
+

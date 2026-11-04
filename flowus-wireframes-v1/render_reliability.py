@@ -34,7 +34,7 @@ def task_failure():
         "09", 1250, version="V0.3",
     )
     c.shell("任务与同步")
-    c.rect((50, 869, 260, 904), "#E9ECE7", radius=4)
+    c.rect((50, 869, 260, 904), "#E6EBF6", radius=4)
     c.icon("download", 62, 877, INK)
     c.text(89, 877, "任务与同步", 14, INK, True)
     c.text(307, 216, "任务与同步", 31, INK, True)

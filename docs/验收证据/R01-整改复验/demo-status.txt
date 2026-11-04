@@ -1,0 +1,13 @@
+status     textLen  fail_reason        title
+complete       516  -                 极简热榜回归初心，更简单更好用了
+failed           0  content_missing   全网最全Python经典代码实例合集，练完你就牛了！
+complete     18656  -                 颠覆微信排版！我用代码给公众号换了张脸，HTML+JS直插，告别排版焦虑
+complete      2165  -                 白送 4 核 8G，还不限时长我让它替我通宵干活
+complete     22047  -                 空谷 Ondra 项目文档
+
+[快照加固抽查]
+ - 极简热榜回归初心，更简单更好用了       CSP: true  script: false  内嵌图: 0
+ - 全网最全Python经典代码实例合集，练   CSP: true  script: false  内嵌图: 18
+ - 颠覆微信排版！我用代码给公众号换了张脸，   CSP: true  script: false  内嵌图: 6
+ - 白送 4 核 8G，还不限时长我让它替我   CSP: true  script: false  内嵌图: 3
+ - 空谷 Ondra 项目文档          CSP: true  script: false  内嵌图: 0
