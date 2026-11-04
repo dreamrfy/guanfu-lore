@@ -49,10 +49,22 @@ const xssTitle = clip({
   assets: [{ assetId: "9999888877776666", provider: "local", ext: "html" }],
 });
 
-const html = renderListHtml([withSnapshot, noSnapshot, xssTitle]);
+const imgFirst = clip({
+  id: "wx_5555444433332222",
+  title: "图片排在前面",
+  status: "partial",
+  failReason: "images_failed",
+  assets: [
+    { assetId: "5555444433332222", provider: "local", ext: "png" },
+    { assetId: "aaaabbbbccccdddd", provider: "local", ext: "html" },
+  ],
+});
+
+const html = renderListHtml([withSnapshot, noSnapshot, xssTitle, imgFirst]);
 
 check("有快照时生成链接", html.includes('href="') && html.includes("aaaabbbbccccdddd.html"), html.slice(0, 200));
 check("无快照显示“无快照”", html.includes("无快照"));
+check("T-07：图片排在前面时仍链接 HTML 快照", html.includes("aaaabbbbccccdddd.html") && !html.includes('href="5555444433332222.png"'), "链到了图片资源");
 // 失败行必须没有链接：按行切开检查
 const rows = html.split("<tr>").filter((r) => r.includes("抓取失败"));
 check("失败行只有一行", rows.length === 1, String(rows.length));
@@ -60,7 +72,7 @@ check("失败行不含 href", rows.length === 1 && !rows[0]!.includes("href="), 
 check("失败行显示失败原因", html.includes("被平台风控拦截"), "缺少原因文案");
 check("标题被 HTML 转义（无 XSS）", !html.includes("<script>alert(1)</script>"), "标题未转义");
 check("状态列渲染", html.includes("complete") && html.includes("failed") && html.includes("partial"));
-check("清单条数写入标题", html.includes("剪藏清单（3 条）"), "条数不对");
+check("清单条数写入标题", html.includes("剪藏清单（4 条）"), "条数不对");
 
 console.log(failed === 0 ? "\n自测全部通过" : `\n自测失败 ${failed} 项`);
 process.exitCode = failed === 0 ? 0 : 1;

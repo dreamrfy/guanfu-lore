@@ -8,12 +8,13 @@
 // 在 pipeline/run.ts（runPipeline）。不要把 demo 的执行结果当成全链验证。
 import fs from "node:fs";
 import path from "node:path";
-import { OUT_DIR } from "./config.ts";
+import { OUT_DIR, ASSETS_DIR } from "./config.ts";
 import { clipIdFor } from "./store/clipId.ts";
 import { saveClip, existsClip, writeAssetFile, getClip } from "./store/localStore.ts";
 import type { Clip } from "./store/types.ts";
 import { canonicalWechatArticleUrl } from "./fetch/article.ts";
-import { extractJsContent, unescapeEntities, htmlToText, sanitizeContent, hardenOfflineHtml, imgUrlOf } from "./fetch/htmlSanitize.ts";
+import { extractJsContent, unescapeEntities, htmlToText, sanitizeContent } from "./fetch/htmlSanitize.ts";
+import { auditSnapshotImages, hardenOfflineHtml } from "./fetch/snapshot.ts";
 import { deriveStatus } from "./pipeline/status.ts";
 
 export interface DemoStats {
@@ -42,44 +43,6 @@ function metaTitle(html: string): string {
 function metaSourceUrl(html: string): string | null {
   const m = html.match(/原文：<a href="([^"]+)"/);
   return m ? m[1]! : null;
-}
-
-/** 离线快照里“算成功”的图片来源：位图 data URI，或同目录相对引用 */
-function classifyOfflineImageSrc(src: string): "local" | "external" | "invalid" {
-  if (!src) return "invalid";
-  if (/^data:/i.test(src)) {
-    // 只有位图 data URI 算本地；SVG 等带脚本语义的一律不算
-    return /^data:image\/(?:png|jpe?g|gif|webp)[;,]?/i.test(src) ? "local" : "invalid";
-  }
-  if (/^[a-z][a-z0-9+.-]*:/i.test(src) || src.startsWith("//")) return "external";
-  if (src.startsWith("/") || src.startsWith("\\") || src.includes("..")) return "invalid";
-  return /\.(?:png|jpe?g|gif|webp)(?:\?.*)?$/i.test(src) ? "local" : "invalid";
-}
-
-/**
- * 统计**实际落盘快照**里的图片（第二轮审计 N-01）：
- * - 只有「已本地化」的图片才算成功（相对引用 / 位图 data URI）
- * - http(s) 外链一律计入失败：离线快照 CSP 禁止外链图，断网根本读不到
- * - 统计对象是整页快照，不是 js_content——否则页面其他区域的外链图会漏判
- */
-function imageStats(snapshotHtml: string): { total: number; failed: number; external: number; invalid: number } {
-  const tags = snapshotHtml.match(/<img\b[^>]*>/gi) ?? [];
-  let failed = 0;
-  let external = 0;
-  let invalid = 0;
-  for (const tag of tags) {
-    const picked = imgUrlOf(tag);
-    const src = picked.from === "none" ? "" : picked.url;
-    const kind = classifyOfflineImageSrc(src);
-    if (kind === "external") {
-      external += 1;
-      failed += 1;
-    } else if (kind === "invalid") {
-      invalid += 1;
-      failed += 1;
-    }
-  }
-  return { total: tags.length, failed, external, invalid };
 }
 
 function listOfflineFiles(): string[] {
@@ -111,11 +74,11 @@ export function ingestOfflineHtml(offlinePath: string): { saved: boolean; clip: 
   const content = sanitizeContent(rawContent, { allowDataImages: true });
   const text = htmlToText(content);
 
-  // 落盘用的整页快照：先去可执行内容并注入项目 CSP（N-02/N-06），
-  // 再用它统计图片状态——状态必须描述“真正存下来的东西”（N-01）
+  // 1) 审计原始快照：统计整页所有图片来源（img.src/srcset、source、CSS background），
+  //    相对引用必须能在资源目录里找到文件（第三轮 T-01）
+  const audit = auditSnapshotImages(html, ASSETS_DIR);
+  // 2) 生成落盘快照：清掉外链/脚本型资源引用，并注入项目自己的 CSP（T-02/T-05）
   const snapshotHtml = hardenOfflineHtml(html);
-  const { total: imagesTotal, failed: imagesFailed, external: imagesExternal, invalid: imagesInvalid } =
-    imageStats(snapshotHtml);
 
   // 离线 HTML 作为“完整快照”资源落盘（G1：AssetRef 只存编号）
   const assetId = id.replace(/^wx_/, "");
@@ -123,9 +86,14 @@ export function ingestOfflineHtml(offlinePath: string): { saved: boolean; clip: 
 
   const { status, failReason } = deriveStatus({
     textLength: text.length,
-    imagesTotal,
-    imagesFailed,
+    imagesTotal: audit.total,
+    imagesFailed: audit.failed,
   });
+
+  const imageNotes: string[] = [];
+  if (audit.external > 0) imageNotes.push("外链图 " + audit.external + " 张未本地化（已从快照移除）");
+  if (audit.missing > 0) imageNotes.push("本地图片缺失 " + audit.missing + " 张");
+  if (audit.invalid > 0) imageNotes.push("无效图片引用 " + audit.invalid + " 处");
 
   const clip: Clip = {
     id,
@@ -145,11 +113,9 @@ export function ingestOfflineHtml(offlinePath: string): { saved: boolean; clip: 
     note:
       status === "failed"
         ? "正文为空，未生成完整快照"
-        : imagesExternal > 0
-          ? "外链图 " + imagesExternal + " 张未本地化（离线不可读），需重新抓取"
-          : imagesInvalid > 0
-            ? "图片引用异常 " + imagesInvalid + " 张（无有效本地资源）"
-            : undefined,
+        : imageNotes.length > 0
+          ? imageNotes.join("；")
+          : undefined,
   };
   saveClip(clip);
   return { saved: true, clip };

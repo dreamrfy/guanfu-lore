@@ -41,7 +41,7 @@ function printHelp(): void {
 
 说明:
   - Node >= 24 原生直跑 .ts（type stripping），无需构建
-  - 依赖：仅 sanitize-html（HTML 白名单清洗）；其余全用 Node 内置模块
+  - 依赖：sanitize-html + htmlparser2/domutils（清洗与 DOM 加固）；其余全用 Node 内置模块
   - 凭证从环境变量 KF_SECRETS_FILE 指向的仓库外文件读取，代码与仓库不落值
   - 数据落 server/data/，输出落 server/out/（均已 gitignore）
 `);
@@ -56,16 +56,16 @@ export function renderListHtml(clips: Clip[]): string {
   const rows = clips
     .map((c) => {
       const reason = c.failReason ? FAIL_REASON_LABELS[c.failReason] : "";
-      const first = c.assets[0];
-      // N-14：没有快照资源时不要生成空链接
-      const snapshotCell = first
+      // N-14 / T-07：只链接真正的 HTML 快照资源；没有快照就直说
+      const snapshot = c.assets.find((a) => a.ext === "html");
+      const snapshotCell = snapshot
         ? '<a href="' +
           escapeHtml(
             ASSET_HREF_BASE +
               "/" +
-              encodeURIComponent(first.assetId) +
+              encodeURIComponent(snapshot.assetId) +
               "." +
-              escapeHtml(first.ext)
+              escapeHtml(snapshot.ext)
           ) +
           '">打开快照</a>'
         : "无快照";

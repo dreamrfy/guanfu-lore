@@ -36,7 +36,16 @@ export interface MockOptions {
   failImages?: string[];
   /** 抓取正文时抛错（模拟风控/网络） */
   failFetch?: Error;
+  /** B站元数据获取抛错（模拟 API 失败） */
+  failBilibili?: Error;
 }
+
+/** 模拟的 B站短链消息（T-03：用于验证元数据是否真的接入流水线） */
+export const MOCK_BILIBILI_MESSAGE: Record<string, unknown> = {
+  msgid: "mock-bili",
+  msgtype: "link",
+  link: { url: "https://b23.tv/mockBv", title: "B站短链卡片" },
+};
 
 export interface MockHandle {
   deps: PipelineDeps;
@@ -85,6 +94,19 @@ export function createMockDeps(opts: MockOptions = {}): MockHandle {
         assetRef: { assetId, provider: "local", ext: "png" },
         bytes: 8,
         outPath: assetId + ".png",
+      };
+    },
+    async fetchBilibili(url: string): Promise<NormalizedItem> {
+      if (opts.failBilibili) throw opts.failBilibili;
+      return {
+        source: "bilibili",
+        sourceUrl: url,
+        title: "B站 Mock 标题",
+        desc: "B站 Mock 简介",
+        coverUrl: "https://i1.hdslb.com/bfs/archive/mock.jpg",
+        author: "MockUP",
+        capability: "metadata-only",
+        note: "UP主 MockUP · 时长 60 秒（公开 API）",
       };
     },
     saveClip(clip: Clip) {

@@ -5,6 +5,7 @@
 import { safeGet, DEFAULT_MAX_BODY_BYTES } from "../fetch/http.ts";
 import { ALLOWED_ARTICLE_HOSTS, parseArticleHtml } from "../fetch/article.ts";
 import { downloadImage } from "../fetch/images.ts";
+import { fetchBilibiliFromShortLink } from "../fetch/bilibili.ts";
 import { existsClip, saveClip, writeAssetFile } from "../store/localStore.ts";
 import type { PipelineDeps } from "./run.ts";
 
@@ -22,6 +23,7 @@ export function createLocalDeps(): PipelineDeps {
   return {
     fetchArticle: fetchWechatArticle,
     downloadImage,
+    fetchBilibili: fetchBilibiliFromShortLink,
     saveClip,
     existsClip,
     writeAssetFile,

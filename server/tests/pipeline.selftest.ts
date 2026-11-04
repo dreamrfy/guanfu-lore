@@ -2,7 +2,7 @@
 // 覆盖：完整成功、幂等重跑、空正文、缺图、抓取失败、未知消息、资源只存编号。
 // 用法: node tests/pipeline.selftest.ts
 import { runPipeline } from "../src/pipeline/run.ts";
-import { createMockDeps, MOCK_MESSAGES, MOCK_IMAGE_URLS, MOCK_ARTICLE_URL } from "../src/pipeline/mock.ts";
+import { createMockDeps, MOCK_MESSAGES, MOCK_IMAGE_URLS, MOCK_ARTICLE_URL, MOCK_BILIBILI_MESSAGE } from "../src/pipeline/mock.ts";
 import { FetchError } from "../src/fetch/http.ts";
 import { clipIdFor } from "../src/store/clipId.ts";
 
@@ -44,7 +44,18 @@ function check(name: string, ok: boolean, detail = ""): void {
   check("快照不含外链图片", !/src="https?:\/\//.test(html), html.slice(0, 300));
   check("快照图片是本地引用", /src="img\d{9}\.png"/.test(html), html.slice(0, 300));
   check("快照带 CSP", /Content-Security-Policy/.test(html), "缺少 CSP meta");
-  check("快照用 asset 引用而非完整 URL", /img\d{9}\.png/.test(JSON.stringify(wechat.assets)) || wechat.assets.length === 3);
+  // 只允许「本地图片编号 + html 快照编号」这类引用；出现 URL 一律算失败
+  const assetJson = JSON.stringify(wechat.assets);
+  check(
+    "assets 全是编号引用（不含 URL）",
+    !/https?:/.test(assetJson) && wechat.assets.some((a) => a.ext === "html") && wechat.assets.length >= 2,
+    assetJson
+  );
+  check(
+    "快照正文里图片是本地文件名引用",
+    /src="img\d{9}\.png"/.test(mock.assets.get(wechat.assets[0]!.assetId + ".html")?.toString("utf8") ?? ""),
+    "快照未使用本地图片引用"
+  );
 }
 
 // ---- 2. 幂等：同一批消息重跑不新增 ----
@@ -197,8 +208,6 @@ function check(name: string, ok: boolean, detail = ""): void {
   check("幂等 id 仍按 canonical 计算", clip.id === clipIdFor(clip.canonicalUrl!), clip.id);
 }
 
-console.log(failed === 0 ? "\n自测全部通过" : `\n自测失败 ${failed} 项`);
-
 // ---- 10. data-src only 的懒加载图：清洗后补 src，流水线能识别并本地化 ----
 {
   const mock = createMockDeps();
@@ -222,6 +231,38 @@ console.log(failed === 0 ? "\n自测全部通过" : `\n自测失败 ${failed} �
   check("data-src only 图片被下载", stats.imagesDownloaded === 1, JSON.stringify(stats));
   check("data-src only 快照里是本地引用", !/src="https?:\/\/mmbiz/.test(html) && /src="img\d{9}\.png"/.test(html), html.slice(0, 300));
   check("data-src only 记录为 complete", clip.status === "complete", `${clip.status}/${clip.failReason}`);
+}
+
+// ---- 12. B站元数据接入（T-03） ----
+{
+  const mock = createMockDeps();
+  const stats = await runPipeline([MOCK_BILIBILI_MESSAGE], mock.deps);
+  const clip = [...mock.store.values()][0]!;
+  check("B站条目落库", clip.source === "bilibili" && stats.saved === 1, JSON.stringify(stats));
+  check("B站标题来自 API", clip.title === "B站 Mock 标题", clip.title);
+  check("B站作者来自 API", clip.author === "MockUP", clip.author);
+  check("B站正文（简介）来自 API", clip.text === "B站 Mock 简介", clip.text.slice(0, 40));
+  check("B站 note 写明公开 API", (clip.note ?? "").includes("公开 API"), String(clip.note));
+  check("B站仍是 partial（阶段一不抓正文）", clip.status === "partial", clip.status);
+}
+
+{
+  // 未注入 fetchBilibili：不得假装已接入
+  const mock = createMockDeps();
+  const { fetchBilibili: _omit, ...depsWithoutBili } = mock.deps;
+  await runPipeline([MOCK_BILIBILI_MESSAGE], depsWithoutBili);
+  const clip = [...mock.store.values()][0]!;
+  check("未注入时 note 标明未接入", (clip.note ?? "").includes("未接入"), String(clip.note));
+}
+
+{
+  // API 失败：保留文案并记录失败原因，不中断整轮
+  const mock = createMockDeps({ failBilibili: new Error("B站 API 返回 code=-404") });
+  const stats = await runPipeline([MOCK_BILIBILI_MESSAGE], mock.deps);
+  const clip = [...mock.store.values()][0]!;
+  check("B站 API 失败仍落库", !!clip && clip.source === "bilibili");
+  check("B站 API 失败写入 note", (clip.note ?? "").includes("获取失败"), String(clip.note));
+  check("B站 API 失败记录到 failures", stats.failures.some((f) => f.sourceUrl.includes("b23.tv")), JSON.stringify(stats.failures));
 }
 
 console.log(failed === 0 ? "\n自测全部通过" : `\n自测失败 ${failed} 项`);

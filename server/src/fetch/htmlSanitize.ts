@@ -251,46 +251,6 @@ export function htmlToText(html: string): string {
   return unescapeEntities(text).replace(/\s+/g, " ").trim();
 }
 
-const OFFLINE_CSP =
-  "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'";
-
-/**
- * 离线快照整页加固（用于导入外部/历史 HTML）。
- *
- * 与 sanitizeContent 的分工：正文用白名单重建；而整页快照要保留它自己的布局样式，
- * 所以这里做“去危险内容 + 注入 CSP”的定向加固：
- * - 删除 script / iframe / object / embed / applet / frame / base / link / meta refresh
- * - 删除所有 on* 事件属性、srcdoc、formaction、javascript: 链接
- * - 若没有 CSP meta，则注入（img 允许 data:，因为离线图片是内嵌的）
- */
-export function hardenOfflineHtml(html: string): string {
-  let h = html
-    .replace(/<script\b[\s\S]*?<\/script\s*>/gi, "")
-    .replace(/<script\b[^>]*\/?>/gi, "")
-    .replace(/<iframe\b[\s\S]*?<\/iframe\s*>/gi, "")
-    .replace(/<iframe\b[^>]*\/?>/gi, "")
-    .replace(/<(object|embed|applet|frame|frameset|base)\b[^>]*>/gi, "")
-    .replace(/<link\b[^>]*>/gi, "")
-    .replace(/<meta\b[^>]*http-equiv\s*=\s*["']?refresh["']?[^>]*>/gi, "");
-
-  // 事件属性（三种引号形态）与危险属性
-  h = h
-    .replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "")
-    .replace(/\s(?:srcdoc|formaction)\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "")
-    .replace(/(href|src)\s*=\s*("\s*javascript:[^"]*"|'\s*javascript:[^']*'|javascript:[^\s>]*)/gi, "$1=\"#\"");
-  // 只保留位图 data URI（data:image/svg+xml 等一律移除，N-06）
-  h = stripNonRasterDataSrc(h);
-
-  // 先删掉输入自带的全部 CSP（无论属性顺序），再由本项目无条件注入。
-  // 不允许“已有 CSP 就跳过”——否则攻击者可用 script-src * 覆盖兜底。
-  h = h.replace(/<meta\b[^>]*http-equiv\s*=\s*["']?content-security-policy[^>]*>/gi, "");
-  h = h.replace(/<meta\b[^>]*content\s*=\s*["'][^"']*["'][^>]*http-equiv\s*=\s*["']?content-security-policy[^>]*>/gi, "");
-
-  const meta = '<meta http-equiv="Content-Security-Policy" content="' + OFFLINE_CSP + '">';
-  if (/<head\b[^>]*>/i.test(h)) {
-    h = h.replace(/<head\b[^>]*>/i, (m) => m + "\n" + meta);
-  } else {
-    h = meta + "\n" + h;
-  }
-  return h;
-}
+// 整页快照的审计与加固在 fetch/snapshot.ts（基于 DOM，能正确处理 srcset / <source> / CSS 背景图 / 含 > 的属性值）。
+// 这里保留同名导出，避免调用方改 import 路径。
+export { hardenOfflineHtml, auditSnapshotImages, classifyResource, OFFLINE_CSP } from "./snapshot.ts";

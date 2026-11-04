@@ -23,6 +23,11 @@ export interface PipelineDeps {
   existsClip: (id: string) => boolean;
   /** 资源落盘（快照 HTML / 图片统一走存储层） */
   writeAssetFile: (assetId: string, ext: string, body: Buffer) => string;
+  /**
+   * B站元数据（公开 API，T-03）：把 b23.tv 短链解析成标题/简介/UP主/封面。
+   * 不注入时，bilibili 条目只保留转发文案，并在 note 里标明“未接入”。
+   */
+  fetchBilibili?: (url: string) => Promise<NormalizedItem>;
   /** 时钟（测试注入固定时间） */
   now?: () => Date;
   /** 重试策略（默认只重试网络类错误） */
@@ -110,6 +115,26 @@ export async function runPipeline(
 
     // ---- 元数据型来源（B站/小红书/抖音阶段一）：只存标题/描述/封面 ----
     if (item.capability === "metadata-only" || item.source !== "wechat_mp") {
+      // B站：接入公开 API 元数据（T-03）。失败只降级 note，不影响记录落库。
+      if (item.source === "bilibili") {
+        if (!deps.fetchBilibili) {
+          item.note = "B站元数据模块未接入（当前只保存转发文案）" + (item.note ? "；" + item.note : "");
+        } else {
+          try {
+            const meta = await deps.fetchBilibili(item.sourceUrl);
+            item.title = meta.title || item.title;
+            item.desc = meta.desc || item.desc;
+            item.author = meta.author || item.author;
+            item.coverUrl = meta.coverUrl || item.coverUrl;
+            item.note = meta.note ?? item.note;
+          } catch (e) {
+            const reason = classifyFailure(e);
+            stats.failures.push({ sourceUrl: item.sourceUrl, reason, message: errorMessage(e) });
+            item.note = "B站元数据获取失败：" + errorMessage(e);
+          }
+        }
+      }
+
       const id = clipIdFor(item.sourceUrl);
       if (deps.existsClip(id)) {
         stats.skippedExisting += 1;
