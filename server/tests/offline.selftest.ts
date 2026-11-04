@@ -115,6 +115,18 @@ const FIXTURES: Array<{ name: string; html: string }> = [
     name: "offline_2012.html",
     html: page({ title: "CSP 值里带 >", mid: 2012, body: TEXT, csp: "default-src * > script-src *" }),
   },
+  {
+    name: "offline_2013.html",
+    html: page({ title: "video poster 外链", mid: 2013, body: TEXT + '<video poster="https://evil.example/p.png"></video>' }),
+  },
+  {
+    name: "offline_2014.html",
+    html: page({
+      title: "input image 外链",
+      mid: 2014,
+      body: TEXT + '<input type="image" src="https://evil.example/i.png" alt="提交">',
+    }),
+  },
 ];
 
 fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -200,6 +212,17 @@ check("快照不保留 data-src", !/data-src=/.test(snap2009), snap2009.slice(0,
 const snap2011 = snapshotOf(r11.assets[0]!.assetId);
 check("快照移除 CSS 里的 SVG", !/image\/svg\+xml/.test(snap2011), snap2011.slice(0, 400));
 check("快照移除 CSS 里的 javascript:", !/javascript:/i.test(snap2011), snap2011.slice(0, 400));
+
+// ---- T-01 补充：其他资源入口（video poster / input[type=image]）----
+const r13 = ingest("offline_2013.html");
+check("video poster 外链 → partial", r13.status === "partial", `${r13.status}/${r13.failReason}`);
+const snap2013 = snapshotOf(r13.assets[0]!.assetId);
+check("快照移除 video poster 外链", !/evil\.example/.test(snap2013), snap2013.slice(0, 300));
+
+const r14 = ingest("offline_2014.html");
+check("input[type=image] 外链 → partial", r14.status === "partial", `${r14.status}/${r14.failReason}`);
+const snap2014 = snapshotOf(r14.assets[0]!.assetId);
+check("快照移除 input image 外链", !/evil\.example/.test(snap2014), snap2014.slice(0, 300));
 
 // ---- T-05：CSP 属性值含 > 时只保留项目 CSP ----
 const r12 = ingest("offline_2012.html");

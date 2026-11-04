@@ -327,6 +327,10 @@ complete  t=0 local=0 ext=0 miss=0 bad=0    -                                   
 ✅ 快照不保留 data-src
 ✅ 快照移除 CSS 里的 SVG
 ✅ 快照移除 CSS 里的 javascript:
+✅ video poster 外链 → partial
+✅ 快照移除 video poster 外链
+✅ input[type=image] 外链 → partial
+✅ 快照移除 input image 外链
 ✅ CSP 攻击者片段不残留
 ✅ 快照只有 1 个项目 CSP
 ✅ 项目 CSP 是 default-src 'none'

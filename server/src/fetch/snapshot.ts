@@ -129,6 +129,16 @@ export function auditSnapshotImages(html: string, assetsDir: string): ImageAudit
       if (el.name === "img" && !src && !srcset && lazy) invalidCount += 1;
       if (el.name === "img" && !src && !srcset && !lazy) invalidCount += 1;
     }
+    // 其他可能承载图片的入口（审计也要覆盖，避免换个标签就绕过）
+    if (el.name === "video" && el.attribs.poster) urls.push(el.attribs.poster);
+    if (el.name === "input" && (el.attribs.type ?? "").toLowerCase() === "image" && el.attribs.src) {
+      urls.push(el.attribs.src);
+    }
+    if (el.name === "image") {
+      const href = el.attribs.href ?? el.attribs["xlink:href"];
+      if (href) urls.push(href);
+    }
+    if (el.name === "object" && el.attribs.data) urls.push(el.attribs.data);
     if (el.attribs.style) urls.push(...collectBackgroundUrls(el.attribs.style));
     if (el.name === "style") urls.push(...collectBackgroundUrls(textOf(el)));
   }
@@ -223,6 +233,20 @@ function cleanElement(el: Element): void {
     // 懒加载属性在离线快照里没有意义，且容易被误当成有效图片地址
     delete el.attribs["data-src"];
     delete el.attribs["data-original"];
+  }
+
+  // 其他资源入口：只保留本地位图引用
+  const otherResourceAttrs: Record<string, string[]> = {
+    video: ["poster"],
+    input: ["src"],
+    image: ["href", "xlink:href"],
+    object: ["data"],
+  };
+  for (const attr of otherResourceAttrs[el.name] ?? []) {
+    const value = el.attribs[attr];
+    if (value === undefined) continue;
+    const k = classifyResource(value);
+    if (k === "external" || k === "invalid") delete el.attribs[attr];
   }
 
   if (el.attribs.style !== undefined) {
