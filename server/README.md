@@ -1,7 +1,7 @@
 # bijiapp 服务端（阶段一 · 本地原型）
 
 **Node >= 24 原生直跑 TypeScript**（type stripping），无需构建。
-运行时只依赖一个库：`sanitize-html`（HTML 白名单清洗）；其余全部用 Node 内置模块。
+运行时依赖：`sanitize-html`（正文白名单清洗）+ `htmlparser2`/`domutils`/`dom-serializer`/`domhandler`（离线快照的 DOM 审计与加固）；其余用 Node 内置模块。
 
 ## 跑起来
 
@@ -36,7 +36,7 @@ node src/cli.ts --help
 | `src/fetch/htmlSanitize.ts` | HTML 白名单清洗（sanitize-html）、正文抽取、懒加载补 src、图片引用重写 |
 | `src/fetch/article.ts` | 公众号 URL 规范化、正文/元数据解析、离线 HTML 生成（含 CSP） |
 | `src/fetch/images.ts` | 图片下载：主机白名单 + 魔数校验 + 落盘 |
-| `src/fetch/bilibili.ts` | B站公开 API 元数据 |
+| `src/fetch/bilibili.ts` | B站公开 API 元数据（短链入口/API 均有主机白名单，已接入 `runPipeline`） |
 | `src/sources/wecomMessage.ts` | 微信客服消息 → 归一化条目（异常输入返回 null，不抛错） |
 | `src/sources/wecomClient.ts` | 微信客服 `gettoken` / `kf/sync_msg` 客户端（传输层可注入） |
 | `src/pipeline/run.ts` | **全链编排 `runPipeline(messages, deps)`**（依赖注入，可离线测试） |
@@ -55,7 +55,9 @@ node src/cli.ts --help
                         ├─ 公众号：canonical URL → 幂等检查 → 抓正文（safeGet）
                         │           → 图片逐张下载（失败降级 partial）→ 图片引用改写
                         │           → 生成离线 HTML（CSP）→ deriveStatus → saveClip
-                        └─ 非公众号：仅元数据 → partial（阶段二补正文）
+                        └─ 非公众号：元数据 → partial（阶段二补正文）
+                             ├ B站：调用公开 API（标题/简介/UP主/封面）写入记录
+                             └ 小红书/抖音：只存转发文案里的标题/描述/标签
 ```
 
 - **已可复现**：`bash tests/run-all.sh` 里的 `pipeline.selftest.ts` 用 mock 依赖跑通整条链，
@@ -101,9 +103,13 @@ node src/cli.ts --help
 
 **空正文永远不会是 `complete`**——这条规则由纯函数 `deriveStatus()` 统一执行，流水线与测试共用。
 
-**离线导入（`demo`）的图片口径**：只认「已本地化」的图片——同目录相对引用或位图 `data:image/png|jpeg|gif|webp`。
-外链 `http(s)` 图一律计入失败（离线快照 CSP 禁止外链，断网读不到），记录只能是 `partial/images_failed`；
-统计对象是**实际落盘的那份快照**，不是 `js_content` 局部。SVG data URI 不放行。
+**离线导入（`demo`）的图片口径**（第三轮 T-01/T-02）：
+计入的图片来源是**整页全部**——`img src`、`img srcset`、`picture > source`、CSS `background(-image)` 的 `url()`；
+只有「位图 data URI」和「资源目录里真实存在的相对引用」才算成功，其余（外链、SVG data、缺失文件、只有 `data-src`）
+一律计入失败，记录只能是 `partial/images_failed`。
+
+落盘快照还会做整页加固：外链/脚本型资源引用从快照里移除（`img src`、`srcset`、`source`、CSS `url()`），
+`data-src` 删除；CSP 由本项目**无条件注入唯一一条**（输入自带的 CSP 一律先删，属性值里含 `>` 也由解析器处理）。
 
 失败分类（`pipeline/failure.ts`）：`network_timeout` / `blocked_by_platform` / `content_missing` /
 `images_failed` / `unsupported_type` / `blocked_address` / `response_too_large` / `internal_error`。
@@ -116,9 +122,9 @@ node src/cli.ts --help
 - 抓取外部地址：只允许 http/https；拒绝 localhost/环回/私有/保留地址；
   IPv6 **fail-closed**（只放行全球单播 `2000::/3`）；DNS 结果校验后钉住；重定向逐跳复检
 - 响应体上限：正文 10MB、图片 20MB（`Content-Length` 与实际累计字节双检）
-- HTML **正文**清洗用白名单库（`sanitize-html`）；离线快照额外做整页加固：
-  删除 `script`/`iframe`/`base`/`link`、`on*`、`srcdoc`、非位图 `data:`，
-  并**强制替换**为项目自己的 CSP（输入自带的 CSP 一律删除，不允许覆盖）
+- HTML **正文**清洗用白名单库（`sanitize-html`）；离线快照的整页加固基于 **DOM（htmlparser2）**：
+  删除 `script`/`iframe`/`base`/`link`、`on*`、`srcdoc`、`javascript:`、非位图 `data:`、外链资源引用，
+  并**强制替换**为项目自己的 CSP（不用正则解析 meta，避免属性值含 `>` 时漏清）
 - 数据库访问一律参数绑定；资源文件名/扩展名走白名单 + 路径边界校验
 
 ## 测试与类型检查

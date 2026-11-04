@@ -1,0 +1,26 @@
+原始离线文件（图片来源：img.src / img.srcset / source / CSS background）
+file                               total  local   ext  miss  invalid
+offline_1793735377929.html             4      0     0     0        4
+offline_1793735563072.html             4      0     0     0        4
+offline_1793735848510.html             4      0     0     0        4
+offline_1793736013186.html             4      0     0     0        4
+offline_1793737615697.html            18     18     0     0        0
+offline_1793737619989.html             6      6     0     0        0
+offline_1793737622827.html             3      3     0     0        0
+offline_1793737624340.html             0      0     0     0        0
+✅ 原始文件统计覆盖所有 offline_*.html
+
+demo: 扫描 8 / 新入库 5 / 跳过 3 / 失败 0
+✅ demo 无扫描失败
+
+入库记录（状态 + 快照审计）
+status    snapshot(img/srcset/source/css)   note                                    title
+partial   t=4 local=0 ext=0 miss=0 bad=4    无效图片引用 4 处                              极简热榜回归初心，更简单更好用了
+failed    t=18 local=18 ext=0 miss=0 bad=0  正文为空，未生成完整快照                            全网最全Python经典代码实例合集，练完你就牛了！
+complete  t=6 local=6 ext=0 miss=0 bad=0    -                                       颠覆微信排版！我用代码给公众号换了张脸，HTML+J
+complete  t=3 local=3 ext=0 miss=0 bad=0    -                                       白送 4 核 8G，还不限时长我让它替我通宵干活
+complete  t=0 local=0 ext=0 miss=0 bad=0    -                                       空谷 Ondra 项目文档
+✅ 不存在 complete + 未本地化图片
+✅ 样例里的未本地化图片记录为 partial 且标注原因
+
+自测全部通过
