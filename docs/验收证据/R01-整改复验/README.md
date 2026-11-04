@@ -15,6 +15,7 @@
 | `wcag-contrast.txt` | `node scripts/wcag-contrast.mjs` | 84 个组合（含 hover/selected 合成底）最低 4.56，全部 ≥4.5 |
 | `demo-isolated.txt` | `KF_DATA_DIR=data-verify node src/cli.ts demo` | 用仓库内真实离线 HTML 导入（隔离目录，不污染正式库） |
 | `demo-status.txt` | 读隔离库的 `status/textLen/fail_reason` | **关键证据**：空正文那篇为 `failed/content_missing`，不再标 `complete`；快照已加固（CSP、无 script） |
+| `ssrf-normal-connect.txt` | `safeGet('https://example.com/')` + 内网直连探针 | 正常公网 200 可读；`http://127.0.0.1:9/` 被 `EBLOCKED` 拒绝（加固不误杀正常地址） |
 | `mimosa-scan.md` | Mimosa deep 扫描两次 | 首扫 1 条高危（游标 path-traversal），加固后复扫 0 发现；扫描状态 `inconclusive`，不得宣称“已安全” |
 
 ## 关键回归对照（P0-02）

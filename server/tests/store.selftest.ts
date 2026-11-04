@@ -88,9 +88,9 @@ for (const badExt of ["../x", "p", "verylongext", "PNG"]) {
   check("拒绝非法扩展名：" + badExt, rejected);
 }
 
-// 清单查询：批量插入 300 条，校验排序与耗时（P2-02 单查询实现）
+// 清单查询：批量插入 1000 条，校验排序与耗时（P2-02 单查询实现）
 const started = Date.now();
-for (let i = 0; i < 300; i++) {
+for (let i = 0; i < 1000; i++) {
   const clip = fakeClip("bulk-" + i, "批量" + i, false);
   clip.savedAt = new Date(Date.parse("2026-01-01T00:00:00.000Z") + i * 1000).toISOString();
   saveClip(clip);
@@ -98,7 +98,7 @@ for (let i = 0; i < 300; i++) {
 const startedList = Date.now();
 const all = listClips();
 const listMs = Date.now() - startedList;
-check("批量 300 条全部读回", all.length === 302, String(all.length));
+check("批量 1000 条全部读回", all.length === 1002, String(all.length));
 const sorted = all.every((c, i) => i === 0 || String(all[i - 1]!.savedAt) <= String(c.savedAt));
 check("清单按 saved_at 升序", sorted);
 check("清单读取耗时可接受（" + listMs + "ms）", listMs < 500, listMs + "ms");
