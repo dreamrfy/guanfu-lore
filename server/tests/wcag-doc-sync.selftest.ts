@@ -50,5 +50,28 @@ for (let i = 0; i < max; i++) {
 const { failures } = mod.analyse();
 check("脚本判定 0 个不合格组合", failures === 0, "failures=" + failures);
 
+// §2.2 的「对比度区间」也必须与脚本一致（第二轮审计指出这里是旧值）
+type TokenSet = Record<string, string>;
+const api = mod as unknown as {
+  LIGHT: TokenSet;
+  DARK: TokenSet;
+  backgrounds: (t: TokenSet, dark: boolean) => Array<[string, string]>;
+  contrast: (a: string, b: string) => number;
+};
+function range(tokens: TokenSet, dark: boolean, key: string): string {
+  const bgs = api.backgrounds(tokens, dark).map((x) => x[1]);
+  const values = bgs.map((bg) => api.contrast(tokens[key]!, bg));
+  return Math.min(...values).toFixed(2) + "–" + Math.max(...values).toFixed(2);
+}
+const ranges: Array<[string, string]> = [
+  ["text.primary", range(api.LIGHT, false, "textPrimary") + " / " + range(api.DARK, true, "textPrimary")],
+  ["text.secondary", range(api.LIGHT, false, "textSecondary") + " / " + range(api.DARK, true, "textSecondary")],
+  ["text.placeholder", range(api.LIGHT, false, "textPlaceholder") + " / " + range(api.DARK, true, "textPlaceholder")],
+  ["primary", range(api.LIGHT, false, "primary") + " / " + range(api.DARK, true, "primary")],
+];
+for (const [token, expectedRange] of ranges) {
+  check(`§2.2 ${token} 区间与脚本一致（${expectedRange}）`, doc.includes(expectedRange), "文档缺少该区间");
+}
+
 console.log(failed === 0 ? "\n自测全部通过" : `\n自测失败 ${failed} 项`);
 process.exitCode = failed === 0 ? 0 : 1;
