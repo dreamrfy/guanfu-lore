@@ -1,0 +1,47 @@
+命令：
+cd E:\VBcoding\bijiapp\server
+KF_SECRETS_FILE="E:/dev/tmp/wecom-secrets/wecom-kf.json" node src/cli.ts poll
+
+执行时间：2026-11-05 02:37（本地 UTC+8）
+凭证文件：E:\dev\tmp\wecom-secrets\wecom-kf.json（仓库外，五项俱全）
+
+原始输出（stdout，逐字）：
+{
+  "拉取消息": 18,
+  "游标": "4gw7MepFLfgF2VC5np9",
+  "停止原因": "拉取完成",
+  "messages": 18,
+  "parsed": 15,
+  "skippedUnrecognized": 3,
+  "skippedExisting": 11,
+  "saved": 4,
+  "complete": 1,
+  "partial": 2,
+  "failed": 1,
+  "imagesTotal": 2,
+  "imagesDownloaded": 2,
+  "imagesFailed": 0,
+  "failures": [
+    {
+      "sourceUrl": "http://mp.weixin.qq.com/s?__biz=MzIzNzU5ODU1OQ==&mid=2247494816&idx=1&sn=9d8e4b76e6f22f6dc4fe1e1597cf8c31&chksm=e8c48e90dfb307861b653880dd12a264006c4fb04eb9c16a63952c9765fb4f7e4765612cfd79&exptype=subscribed_raw_exper_tlfeeds&ranksessionid=1793816246_1&req_id=1793784974746400#rd",
+      "reason": "unsupported_type",
+      "message": "仅支持抓取公众号文章（origin 须为 https://mp.weixin.qq.com），实际：http://mp.weixin.qq.com"
+    }
+  ],
+  "elapsedMs": 4369
+}
+
+入库明细（clips.db 按 saved_at 倒序，本次 4 条新记录）：
+
+1. wechat_mp  complete  《腾讯云又送Token了！DeepSeek、Kimi都能领，有效期1年》（李嘉图智能体）
+   正文 1419 字；资源 3 件（1 个离线 HTML 快照 + 2 张 PNG 图片全部落盘）
+2. bilibili   partial (content_missing)  《不想忘记你》我的记忆碎了，他帮我拼了回来（b23.tv/2L9yvQU）
+   真实短链解析 + 真实公开 API 元数据（标题/简介 244 字/UP主）入库；封面 URL 已获取但未下载落盘（已知差距）
+3. xiaohongshu  partial (content_missing)  《出古代名画，商周的》（作者：邪恶糯糯）
+   仅转发文案（16 字），阶段一不抓小红书正文，符合设计边界
+4. wechat_mp  failed (unsupported_type)  《第 46 套 Skill：PPT 实时操作…》
+   转发链接是 http:// 开头（非 https），被主机白名单拒绝——真实转发里出现了 http:// 公众号链接，待拍板处理方式
+
+另有 11 条为 2026-11-04 测试的旧消息，全部被幂等去重跳过（skippedExisting=11），未产生重复记录；
+3 条为非链接类消息（纯文本/图片），解析器按设计返回 null，与 11-04 行为一致。
+游标已落盘，下次从 4gw7MepFLfgF2VC5np9 之后继续增量拉取。
