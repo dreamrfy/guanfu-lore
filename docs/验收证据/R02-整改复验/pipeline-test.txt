@@ -1,0 +1,16 @@
+{
+  "模式": "mock（不联网）",
+  "messages": 3,
+  "parsed": 2,
+  "skippedUnrecognized": 1,
+  "skippedExisting": 0,
+  "saved": 2,
+  "complete": 1,
+  "partial": 1,
+  "failed": 0,
+  "imagesTotal": 2,
+  "imagesDownloaded": 2,
+  "imagesFailed": 0,
+  "failures": [],
+  "elapsedMs": 3
+}

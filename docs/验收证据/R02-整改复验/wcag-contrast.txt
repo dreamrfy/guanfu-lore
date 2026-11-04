@@ -1,0 +1,91 @@
+组合                                            前景        背景        对比度
+--------------------------------------------------------------------------------
+浅色 · text.primary / bg.app ✓                  #1f2937   #f7f6f3   13.58
+浅色 · text.secondary / bg.app ✓                #5c6670   #f7f6f3   5.41
+浅色 · primary / bg.app ✓                       #1d4ed8   #f7f6f3   6.20
+浅色 · text.placeholder / bg.app ✓              #5c6670   #f7f6f3   5.41
+浅色 · text.primary / bg.sidebar ✓              #1f2937   #fbfaf7   14.06
+浅色 · text.secondary / bg.sidebar ✓            #5c6670   #fbfaf7   5.60
+浅色 · primary / bg.sidebar ✓                   #1d4ed8   #fbfaf7   6.42
+浅色 · text.placeholder / bg.sidebar ✓          #5c6670   #fbfaf7   5.60
+浅色 · text.primary / bg.content ✓              #1f2937   #ffffff   14.68
+浅色 · text.secondary / bg.content ✓            #5c6670   #ffffff   5.85
+浅色 · primary / bg.content ✓                   #1d4ed8   #ffffff   6.70
+浅色 · text.placeholder / bg.content ✓          #5c6670   #ffffff   5.85
+浅色 · text.primary / hover-over-app ✓          #1f2937   #edece9   12.43
+浅色 · text.secondary / hover-over-app ✓        #5c6670   #edece9   4.95
+浅色 · primary / hover-over-app ✓               #1d4ed8   #edece9   5.67
+浅色 · text.placeholder / hover-over-app ✓      #5c6670   #edece9   4.95
+浅色 · text.primary / selected-over-app ✓       #1f2937   #e1e5f0   11.65
+浅色 · text.secondary / selected-over-app ✓     #5c6670   #e1e5f0   4.64
+浅色 · primary / selected-over-app ✓            #1d4ed8   #e1e5f0   5.32
+浅色 · text.placeholder / selected-over-app ✓   #5c6670   #e1e5f0   4.64
+浅色 · text.primary / hover-over-sidebar ✓      #1f2937   #f1f0ed   12.88
+浅色 · text.secondary / hover-over-sidebar ✓    #5c6670   #f1f0ed   5.13
+浅色 · primary / hover-over-sidebar ✓           #1d4ed8   #f1f0ed   5.88
+浅色 · text.placeholder / hover-over-sidebar ✓  #5c6670   #f1f0ed   5.13
+浅色 · text.primary / selected-over-sidebar ✓   #1f2937   #e5e9f4   12.09
+浅色 · text.secondary / selected-over-sidebar ✓ #5c6670   #e5e9f4   4.82
+浅色 · primary / selected-over-sidebar ✓        #1d4ed8   #e5e9f4   5.52
+浅色 · text.placeholder / selected-over-sidebar ✓#5c6670   #e5e9f4   4.82
+浅色 · text.primary / hover-over-content ✓      #1f2937   #f5f5f5   13.46
+浅色 · text.secondary / hover-over-content ✓    #5c6670   #f5f5f5   5.37
+浅色 · primary / hover-over-content ✓           #1d4ed8   #f5f5f5   6.15
+浅色 · text.placeholder / hover-over-content ✓  #5c6670   #f5f5f5   5.37
+浅色 · text.primary / selected-over-content ✓   #1f2937   #e8edfb   12.54
+浅色 · text.secondary / selected-over-content ✓ #5c6670   #e8edfb   5.00
+浅色 · primary / selected-over-content ✓        #1d4ed8   #e8edfb   5.72
+浅色 · text.placeholder / selected-over-content ✓#5c6670   #e8edfb   5.00
+浅色 · 主按钮文字 / primary ✓                        #ffffff   #1d4ed8   6.70
+深色 · text.primary / bg.app ✓                  #e5e5e3   #1f1f1e   13.08
+深色 · text.secondary / bg.app ✓                #a3a3a1   #1f1f1e   6.53
+深色 · primary / bg.app ✓                       #60a5fa   #1f1f1e   6.49
+深色 · text.placeholder / bg.app ✓              #a3a3a1   #1f1f1e   6.53
+深色 · text.primary / bg.sidebar ✓              #e5e5e3   #262625   12.01
+深色 · text.secondary / bg.sidebar ✓            #a3a3a1   #262625   5.99
+深色 · primary / bg.sidebar ✓                   #60a5fa   #262625   5.96
+深色 · text.placeholder / bg.sidebar ✓          #a3a3a1   #262625   5.99
+深色 · text.primary / bg.content ✓              #e5e5e3   #2a2a29   11.39
+深色 · text.secondary / bg.content ✓            #a3a3a1   #2a2a29   5.69
+深色 · primary / bg.content ✓                   #60a5fa   #2a2a29   5.65
+深色 · text.placeholder / bg.content ✓          #a3a3a1   #2a2a29   5.69
+深色 · text.primary / hover-over-app ✓          #e5e5e3   #2c2c2c   11.07
+深色 · text.secondary / hover-over-app ✓        #a3a3a1   #2c2c2c   5.53
+深色 · primary / hover-over-app ✓               #60a5fa   #2c2c2c   5.49
+深色 · text.placeholder / hover-over-app ✓      #a3a3a1   #2c2c2c   5.53
+深色 · text.primary / selected-over-app ✓       #e5e5e3   #272f38   10.74
+深色 · text.secondary / selected-over-app ✓     #a3a3a1   #272f38   5.36
+深色 · primary / selected-over-app ✓            #60a5fa   #272f38   5.33
+深色 · text.placeholder / selected-over-app ✓   #a3a3a1   #272f38   5.36
+深色 · text.primary / hover-over-sidebar ✓      #e5e5e3   #333332   10.03
+深色 · text.secondary / hover-over-sidebar ✓    #a3a3a1   #333332   5.01
+深色 · primary / hover-over-sidebar ✓           #60a5fa   #333332   4.97
+深色 · text.placeholder / hover-over-sidebar ✓  #a3a3a1   #333332   5.01
+深色 · text.primary / selected-over-sidebar ✓   #e5e5e3   #2d353f   9.84
+深色 · text.secondary / selected-over-sidebar ✓ #a3a3a1   #2d353f   4.91
+深色 · primary / selected-over-sidebar ✓        #60a5fa   #2d353f   4.88
+深色 · text.placeholder / selected-over-sidebar ✓#a3a3a1   #2d353f   4.91
+深色 · text.primary / hover-over-content ✓      #e5e5e3   #373736   9.45
+深色 · text.secondary / hover-over-content ✓    #a3a3a1   #373736   4.72
+深色 · primary / hover-over-content ✓           #60a5fa   #373736   4.69
+深色 · text.placeholder / hover-over-content ✓  #a3a3a1   #373736   4.72
+深色 · text.primary / selected-over-content ✓   #e5e5e3   #303942   9.30
+深色 · text.secondary / selected-over-content ✓ #a3a3a1   #303942   4.64
+深色 · primary / selected-over-content ✓        #60a5fa   #303942   4.62
+深色 · text.placeholder / selected-over-content ✓#a3a3a1   #303942   4.64
+深色 · 主按钮文字 / primary ✓                        #1f1f1e   #60a5fa   6.49
+浅色 · 状态标签 saved/generated ✓                   #2e7d32   #e8f5e9   4.56
+浅色 · 状态标签 reading ✓                           #1565c0   #e3f2fd   5.03
+浅色 · 状态标签 processing ✓                        #b45309   #fff8e1   4.73
+浅色 · 状态标签 failed ✓                            #c62828   #fdecea   4.92
+浅色 · 状态标签 neutral ✓                           #616159   #f0efec   5.43
+深色 · 状态标签 saved/generated ✓                   #a5d6a7   #1b3d1e   7.37
+深色 · 状态标签 reading ✓                           #90caf9   #0d2a3d   8.48
+深色 · 状态标签 processing ✓                        #ffcc80   #3d2e0d   8.90
+深色 · 状态标签 failed ✓                            #ef9a9a   #4d1a18   6.61
+深色 · 状态标签 neutral ✓                           #b0b0ae   #333332   5.82
+
+禁用态（WCAG 豁免，仅供参考）：最低 2.02
+参与判定组合：84 个，最低 4.56，阈值 4.5
+
+✅ 全部达标

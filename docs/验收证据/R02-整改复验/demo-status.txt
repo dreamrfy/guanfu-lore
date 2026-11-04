@@ -1,0 +1,8 @@
+status     textLen  外链图  快照CSP  script  title
+partial        516       4  true    false   极简热榜回归初心，更简单更好用了
+failed           0      18  true    false   全网最全Python经典代码实例合集，练完你就牛了！
+partial      18656       6  true    false   颠覆微信排版！我用代码给公众号换了张脸，HTML+JS直插，
+partial       2165       3  true    false   白送 4 核 8G，还不限时长我让它替我通宵干活
+complete     22047       0  true    false   空谷 Ondra 项目文档
+
+违规（complete 且含外链图）: 0

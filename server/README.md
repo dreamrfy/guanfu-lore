@@ -71,6 +71,9 @@ node src/cli.ts --help
 
 - `Clip.assets: AssetRef[]`，其中 `AssetRef = { assetId, provider, ext }`
 - **不存完整 URL**：App 要看图时，由服务端按 `assetId + provider` 生成真实地址
+- `Clip.sourceUrl` 保留**消息/快照里的原始链接**（一字不删）；抓取与幂等用 `Clip.canonicalUrl`
+  （公众号：常量 origin + 白名单参数），两者分开存
+- 资源编号（`assetId`）统一 **16 位十六进制**（SHA-256 前 64 位）
 - 好处：换存储（CloudBase → R2 → 服务器）只改配置，历史记录一条不动
 
 ### ⚠️ 幂等键算法变更（2026-11-04 整改）
@@ -98,6 +101,10 @@ node src/cli.ts --help
 
 **空正文永远不会是 `complete`**——这条规则由纯函数 `deriveStatus()` 统一执行，流水线与测试共用。
 
+**离线导入（`demo`）的图片口径**：只认「已本地化」的图片——同目录相对引用或位图 `data:image/png|jpeg|gif|webp`。
+外链 `http(s)` 图一律计入失败（离线快照 CSP 禁止外链，断网读不到），记录只能是 `partial/images_failed`；
+统计对象是**实际落盘的那份快照**，不是 `js_content` 局部。SVG data URI 不放行。
+
 失败分类（`pipeline/failure.ts`）：`network_timeout` / `blocked_by_platform` / `content_missing` /
 `images_failed` / `unsupported_type` / `blocked_address` / `response_too_large` / `internal_error`。
 
@@ -109,7 +116,9 @@ node src/cli.ts --help
 - 抓取外部地址：只允许 http/https；拒绝 localhost/环回/私有/保留地址；
   IPv6 **fail-closed**（只放行全球单播 `2000::/3`）；DNS 结果校验后钉住；重定向逐跳复检
 - 响应体上限：正文 10MB、图片 20MB（`Content-Length` 与实际累计字节双检）
-- HTML 清洗用白名单库，不再用正则删标签；离线快照额外带 CSP（`default-src 'none'`）
+- HTML **正文**清洗用白名单库（`sanitize-html`）；离线快照额外做整页加固：
+  删除 `script`/`iframe`/`base`/`link`、`on*`、`srcdoc`、非位图 `data:`，
+  并**强制替换**为项目自己的 CSP（输入自带的 CSP 一律删除，不允许覆盖）
 - 数据库访问一律参数绑定；资源文件名/扩展名走白名单 + 路径边界校验
 
 ## 测试与类型检查

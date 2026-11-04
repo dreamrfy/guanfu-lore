@@ -5,7 +5,8 @@
 CREATE TABLE IF NOT EXISTS clips (
   id            TEXT PRIMARY KEY,   -- 幂等键：规范化源 URL 的 SHA-256 前 16 位（wx_/url_ + 16 hex）
   source        TEXT NOT NULL,      -- wechat_mp / xiaohongshu / bilibili / douyin
-  source_url    TEXT NOT NULL,      -- 原始链接（一字不删，抓取必需）
+  source_url    TEXT NOT NULL,      -- 原始分享链接（一字不删，来自消息/快照）
+  canonical_url TEXT,               -- 规范化抓取地址（公众号：常量 origin + 白名单参数）
   title         TEXT NOT NULL,
   author        TEXT NOT NULL DEFAULT '',
   account       TEXT NOT NULL DEFAULT '',
