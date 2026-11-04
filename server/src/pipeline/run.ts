@@ -189,9 +189,11 @@ export async function runPipeline(
       } catch (e) {
         imageFailed += 1;
         stats.imagesFailed += 1;
+        const reason = classifyFailure(e);
         stats.failures.push({
           sourceUrl: entry.sourceUrl,
-          reason: classifyFailure(e) === "network_timeout" ? "images_failed" : classifyFailure(e),
+          // 图片下载的网络失败也归到 images_failed，便于按“缺图”统计
+          reason: reason === "network_timeout" ? "images_failed" : reason,
           message: errorMessage(e),
         });
       }

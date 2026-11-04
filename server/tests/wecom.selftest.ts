@@ -14,6 +14,10 @@ const { WecomClient, WecomError, loadCursor, saveCursor } = await import("../src
 const fs = await import("node:fs");
 const path = await import("node:path");
 
+/** server 根目录；清理用绝对路径（P2-03），从任何 cwd 运行都不残留 */
+const SERVER_ROOT = path.dirname(import.meta.dirname);
+const TEST_DATA_DIR = path.join(SERVER_ROOT, "data-selftest-wecom");
+
 type Call = { method: string; url: string; body?: unknown };
 
 function makeTransport(responses: Array<{ status?: number; text: string }>) {
@@ -105,7 +109,7 @@ function makeTransport(responses: Array<{ status?: number; text: string }>) {
   const loaded = loadCursor();
   check("游标可写可读", loaded?.cursor === "C-ROUNDTRIP", JSON.stringify(loaded));
 
-  const cursorFile = path.join("data-selftest-wecom", "kf-cursor.json");
+  const cursorFile = path.join(TEST_DATA_DIR, "kf-cursor.json");
   check("游标文件已落盘", fs.existsSync(cursorFile), cursorFile);
 
   // 损坏的游标不应抛异常（最坏是重复拉取，幂等会去重）
@@ -124,7 +128,7 @@ function makeTransport(responses: Array<{ status?: number; text: string }>) {
   check("非法游标值写入被拒绝", rejected);
   check("游标文件仍在固定路径（未被穿越）", fs.existsSync(cursorFile));
 
-  fs.rmSync("data-selftest-wecom", { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
 }
 
 console.log(failed === 0 ? "\n自测全部通过" : `\n自测失败 ${failed} 项`);
