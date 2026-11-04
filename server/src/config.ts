@@ -21,6 +21,7 @@ function resolveLocalPath(envName: string, fallbackName: string): string {
 export const DATA_DIR = resolveLocalPath("KF_DATA_DIR", "data");
 export const ASSETS_DIR = resolveLocalPath("KF_ASSETS_DIR", "data/assets");
 export const OUT_DIR = resolveLocalPath("KF_OUT_DIR", "out");
+export const SAMPLES_DIR = resolveLocalPath("KF_SAMPLES_DIR", "samples");
 
 /** 微信客服凭证（仓库外 JSON 文件的字段名） */
 export interface KfSecrets {

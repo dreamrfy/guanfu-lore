@@ -12,8 +12,11 @@ import {
   unescapeEntities,
   imgUrlOf,
   metaContent,
+  htmlTitle,
+  htmlToText,
   escapeHtml,
 } from "./htmlSanitize.ts";
+import { shortHash } from "../store/hash.ts";
 
 export interface ArticleMeta {
   title: string;
@@ -76,18 +79,14 @@ export function canonicalWechatArticleUrl(raw: string): URL {
   return out;
 }
 
-/** 稳定编号：对源地址做 FNV-1a 哈希（纯字符串摘要，非安全用途） */
+/** 稳定编号：对源地址做 SHA-256 摘要（纯字符串摘要，非安全用途；16 位 = 64 位熵） */
 export function assetIdFor(sourceUrl: string): string {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < sourceUrl.length; i++) {
-    h ^= sourceUrl.charCodeAt(i);
-    h = Math.imul(h, 0x01000193) >>> 0;
-  }
-  return h.toString(16).padStart(8, "0").slice(-12);
+  return shortHash(sourceUrl, 12);
 }
 
+/** 正文纯文本（用于长度校验与摘要） */
 function textOf(html: string): string {
-  return html.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+  return htmlToText(html);
 }
 
 /** 解析已抓取的文章 HTML：元数据 + 清洗正文 + 图片清单 */
@@ -118,6 +117,7 @@ export function parseArticleHtml(html: string, sourceUrl: string): ParsedArticle
   const seen = new Set<string>();
   for (const tag of contentHtml.match(/<img\b[^>]*>/gi) ?? []) {
     const picked = imgUrlOf(tag);
+    if (picked.from === "none") continue;
     if (!/^https?:\/\//i.test(picked.url) || seen.has(picked.url)) continue;
     seen.add(picked.url);
     imageManifest.push({ assetId: assetIdFor(picked.url), sourceUrl: picked.url, from: picked.from });
@@ -154,6 +154,9 @@ export function buildOfflineHtml(
   const head =
     '<!DOCTYPE html>\n<html lang="zh-CN"><head><meta charset="utf-8">\n' +
     '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    // 纵深防御：即便清洗漏了某个属性，CSP 也禁止脚本/外链/表单提交
+    '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src \'self\' data:; style-src \'unsafe-inline\'; base-uri \'none\'; form-action \'none\'">\n' +
+    '<meta name="referrer" content="no-referrer">\n' +
     "<title>" + escapeHtml(meta.title) + "</title>\n<style>\n" + style + "\n</style></head><body>\n";
   const metaLine =
     '<div class="meta">' +

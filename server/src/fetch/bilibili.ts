@@ -31,7 +31,7 @@ export interface BilibiliMeta {
 /** 调 B站公开 API 取视频元数据 */
 export async function fetchBilibiliMeta(bvid: string): Promise<BilibiliMeta> {
   const api = "https://api.bilibili.com/x/web-interface/view?bvid=" + encodeURIComponent(bvid);
-  const res = await safeGet(api, { Referer: "https://www.bilibili.com/" }, 2);
+  const res = await safeGet(api, { Referer: "https://www.bilibili.com/" }, { tries: 2 });
   const data = JSON.parse(res.body.toString("utf8")) as {
     code: number;
     message?: string;

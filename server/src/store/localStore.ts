@@ -5,7 +5,7 @@ import { DatabaseSync } from "node:sqlite";
 import fs from "node:fs";
 import path from "node:path";
 import { DATA_DIR, ASSETS_DIR } from "../config.ts";
-import type { AssetRef, Clip } from "./types.ts";
+import type { AssetRef, Clip, FailReason } from "./types.ts";
 
 let db: DatabaseSync | null = null;
 
@@ -97,7 +97,7 @@ function rowToClip(row: Record<string, unknown>): Clip {
     text: String(row.text ?? ""),
     assets: JSON.parse(String(row.assets_json ?? "[]")) as AssetRef[],
     status: row.status as Clip["status"],
-    failReason: (row.fail_reason as string) ?? null,
+    failReason: (row.fail_reason as FailReason | null) ?? null,
     note: (row.note as string) ?? undefined,
   };
 }
@@ -114,7 +114,8 @@ export function existsClip(id: string): boolean {
   return !!getDb().prepare("SELECT id FROM clips WHERE id = ?").get(id);
 }
 
+/** 清单：一次查询取全（P2-02：不再逐行 getClip 造成 N+1） */
 export function listClips(): Clip[] {
-  const rows = getDb().prepare("SELECT id FROM clips ORDER BY saved_at").all() as Array<{ id: string }>;
-  return rows.map((r) => getClip(r.id)).filter((c): c is Clip => c !== null);
+  const rows = getDb().prepare("SELECT * FROM clips ORDER BY saved_at").all() as Array<Record<string, unknown>>;
+  return rows.map(rowToClip);
 }

@@ -24,17 +24,20 @@ export interface AssetRef {
 export type ClipStatus = "pending" | "partial" | "complete" | "failed";
 
 export type FailReason =
-  | "network_timeout" // 网络超时
+  | "network_timeout" // 网络超时/5xx/429（唯一可重试的类别）
   | "blocked_by_platform" // 被平台风控/拦截（如需微信客户端环境）
-  | "content_missing" // 找不到正文容器
+  | "content_missing" // 找不到正文容器 / 正文为空
   | "images_failed" // 图片下载失败
-  | "unsupported_type"; // 不支持的来源/类型
+  | "unsupported_type" // 不支持的来源/类型/非法地址
+  | "blocked_address" // SSRF 防护拒绝（环回/私有/保留地址、主机不在白名单）
+  | "response_too_large" // 响应体超过上限
+  | "internal_error"; // 数据库/JSON/未知程序错误（默认不重试）
 
 export type SourcePlatform = "wechat_mp" | "xiaohongshu" | "bilibili" | "douyin" | "unknown";
 
 /** 一条剪藏记录（需求里“文章快照”的目录部分；正文文字也存这里） */
 export interface Clip {
-  /** 幂等键：规范化源 URL 的哈希（16 位十六进制） */
+  /** 幂等键：规范化源 URL 的 SHA-256 前 16 位十六进制（64 位熵） */
   id: string;
   source: SourcePlatform;
   /** 原始链接（一字不删——抓取必需，缺参数会被微信 302/参数错误） */
