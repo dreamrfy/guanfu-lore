@@ -8,6 +8,7 @@
 //   poll             —— 拉取微信客服增量消息并入库（需 KF_SECRETS_FILE 指向的凭证）
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { runDemo } from "./pipeline.ts";
 import { runPipeline } from "./pipeline/run.ts";
 import { createLocalDeps } from "./pipeline/wire.ts";
@@ -15,7 +16,8 @@ import { createMockDeps, MOCK_MESSAGES } from "./pipeline/mock.ts";
 import { OUT_DIR, ASSETS_DIR, SAMPLES_DIR, loadSecrets } from "./config.ts";
 import { listClips } from "./store/localStore.ts";
 import { FAIL_REASON_LABELS } from "./pipeline/status.ts";
-import { WecomClient, loadCursor, saveCursor } from "./sources/wecomClient.ts";
+import { WecomClient, loadCursor, saveCursor, shouldStopPaging } from "./sources/wecomClient.ts";
+import type { Clip } from "./store/types.ts";
 
 /** 清单页里指向资源目录的相对前缀（运行时算出，不写死路径） */
 const ASSET_HREF_BASE = path.relative(OUT_DIR, ASSETS_DIR).split(path.sep).join("/");
@@ -49,17 +51,24 @@ function escapeHtml(s: string): string {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-async function cmdList(): Promise<void> {
-  const clips = listClips();
+/** 生成清单页 HTML（纯函数，便于测试；N-14：无快照时输出“无快照”而不是空链接） */
+export function renderListHtml(clips: Clip[]): string {
   const rows = clips
     .map((c) => {
       const reason = c.failReason ? FAIL_REASON_LABELS[c.failReason] : "";
-      const href =
-        ASSET_HREF_BASE +
-        "/" +
-        encodeURIComponent(c.assets[0]?.assetId ?? "") +
-        "." +
-        escapeHtml(c.assets[0]?.ext ?? "html");
+      const first = c.assets[0];
+      // N-14：没有快照资源时不要生成空链接
+      const snapshotCell = first
+        ? '<a href="' +
+          escapeHtml(
+            ASSET_HREF_BASE +
+              "/" +
+              encodeURIComponent(first.assetId) +
+              "." +
+              escapeHtml(first.ext)
+          ) +
+          '">打开快照</a>'
+        : "无快照";
       return (
         "<tr><td>" +
         escapeHtml(c.title) +
@@ -73,9 +82,9 @@ async function cmdList(): Promise<void> {
         escapeHtml(reason) +
         "</td><td>" +
         c.assets.length +
-        '</td><td><a href="' +
-        escapeHtml(href) +
-        '">打开快照</a></td></tr>'
+        "</td><td>" +
+        snapshotCell +
+        "</td></tr>"
       );
     })
     .join("\n");
@@ -90,6 +99,12 @@ async function cmdList(): Promise<void> {
     "<h1>剪藏清单（" + clips.length + " 条）</h1>\n<table>\n" +
     "<tr><th>标题</th><th>来源</th><th>收藏日期</th><th>状态</th><th>原因</th><th>资源数</th><th>快照</th></tr>\n" +
     rows + "\n</table>\n<p>快照为自包含离线 HTML（图片本地化），断网可读；状态为 partial/failed 的记录说明内容不完整。</p>\n</body></html>";
+  return page;
+}
+
+async function cmdList(): Promise<void> {
+  const clips = listClips();
+  const page = renderListHtml(clips);
   fs.mkdirSync(OUT_DIR, { recursive: true });
   const listPath = path.join(OUT_DIR, "剪藏清单.html");
   if (!listPath.startsWith(OUT_DIR + path.sep)) throw new Error("输出路径越界");
@@ -126,25 +141,36 @@ async function cmdPoll(limit: number): Promise<void> {
   const client = new WecomClient({ corpId: secrets.corpId, appSecret: secrets.appSecret });
   const previous = loadCursor();
   let cursor = previous?.cursor ?? "";
+  let token = previous?.token ?? "";
+  let stopReason = "拉取完成";
   const collected: Array<Record<string, unknown>> = [];
 
   for (let page = 0; page < 20; page++) {
-    const result = await client.syncMessages({ cursor, token: previous?.token ?? "", limit });
+    // cursor 与 token 成对发送：只用上一次响应里返回的那一对（N-08）
+    const result = await client.syncMessages({ cursor, token, limit });
     collected.push(...result.messages);
-    if (result.nextCursor) cursor = result.nextCursor;
+    if (shouldStopPaging(result)) {
+      // 接口异常：has_more=1 却没有 next_cursor，继续循环只会重复拉同一页
+      stopReason = "接口返回 has_more=1 但 next_cursor 为空，已停止翻页";
+      console.error(stopReason);
+      break;
+    }
+    cursor = result.nextCursor || cursor;
+    token = result.nextToken;
     if (!result.hasMore) break;
+    if (page === 19) stopReason = "达到单轮翻页上限（20 页），下一轮从当前游标继续";
   }
 
   const stats = await runPipeline(collected, createLocalDeps());
   if (cursor) {
     // 游标落盘失败不应让本轮已入库的结果白跑：只提示，不抛错
     try {
-      saveCursor({ cursor, token: "", updatedAt: new Date().toISOString() });
+      saveCursor({ cursor, token, updatedAt: new Date().toISOString() });
     } catch (e) {
       console.error("游标未落盘（下次会重复拉取，幂等去重可兜底）：" + String((e as Error).message));
     }
   }
-  printStats({ 拉取消息: collected.length, 游标: cursor, ...stats });
+  printStats({ 拉取消息: collected.length, 游标: cursor, 停止原因: stopReason, ...stats });
 }
 
 async function main(): Promise<void> {
@@ -197,9 +223,15 @@ async function main(): Promise<void> {
   process.exitCode = 2;
 }
 
-try {
-  await main();
-} catch (e) {
-  console.error("执行失败：" + String((e as Error)?.message ?? e));
-  process.exitCode = 1;
+// 只有直接运行本文件时才执行 CLI；被测试 import 时不产生副作用
+const invokedDirectly =
+  process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (invokedDirectly) {
+  try {
+    await main();
+  } catch (e) {
+    console.error("执行失败：" + String((e as Error)?.message ?? e));
+    process.exitCode = 1;
+  }
 }

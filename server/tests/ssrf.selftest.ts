@@ -39,6 +39,16 @@ const mustBlock: Array<[string, number | undefined]> = [
   ["::ffff:7f00:1", 6], // IPv4-mapped（十六进制写法）
   ["::ffff:10.0.0.1", 6],
   ["::ffff:169.254.169.254", 6],
+  // 第二轮审计 N-04：IANA special-use 补齐
+  ["2001:1::1", 6], // PCP anycast（2001::/23 内）
+  ["2001:3::1", 6], // AMT
+  ["2001:4:112::1", 6], // AS112
+  ["2001:20::1", 6], // ORCHIDv2
+  ["2001:30::1", 6], // Drone Remote ID
+  ["2620:4f:8000::1", 6], // AS112 direct delegation（在 2000::/3 内）
+  ["192.31.196.1", 4], // AS112
+  ["192.52.193.1", 4], // AMT
+  ["192.175.48.1", 4], // AS112 direct delegation
   ["not-an-ip", undefined],
   ["", undefined],
 ];
@@ -66,6 +76,8 @@ const badUrls = [
   "http://[::1]/",
   "http://[fe90::1]/",
   "http://[2001:db8::1]/",
+  "http://[2001:20::1]/",
+  "http://192.31.196.1/",
   "http://[::ffff:127.0.0.1]/",
   "http://localhost/",
   "http://foo.localhost/",

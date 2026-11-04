@@ -4,6 +4,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 const BASE_DIR = path.resolve(import.meta.dirname ?? ".", ".."); // 本文件在 src/ 下，服务端根是上一级
+/** 仓库根（服务端目录的上一级）：凭证文件必须落在它之外 */
+const REPO_ROOT = path.dirname(BASE_DIR);
 
 /** 读取环境变量指定的相对路径；显式拒绝 ".."、"\0" 与绝对路径越界 */
 function resolveLocalPath(envName: string, fallbackName: string): string {
@@ -34,15 +36,32 @@ export interface KfSecrets {
 
 /**
  * 计算微信客服凭证文件的路径。
- * 凭证文件必须在仓库外（项目约定：路径由环境变量 KF_SECRETS_FILE 传入）。
- * 这里只做路径合法性校验：拒绝 ".."、"\0"；读取文件在 loadSecrets() 中进行。
+ * 凭证文件必须在**仓库外**（项目约定：路径由环境变量 KF_SECRETS_FILE 传入）。
+ * 校验：拒绝空值、".."、NUL；解析后（含真实路径）不得落在仓库目录内（N-10）。
  */
 function secretsFilePath(): string {
   const raw = process.env.KF_SECRETS_FILE;
   if (typeof raw !== "string" || raw.length === 0 || raw.includes("..") || raw.includes("\0")) {
     throw new Error("KF_SECRETS_FILE 未设置或非法（凭证文件必须在仓库外）");
   }
-  return path.resolve(raw);
+  const abs = path.resolve(raw);
+  const insideRepo = (p: string): boolean => p === REPO_ROOT || p.startsWith(REPO_ROOT + path.sep);
+  if (insideRepo(abs)) {
+    throw new Error("KF_SECRETS_FILE 指向仓库内路径，已拒绝（凭证文件必须在仓库外）");
+  }
+  // 文件已存在时再校验真实路径，防符号链接指回仓库
+  if (fs.existsSync(abs)) {
+    let real: string;
+    try {
+      real = fs.realpathSync(abs);
+    } catch {
+      throw new Error("KF_SECRETS_FILE 无法解析真实路径");
+    }
+    if (insideRepo(real)) {
+      throw new Error("KF_SECRETS_FILE 的真实路径位于仓库内，已拒绝");
+    }
+  }
+  return abs;
 }
 
 /** 读微信客服凭证（路径由 secretsFilePath() 校验后给出） */

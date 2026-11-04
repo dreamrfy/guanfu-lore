@@ -52,6 +52,12 @@ interface TokenState {
 export interface SyncResult {
   messages: Array<Record<string, unknown>>;
   nextCursor: string;
+  /**
+   * 与 cursor 成对返回的续拉凭据（接口若返回）。
+   * 注意：它不是回调签名用的 token，也不是 access_token；不返回时就是空串，
+   * 调用方不应把自己缓存的旧值继续发回去（N-08）。
+   */
+  nextToken: string;
   hasMore: boolean;
 }
 
@@ -61,6 +67,7 @@ interface WecomEnvelope {
   access_token?: string;
   expires_in?: number;
   next_cursor?: string;
+  token?: string;
   has_more?: number;
   msg_list?: Array<Record<string, unknown>>;
 }
@@ -118,11 +125,16 @@ export class WecomClient {
     const env = parseEnvelope(res.text);
     if (!env.access_token) throw new Error("微信接口未返回 access_token");
     const ttl = Number(env.expires_in ?? 7200) * 1000;
-    this.tokenState = { token: env.access_token, expiresAt: now + Math.max(60_000, ttl - this.tokenSkewMs) };
+    const ttlMs = Number.isFinite(ttl) && ttl > 0 ? ttl : 0;
+    // 缓存不能超过真实过期时间（N-09）：提前量最多取 TTL 的一半
+    const refreshBefore = Math.min(this.tokenSkewMs, Math.floor(ttlMs / 2));
+    this.tokenState = { token: env.access_token, expiresAt: now + Math.max(0, ttlMs - refreshBefore) };
     return env.access_token;
   }
 
-  /** 拉一批增量消息（cursor/token 由调用方持久化） */
+  /**
+   * 拉一批增量消息（cursor/token 由调用方持久化）
+   */
   async syncMessages(opts: { cursor?: string; token?: string; limit?: number } = {}): Promise<SyncResult> {
     const accessToken = await this.accessToken();
     const url = WECOM_API_ORIGIN + "/cgi-bin/kf/sync_msg?access_token=" + encodeURIComponent(accessToken);
@@ -138,9 +150,15 @@ export class WecomClient {
     return {
       messages: list,
       nextCursor: String(env.next_cursor ?? ""),
+      nextToken: typeof env.token === "string" ? env.token : "",
       hasMore: Number(env.has_more ?? 0) === 1,
     };
   }
+}
+
+/** 接口异常保护（N-08）：has_more=1 却没有 next_cursor 时必须停止翻页，否则会重复拉同一页 */
+export function shouldStopPaging(result: SyncResult): boolean {
+  return result.hasMore && result.nextCursor === "";
 }
 
 // ---------------------------------------------------------------------------
@@ -157,7 +175,7 @@ const CURSOR_VALUE_RE = /^[A-Za-z0-9._-]{0,512}$/;
 
 export interface PollCursor {
   cursor: string;
-  /** 微信接口的翻页 token（同一 cursor 内翻页用） */
+  /** 与 cursor 成对返回的续拉凭据（接口若返回；未返回时为空串，不要伪造旧值） */
   token: string;
   updatedAt: string;
 }

@@ -93,6 +93,9 @@ const ALLOWED_STYLE_PROPS: Record<string, RegExp[]> = {
   "list-style-type": [/^(disc|circle|square|decimal|lower-alpha|upper-alpha|lower-roman|upper-roman|none)$/i],
 };
 
+/** 允许内嵌的位图 data URI（SVG 不在内：SVG 可携带脚本/外链语义） */
+const RASTER_DATA_IMAGE_RE = /^data:image\/(?:png|jpe?g|gif|webp)[;,]?/i;
+
 /** data-src 优先补成 src：微信文章图片普遍是懒加载 */
 function fillLazySrc(attribs: Record<string, string>, allowDataImages: boolean): Record<string, string> {
   const dataSrc = attribs["data-src"] || attribs["data-original"];
@@ -103,12 +106,18 @@ function fillLazySrc(attribs: Record<string, string>, allowDataImages: boolean):
   }
   delete attribs["data-src"];
   delete attribs["data-original"];
-  // 非图片型 data: 地址一律丢弃（防 data:text/html 之类被当成图片引用）
+  // data: 地址只允许「离线导入 + 位图格式」，其余一律丢弃
+  // （data:text/html、data:image/svg+xml 都不能当图片放行）
   const finalSrc = attribs.src ?? "";
   if (/^data:/i.test(finalSrc)) {
-    if (!allowDataImages || !/^data:image\//i.test(finalSrc)) delete attribs.src;
+    if (!allowDataImages || !RASTER_DATA_IMAGE_RE.test(finalSrc)) delete attribs.src;
   }
   return attribs;
+}
+
+/** 兜底：清洗后仍残留的非位图 data URI（例如属性顺序导致 transform 未覆盖） */
+function stripNonRasterDataSrc(html: string): string {
+  return html.replace(/(<img\b[^>]*?)\ssrc\s*=\s*("data:image\/(?!png|jpe?g|gif|webp)[^"]*"|'data:image\/(?!png|jpe?g|gif|webp)[^']*'|data:image\/(?!png|jpe?g|gif|webp)[^\s>]*)/gi, "$1");
 }
 
 function cleanStyle(attribs: Record<string, string>): Record<string, string> {
@@ -176,6 +185,7 @@ export function sanitizeContent(html: string, opts: SanitizeOptions = {}): strin
   // 清洗后再兜一遍：某些实体形式（&#111;nclick）可能被解码后留下 on* 属性
   h = h.replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "");
   h = h.replace(/\s(?:srcdoc|formaction)\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "");
+  h = stripNonRasterDataSrc(h);
   return h;
 }
 
@@ -268,14 +278,19 @@ export function hardenOfflineHtml(html: string): string {
     .replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "")
     .replace(/\s(?:srcdoc|formaction)\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "")
     .replace(/(href|src)\s*=\s*("\s*javascript:[^"]*"|'\s*javascript:[^']*'|javascript:[^\s>]*)/gi, "$1=\"#\"");
+  // 只保留位图 data URI（data:image/svg+xml 等一律移除，N-06）
+  h = stripNonRasterDataSrc(h);
 
-  if (!/http-equiv\s*=\s*["']?Content-Security-Policy/i.test(h)) {
-    const meta = '<meta http-equiv="Content-Security-Policy" content="' + OFFLINE_CSP + '">';
-    if (/<head\b[^>]*>/i.test(h)) {
-      h = h.replace(/<head\b[^>]*>/i, (m) => m + "\n" + meta);
-    } else {
-      h = meta + "\n" + h;
-    }
+  // 先删掉输入自带的全部 CSP（无论属性顺序），再由本项目无条件注入。
+  // 不允许“已有 CSP 就跳过”——否则攻击者可用 script-src * 覆盖兜底。
+  h = h.replace(/<meta\b[^>]*http-equiv\s*=\s*["']?content-security-policy[^>]*>/gi, "");
+  h = h.replace(/<meta\b[^>]*content\s*=\s*["'][^"']*["'][^>]*http-equiv\s*=\s*["']?content-security-policy[^>]*>/gi, "");
+
+  const meta = '<meta http-equiv="Content-Security-Policy" content="' + OFFLINE_CSP + '">';
+  if (/<head\b[^>]*>/i.test(h)) {
+    h = h.replace(/<head\b[^>]*>/i, (m) => m + "\n" + meta);
+  } else {
+    h = meta + "\n" + h;
   }
   return h;
 }

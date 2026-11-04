@@ -40,8 +40,11 @@ export interface Clip {
   /** 幂等键：规范化源 URL 的 SHA-256 前 16 位十六进制（64 位熵） */
   id: string;
   source: SourcePlatform;
-  /** 原始链接（一字不删——抓取必需，缺参数会被微信 302/参数错误） */
+  /** 原始链接（一字不删——来自消息/快照的原始分享地址，抓取与核对都需要） */
   sourceUrl: string;
+  /** 规范化后的抓取地址（公众号：常量 origin + 白名单参数；幂等 id 按它计算）
+   *  与 sourceUrl 分开保存：既保留原始参数，又保证抓取目标可控。 */
+  canonicalUrl?: string | null;
   title: string;
   author: string;
   /** 公众号名称（来自 data-nickname） */

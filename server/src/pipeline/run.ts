@@ -169,18 +169,24 @@ export async function runPipeline(
     } catch (e) {
       const reason = classifyFailure(e);
       const clip = failedClip(id, item, nowIso(), reason, "");
-      clip.sourceUrl = canonical;
+      clip.canonicalUrl = canonical;
       stats.failures.push({ sourceUrl: canonical, reason, message: errorMessage(e) });
       persist(stats, deps, clip);
       continue;
     }
 
-    // ---- 图片：逐张下载，失败只降级为 partial，不丢正文 ----
+    // ---- 图片：先按 URL 去重再逐张下载；失败只降级为 partial，不丢正文 ----
     const mapping = new Map<string, string>();
     const assets: Clip["assets"] = [];
     let imageFailed = 0;
-    stats.imagesTotal += parsed.imageManifest.length;
-    for (const entry of parsed.imageManifest) {
+    const seenImageUrls = new Set<string>();
+    const uniqueManifest = parsed.imageManifest.filter((entry) => {
+      if (seenImageUrls.has(entry.sourceUrl)) return false;
+      seenImageUrls.add(entry.sourceUrl);
+      return true;
+    });
+    stats.imagesTotal += uniqueManifest.length;
+    for (const entry of uniqueManifest) {
       try {
         const downloaded = await retry(() => deps.downloadImage(entry.sourceUrl));
         mapping.set(entry.sourceUrl, downloaded.assetRef.assetId + "." + downloaded.assetRef.ext);
@@ -215,7 +221,7 @@ export async function runPipeline(
 
     const { status, failReason } = deriveStatus({
       textLength: parsed.meta.textLen,
-      imagesTotal: parsed.imageManifest.length,
+      imagesTotal: uniqueManifest.length,
       imagesFailed: imageFailed,
       assetWriteFailures,
     });
@@ -230,7 +236,9 @@ export async function runPipeline(
     const clip: Clip = {
       id,
       source: "wechat_mp",
-      sourceUrl: canonical,
+      // N-11：原始分享链接一字不删；抓取用的规范化地址单独存
+      sourceUrl: item.sourceUrl,
+      canonicalUrl: canonical,
       title: parsed.meta.title,
       author: parsed.meta.author,
       account: parsed.meta.account,

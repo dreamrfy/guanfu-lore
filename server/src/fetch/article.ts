@@ -79,9 +79,9 @@ export function canonicalWechatArticleUrl(raw: string): URL {
   return out;
 }
 
-/** 稳定编号：对源地址做 SHA-256 摘要（纯字符串摘要，非安全用途；16 位 = 64 位熵） */
+/** 稳定编号：对源地址做 SHA-256 摘要（非安全用途；16 位十六进制 = 64 位熵，与注释/文档一致） */
 export function assetIdFor(sourceUrl: string): string {
-  return shortHash(sourceUrl, 12);
+  return shortHash(sourceUrl, 16);
 }
 
 /** 正文纯文本（用于长度校验与摘要） */

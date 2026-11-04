@@ -17,6 +17,7 @@ function getDb(): DatabaseSync {
     id TEXT PRIMARY KEY,
     source TEXT NOT NULL,
     source_url TEXT NOT NULL,
+    canonical_url TEXT,
     title TEXT NOT NULL,
     author TEXT NOT NULL DEFAULT '',
     account TEXT NOT NULL DEFAULT '',
@@ -28,6 +29,11 @@ function getDb(): DatabaseSync {
     note TEXT,
     assets_json TEXT NOT NULL DEFAULT '[]'
   )`);
+  // 兼容旧库：缺列时补列（canonical_url 是第二轮审计 N-11 新增）
+  const cols = db.prepare("PRAGMA table_info(clips)").all() as Array<{ name: string }>;
+  if (!cols.some((c) => c.name === "canonical_url")) {
+    db.exec("ALTER TABLE clips ADD COLUMN canonical_url TEXT");
+  }
   return db;
 }
 
@@ -65,12 +71,13 @@ export function saveClip(clip: Clip): void {
   const d = getDb();
   d.prepare(
     `INSERT OR REPLACE INTO clips
-     (id, source, source_url, title, author, account, published_at, saved_at, text, status, fail_reason, note, assets_json)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+     (id, source, source_url, canonical_url, title, author, account, published_at, saved_at, text, status, fail_reason, note, assets_json)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     clip.id,
     clip.source,
     clip.sourceUrl,
+    clip.canonicalUrl ?? null,
     clip.title,
     clip.author,
     clip.account,
@@ -89,6 +96,7 @@ function rowToClip(row: Record<string, unknown>): Clip {
     id: String(row.id),
     source: row.source as Clip["source"],
     sourceUrl: String(row.source_url),
+    canonicalUrl: (row.canonical_url as string | null) ?? null,
     title: String(row.title),
     author: String(row.author ?? ""),
     account: String(row.account ?? ""),

@@ -4,6 +4,7 @@
 import { runPipeline } from "../src/pipeline/run.ts";
 import { createMockDeps, MOCK_MESSAGES, MOCK_IMAGE_URLS, MOCK_ARTICLE_URL } from "../src/pipeline/mock.ts";
 import { FetchError } from "../src/fetch/http.ts";
+import { clipIdFor } from "../src/store/clipId.ts";
 
 let failed = 0;
 function check(name: string, ok: boolean, detail = ""): void {
@@ -160,7 +161,7 @@ function check(name: string, ok: boolean, detail = ""): void {
   check("未知平台 → 跳过且不抓取", stats.skippedUnrecognized === 1 && called === 0, JSON.stringify(stats));
 }
 
-// ---- 9. 图片去重：同一 URL 只下载一次 ----
+// ---- 9. 图片去重：manifest 里重复 URL 只下载一次（N-07） ----
 {
   const mock = createMockDeps();
   const deps = {
@@ -176,9 +177,27 @@ function check(name: string, ok: boolean, detail = ""): void {
       };
     },
   };
-  await runPipeline([MOCK_MESSAGES[0]!], deps);
-  check("同一图片 URL 只下载一次", mock.downloaded.length === 2, "downloaded=" + mock.downloaded.length);
+  const stats = await runPipeline([MOCK_MESSAGES[0]!], deps);
+  check("重复 manifest 只下载一次（downloaded=" + mock.downloaded.length + "）", mock.downloaded.length === 1);
+  check("imagesTotal 按去重后计数", stats.imagesTotal === 1, String(stats.imagesTotal));
+  check("imagesDownloaded === 1", stats.imagesDownloaded === 1, String(stats.imagesDownloaded));
+  const clip = [...mock.store.values()][0]!;
+  check("去重后仍是 complete", clip.status === "complete", `${clip.status}/${clip.failReason}`);
 }
+
+// ---- 11. sourceUrl 契约（N-11）：原始 URL 逐字保留，canonicalUrl 单独存 ----
+{
+  const mock = createMockDeps();
+  const trackedUrl = MOCK_ARTICLE_URL + "&mpshare=1&scene=1&srcid=abc123&sharer_shareinfo=zzz";
+  const msg = { msgid: "mock-tracked", msgtype: "link", link: { url: trackedUrl, title: "带跟踪参数" } };
+  await runPipeline([msg], mock.deps);
+  const clip = [...mock.store.values()][0]!;
+  check("sourceUrl 与消息原始 URL 逐字一致", clip.sourceUrl === trackedUrl, clip.sourceUrl);
+  check("canonicalUrl 已去掉跟踪参数", !!clip.canonicalUrl && !clip.canonicalUrl.includes("mpshare"), String(clip.canonicalUrl));
+  check("幂等 id 仍按 canonical 计算", clip.id === clipIdFor(clip.canonicalUrl!), clip.id);
+}
+
+console.log(failed === 0 ? "\n自测全部通过" : `\n自测失败 ${failed} 项`);
 
 // ---- 10. data-src only 的懒加载图：清洗后补 src，流水线能识别并本地化 ----
 {

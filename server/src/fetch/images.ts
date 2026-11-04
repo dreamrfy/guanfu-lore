@@ -83,7 +83,7 @@ export async function downloadImage(sourceUrl: string, opts: DownloadImageOption
   }
   const ext = sniffed;
 
-  const assetId = shortHash(sourceUrl, 12);
+  const assetId = shortHash(sourceUrl, 16);
   const outPath = writeAssetFile(assetId, ext, res.body);
   return { assetRef: { assetId, provider: "local", ext }, bytes: res.body.length, outPath };
 }

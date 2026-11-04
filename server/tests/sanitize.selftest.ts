@@ -108,5 +108,32 @@ check("整页加固保留样式", /color:red/.test(hardened), hardened.slice(0, 
 check("整页加固注入 CSP", /Content-Security-Policy/.test(hardened), hardened.slice(0, 200));
 check("整页加固保留正文", hardened.includes("正文") && hardened.includes("带样式"));
 
+// ---- N-02：攻击者自带的 CSP 必须被删除并替换为项目 CSP ----
+for (const attackerCsp of [
+  "script-src *",
+  "default-src *; script-src 'unsafe-inline'",
+  "script-src 'unsafe-eval' data:",
+]) {
+  const input =
+    '<html><head><meta http-equiv="Content-Security-Policy" content="' +
+    attackerCsp +
+    '"></head><body><p>正文</p></body></html>';
+  const out = hardenOfflineHtml(input);
+  check("攻击者 CSP 被移除：" + attackerCsp, !out.includes(attackerCsp));
+  check("替换为项目 CSP：" + attackerCsp, /default-src 'none'/.test(out));
+  const cspCount = (out.match(/http-equiv="Content-Security-Policy"/gi) ?? []).length;
+  check("CSP 只有一个：" + attackerCsp, cspCount === 1, "数量=" + cspCount);
+}
+
+// ---- N-06：allowDataImages 只放行位图，不放行 SVG ----
+const svgData = sanitizeContent('<img src="data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=">', { allowDataImages: true });
+check("SVG data URI 被拒绝", !/svg\+xml/i.test(svgData), svgData);
+for (const mime of ["png", "jpeg", "gif", "webp"]) {
+  const out = sanitizeContent('<img src="data:image/' + mime + ';base64,iVBORw0KGgo=">', { allowDataImages: true });
+  check("位图 data URI 保留：" + mime, out.includes("data:image/" + mime), out);
+}
+const pngWithoutOpt = sanitizeContent('<img src="data:image/png;base64,iVBORw0KGgo=">');
+check("未开启 allowDataImages 时 data URI 被拒绝", !pngWithoutOpt.includes("data:image/png"), pngWithoutOpt);
+
 console.log(failed === 0 ? "\n自测全部通过" : `\n自测失败 ${failed} 项`);
 process.exitCode = failed === 0 ? 0 : 1;

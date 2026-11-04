@@ -33,6 +33,13 @@ check("shortHash 稳定", shortHash("abc") === shortHash("abc"));
 check("shortHash 长度 16", shortHash("abc").length === 16);
 check("sha256Hex 是 64 位十六进制", /^[0-9a-f]{64}$/.test(sha256Hex("abc")));
 
+// N-12：资源编号统一 16 位十六进制（注释/实现/测试一致）
+const { assetIdFor } = await import("../src/fetch/article.ts");
+const aid = assetIdFor("https://mmbiz.qpic.cn/mmbiz_png/example/0?wx_fmt=png");
+check("assetIdFor 输出 16 位十六进制", /^[0-9a-f]{16}$/.test(aid), aid);
+check("assetIdFor 稳定", assetIdFor("https://mmbiz.qpic.cn/x.png") === assetIdFor("https://mmbiz.qpic.cn/x.png"));
+check("不同图片地址 → 不同 assetId", assetIdFor("https://mmbiz.qpic.cn/a.png") !== assetIdFor("https://mmbiz.qpic.cn/b.png"));
+
 // 碰撞压力测试：5 万条相似文章（mid 递增）不得出现重复
 const seen = new Set<string>();
 let collisions = 0;

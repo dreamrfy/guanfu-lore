@@ -10,7 +10,7 @@ function check(name: string, ok: boolean, detail = ""): void {
   if (!ok) failed++;
 }
 
-const { WecomClient, WecomError, loadCursor, saveCursor } = await import("../src/sources/wecomClient.ts");
+const { WecomClient, WecomError, loadCursor, saveCursor, shouldStopPaging } = await import("../src/sources/wecomClient.ts");
 const fs = await import("node:fs");
 const path = await import("node:path");
 
@@ -100,6 +100,72 @@ function makeTransport(responses: Array<{ status?: number; text: string }>) {
   } catch (e) {
     check("凭证缺失抛错", /凭证不完整/.test(String((e as Error).message)), String(e));
   }
+}
+
+// ---- N-08：多页 cursor / token 必须成对传递 ----
+{
+  const { transport, calls } = makeTransport([
+    { text: JSON.stringify({ errcode: 0, access_token: "T", expires_in: 7200 }) },
+    { text: JSON.stringify({ errcode: 0, next_cursor: "C1", token: "TOK1", has_more: 1, msg_list: [{ msgid: "m1" }] }) },
+    { text: JSON.stringify({ errcode: 0, next_cursor: "C2", token: "TOK2", has_more: 0, msg_list: [{ msgid: "m2" }] }) },
+  ]);
+  const client = new WecomClient({ corpId: "corp", appSecret: "secret", transport });
+  const page1 = await client.syncMessages({ cursor: "C0", token: "TOK0", limit: 20 });
+  check("第 1 页返回 nextToken", page1.nextToken === "TOK1", page1.nextToken);
+  check("第 1 页 hasMore", page1.hasMore === true);
+  const page2 = await client.syncMessages({ cursor: page1.nextCursor, token: page1.nextToken, limit: 20 });
+
+  const syncCalls = calls.filter((c) => c.url.includes("/cgi-bin/kf/sync_msg"));
+  const b1 = syncCalls[0]!.body as { cursor?: string; token?: string };
+  const b2 = syncCalls[1]!.body as { cursor?: string; token?: string };
+  check("第 1 页请求体带初始 cursor/token", b1.cursor === "C0" && b1.token === "TOK0", JSON.stringify(b1));
+  check("第 2 页请求体带上一页的 cursor/token", b2.cursor === "C1" && b2.token === "TOK1", JSON.stringify(b2));
+  check("第 2 页 nextToken 与第 1 页成对传递", page2.nextToken === "TOK2", page2.nextToken);
+  check("has_more=0 时不要求停止", !shouldStopPaging(page2));
+}
+
+// ---- N-08：has_more=1 但 next_cursor 为空 → 必须停止翻页 ----
+{
+  check(
+    "has_more=1 且 next_cursor 空 → 停止",
+    shouldStopPaging({ messages: [], nextCursor: "", nextToken: "", hasMore: true })
+  );
+  check(
+    "has_more=0 且 next_cursor 空 → 正常结束",
+    !shouldStopPaging({ messages: [], nextCursor: "", nextToken: "", hasMore: false })
+  );
+  check(
+    "has_more=1 且有 next_cursor → 继续",
+    !shouldStopPaging({ messages: [], nextCursor: "C", nextToken: "", hasMore: true })
+  );
+}
+
+// ---- N-09：短 TTL 不得缓存超过真实过期时间 ----
+{
+  const { transport, calls } = makeTransport([
+    { text: JSON.stringify({ errcode: 0, access_token: "SHORT-1", expires_in: 0 }) },
+    { text: JSON.stringify({ errcode: 0, access_token: "SHORT-2", expires_in: 0 }) },
+  ]);
+  const client = new WecomClient({ corpId: "corp", appSecret: "secret", transport });
+  const first = await client.accessToken();
+  const second = await client.accessToken();
+  const tokenCalls = calls.filter((c) => c.url.includes("/cgi-bin/gettoken"));
+  check("expires_in=0 时立即过期并重新获取", first === "SHORT-1" && second === "SHORT-2", first + "/" + second);
+  check("短 TTL 下 gettoken 被调用 2 次", tokenCalls.length === 2, "calls=" + tokenCalls.length);
+}
+
+{
+  // 正常 TTL 仍需缓存（不能被上面的修复改成每次都取）
+  const { transport, calls } = makeTransport([
+    { text: JSON.stringify({ errcode: 0, access_token: "LONG-1", expires_in: 7200 }) },
+    { text: JSON.stringify({ errcode: 0, next_cursor: "C", has_more: 0, msg_list: [] }) },
+    { text: JSON.stringify({ errcode: 0, next_cursor: "C", has_more: 0, msg_list: [] }) },
+  ]);
+  const client = new WecomClient({ corpId: "corp", appSecret: "secret", transport });
+  await client.syncMessages({ limit: 10 });
+  await client.syncMessages({ cursor: "C", limit: 10 });
+  const tokenCalls = calls.filter((c) => c.url.includes("/cgi-bin/gettoken"));
+  check("正常 TTL 下 token 仍缓存（1 次）", tokenCalls.length === 1, "calls=" + tokenCalls.length);
 }
 
 // ---- 游标落盘 ----

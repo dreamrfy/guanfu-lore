@@ -13,7 +13,7 @@ import { clipIdFor } from "./store/clipId.ts";
 import { saveClip, existsClip, writeAssetFile, getClip } from "./store/localStore.ts";
 import type { Clip } from "./store/types.ts";
 import { canonicalWechatArticleUrl } from "./fetch/article.ts";
-import { extractJsContent, unescapeEntities, htmlToText, sanitizeContent, hardenOfflineHtml } from "./fetch/htmlSanitize.ts";
+import { extractJsContent, unescapeEntities, htmlToText, sanitizeContent, hardenOfflineHtml, imgUrlOf } from "./fetch/htmlSanitize.ts";
 import { deriveStatus } from "./pipeline/status.ts";
 
 export interface DemoStats {
@@ -44,17 +44,42 @@ function metaSourceUrl(html: string): string | null {
   return m ? m[1]! : null;
 }
 
-/** 统计正文里的图片：总数，以及“没有可用地址”的失败数 */
-function imageStats(contentHtml: string): { total: number; failed: number } {
-  const tags = contentHtml.match(/<img\b[^>]*>/gi) ?? [];
-  let failed = 0;
-  for (const tag of tags) {
-    const m = tag.match(/\ssrc\s*=\s*"([^"]*)"/i);
-    const src = m ? unescapeEntities(m[1]!) : "";
-    // 离线快照里的图片有两种合法形态：http(s) 外链（未内嵌）或 data: 内嵌
-    if (!/^(https?:|data:image\/)/i.test(src)) failed += 1;
+/** 离线快照里“算成功”的图片来源：位图 data URI，或同目录相对引用 */
+function classifyOfflineImageSrc(src: string): "local" | "external" | "invalid" {
+  if (!src) return "invalid";
+  if (/^data:/i.test(src)) {
+    // 只有位图 data URI 算本地；SVG 等带脚本语义的一律不算
+    return /^data:image\/(?:png|jpe?g|gif|webp)[;,]?/i.test(src) ? "local" : "invalid";
   }
-  return { total: tags.length, failed };
+  if (/^[a-z][a-z0-9+.-]*:/i.test(src) || src.startsWith("//")) return "external";
+  if (src.startsWith("/") || src.startsWith("\\") || src.includes("..")) return "invalid";
+  return /\.(?:png|jpe?g|gif|webp)(?:\?.*)?$/i.test(src) ? "local" : "invalid";
+}
+
+/**
+ * 统计**实际落盘快照**里的图片（第二轮审计 N-01）：
+ * - 只有「已本地化」的图片才算成功（相对引用 / 位图 data URI）
+ * - http(s) 外链一律计入失败：离线快照 CSP 禁止外链图，断网根本读不到
+ * - 统计对象是整页快照，不是 js_content——否则页面其他区域的外链图会漏判
+ */
+function imageStats(snapshotHtml: string): { total: number; failed: number; external: number; invalid: number } {
+  const tags = snapshotHtml.match(/<img\b[^>]*>/gi) ?? [];
+  let failed = 0;
+  let external = 0;
+  let invalid = 0;
+  for (const tag of tags) {
+    const picked = imgUrlOf(tag);
+    const src = picked.from === "none" ? "" : picked.url;
+    const kind = classifyOfflineImageSrc(src);
+    if (kind === "external") {
+      external += 1;
+      failed += 1;
+    } else if (kind === "invalid") {
+      invalid += 1;
+      failed += 1;
+    }
+  }
+  return { total: tags.length, failed, external, invalid };
 }
 
 function listOfflineFiles(): string[] {
@@ -81,16 +106,20 @@ export function ingestOfflineHtml(offlinePath: string): { saved: boolean; clip: 
     return { saved: false, clip: existing };
   }
 
-  // 正文：抽出 js_content 后清洗（离线快照允许 data: 内嵌图）
+  // 正文：抽出 js_content 后清洗（离线快照允许位图 data URI）
   const rawContent = extractJsContent(html) ?? "";
   const content = sanitizeContent(rawContent, { allowDataImages: true });
   const text = htmlToText(content);
-  const { total: imagesTotal, failed: imagesFailed } = imageStats(content);
+
+  // 落盘用的整页快照：先去可执行内容并注入项目 CSP（N-02/N-06），
+  // 再用它统计图片状态——状态必须描述“真正存下来的东西”（N-01）
+  const snapshotHtml = hardenOfflineHtml(html);
+  const { total: imagesTotal, failed: imagesFailed, external: imagesExternal, invalid: imagesInvalid } =
+    imageStats(snapshotHtml);
 
   // 离线 HTML 作为“完整快照”资源落盘（G1：AssetRef 只存编号）
-  // 落盘前整页加固：去可执行内容 + 注入 CSP（保留原有样式与内嵌图片）
   const assetId = id.replace(/^wx_/, "");
-  writeAssetFile(assetId, "html", Buffer.from(hardenOfflineHtml(html), "utf8"));
+  writeAssetFile(assetId, "html", Buffer.from(snapshotHtml, "utf8"));
 
   const { status, failReason } = deriveStatus({
     textLength: text.length,
@@ -101,7 +130,9 @@ export function ingestOfflineHtml(offlinePath: string): { saved: boolean; clip: 
   const clip: Clip = {
     id,
     source: "wechat_mp",
-    sourceUrl: canonical.toString(),
+    // N-11：sourceUrl 保留快照里的原始分享链接（一字不删），canonicalUrl 单独存抓取用地址
+    sourceUrl,
+    canonicalUrl: canonical.toString(),
     title: metaTitle(html),
     author: metaAuthor(html),
     account: metaAccount(html),
@@ -111,7 +142,14 @@ export function ingestOfflineHtml(offlinePath: string): { saved: boolean; clip: 
     assets: [{ assetId, provider: "local", ext: "html" }],
     status,
     failReason,
-    note: status === "failed" ? "正文为空，未生成完整快照" : imagesFailed > 0 ? "缺图 " + imagesFailed + " 张（其余内容已保存）" : undefined,
+    note:
+      status === "failed"
+        ? "正文为空，未生成完整快照"
+        : imagesExternal > 0
+          ? "外链图 " + imagesExternal + " 张未本地化（离线不可读），需重新抓取"
+          : imagesInvalid > 0
+            ? "图片引用异常 " + imagesInvalid + " 张（无有效本地资源）"
+            : undefined,
   };
   saveClip(clip);
   return { saved: true, clip };

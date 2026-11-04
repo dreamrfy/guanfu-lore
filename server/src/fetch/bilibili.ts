@@ -11,9 +11,36 @@ import type { NormalizedItem } from "../store/types.ts";
 
 const BV_RE = /\/video\/(BV[0-9A-Za-z]{8,12})/;
 
+/** 短链入口只允许 b23.tv；重定向只允许留在 B站视频域（每一跳都检查） */
+const B23_HOSTS: ReadonlySet<string> = new Set(["b23.tv"]);
+const BILIBILI_VIDEO_HOSTS: ReadonlySet<string> = new Set([
+  "b23.tv",
+  "www.bilibili.com",
+  "bilibili.com",
+  "m.bilibili.com",
+]);
+/** 元数据 API 只允许 api.bilibili.com，重定向不得离开 */
+const BILIBILI_API_HOSTS: ReadonlySet<string> = new Set(["api.bilibili.com"]);
+
+/** 测试注入用：与 safeGet 同签名 */
+export type SafeGetLike = typeof safeGet;
+
 /** 从短链跟随重定向，取最终 URL 里的 BV 号 */
-export async function resolveBvid(shortUrl: string): Promise<string> {
-  const res = await safeGet(shortUrl, {}, { tries: 2, maxRedirects: 5 });
+export async function resolveBvid(shortUrl: string, fetchFn: SafeGetLike = safeGet): Promise<string> {
+  let entryHost: string;
+  try {
+    entryHost = new URL(shortUrl).hostname.toLowerCase();
+  } catch {
+    throw new Error("B站短链不是合法 URL");
+  }
+  if (!B23_HOSTS.has(entryHost)) {
+    throw new Error("B站短链主机不在白名单：" + entryHost);
+  }
+  const res = await fetchFn(shortUrl, {}, {
+    tries: 2,
+    maxRedirects: 5,
+    allowedHostCheck: (host) => BILIBILI_VIDEO_HOSTS.has(host),
+  });
   const m = res.finalUrl.match(BV_RE);
   if (!m) throw new Error("短链未解析出 BV 号：" + res.finalUrl.slice(0, 90));
   return m[1]!;
@@ -29,9 +56,12 @@ export interface BilibiliMeta {
 }
 
 /** 调 B站公开 API 取视频元数据 */
-export async function fetchBilibiliMeta(bvid: string): Promise<BilibiliMeta> {
+export async function fetchBilibiliMeta(bvid: string, fetchFn: SafeGetLike = safeGet): Promise<BilibiliMeta> {
   const api = "https://api.bilibili.com/x/web-interface/view?bvid=" + encodeURIComponent(bvid);
-  const res = await safeGet(api, { Referer: "https://www.bilibili.com/" }, { tries: 2 });
+  const res = await fetchFn(api, { Referer: "https://www.bilibili.com/" }, {
+    tries: 2,
+    allowedHosts: BILIBILI_API_HOSTS,
+  });
   const data = JSON.parse(res.body.toString("utf8")) as {
     code: number;
     message?: string;
@@ -58,9 +88,12 @@ export async function fetchBilibiliMeta(bvid: string): Promise<BilibiliMeta> {
 }
 
 /** 短链 → B站元数据（入口：供 pipeline 调用） */
-export async function fetchBilibiliFromShortLink(shortUrl: string): Promise<NormalizedItem> {
-  const bvid = await resolveBvid(shortUrl);
-  const meta = await fetchBilibiliMeta(bvid);
+export async function fetchBilibiliFromShortLink(
+  shortUrl: string,
+  fetchFn: SafeGetLike = safeGet
+): Promise<NormalizedItem> {
+  const bvid = await resolveBvid(shortUrl, fetchFn);
+  const meta = await fetchBilibiliMeta(bvid, fetchFn);
   return {
     source: "bilibili",
     sourceUrl: shortUrl,
