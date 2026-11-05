@@ -244,6 +244,17 @@ function check(name: string, ok: boolean, detail = ""): void {
   check("B站正文（简介）来自 API", clip.text === "B站 Mock 简介", clip.text.slice(0, 40));
   check("B站 note 写明公开 API", (clip.note ?? "").includes("公开 API"), String(clip.note));
   check("B站仍是 partial（阶段一不抓正文）", clip.status === "partial", clip.status);
+  // 冒烟发现 2 补齐：封面下载落盘（mock 下载器会记录 URL 并返回 assetRef）
+  check(
+    "B站封面已尝试下载（hdslb.com 在白名单）",
+    mock.downloaded.includes("https://i1.hdslb.com/bfs/archive/mock.jpg"),
+    JSON.stringify(mock.downloaded)
+  );
+  check(
+    "B站封面以 AssetRef 落库（G1）",
+    clip.assets.length === 1 && clip.assets[0]!.ext === "png",
+    JSON.stringify(clip.assets)
+  );
 }
 
 {

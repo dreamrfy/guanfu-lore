@@ -2,7 +2,7 @@
 //
 // 设计：所有外部能力都通过 deps 注入——测试可以完全离线跑（mock 抓取/图片/存储），
 // 生产由 pipeline/wire.ts 接到真实实现。这样“全链跑通”是可复现的，不依赖线上数据。
-import type { Clip, FailReason, NormalizedItem } from "../store/types.ts";
+import type { AssetRef, Clip, FailReason, NormalizedItem } from "../store/types.ts";
 import type { ParsedArticle } from "../fetch/article.ts";
 import type { ImageDownloadResult } from "../fetch/images.ts";
 import { buildOfflineHtml, canonicalWechatArticleUrl } from "../fetch/article.ts";
@@ -17,12 +17,12 @@ export interface PipelineDeps {
   fetchArticle: (url: string) => Promise<ParsedArticle>;
   /** 下载一张图片并落盘（生产实现走 images.downloadImage） */
   downloadImage: (url: string) => Promise<ImageDownloadResult>;
-  /** 落库（幂等：同 id 覆盖） */
-  saveClip: (clip: Clip) => void;
-  /** 是否已存在（重复转发跳过） */
-  existsClip: (id: string) => boolean;
-  /** 资源落盘（快照 HTML / 图片统一走存储层） */
-  writeAssetFile: (assetId: string, ext: string, body: Buffer) => string;
+  /** 落库（幂等：同 id 覆盖）。云上实现为异步（CloudBase doc.set），本地为同步 SQLite */
+  saveClip: (clip: Clip) => void | Promise<void>;
+  /** 是否已存在（重复转发跳过）。云上实现为异步查询 */
+  existsClip: (id: string) => boolean | Promise<boolean>;
+  /** 资源落盘（快照 HTML / 图片统一走存储层）。云上实现为异步（R2 上传） */
+  writeAssetFile: (assetId: string, ext: string, body: Buffer) => string | Promise<string>;
   /**
    * B站元数据（公开 API，T-03）：把 b23.tv 短链解析成标题/简介/UP主/封面。
    * 不注入时，bilibili 条目只保留转发文案，并在 note 里标明“未接入”。
@@ -116,6 +116,7 @@ export async function runPipeline(
     // ---- 元数据型来源（B站/小红书/抖音阶段一）：只存标题/描述/封面 ----
     if (item.capability === "metadata-only" || item.source !== "wechat_mp") {
       // B站：接入公开 API 元数据（T-03）。失败只降级 note，不影响记录落库。
+      let coverAssets: AssetRef[] = [];
       if (item.source === "bilibili") {
         if (!deps.fetchBilibili) {
           item.note = "B站元数据模块未接入（当前只保存转发文案）" + (item.note ? "；" + item.note : "");
@@ -132,11 +133,21 @@ export async function runPipeline(
             stats.failures.push({ sourceUrl: item.sourceUrl, reason, message: errorMessage(e) });
             item.note = "B站元数据获取失败：" + errorMessage(e);
           }
+          // B站封面落盘（冒烟发现 2 补齐）：hdslb.com 已在图片主机白名单；
+          // 失败只降级 note，不影响记录落库（partial 语义不变）
+          if (item.coverUrl) {
+            try {
+              const dl = await deps.downloadImage(item.coverUrl);
+              coverAssets = [dl.assetRef];
+            } catch (e) {
+              item.note = (item.note ? item.note + "；" : "") + "封面下载失败：" + errorMessage(e);
+            }
+          }
         }
       }
 
       const id = clipIdFor(item.sourceUrl);
-      if (deps.existsClip(id)) {
+      if (await deps.existsClip(id)) {
         stats.skippedExisting += 1;
         continue;
       }
@@ -156,12 +167,12 @@ export async function runPipeline(
         publishedAt: null,
         savedAt: nowIso(),
         text: item.desc,
-        assets: [],
+        assets: coverAssets,
         status,
         failReason,
         note: item.note,
       };
-      persist(stats, deps, clip);
+      await persist(stats, deps, clip);
       continue;
     }
 
@@ -171,19 +182,19 @@ export async function runPipeline(
       canonical = canonicalWechatArticleUrl(item.sourceUrl).toString();
     } catch (e) {
       const id = clipIdFor(item.sourceUrl);
-      if (deps.existsClip(id)) {
+      if (await deps.existsClip(id)) {
         stats.skippedExisting += 1;
         continue;
       }
       const reason: FailReason = "unsupported_type";
       const clip = failedClip(id, item, nowIso(), reason, "");
       stats.failures.push({ sourceUrl: item.sourceUrl, reason, message: errorMessage(e) });
-      persist(stats, deps, clip);
+      await persist(stats, deps, clip);
       continue;
     }
 
     const id = clipIdFor(canonical);
-    if (deps.existsClip(id)) {
+    if (await deps.existsClip(id)) {
       stats.skippedExisting += 1;
       continue;
     }
@@ -196,7 +207,7 @@ export async function runPipeline(
       const clip = failedClip(id, item, nowIso(), reason, "");
       clip.canonicalUrl = canonical;
       stats.failures.push({ sourceUrl: canonical, reason, message: errorMessage(e) });
-      persist(stats, deps, clip);
+      await persist(stats, deps, clip);
       continue;
     }
 
@@ -237,7 +248,7 @@ export async function runPipeline(
     const htmlAssetId = snapshotAssetId(id);
     try {
       const offline = buildOfflineHtml(parsed.meta, contentHtml, canonical);
-      deps.writeAssetFile(htmlAssetId, "html", Buffer.from(offline, "utf8"));
+      await deps.writeAssetFile(htmlAssetId, "html", Buffer.from(offline, "utf8"));
       assets.unshift({ assetId: htmlAssetId, provider: "local", ext: "html" });
     } catch (e) {
       assetWriteFailures += 1;
@@ -275,7 +286,7 @@ export async function runPipeline(
       failReason,
       note,
     };
-    persist(stats, deps, clip);
+    await persist(stats, deps, clip);
   }
 
   stats.elapsedMs = Date.now() - started;
@@ -318,9 +329,9 @@ function failedClip(
   };
 }
 
-function persist(stats: PipelineStats, deps: PipelineDeps, clip: Clip): void {
+async function persist(stats: PipelineStats, deps: PipelineDeps, clip: Clip): Promise<void> {
   try {
-    deps.saveClip(clip);
+    await deps.saveClip(clip);
   } catch (e) {
     stats.failed += 1;
     stats.failures.push({ sourceUrl: clip.sourceUrl, reason: "internal_error", message: errorMessage(e) });

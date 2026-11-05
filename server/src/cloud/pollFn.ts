@@ -1,0 +1,91 @@
+// 微信客服定时触发轮询云函数入口（阶段一）
+//
+// 凭证：五项环境变量直读（config.loadSecrets 分派）；数据：CloudBase 数据库；
+// 资源：R2（cloudWire 装配）；游标与续拉 token：存 CloudBase poll_state 集合
+//（云函数没有持久文件系统，本地 CLI 的游标文件方案在云上不可用）。
+//
+// 注：轮询主循环与 cli.ts cmdPoll 同构——阶段一有意不抽公共层，避免改动已验收的本地链路；
+// 差异只在游标存储介质（文件 vs 数据库文档）。
+import { loadSecrets } from "../config.ts";
+import { WecomClient } from "../sources/wecomClient.ts";
+import { runPipeline } from "../pipeline/run.ts";
+import { createCloudDeps } from "../pipeline/cloudWire.ts";
+import type { PipelineDeps, PipelineStats } from "../pipeline/run.ts";
+import type { SyncResult } from "../sources/wecomClient.ts";
+import { shouldStopPaging } from "../sources/wecomClient.ts";
+
+export interface PollState {
+  cursor: string;
+  token: string;
+  updatedAt: string;
+}
+
+export interface PollIo {
+  client: { syncMessages(opts: { cursor: string; token: string; limit: number }): Promise<SyncResult> };
+  pipeline: PipelineDeps;
+  loadState(): Promise<PollState | null>;
+  saveState(s: PollState): Promise<void>;
+  limit?: number;
+}
+
+export interface PollResult extends PipelineStats {
+  cursor: string;
+  stopReason: string;
+}
+
+/** 轮询主循环（可注入测试）。翻页上限、游标语义与 cli.ts cmdPoll 一致（N-08：cursor/token 成对）。 */
+export async function pollOnce(io: PollIo): Promise<PollResult> {
+  const previous = await io.loadState();
+  let cursor = previous?.cursor ?? "";
+  let token = previous?.token ?? "";
+  let stopReason = "拉取完成";
+  const collected: Array<Record<string, unknown>> = [];
+
+  for (let page = 0; page < 20; page++) {
+    const result = await io.client.syncMessages({ cursor, token, limit: io.limit ?? 100 });
+    collected.push(...result.messages);
+    if (shouldStopPaging(result)) {
+      stopReason = "接口返回 has_more=1 但 next_cursor 为空，已停止翻页";
+      console.error(stopReason);
+      break;
+    }
+    cursor = result.nextCursor || cursor;
+    token = result.nextToken;
+    if (!result.hasMore) break;
+    if (page === 19) stopReason = "达到单轮翻页上限（20 页），下一轮从当前游标继续";
+  }
+
+  const stats = await runPipeline(collected, io.pipeline);
+  if (cursor) {
+    try {
+      await io.saveState({ cursor, token, updatedAt: new Date().toISOString() });
+    } catch (e) {
+      // 游标落盘失败不让本轮已入库的结果白跑：只提示，不抛错（幂等去重兜底重复拉取）
+      console.error("游标未落盘（下次会重复拉取，幂等去重可兜底）：" + String((e as Error).message));
+    }
+  }
+  return { ...stats, cursor, "stopReason": stopReason } as PollResult;
+}
+
+/** 云函数入口：控制台「测试」按钮或定时触发器调用 */
+export async function main(event: unknown = null, context: unknown = null): Promise<PollResult> {
+  void event;
+  void context;
+  const secrets = loadSecrets();
+  const client = new WecomClient({ corpId: secrets.corpId, appSecret: secrets.appSecret });
+  const { deps, adapter } = await createCloudDeps();
+  return pollOnce({
+    client,
+    pipeline: deps,
+    loadState: async () => {
+      const doc = await adapter.docGet("poll_state", "poll");
+      if (!doc) return null;
+      return {
+        cursor: String(doc.cursor ?? ""),
+        token: String(doc.token ?? ""),
+        updatedAt: String(doc.updatedAt ?? ""),
+      };
+    },
+    saveState: (s) => adapter.docSet("poll_state", "poll", { ...s }),
+  });
+}

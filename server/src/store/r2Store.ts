@@ -134,6 +134,30 @@ export interface R2PutResult {
   bytes: number;
 }
 
+const EXT_CONTENT_TYPES: Record<string, string> = {
+  html: "text/html",
+  png: "image/png",
+  jpg: "image/jpeg",
+  gif: "image/gif",
+  webp: "image/webp",
+};
+
+/**
+ * 与 PipelineDeps.writeAssetFile / DownloadImageOptions.writeAsset 签名对齐的 R2 写入器。
+ * 键规则：assets/{assetId}.{ext}（assetId 为源地址派生的稳定编号，immutable）。
+ */
+export function makeR2AssetWriter(
+  cfg: R2Config
+): (assetId: string, ext: string, body: Buffer) => Promise<string> {
+  return async (assetId, ext, body) => {
+    const key = "assets/" + assetId + "." + ext;
+    await putObject(cfg, key, body, {
+      contentType: EXT_CONTENT_TYPES[ext] ?? "application/octet-stream",
+    });
+    return key;
+  };
+}
+
 /** 上传一个对象（PUT）。assetId 键 immutable，不需要先删旧对象。 */
 export async function putObject(
   cfg: R2Config,

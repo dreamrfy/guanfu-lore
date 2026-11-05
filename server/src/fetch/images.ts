@@ -53,6 +53,13 @@ export interface ImageDownloadResult {
 export interface DownloadImageOptions {
   /** 这些主机也算允许（例如 B站封面图 i1.hdslb.com 由 isAllowedImageHost 覆盖，这里留给将来扩展） */
   extraAllowedHosts?: ReadonlySet<string>;
+  /**
+   * 资源写入器（可选，默认写本地存储层 localStore.writeAssetFile）。
+   * 云上装配传 R2 上传封装；可以是同步返回键，或异步 Promise。
+   */
+  writeAsset?: (assetId: string, ext: string, body: Buffer) => string | Promise<string>;
+  /** 资源归属标记：默认 local；云上装配传 r2（G1 的 provider 字段） */
+  provider?: "local" | "r2" | "cloudbase";
 }
 
 /** 下载一张图片 → 落盘 → 返回 AssetRef（G1：只存编号） */
@@ -84,6 +91,7 @@ export async function downloadImage(sourceUrl: string, opts: DownloadImageOption
   const ext = sniffed;
 
   const assetId = shortHash(sourceUrl, 16);
-  const outPath = writeAssetFile(assetId, ext, res.body);
-  return { assetRef: { assetId, provider: "local", ext }, bytes: res.body.length, outPath };
+  const writeAsset = opts.writeAsset ?? writeAssetFile;
+  const outPath = await writeAsset(assetId, ext, res.body);
+  return { assetRef: { assetId, provider: opts.provider ?? "local", ext }, bytes: res.body.length, outPath };
 }
