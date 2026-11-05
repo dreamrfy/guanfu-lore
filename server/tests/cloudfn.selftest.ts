@@ -1,4 +1,5 @@
 // 云函数轮询入口自测：pollOnce 主循环（假 client + mock 流水线 + 假游标存储，不联网）
+// 游标介质自 2026-11-05 起为 R2 JSON 文件（路线 A）；本测试注入假 loadState/saveState，与介质无关。
 // 用法: node tests/cloudfn.selftest.ts
 import { pollOnce, type PollIo, type PollState } from "../src/cloud/pollFn.ts";
 import { createMockDeps } from "../src/pipeline/mock.ts";

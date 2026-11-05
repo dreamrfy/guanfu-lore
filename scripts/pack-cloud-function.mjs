@@ -37,8 +37,11 @@ if (fs.existsSync(strayOut)) {
   rmrf(strayOut);
 }
 
-log("复制 package.json（type:module）");
-fs.copyFileSync(path.join(SERVER, `package.json`), path.join(STAGING, "package.json"));
+log("复制 package.json（type:module）并剔除依赖（路线 A：仅 Node 内置模块，无需 npm install）");
+const pkg = JSON.parse(fs.readFileSync(path.join(SERVER, "package.json"), "utf8"));
+delete pkg.dependencies;
+delete pkg.devDependencies;
+fs.writeFileSync(path.join(STAGING, "package.json"), JSON.stringify(pkg, null, 2), "utf8");
 
 log("写入 index.js 入口垫片");
 fs.writeFileSync(
@@ -48,21 +51,6 @@ fs.writeFileSync(
     `export { main };\n`,
   "utf8"
 );
-
-log("安装 @cloudbase/node-sdk 进函数包（优先官方源，失败自动换国内镜像）");
-const npm = process.platform === "win32" ? "npm.cmd" : "npm";
-// Windows 上 spawn .cmd 必须 shell:true（Node 安全限制）；参数全部是脚本内固定值，无注入面
-const npmOpts = { cwd: STAGING, stdio: "inherit", shell: process.platform === "win32" };
-try {
-  execFileSync(npm, ["install", "@cloudbase/node-sdk", "--no-audit", "--no-fund", "--loglevel=error"], npmOpts);
-} catch {
-  log("官方源失败，换 npmmirror 重试");
-  execFileSync(
-    npm,
-    ["install", "@cloudbase/node-sdk", "--no-audit", "--no-fund", "--loglevel=error"],
-    { ...npmOpts, env: { ...process.env, npm_config_registry: "https://registry.npmmirror.com" } }
-  );
-}
 
 log("压缩 zip");
 fs.mkdirSync(path.dirname(OUT_ZIP), { recursive: true });

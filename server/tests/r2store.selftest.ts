@@ -3,7 +3,7 @@
 import crypto from "node:crypto";
 
 const mod = await import("../src/store/r2Store.ts");
-const { loadR2Config, uriEncode, signRequest, putObject } = mod;
+const { loadR2Config, uriEncode, signRequest, putObject, getObject } = mod;
 
 let failed = 0;
 function check(name: string, ok: boolean, detail = ""): void {
@@ -138,6 +138,46 @@ try {
   }
 } finally {
   (globalThis as { fetch: unknown }).fetch = realFetch;
+}
+
+// ---- getObject（路线 A：记录 JSON 读取）----
+{
+  const store = new Map<string, Buffer>();
+  const realFetch2 = globalThis.fetch;
+  (globalThis as { fetch: unknown }).fetch = (async (url: string | URL, init?: {
+    method?: string;
+    headers?: Record<string, string>;
+  }) => {
+    const u = String(url);
+    const key = u.replace("https://0123456789abcdef0123456789abcdef.r2.cloudflarestorage.com/bijiapp-assets/", "");
+    if ((init?.method ?? "GET") === "GET") {
+      const body = store.get(key);
+      if (!body) {
+        return { ok: false, status: 404, headers: new Map(), text: async () => "NoSuchKey", arrayBuffer: async () => new ArrayBuffer(0) } as unknown as Response;
+      }
+      const ab = body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength) as ArrayBuffer;
+      return { ok: true, status: 200, headers: new Map(), text: async () => "", arrayBuffer: async () => ab } as unknown as Response;
+    }
+    store.set(key, Buffer.from((init as { body?: Uint8Array }).body ?? new Uint8Array()));
+    return { ok: true, status: 200, headers: new Map([["etag", '"e"']]) as unknown as Headers, text: async () => "" } as unknown as Response;
+  }) as typeof fetch;
+  try {
+    check("getObject 不存在 → null", (await getObject(cfg, "clips/none.json")) === null);
+    await putObject(cfg, "clips/a.json", Buffer.from('{"id":"wx_a"}'), { now: new Date("2026-11-05T02:00:00Z") });
+    const got = await getObject(cfg, "clips/a.json");
+    check("getObject 存在 → 原始字节", got !== null && got.toString() === '{"id":"wx_a"}');
+    (globalThis as { fetch: unknown }).fetch = (async () =>
+      ({ ok: false, status: 500, headers: new Map(), text: async () => "boom", arrayBuffer: async () => new ArrayBuffer(0) }) as unknown as Response) as typeof fetch;
+    let getErrMsg = "";
+    try {
+      await getObject(cfg, "clips/a.json");
+    } catch (e) {
+      getErrMsg = String((e as Error).message);
+    }
+    check("getObject 500 抛错", /HTTP 500/.test(getErrMsg), getErrMsg);
+  } finally {
+    (globalThis as { fetch: unknown }).fetch = realFetch2;
+  }
 }
 
 console.log(failed === 0 ? "\n自测全部通过" : `\n自测失败 ${failed} 项`);

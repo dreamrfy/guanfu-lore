@@ -1,11 +1,12 @@
-// 微信客服定时触发轮询云函数入口（阶段一）
+// 微信客服定时触发轮询云函数入口（阶段一，路线 A：R2 全包）
 //
-// 凭证：五项环境变量直读（config.loadSecrets 分派）；数据：CloudBase 数据库；
-// 资源：R2（cloudWire 装配）；游标与续拉 token：存 CloudBase poll_state 集合
-//（云函数没有持久文件系统，本地 CLI 的游标文件方案在云上不可用）。
+// 凭证：五项环境变量直读（config.loadSecrets 分派）；
+// 记录/游标：R2 JSON 文件（store/r2ClipStore）——用户 CloudBase 环境是 PG 模式
+//（无文档型数据库，实测 2026-11-05），拍板记录不落 CloudBase 数据库；
+// 资源：R2（cloudWire 装配）。云函数只依赖微信凭证 + R2 凭证两组环境变量。
 //
 // 注：轮询主循环与 cli.ts cmdPoll 同构——阶段一有意不抽公共层，避免改动已验收的本地链路；
-// 差异只在游标存储介质（文件 vs 数据库文档）。
+// 差异只在游标存储介质（本地文件 vs R2 对象）。
 import { loadSecrets } from "../config.ts";
 import { WecomClient } from "../sources/wecomClient.ts";
 import { runPipeline } from "../pipeline/run.ts";
@@ -64,7 +65,7 @@ export async function pollOnce(io: PollIo): Promise<PollResult> {
       console.error("游标未落盘（下次会重复拉取，幂等去重可兜底）：" + String((e as Error).message));
     }
   }
-  return { ...stats, cursor, "stopReason": stopReason } as PollResult;
+  return { ...stats, cursor, stopReason } as PollResult;
 }
 
 /** 云函数入口：控制台「测试」按钮或定时触发器调用 */
@@ -73,19 +74,11 @@ export async function main(event: unknown = null, context: unknown = null): Prom
   void context;
   const secrets = loadSecrets();
   const client = new WecomClient({ corpId: secrets.corpId, appSecret: secrets.appSecret });
-  const { deps, adapter } = await createCloudDeps();
+  const { deps, store } = await createCloudDeps();
   return pollOnce({
     client,
     pipeline: deps,
-    loadState: async () => {
-      const doc = await adapter.docGet("poll_state", "poll");
-      if (!doc) return null;
-      return {
-        cursor: String(doc.cursor ?? ""),
-        token: String(doc.token ?? ""),
-        updatedAt: String(doc.updatedAt ?? ""),
-      };
-    },
-    saveState: (s) => adapter.docSet("poll_state", "poll", { ...s }),
+    loadState: () => store.loadPollState(),
+    saveState: (s) => store.savePollState(s),
   });
 }

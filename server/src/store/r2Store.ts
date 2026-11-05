@@ -134,6 +134,38 @@ export interface R2PutResult {
   bytes: number;
 }
 
+/**
+ * 读取一个对象。404 → null（不存在）；其他非 2xx 抛错（附状态码与响应片段）。
+ * 记录文件都是几 KB 的小对象，直接 GET 足够；exists 判定也用它（不做单独 HEAD）。
+ */
+export async function getObject(
+  cfg: R2Config,
+  key: string,
+  opts: { now?: Date } = {}
+): Promise<Buffer | null> {
+  const host = cfg.accountId + ".r2.cloudflarestorage.com";
+  const canonicalUri = "/" + cfg.bucket + "/" + uriEncode(key, false);
+  const { authorization, headers } = signRequest({
+    method: "GET",
+    host,
+    canonicalUri,
+    payloadSha256Hex: sha256Hex(Buffer.alloc(0)),
+    now: opts.now ?? new Date(),
+    accessKeyId: cfg.accessKeyId,
+    secretAccessKey: cfg.secretAccessKey,
+  });
+  const res = await fetch("https://" + host + canonicalUri, {
+    method: "GET",
+    headers: { ...headers, authorization },
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    const text = (await res.text()).slice(0, 300);
+    throw new Error(`R2 GET ${key} 失败：HTTP ${res.status} ${text}`);
+  }
+  return Buffer.from(await res.arrayBuffer());
+}
+
 const EXT_CONTENT_TYPES: Record<string, string> = {
   html: "text/html",
   png: "image/png",
