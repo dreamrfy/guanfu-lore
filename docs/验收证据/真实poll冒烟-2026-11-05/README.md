@@ -31,3 +31,12 @@
 ## 证据文件
 
 - `poll-output.txt`：命令、原始输出、入库明细
+
+## 处理结果（追加，2026-11-05，不改上文原文）
+
+- **发现 1 已拍板并实现**：http→https 规范化——仅当 origin 恰为 `http://mp.weixin.qq.com`
+  （无端口、无尾点变体）时升级为 https 再走常规校验，其余 http 变体仍拒绝；抓取全程仍 https。
+  改动：`server/src/fetch/article.ts` 一处；新增 6 项测试（http 升级、与 https 同幂等 id、
+  端口/其他主机变体仍拒绝）；19 自测全通过 + `tsc --noEmit` 0 错误。
+  那条失败的《第 46 套 Skill》重新转发一次即可入库。
+- **发现 2 保持待办**：B站封面下载落盘，接云时补。

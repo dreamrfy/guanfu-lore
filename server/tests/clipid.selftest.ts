@@ -57,5 +57,48 @@ const buckets = new Set<string>();
 for (let i = 0; i < 2000; i++) buckets.add(shortHash("sample-" + i, 16)[0]!);
 check("首字符分布覆盖 16 个桶（实际 " + buckets.size + "）", buckets.size === 16, String(buckets.size));
 
+// 2026-11-05 冒烟发现：真实转发会出现 http://mp.weixin.qq.com/...，拍板为自动升级 https 再抓。
+const { canonicalWechatArticleUrl } = await import("../src/fetch/article.ts");
+const httpArticle =
+  "http://mp.weixin.qq.com/s?__biz=MzkyNDA5MjgyNw==&mid=2247510388&idx=1&sn=5a8fa81a2ad2b093f87455a9f7a35716&chksm=c01698f083e3d17fca3bdfffe4ef11ed03cf0ed18020babfd1543fc38774d0e57f298e846d6f#rd";
+check("http 公众号链接不再抛异常", (() => {
+  try {
+    canonicalWechatArticleUrl(httpArticle);
+    return true;
+  } catch {
+    return false;
+  }
+})());
+check("http 升级后 origin 是 https", canonicalWechatArticleUrl(httpArticle).origin === "https://mp.weixin.qq.com");
+check(
+  "同一篇 http vs https → 同一个幂等 id",
+  clipIdFor(httpArticle) === clipIdFor(u1Trim),
+  clipIdFor(httpArticle) + " vs " + clipIdFor(u1Trim)
+);
+check("http 带非标准端口仍拒绝", (() => {
+  try {
+    canonicalWechatArticleUrl("http://mp.weixin.qq.com:8080/s?__biz=MzkyNDA5MjgyNw==&mid=1&idx=1&sn=5a8fa81a2ad2b093f87455a9f7a35716");
+    return false;
+  } catch {
+    return true;
+  }
+})());
+check("http 其他主机仍拒绝", (() => {
+  try {
+    canonicalWechatArticleUrl("http://example.com/s?__biz=MzkyNDA5MjgyNw==&mid=1&idx=1&sn=5a8fa81a2ad2b093f87455a9f7a35716");
+    return false;
+  } catch {
+    return true;
+  }
+})());
+check("https 非 443 端口仍拒绝", (() => {
+  try {
+    canonicalWechatArticleUrl("https://mp.weixin.qq.com:8443/s?__biz=MzkyNDA5MjgyNw==&mid=1&idx=1&sn=5a8fa81a2ad2b093f87455a9f7a35716");
+    return false;
+  } catch {
+    return true;
+  }
+})());
+
 console.log(failed === 0 ? "\n自测全部通过" : `\n自测失败 ${failed} 项`);
 process.exitCode = failed === 0 ? 0 : 1;

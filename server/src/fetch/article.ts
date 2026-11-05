@@ -55,7 +55,13 @@ export const ARTICLE_ORIGIN = "https://mp.weixin.qq.com";
  * ③ 重建后的地址不含任何额外参数（防参数注入/开放跳转）。
  */
 export function canonicalWechatArticleUrl(raw: string): URL {
-  const u = new URL(raw);
+  let u = new URL(raw);
+  // 2026-11-05 真实凭证冒烟发现：转发里会出现 http://mp.weixin.qq.com/...（订阅号消息原始链接）。
+  // 仅当 origin 恰为 http://mp.weixin.qq.com（无端口、无尾点变体）时升级为 https 再走常规校验；
+  // 其他 http 变体仍被下方 origin 校验拒绝。抓取全程仍是 https，主机不变，攻击面不变。
+  if (u.origin === "http://mp.weixin.qq.com") {
+    u = new URL(ARTICLE_ORIGIN + u.pathname + u.search);
+  }
   if (u.origin !== ARTICLE_ORIGIN) {
     throw new Error("仅支持抓取公众号文章（origin 须为 " + ARTICLE_ORIGIN + "），实际：" + u.origin);
   }

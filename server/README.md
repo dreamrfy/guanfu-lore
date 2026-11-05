@@ -127,6 +127,9 @@ node src/cli.ts --help
 - 凭证（AppSecret / Token / EncodingAESKey）只从**仓库外**文件读，路径由 `KF_SECRETS_FILE` 传入
 - 抓取外部地址：只允许 http/https；拒绝 localhost/环回/私有/保留地址；
   IPv6 **fail-closed**（只放行全球单播 `2000::/3`）；DNS 结果校验后钉住；重定向逐跳复检
+- 公众号链接允许 **http→https 规范化**（2026-11-05 冒烟拍板）：仅当 origin 恰为
+  `http://mp.weixin.qq.com`（无端口、无尾点变体）时升级为 https 再走常规校验；
+  其余 http 变体仍拒绝；抓取全程仍 https，主机不变，攻击面不变
 - 响应体上限：正文 10MB、图片 20MB（`Content-Length` 与实际累计字节双检）
 - HTML **正文**清洗用白名单库（`sanitize-html`）；离线快照的整页加固基于 **DOM（htmlparser2）**：
   删除 `script`/`iframe`/`base`/`link`、`on*`、`srcdoc`、`javascript:`、非位图 `data:`、外链资源引用，
