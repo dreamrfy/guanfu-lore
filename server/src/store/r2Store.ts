@@ -1,4 +1,4 @@
-// Cloudflare R2 对象存储（阶段一接云）——零依赖 S3 SigV4 实现
+// Cloudflare R2 对象存储（阶段一接云）——S3 SigV4 签名只用 Node 内置 crypto，不新增第三方包
 // 凭证只从环境变量读（R2_ACCOUNT_ID / R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY / R2_BUCKET），不进仓库。
 // path-style 端点：https://{account}.r2.cloudflarestorage.com/{bucket}/{key}
 // 键由 assetId 派生（G1 红线：记录里只存编号；真实地址只由本层生成，不落库）。
