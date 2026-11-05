@@ -39,15 +39,17 @@ App 客户端（读清单/正文：服务端按 assetId+provider 生成地址）
 > 如果 CloudBase 只提供 Node 20/22 且不能加启动参数，就必须先 `tsc` 编译成 `.js` 再部署
 > （同时处理 import 的 `.ts` 扩展名）。**不要**假定“复制 `.ts` 就能跑”。
 
-**代码结构**（阶段一）：
+**代码结构**（阶段一，2026-11-05 起按此实现）：
 
 ```
-server/cloud/pollFn/
-├── index.js          ← 云函数入口（轮询 + 抓取 + 落库）
-├── sources/          ← 与 src/sources/ 相同
-├── fetch/            ← 与 src/fetch/ 相同（抓取逻辑移植）
-└── package.json
+server/src/cloud/pollFn.ts       ← 云函数入口（main：轮询 + 抓取 + 落库；游标存 poll_state 集合）
+server/src/pipeline/cloudWire.ts ← 云上装配（CloudBase 数据库 + R2 资源；安全 HTTP 层与本地共用）
+scripts/pack-cloud-function.mjs  ← 打包脚本：node scripts/pack-cloud-function.mjs
+server/out/bijiapp-poll.zip      ← 打包产物（gitignored）：src/.ts + index.js 垫片 + @cloudbase/node-sdk
 ```
+
+打包产物里的 `index.js` 是脚本生成的入口垫片（`import { main } from "./src/cloud/pollFn.ts"`），
+**要求 Runtime 为 Node 24**（原生直跑 .ts）；若平台只有更低版本，需先改为 tsc 编译再打包（见 docs/部署清单-阶段一-控制台操作.md 第 1 步）。
 
 ---
 
@@ -74,18 +76,21 @@ server/cloud/pollFn/
 
 | 键 | 说明 | 示例（占位） |
 | --- | --- | --- |
-| `WX_CORP_ID` | 企业微信 CorpID | `wwxxxxxxxxxxxxxxxx` |
-| `WX_KF_SECRET` | 微信客服专属 Secret | `<部署者填写>` |
-| `WX_KF_OPEN_KFID` | 客服账号 ID | `wkxxxxxxxxxxxxxxxx` |
-| `CB_ENV_ID` | CloudBase 环境 ID | `biji-gcsb-d6gnwvcjk883b32c7` |
-| `R2_ACCOUNT_ID` | Cloudflare 账户 ID | `<32 位十六进制>` |
+| `KF_CORP_ID` | 企业微信 CorpID | `<部署者填写>` |
+| `KF_AGENT_ID` | 微信客服应用 agentId | `<部署者填写>` |
+| `KF_APP_SECRET` | 微信客服专属 Secret | `<部署者填写>` |
+| `KF_TOKEN` | 回调 Token（阶段一预留，轮询用不到但校验必填） | `<部署者填写>` |
+| `KF_ENCODING_AES_KEY` | 回调 EncodingAESKey（阶段一预留） | `<部署者填写>` |
+| `R2_ACCOUNT_ID` | Cloudflare 账户 ID（32 位 hex） | `<部署者填写>` |
 | `R2_ACCESS_KEY_ID` | R2 访问密钥 ID | `<部署者填写>` |
 | `R2_SECRET_ACCESS_KEY` | R2 私有密钥 | `<部署者填写>` |
-| `R2_BUCKET` | R2 桶名 | `<部署者填写>` |
+| `R2_BUCKET` | R2 桶名 | `bijiapp-assets` |
+
+> 云上数据库环境 ID 无需配置：`createClipDbAdapter` 用云函数自带的 `TCB_ENV` / `SYMBOL_DEFAULT_ENV`。
 
 **安全约定**：以上值**只**在云控制台/本地环境变量里配置；**一律不进仓库**（含 .env.example——那里只有键名）。
 
-**与本地 `KfSecrets` 的字段映射**（接云时要改 `config.ts`，约 20 行）：
+**与本地 `KfSecrets` 的字段映射**：✅ 已完成（2026-11-05）——`config.ts` 支持五项 `KF_*` 环境变量直读，任一存在即走云分支；本地仍走 `KF_SECRETS_FILE` 仓库外文件。
 
 | 云环境变量 | `KfSecrets` 字段 | 说明 |
 | --- | --- | --- |
