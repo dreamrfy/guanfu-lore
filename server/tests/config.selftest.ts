@@ -71,5 +71,54 @@ check("仓库外但文件不存在时报错", missingRejected);
 
 fs.rmSync(tmpDir, { recursive: true, force: true });
 
+// ---- 环境变量直读分支（云函数用，2026-11-05 接云准备）----
+const { loadSecretsFromEnv } = await import("../src/config.ts");
+const ENV_KEYS = ["KF_CORP_ID", "KF_AGENT_ID", "KF_APP_SECRET", "KF_TOKEN", "KF_ENCODING_AES_KEY"];
+for (const k of ENV_KEYS) delete process.env[k];
+
+let envOk = false;
+let envCorp = "";
+process.env.KF_CORP_ID = "corp-env";
+process.env.KF_AGENT_ID = "1000002";
+process.env.KF_APP_SECRET = "secret-env";
+process.env.KF_TOKEN = "token-env";
+process.env.KF_ENCODING_AES_KEY = "aes-env";
+try {
+  const s = loadSecrets();
+  envOk = true;
+  envCorp = s.corpId;
+} catch (e) {
+  console.error(String(e));
+}
+check(
+  "五项环境变量齐全时直读成功（不要求 KF_SECRETS_FILE）",
+  envOk && envCorp === "corp-env",
+  envCorp
+);
+check("环境变量直读返回全部五项", loadSecretsFromEnv().appSecret === "secret-env");
+
+// 部分设置：缺一项要报错并点名
+delete process.env.KF_ENCODING_AES_KEY;
+let partialMsg = "";
+try {
+  loadSecrets();
+} catch (e) {
+  partialMsg = String((e as Error).message);
+}
+check("缺一项报错并点名缺失变量", /KF_ENCODING_AES_KEY/.test(partialMsg), partialMsg);
+
+// 环境变量优先于文件：设置非法 KF_SECRETS_FILE（仓库内路径），若直读分支生效则不触发文件校验
+process.env.KF_ENCODING_AES_KEY = "aes-env";
+process.env.KF_SECRETS_FILE = "package.json"; // 仓库内路径，走文件分支必被拒
+let envPriority = false;
+try {
+  envPriority = loadSecrets().corpId === "corp-env";
+} catch (e) {
+  console.error(String(e));
+}
+check("环境变量分支优先于文件分支", envPriority);
+
+for (const k of [...ENV_KEYS, "KF_SECRETS_FILE"]) delete process.env[k];
+
 console.log(failed === 0 ? "\n自测全部通过" : `\n自测失败 ${failed} 项`);
 process.exitCode = failed === 0 ? 0 : 1;

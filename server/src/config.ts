@@ -64,8 +64,37 @@ function secretsFilePath(): string {
   return abs;
 }
 
-/** 读微信客服凭证（路径由 secretsFilePath() 校验后给出） */
+/** 云函数等无文件系统环境：凭证五项与各环境变量的对应关系（值由部署时注入，不进仓库） */
+const SECRET_ENV_KEYS: ReadonlyArray<[keyof KfSecrets, string]> = [
+  ["corpId", "KF_CORP_ID"],
+  ["agentId", "KF_AGENT_ID"],
+  ["appSecret", "KF_APP_SECRET"],
+  ["token", "KF_TOKEN"],
+  ["encodingAESKey", "KF_ENCODING_AES_KEY"],
+];
+
+/** 云上直读：五项凭证全部从环境变量给值；缺任何一项报错并点名缺哪个 */
+export function loadSecretsFromEnv(): KfSecrets {
+  const missing = SECRET_ENV_KEYS.filter(([, env]) => (process.env[env] ?? "") === "").map(([, env]) => env);
+  if (missing.length > 0) throw new Error("凭证环境变量未设置：" + missing.join(", "));
+  const out = {} as KfSecrets;
+  for (const [key, env] of SECRET_ENV_KEYS) out[key] = process.env[env]!;
+  return out;
+}
+
+/**
+ * 读微信客服凭证（分派）：
+ * 云上——环境变量直接给值（五项任一存在即走此分支，缺项报错点名）；
+ * 本地——回退仓库外文件，路径由 KF_SECRETS_FILE 传入。
+ */
 export function loadSecrets(): KfSecrets {
+  const fromEnv = SECRET_ENV_KEYS.some(([, env]) => (process.env[env] ?? "") !== "");
+  if (fromEnv) return loadSecretsFromEnv();
+  return loadSecretsFromFile();
+}
+
+/** 本地读法（原实现）：路径由 secretsFilePath() 校验后给出 */
+function loadSecretsFromFile(): KfSecrets {
   const file = secretsFilePath();
   if (!fs.statSync(file).isFile()) throw new Error("凭证文件不存在");
   return JSON.parse(fs.readFileSync(file, "utf8")) as KfSecrets;
