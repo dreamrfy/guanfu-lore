@@ -82,3 +82,20 @@ export async function main(event: unknown = null, context: unknown = null): Prom
     saveState: (s) => store.savePollState(s),
   });
 }
+
+// VPS/systemd 直接运行入口：node 直接执行本文件时自动跑 main() 并输出 JSON 统计；
+// 被云函数（垫片 index.js require）加载时不执行（argv[1] 不是本文件）。
+const invokedDirectly =
+  process.argv[1] !== undefined &&
+  process.argv[1].endsWith("pollFn.ts");
+if (invokedDirectly) {
+  main()
+    .then((result) => {
+      console.log("[bijiapp-poll] " + JSON.stringify(result));
+      process.exitCode = 0;
+    })
+    .catch((err) => {
+      console.error("[bijiapp-poll] 运行失败：" + String((err && err.message) || err));
+      process.exitCode = 1;
+    });
+}
