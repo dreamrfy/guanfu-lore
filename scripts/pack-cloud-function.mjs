@@ -61,12 +61,29 @@ delete pkg.type; // 云函数包内入口走 CommonJS；src/*.ts 的加载不依
 fs.writeFileSync(path.join(STAGING, "package.json"), JSON.stringify(pkg, null, 2), "utf8");
 fs.writeFileSync(
   path.join(STAGING, "index.js"),
-  `// CloudBase 云函数入口垫片（2026-11-06 修复：FUNCTIONS_INVOCATION_FAILED/443）\n` +
-    `// 平台加载器按 CommonJS 解析 index.js 并要求 module.exports.main；ESM import 写法会加载即崩。\n` +
-    `// 包内 package.json 已去掉 type:module，本文件天然 CommonJS。\n` +
+  `// CloudBase 云函数入口垫片（2026-11-06 修复：443/430 调用失败）\n` +
+    `// ① 平台加载器按 CommonJS 解析 index.js 并要求 module.exports.main（ESM import 会加载即崩）\n` +
+    `// ② 云函数日志实测：430+2ms+46MB = main 是 async，平台不等待未决 Promise 即判失败。\n` +
+    `//    解法：垫片同步返回，内部把 async 结果等成值再通过 callback 风格交还；\n` +
+    `//    SCF Node 加载器兼容「返回 Promise」与「(event, context, callback)」两种签名，\n` +
+    `//    这里两者都实现：返回 Promise 的同时挂 callback（平台用哪个都能拿到结果）。\n` +
+    `// ③ 错误不再抛给平台（抛错=443 无堆栈），转成 { ok:false, error } 正常返回，云端日志可见。\n` +
     `// Node 24 的 require 可直接加载 .ts（原生 type stripping，本地已验证）。\n` +
     `const pollFn = require("./src/cloud/pollFn.ts");\n` +
-    `module.exports.main = pollFn.main;\n` +
+    `function main(event, context, callback) {\n` +
+    `  return pollFn.main(event, context)\n` +
+    `    .then((result) => {\n` +
+    `      if (typeof callback === "function") callback(null, result);\n` +
+    `      return result;\n` +
+    `    })\n` +
+    `    .catch((err) => {\n` +
+    `      const payload = { ok: false, error: String((err && err.message) || err) };\n` +
+    `      console.error("[bijiapp-poll] 入口错误：", payload.error);\n` +
+    `      if (typeof callback === "function") callback(null, payload);\n` +
+    `      return payload;\n` +
+    `    });\n` +
+    `}\n` +
+    `module.exports.main = main;\n` +
     `module.exports.pollOnce = pollFn.pollOnce;\n`,
   "utf8"
 );
