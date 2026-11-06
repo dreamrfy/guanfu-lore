@@ -37,18 +37,37 @@ if (fs.existsSync(strayOut)) {
   rmrf(strayOut);
 }
 
-log("复制 package.json（type:module）并剔除依赖（路线 A：仅 Node 内置模块，无需 npm install）");
-const pkg = JSON.parse(fs.readFileSync(path.join(SERVER, "package.json"), "utf8"));
-delete pkg.dependencies;
-delete pkg.devDependencies;
-fs.writeFileSync(path.join(STAGING, "package.json"), JSON.stringify(pkg, null, 2), "utf8");
+log("复制 package.json（type:module，保留运行时依赖）");
+fs.copyFileSync(path.join(SERVER, "package.json"), path.join(STAGING, "package.json"));
 
-log("写入 index.js 入口垫片");
+log("安装运行时依赖（sanitize-html + htmlparser2 系列——htmlSanitize.ts 真实依赖，2026-11-06 模拟加载暴露）");
+const npm = process.platform === "win32" ? "npm.cmd" : "npm";
+// Windows 上 spawn .cmd 必须 shell:true（Node 安全限制）；参数全部是脚本内固定值，无注入面
+const npmOpts = { cwd: STAGING, stdio: "inherit", shell: process.platform === "win32" };
+try {
+  execFileSync(npm, ["install", "--omit=dev", "--no-audit", "--no-fund", "--loglevel=error"], npmOpts);
+} catch {
+  log("官方源失败，换 npmmirror 重试");
+  execFileSync(
+    npm,
+    ["install", "--omit=dev", "--no-audit", "--no-fund", "--loglevel=error"],
+    { ...npmOpts, env: { ...process.env, npm_config_registry: "https://registry.npmmirror.com" } }
+  );
+}
+
+log("写入入口垫片 index.js + package.json 去掉 type:module（.js 才能按 CommonJS 被 require）");
+const pkg = JSON.parse(fs.readFileSync(path.join(SERVER, "package.json"), "utf8"));
+delete pkg.type; // 云函数包内入口走 CommonJS；src/*.ts 的加载不依赖该字段（Node 24 type stripping，已验证）
+fs.writeFileSync(path.join(STAGING, "package.json"), JSON.stringify(pkg, null, 2), "utf8");
 fs.writeFileSync(
   path.join(STAGING, "index.js"),
-  `// CloudBase 云函数入口垫片：转发到 TS 入口（Node 24 原生直跑 .ts）\n` +
-    `import { main } from "./src/cloud/pollFn.ts";\n` +
-    `export { main };\n`,
+  `// CloudBase 云函数入口垫片（2026-11-06 修复：FUNCTIONS_INVOCATION_FAILED/443）\n` +
+    `// 平台加载器按 CommonJS 解析 index.js 并要求 module.exports.main；ESM import 写法会加载即崩。\n` +
+    `// 包内 package.json 已去掉 type:module，本文件天然 CommonJS。\n` +
+    `// Node 24 的 require 可直接加载 .ts（原生 type stripping，本地已验证）。\n` +
+    `const pollFn = require("./src/cloud/pollFn.ts");\n` +
+    `module.exports.main = pollFn.main;\n` +
+    `module.exports.pollOnce = pollFn.pollOnce;\n`,
   "utf8"
 );
 
@@ -57,16 +76,20 @@ fs.mkdirSync(path.dirname(OUT_ZIP), { recursive: true });
 fs.rmSync(OUT_ZIP, { force: true });
 execFileSync(
   "C:\\Windows\\System32\\tar.exe",
-  ["-a", "-c", "-f", OUT_ZIP, "index.js", "package.json", "src"],
+  ["-a", "-c", "-f", OUT_ZIP, "index.js", "package.json", "src", "node_modules"],
   { cwd: STAGING, stdio: "inherit", shell: false }
 );
 
-// 自验：能列出条目、首条是 index.js（防打出空包/错路径包）
+// 自验：入口、源码、关键依赖三个都在（防打出缺件包；2026-11-06 曾漏 node_modules）
 const listed = execFileSync("C:\\Windows\\System32\\tar.exe", ["-tf", OUT_ZIP], {
   encoding: "utf8",
   shell: false,
 });
-if (!/^index\.js$/m.test(listed)) throw new Error("打包自验失败：zip 里没有 index.js");
+for (const must of ["index.js", "src/cloud/pollFn.ts", "node_modules/sanitize-html/"]) {
+  if (!listed.split("\n").some((line) => line.trim() === must || line.trim().startsWith(must))) {
+    throw new Error("打包自验失败：zip 里缺 " + must);
+  }
+}
 
 const size = fs.statSync(OUT_ZIP).size;
 log("完成：" + OUT_ZIP + "（" + Math.round(size / 1024) + " KB）");
