@@ -1,0 +1,5 @@
+任务6 去重与幂等：clipId（URL 规范化 → 幂等键）
+
+- src/store/clipId.ts：公众号只取 __biz/mid/idx/sn 做哈希（跟踪参数与 chksm 不参与）；其他平台 origin+pathname
+- 自测 5/5：同一篇完整/去参 → 同 id；不同文章 → 不同 id；前缀与格式正确
+- 与存储层 INSERT OR REPLACE 配合：重复转发不重复入库（CLIP-03）

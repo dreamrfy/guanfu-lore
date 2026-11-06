@@ -1,0 +1,6 @@
+任务10 B站内容获取（公开 API）：bilibili.ts
+
+- resolveBvid：b23.tv 短链跟随重定向取 BV 号（SafeResponse 补 finalUrl）
+- fetchBilibiliMeta：api.bilibili.com/x/web-interface/view（无需登录）→ 标题/简介/UP主/时长/分P/封面
+- fetchBilibiliFromShortLink：短链 → 元数据（pipeline 入口）
+- 验收：BV1Uax46xEJ7 → 标题+简介+UP主+时长 909 秒+封面 全部拿到（0 登录）

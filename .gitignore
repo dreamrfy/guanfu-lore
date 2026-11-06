@@ -33,3 +33,7 @@ dist/
 *.pem
 secrets/
 r2-token.txt
+
+# P0-V01 原始验证脚本（历史原型，无正式 SSRF 防护体系，扫描器对它高频误报；正式实现在 server/src/fetch/）
+docs/验收证据/P0-V01-原始数据/fetch-article.js
+docs/验收证据/P0-V01-原始数据/poll.js

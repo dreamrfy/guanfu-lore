@@ -1,0 +1,6 @@
+任务12 自测跑批脚本：tests/run-all.sh（4 个自测全绿）
+
+- run-all.sh：一次跑完 store/clipid/failure/parse 四个自测并汇总
+- store 自测改为隔离测试库（KF_DATA_DIR=data-selftest）+ 关连接后清理（修复 Windows 下无法删目录）
+- .gitignore 补 data-selftest/
+- 验收：4/4 全部通过

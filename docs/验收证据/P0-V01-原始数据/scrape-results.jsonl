@@ -1,0 +1,113 @@
+{
+  "ok": true,
+  "title": "极简热榜回归初心，更简单更好用了",
+  "account": "科技汤",
+  "author": "阿汤",
+  "pubTime": "2026-11-03T07:00:00.000Z",
+  "sourceUrl": "https://mp.weixin.qq.com/s?__biz=MzkyNDA5MjgyNw==&mid=2247510388&idx=1&sn=5a8fa81a2ad2b093f87455a9f7a35716&chksm=c01698f083e3d17fca3bdfffe4ef11ed03cf0ed18020babfd1543fc38774d0e57f298e846d6f&mpshare=1&",
+  "rawHtmlBytes": 3498715,
+  "riskHits": [],
+  "images": {
+    "total": 4,
+    "fromDataSrc": 4,
+    "fromSrc": 0,
+    "ok": 4,
+    "failed": 0,
+    "failedList": []
+  },
+  "outFile": "E:\\dev\\tmp\\wecom-kf-test\\out\\offline_1793725640053.html",
+  "outBytes": 1279762,
+  "selfContained": true
+}
+{
+  "ok": true,
+  "title": "全网最全Python经典代码实例合集，练完你就牛了！",
+  "account": "",
+  "author": "程序猿星星",
+  "pubTime": "2026-11-02T08:56:47.000Z",
+  "sourceUrl": "https://mp.weixin.qq.com/s?__biz=MzYyNTc3Mjc5Nw==&mid=2247485669&idx=1&sn=8b27409199d093a44524f0fc64472bd7&chksm=f12f400441af671dd15107684c6d16228ea97bd6e251f516e018e32b71c4cebe6f1c9521cfdc&mpshare=1&",
+  "rawHtmlBytes": 3495489,
+  "riskHits": [],
+  "images": {
+    "total": 18,
+    "fromDataSrc": 18,
+    "fromSrc": 0,
+    "ok": 18,
+    "failed": 0,
+    "failedList": []
+  },
+  "outFile": "E:\\dev\\tmp\\wecom-kf-test\\out\\offline_1793725649450.html",
+  "outBytes": 2421148,
+  "selfContained": true
+}
+{
+  "ok": true,
+  "title": "颠覆微信排版！我用代码给公众号换了张脸，HTML+JS直插，告别排版焦虑",
+  "account": "",
+  "author": "神器每日推送",
+  "pubTime": "2025-07-01T03:07:35.000Z",
+  "sourceUrl": "https://mp.weixin.qq.com/s?__biz=MzA4OTY3ODQzNw==&mid=2448501897&idx=1&sn=20eca934c4acaf890a4fd3c94b58253f&chksm=8591e1acd8590a19fd7ef64f48cd9eadabe4d5ef9575c97cbdd5459dc171c4707cfac3619a2e&mpshare=1&",
+  "rawHtmlBytes": 3755959,
+  "riskHits": [],
+  "images": {
+    "total": 6,
+    "fromDataSrc": 6,
+    "fromSrc": 0,
+    "ok": 6,
+    "failed": 0,
+    "failedList": []
+  },
+  "outFile": "E:\\dev\\tmp\\wecom-kf-test\\out\\offline_1793725653639.html",
+  "outBytes": 1340248,
+  "selfContained": true
+}
+{
+  "ok": true,
+  "title": "白送 4 核 8G，还不限时长我让它替我通宵干活",
+  "account": "",
+  "author": "",
+  "pubTime": "2026-11-02T03:05:55.000Z",
+  "sourceUrl": "https://mp.weixin.qq.com/s?__biz=MzU5NjcwNjcxMw==&mid=2247483778&idx=1&sn=de5d3390b4fc69b2e29319a21a2c9cf7&chksm=ffa2eb1ddb30ff7f8185378158dd6180f8e85ca8a844e0b522fc68e168cbffb17d5cdfbc8a21&mpshare=1&",
+  "rawHtmlBytes": 3537021,
+  "riskHits": [],
+  "images": {
+    "total": 3,
+    "fromDataSrc": 3,
+    "fromSrc": 0,
+    "ok": 3,
+    "failed": 0,
+    "failedList": []
+  },
+  "outFile": "E:\\dev\\tmp\\wecom-kf-test\\out\\offline_1793725656425.html",
+  "outBytes": 161221,
+  "selfContained": true
+}
+{
+  "ok": true,
+  "title": "空谷 Ondra 项目文档",
+  "account": "",
+  "author": "星玖工作室",
+  "pubTime": "2026-10-31T10:51:47.000Z",
+  "sourceUrl": "https://mp.weixin.qq.com/s?__biz=MzY4ODMyNDM4Mg==&mid=2247483734&idx=1&sn=1f10757b3b1f4f98d3eddc600d67051e&chksm=f20234540e17542f61ab4c907400a0cd57c4acb35e1235128332160e1db29d1af42f1ee688b2&mpshare=1&",
+  "rawHtmlBytes": 3839781,
+  "riskHits": [],
+  "images": {
+    "total": 0,
+    "fromDataSrc": 0,
+    "fromSrc": 0,
+    "ok": 0,
+    "failed": 0,
+    "failedList": []
+  },
+  "outFile": "E:\\dev\\tmp\\wecom-kf-test\\out\\offline_1793725657783.html",
+  "outBytes": 149875,
+  "selfContained": true
+}
+{
+  "ok": false,
+  "error": "未找到正文容器 js_content（可能被抓取限制拦下）"
+}
+{
+  "ok": false,
+  "error": "未找到正文容器 js_content（可能被抓取限制拦下）"
+}

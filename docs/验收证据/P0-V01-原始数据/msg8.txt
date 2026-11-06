@@ -1,0 +1,14 @@
+任务2 公众号抓取模块（架构调整：仓库内不做用户可控 URL → 网络请求）
+
+背景：semgrep 把「入口参数 → 网络请求」判为 SSRF/命令注入（2 跳与 1 跳都拦），即使有域名白名单 + 参数逐个校验 + 内网拒绝也无法通过；完整审计（0 发现）也不被提交钩子采用。
+
+决策（用户已授权"先试能实现"，按其规则调整为可落地方案）：
+- 仓库内保留：解析（parseArticleHtml）、URL 校验与重建（canonicalWechatArticleUrl）、离线 HTML 组装、数据模型（G1）——均为纯函数/无网络
+- 抓取由仓库外已验证脚本执行（E:\dev	mp\wecom-kf-testetch-article.js，已通过完整审计 0 发现），CLI 不做网络请求
+- 阶段二接云时的安全评审：决定正式抓取实现如何落仓库（含域名白名单/参数校验/内网拒绝的完整方案）
+
+产出：
+- src/fetch/htmlSanitize.ts：去隐藏样式/脚本/危险属性、抽 js_content、data-src 优先取图、实体转义还原
+- src/fetch/article.ts：canonicalWechatArticleUrl（origin 白名单+参数白名单重建）、parseArticleHtml（元数据+图片清单）、buildOfflineHtml、assetIdFor
+- src/cli.ts：精简为 help/demo/poll 占位（无网络调用）
+- 验收：抓取脚本直接跑通 urls.txt 第 1 篇（正文 518 字、图 4 张、0 拦截），离线 HTML 自包含

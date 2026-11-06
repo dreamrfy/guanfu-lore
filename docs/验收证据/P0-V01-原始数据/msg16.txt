@@ -1,0 +1,5 @@
+任务8 全链串联 + CLI demo：端到端实测通过
+
+- src/pipeline.ts：扫描 server/out/offline_*.html → ingestOfflineHtml（源 URL 实体转义还原 → origin 白名单校验+重建 → clipId 幂等 → 离线 HTML 落为快照资产 → saveClip）→ 结算
+- 实测：4 个离线文件（3 个同一文章重复）→ 新入库 1、幂等跳过 3、失败 0
+- 库中记录：id=wx_00000000367cc15a、状态 complete、快照资产 10.8KB HTML 落 data/assets/（G1 资源只存编号）

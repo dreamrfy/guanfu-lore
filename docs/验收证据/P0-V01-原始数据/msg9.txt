@@ -1,0 +1,7 @@
+任务3+4 公众号图片落盘与消息解析（images.ts + wecomMessage.ts）
+
+- src/fetch/images.ts：图片主机白名单（mmbiz.qpic.cn/qlogo.cn）、扩展名按 Content-Type 白名单映射（不信任远端路径）、assetId 由源地址 FNV 哈希派生（G1：AssetRef 只存编号）、落盘路径边界校验、按 URL 去重
+- src/sources/wecomMessage.ts：微信客服消息 → 归一化条目（link/text 两形态、域名→平台、URL 提取、抖音口令标题提取）
+- src/sources/types.ts：SourceAdapter 接口（G4 入口可替换）
+- tests/parse.selftest.ts：14 条真实样本自测（识别 11、正确过滤 3）
+- 验收：正文图片 5 张 → 下载 1 张成功（234KB PNG 落盘 server/data/assets/685b307c.png）

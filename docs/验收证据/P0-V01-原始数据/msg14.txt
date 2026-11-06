@@ -1,0 +1,5 @@
+任务7 失败分类与重试状态机：failure.ts
+
+- classifyFailure：去验证/环境异常→blocked_by_platform；正文缺失→content_missing；HTTP/超时→network_timeout；白名单拒绝→unsupported_type
+- withRetry：默认 2 次重试 + 指数退避，只对网络类失败重试（其他类型重试也不会成功）
+- 自测 7/7：分类 5 种、网络类自动重试后成功、正文缺失不重试直接失败

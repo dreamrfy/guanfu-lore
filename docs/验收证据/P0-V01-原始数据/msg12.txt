@@ -1,0 +1,6 @@
+任务5 本地存储层：SQLite（node:sqlite 零依赖）+ 资源落盘 + 幂等
+
+- src/store/localStore.ts：saveClip（INSERT OR REPLACE by id）/getClip/listClips；writeAssetFile/readAssetFile（路径边界校验 + assetId/扩展名白名单）
+- tests/store.selftest.ts：自测 5/5 通过（幂等、读回、编号引用）
+- ops/夜间任务队列.md：任务3/4/5 标完成
+- ops/运行状态.json：任务3/4 完成入 history
