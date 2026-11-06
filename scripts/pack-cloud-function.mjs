@@ -52,18 +52,21 @@ fs.writeFileSync(
   "utf8"
 );
 
-log("压缩 zip");
+log("压缩 zip（用 Windows 自带 bsdtar：Compress-Archive 的 zip 变体 CloudBase 解不开，2026-11-06 实测）");
 fs.mkdirSync(path.dirname(OUT_ZIP), { recursive: true });
 fs.rmSync(OUT_ZIP, { force: true });
 execFileSync(
-  "powershell",
-  [
-    "-NoProfile",
-    "-Command",
-    `Compress-Archive -Path '${STAGING}\\*' -DestinationPath '${OUT_ZIP}' -Force`,
-  ],
-  { stdio: "inherit", shell: false }
+  "C:\\Windows\\System32\\tar.exe",
+  ["-a", "-c", "-f", OUT_ZIP, "index.js", "package.json", "src"],
+  { cwd: STAGING, stdio: "inherit", shell: false }
 );
+
+// 自验：能列出条目、首条是 index.js（防打出空包/错路径包）
+const listed = execFileSync("C:\\Windows\\System32\\tar.exe", ["-tf", OUT_ZIP], {
+  encoding: "utf8",
+  shell: false,
+});
+if (!/^index\.js$/m.test(listed)) throw new Error("打包自验失败：zip 里没有 index.js");
 
 const size = fs.statSync(OUT_ZIP).size;
 log("完成：" + OUT_ZIP + "（" + Math.round(size / 1024) + " KB）");
