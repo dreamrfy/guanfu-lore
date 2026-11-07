@@ -37,3 +37,7 @@ r2-token.txt
 # P0-V01 原始验证脚本（历史原型，无正式 SSRF 防护体系，扫描器对它高频误报；正式实现在 server/src/fetch/）
 docs/验收证据/P0-V01-原始数据/fetch-article.js
 docs/验收证据/P0-V01-原始数据/poll.js
+
+# Web 数据库引擎文件（第三方编译产物，扫描器误报；由 scripts/fetch-web-db-binaries.sh 按版本钉死下载）
+client/web/sqlite3.wasm
+client/web/drift_worker.js
