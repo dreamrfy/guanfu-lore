@@ -10,6 +10,7 @@ class Pages extends Table {
   TextColumn get content => text().withDefault(const Constant(''))();
   IntColumn get sortKey => integer().withDefault(const Constant(0))();
   BoolColumn get deleted => boolean().withDefault(const Constant(false))(); // 软删除（回收站 P1-T06 启用）
+  DateTimeColumn get deletedAt => dateTime().nullable()(); // 移入回收站的时间（恢复时清空）
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 

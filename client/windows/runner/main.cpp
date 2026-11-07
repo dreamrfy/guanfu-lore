@@ -26,7 +26,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
 
   FlutterWindow window(project);
   Win32Window::Point origin(10, 10);
-  Win32Window::Size size(1280, 720);
+  // Default 1280x900: keeps both AppBar action icons (demo/trash) out of the overflow menu.
+  Win32Window::Size size(1280, 900);
   if (!window.Create(L"bijiapp", origin, size)) {
     return EXIT_FAILURE;
   }

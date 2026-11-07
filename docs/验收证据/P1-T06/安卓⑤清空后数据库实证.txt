@@ -1,0 +1,2 @@
+彻底删除后: [('hello-p1t02',), ('Welcome to Gboard clipboard, any text you copy will be saved here.',)]
+回收站: 0 条

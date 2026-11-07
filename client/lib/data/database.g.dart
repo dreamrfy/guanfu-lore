@@ -77,6 +77,17 @@ class $PagesTable extends Pages with TableInfo<$PagesTable, Page> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -141,6 +152,7 @@ class $PagesTable extends Pages with TableInfo<$PagesTable, Page> {
     content,
     sortKey,
     deleted,
+    deletedAt,
     createdAt,
     updatedAt,
     rev,
@@ -192,6 +204,12 @@ class $PagesTable extends Pages with TableInfo<$PagesTable, Page> {
       context.handle(
         _deletedMeta,
         deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
       );
     }
     if (data.containsKey('created_at')) {
@@ -261,6 +279,10 @@ class $PagesTable extends Pages with TableInfo<$PagesTable, Page> {
         DriftSqlType.bool,
         data['${effectivePrefix}deleted'],
       )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -297,6 +319,7 @@ class Page extends DataClass implements Insertable<Page> {
   final String content;
   final int sortKey;
   final bool deleted;
+  final DateTime? deletedAt;
   final DateTime createdAt;
   final DateTime updatedAt;
   final int rev;
@@ -309,6 +332,7 @@ class Page extends DataClass implements Insertable<Page> {
     required this.content,
     required this.sortKey,
     required this.deleted,
+    this.deletedAt,
     required this.createdAt,
     required this.updatedAt,
     required this.rev,
@@ -326,6 +350,9 @@ class Page extends DataClass implements Insertable<Page> {
     map['content'] = Variable<String>(content);
     map['sort_key'] = Variable<int>(sortKey);
     map['deleted'] = Variable<bool>(deleted);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     map['rev'] = Variable<int>(rev);
@@ -344,6 +371,9 @@ class Page extends DataClass implements Insertable<Page> {
       content: Value(content),
       sortKey: Value(sortKey),
       deleted: Value(deleted),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       rev: Value(rev),
@@ -364,6 +394,7 @@ class Page extends DataClass implements Insertable<Page> {
       content: serializer.fromJson<String>(json['content']),
       sortKey: serializer.fromJson<int>(json['sortKey']),
       deleted: serializer.fromJson<bool>(json['deleted']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       rev: serializer.fromJson<int>(json['rev']),
@@ -381,6 +412,7 @@ class Page extends DataClass implements Insertable<Page> {
       'content': serializer.toJson<String>(content),
       'sortKey': serializer.toJson<int>(sortKey),
       'deleted': serializer.toJson<bool>(deleted),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'rev': serializer.toJson<int>(rev),
@@ -396,6 +428,7 @@ class Page extends DataClass implements Insertable<Page> {
     String? content,
     int? sortKey,
     bool? deleted,
+    Value<DateTime?> deletedAt = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
     int? rev,
@@ -408,6 +441,7 @@ class Page extends DataClass implements Insertable<Page> {
     content: content ?? this.content,
     sortKey: sortKey ?? this.sortKey,
     deleted: deleted ?? this.deleted,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     rev: rev ?? this.rev,
@@ -422,6 +456,7 @@ class Page extends DataClass implements Insertable<Page> {
       content: data.content.present ? data.content.value : this.content,
       sortKey: data.sortKey.present ? data.sortKey.value : this.sortKey,
       deleted: data.deleted.present ? data.deleted.value : this.deleted,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       rev: data.rev.present ? data.rev.value : this.rev,
@@ -439,6 +474,7 @@ class Page extends DataClass implements Insertable<Page> {
           ..write('content: $content, ')
           ..write('sortKey: $sortKey, ')
           ..write('deleted: $deleted, ')
+          ..write('deletedAt: $deletedAt, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rev: $rev, ')
@@ -456,6 +492,7 @@ class Page extends DataClass implements Insertable<Page> {
     content,
     sortKey,
     deleted,
+    deletedAt,
     createdAt,
     updatedAt,
     rev,
@@ -472,6 +509,7 @@ class Page extends DataClass implements Insertable<Page> {
           other.content == this.content &&
           other.sortKey == this.sortKey &&
           other.deleted == this.deleted &&
+          other.deletedAt == this.deletedAt &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.rev == this.rev &&
@@ -486,6 +524,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
   final Value<String> content;
   final Value<int> sortKey;
   final Value<bool> deleted;
+  final Value<DateTime?> deletedAt;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rev;
@@ -499,6 +538,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
     this.content = const Value.absent(),
     this.sortKey = const Value.absent(),
     this.deleted = const Value.absent(),
+    this.deletedAt = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rev = const Value.absent(),
@@ -513,6 +553,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
     this.content = const Value.absent(),
     this.sortKey = const Value.absent(),
     this.deleted = const Value.absent(),
+    this.deletedAt = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rev = const Value.absent(),
@@ -529,6 +570,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
     Expression<String>? content,
     Expression<int>? sortKey,
     Expression<bool>? deleted,
+    Expression<DateTime>? deletedAt,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rev,
@@ -543,6 +585,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
       if (content != null) 'content': content,
       if (sortKey != null) 'sort_key': sortKey,
       if (deleted != null) 'deleted': deleted,
+      if (deletedAt != null) 'deleted_at': deletedAt,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rev != null) 'rev': rev,
@@ -559,6 +602,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
     Value<String>? content,
     Value<int>? sortKey,
     Value<bool>? deleted,
+    Value<DateTime?>? deletedAt,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? rev,
@@ -573,6 +617,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
       content: content ?? this.content,
       sortKey: sortKey ?? this.sortKey,
       deleted: deleted ?? this.deleted,
+      deletedAt: deletedAt ?? this.deletedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rev: rev ?? this.rev,
@@ -602,6 +647,9 @@ class PagesCompanion extends UpdateCompanion<Page> {
     }
     if (deleted.present) {
       map['deleted'] = Variable<bool>(deleted.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -633,6 +681,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
           ..write('content: $content, ')
           ..write('sortKey: $sortKey, ')
           ..write('deleted: $deleted, ')
+          ..write('deletedAt: $deletedAt, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rev: $rev, ')
@@ -1799,6 +1848,7 @@ typedef $$PagesTableCreateCompanionBuilder =
       Value<String> content,
       Value<int> sortKey,
       Value<bool> deleted,
+      Value<DateTime?> deletedAt,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<int> rev,
@@ -1814,6 +1864,7 @@ typedef $$PagesTableUpdateCompanionBuilder =
       Value<String> content,
       Value<int> sortKey,
       Value<bool> deleted,
+      Value<DateTime?> deletedAt,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rev,
@@ -1857,6 +1908,11 @@ class $$PagesTableFilterComposer extends Composer<_$AppDatabase, $PagesTable> {
 
   ColumnFilters<bool> get deleted => $composableBuilder(
     column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1925,6 +1981,11 @@ class $$PagesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -1978,6 +2039,9 @@ class $$PagesTableAnnotationComposer
   GeneratedColumn<bool> get deleted =>
       $composableBuilder(column: $table.deleted, builder: (column) => column);
 
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -2028,6 +2092,7 @@ class $$PagesTableTableManager
                 Value<String> content = const Value.absent(),
                 Value<int> sortKey = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rev = const Value.absent(),
@@ -2041,6 +2106,7 @@ class $$PagesTableTableManager
                 content: content,
                 sortKey: sortKey,
                 deleted: deleted,
+                deletedAt: deletedAt,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rev: rev,
@@ -2056,6 +2122,7 @@ class $$PagesTableTableManager
                 Value<String> content = const Value.absent(),
                 Value<int> sortKey = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<int> rev = const Value.absent(),
@@ -2069,6 +2136,7 @@ class $$PagesTableTableManager
                 content: content,
                 sortKey: sortKey,
                 deleted: deleted,
+                deletedAt: deletedAt,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rev: rev,

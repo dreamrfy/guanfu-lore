@@ -151,5 +151,38 @@ void main() {
       expect(await db.assetsForPage(other.id), isEmpty);
       await db.close();
     });
+
+    test('回收站：软删除→列表→恢复→清空（挂载关系一并清理）', () async {
+      final db = AppDatabase.forTesting(NativeDatabase.memory());
+      final a = await db.createPage(title: '要删的');
+      await db.createPage(title: '要留的');
+      final stored = await store.save(_pngBytes, 'png');
+      await db.recordAsset(stored);
+      await db.attachAssetToPage(a.id, stored.id);
+
+      // 软删除：主列表消失、回收站出现、时间戳落位
+      await db.softDeletePage(a.id);
+      expect(await db.listActivePages(), hasLength(1));
+      expect((await db.listActivePages()).first.title, '要留的');
+      final trash = await db.listDeletedPages();
+      expect(trash, hasLength(1));
+      expect(trash.first.id, a.id);
+      expect(trash.first.deletedAt, isNotNull);
+
+      // 恢复：回收站清空、主列表回来
+      await db.restorePage(a.id);
+      expect(await db.listDeletedPages(), isEmpty);
+      expect((await db.listActivePages()).first.title, '要删的');
+
+      // 再删 → 清空：彻底删除且挂载关系清理
+      await db.softDeletePage(a.id);
+      expect(await db.emptyTrash(), 1);
+      expect(await db.listDeletedPages(), isEmpty);
+      final allLeft = await db.select(db.pages).get();
+      expect(allLeft.map((e) => e.title), ['要留的']);
+      final links = await db.select(db.pageAssets).get();
+      expect(links.where((l) => l.pageId == a.id), isEmpty, reason: '彻底删除的页面其挂载关系应清理');
+      await db.close();
+    });
   });
 }

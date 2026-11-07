@@ -20,7 +20,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -35,6 +35,10 @@ class AppDatabase extends _$AppDatabase {
           // v2→v3（P1-T05）：新增草稿表
           if (from < 3) {
             await m.createTable(drafts);
+          }
+          // v3→v4（P1-T06）：pages 加 deletedAt 列
+          if (from < 4) {
+            await m.addColumn(pages, pages.deletedAt);
           }
         },
         beforeOpen: (details) async {
@@ -146,6 +150,48 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> clearDraft(String pageId) {
     return (delete(drafts)..where((t) => t.pageId.equals(pageId))).go();
+  }
+
+  /// 移入回收站（软删除）。
+  Future<void> softDeletePage(String id) async {
+    final now = DateTime.now();
+    await (update(pages)..where((t) => t.id.equals(id))).write(PagesCompanion(
+      deleted: Value(true),
+      deletedAt: Value(now),
+      updatedAt: Value(now),
+    ));
+  }
+
+  /// 从回收站恢复。
+  Future<void> restorePage(String id) async {
+    await (update(pages)..where((t) => t.id.equals(id))).write(PagesCompanion(
+      deleted: Value(false),
+      deletedAt: const Value(null),
+      updatedAt: Value(DateTime.now()),
+    ));
+  }
+
+  /// 回收站列表（按删除时间倒序）。
+  Future<List<Page>> listDeletedPages() {
+    return (select(pages)
+          ..where((t) => t.deleted.equals(true))
+          ..orderBy([(t) => OrderingTerm.desc(t.deletedAt)]))
+        .get();
+  }
+
+  /// 清空回收站（彻底删除软删除项及其挂载关系；资源本体因内容去重可能被其他页面共享，不删）。
+  Future<int> emptyTrash() async {
+    final dead = await (select(pages)..where((t) => t.deleted.equals(true))).get();
+    if (dead.isEmpty) return 0;
+    final ids = dead.map((d) => d.id).toList();
+    var n = 0;
+    await transaction(() async {
+      for (final id in ids) {
+        await (delete(pageAssets)..where((t) => t.pageId.equals(id))).go();
+      }
+      n = await (delete(pages)..where((t) => t.deleted.equals(true))).go();
+    });
+    return n;
   }
 }
 

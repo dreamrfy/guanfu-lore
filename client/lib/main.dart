@@ -104,6 +104,17 @@ class _HomePageState extends State<HomePage> {
               onPressed: _migrationDemo,
               icon: const Icon(Icons.science_outlined),
             ),
+          IconButton(
+            tooltip: '回收站',
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => TrashPage(db: _db)),
+              );
+              _reload();
+            },
+            icon: const Icon(Icons.delete),
+          ),
         ],
       ),
       body: FutureBuilder<List<Page>>(
@@ -317,6 +328,19 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
             builder: (context, _) => _StatusChip(status: _save.status),
           ),
           IconButton(
+            tooltip: '移入回收站（可恢复）',
+            onPressed: () async {
+              final messenger = ScaffoldMessenger.of(context);
+              final nav = Navigator.of(context);
+              await widget.db.softDeletePage(widget._pageId);
+              await widget.db.clearDraft(widget._pageId);
+              if (!mounted) return;
+              messenger.showSnackBar(const SnackBar(content: Text('已移入回收站')));
+              if (nav.canPop()) nav.pop();
+            },
+            icon: const Icon(Icons.delete),
+          ),
+          IconButton(
             tooltip: _faultOn ? '故障注入已开：下一次保存将失败（再点关闭）' : '故障注入：模拟写盘失败（演示"不假报已保存"）',
             onPressed: () => setState(() => _faultOn = !_faultOn),
             icon: Icon(_faultOn ? Icons.bug_report : Icons.bug_report_outlined,
@@ -406,6 +430,115 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
             },
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// 回收站（P1-T06）：软删除列表、单条恢复、清空（强确认）。
+class TrashPage extends StatefulWidget {
+  const TrashPage({super.key, required this.db});
+
+  final AppDatabase db;
+
+  @override
+  State<TrashPage> createState() => _TrashPageState();
+}
+
+class _TrashPageState extends State<TrashPage> {
+  Future<List<Page>>? _deleted;
+
+  @override
+  void initState() {
+    super.initState();
+    _reload();
+  }
+
+  void _reload() {
+    setState(() => _deleted = widget.db.listDeletedPages());
+  }
+
+  Future<void> _restore(Page page) async {
+    await widget.db.restorePage(page.id);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('「${page.title.isEmpty ? '无标题' : page.title}」已恢复')));
+    _reload();
+  }
+
+  Future<void> _emptyConfirm(int count) async {
+    final yes = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('清空回收站？'),
+        content: Text('将彻底删除 $count 条内容，此操作不可恢复。'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('彻底删除'),
+          ),
+        ],
+      ),
+    );
+    if (yes != true) return;
+    final n = await widget.db.emptyTrash();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('已彻底删除 $n 条')));
+    _reload();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('回收站'),
+        actions: [
+          FutureBuilder<List<Page>>(
+            future: _deleted,
+            builder: (context, snap) {
+              final n = snap.data?.length ?? 0;
+              return TextButton(
+                onPressed: n == 0 ? null : () => _emptyConfirm(n),
+                child: Text('清空 ($n)'),
+              );
+            },
+          ),
+        ],
+      ),
+      body: FutureBuilder<List<Page>>(
+        future: _deleted,
+        builder: (context, snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final pages = snap.data ?? const <Page>[];
+          if (pages.isEmpty) {
+            return const Center(
+              child: Text('回收站是空的。\n删除的内容会先到这里，可随时恢复。',
+                  textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+            );
+          }
+          return ListView.separated(
+            itemCount: pages.length,
+            separatorBuilder: (_, _) => const Divider(height: 1),
+            itemBuilder: (context, i) {
+              final pg = pages[i];
+              return ListTile(
+                leading: const Icon(Icons.delete_outline),
+                title: Text(pg.title.isEmpty ? '（无标题）' : pg.title),
+                subtitle: Text(
+                    '删除于 ${pg.deletedAt == null ? '未知时间' : pg.deletedAt!.toLocal().toString().substring(0, 16)}'),
+                trailing: TextButton.icon(
+                  onPressed: () => _restore(pg),
+                  icon: const Icon(Icons.restore, size: 18),
+                  label: const Text('恢复'),
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
