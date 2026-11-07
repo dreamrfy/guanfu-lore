@@ -31,3 +31,14 @@ class WebAssetBlobs extends Table {
   @override
   Set<Column> get primaryKey => {id};
 }
+
+/// 崩溃恢复草稿（P1-T05）：每个键击立即落这里（单行/页），
+/// 主库仍走防抖；正常退出或保存成功后清除。防抖窗口内被杀也不丢字。
+class Drafts extends Table {
+  TextColumn get pageId => text()();
+  TextColumn get content => text().withDefault(const Constant(''))();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {pageId};
+}

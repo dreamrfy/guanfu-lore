@@ -1,0 +1,2 @@
+恢复后数据库实证: [('hello-p1t02', 'state-test-abc-more-okcrash-draft-xyz', 4)]
+草稿表已清: 0 行

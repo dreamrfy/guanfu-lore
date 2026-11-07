@@ -4,15 +4,17 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart' hide Page;
 
+import 'controllers/save_controller.dart';
 import 'data/asset_store.dart';
 import 'data/database.dart';
 import 'data/migration_demo.dart';
+import 'data/save_state.dart';
 
 void main() {
   runApp(const BijiApp());
 }
 
-/// P1 阶段客户端。P1-T03：本机数据库 + 资源存储（图片按内容指纹编号落地）。
+/// P1 阶段客户端。P1-T04：保存状态机（编辑中/已保存在本机/等待同步/保存失败/冲突预留）。
 class BijiApp extends StatelessWidget {
   const BijiApp({super.key});
 
@@ -76,7 +78,7 @@ class _HomePageState extends State<HomePage> {
   void _openDetail(Page page) async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => NoteDetailPage(db: _db, store: _store, page: page)),
+      MaterialPageRoute(builder: (_) => NoteDetailPage(db: _db, store: _store, pageId: page.id)),
     );
     _reload();
   }
@@ -144,35 +146,101 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-/// 笔记详情：P1-T03 验收场景——挂图片（按内容指纹编号存本地副本），重启后仍可看。
+/// 笔记详情：正文编辑 + 保存状态灯（P1-T04）+ 图片挂载（P1-T03）。
 class NoteDetailPage extends StatefulWidget {
-  const NoteDetailPage({super.key, required this.db, required this.store, required this.page});
+  const NoteDetailPage({
+    super.key,
+    required this.db,
+    required this.store,
+    required this._pageId,
+  });
 
   final AppDatabase db;
   final AssetStore store;
-  final Page page;
+  final String _pageId;
 
   @override
   State<NoteDetailPage> createState() => _NoteDetailPageState();
 }
 
 class _NoteDetailPageState extends State<NoteDetailPage> {
+  late final SaveController _save;
+  late final TextEditingController _contentCtl;
+  Page? _page;
+  Draft? _draft; // 崩溃恢复草稿（非空时顶部出恢复条）
+  bool _faultOn = false;
+  bool _busyImages = false;
+  bool _loadingContent = true;
   Future<List<Asset>>? _assets;
-  bool _busy = false;
 
   @override
   void initState() {
     super.initState();
-    _reload();
+    _contentCtl = TextEditingController();
+    _save = SaveController(
+      write: _writeContent,
+      draftWrite: (c) => widget.db.saveDraft(widget._pageId, c), // 键击即时进草稿
+      draftClear: () => widget.db.clearDraft(widget._pageId), // 主库落盘成功即清
+    );
+    _contentCtl.addListener(_onEdited);
+    _loadPage();
   }
 
-  void _reload() {
-    setState(() => _assets = widget.db.assetsForPage(widget.page.id));
+  Future<void> _loadPage() async {
+    final page = await widget.db.pageById(widget._pageId);
+    final draft = await widget.db.draftFor(widget._pageId);
+    if (!mounted) return;
+    setState(() {
+      _page = page;
+      _loadingContent = true;
+      _contentCtl.text = page?.content ?? ''; // 程序化赋值：守卫避免误标脏
+      _assets = widget.db.assetsForPage(widget._pageId);
+      // 崩溃恢复：草稿存在且与正文不同 → 显示恢复条
+      _draft = (draft != null &&
+              draft.content.isNotEmpty &&
+              draft.content != (page?.content ?? ''))
+          ? draft
+          : null;
+    });
+    _loadingContent = false;
+    _save.markSaved(page?.content ?? ''); // 基准对齐：防止幽灵保存空跳 rev
+  }
+
+  Future<void> _restoreDraft() async {
+    final d = _draft;
+    if (d == null) return;
+    setState(() {
+      _loadingContent = true;
+      _contentCtl.text = d.content;
+      _draft = null;
+    });
+    _loadingContent = false;
+    _save.editText(d.content); // 走正常保存链（成功后草稿由钩子清除）
+  }
+
+  Future<void> _discardDraft() async {
+    await widget.db.clearDraft(widget._pageId);
+    if (!mounted) return;
+    setState(() => _draft = null);
+  }
+
+  Future<void> _writeContent(String content) async {
+    if (_faultOn) throw Exception('故障注入：模拟写盘失败');
+    await widget.db.updatePageContent(widget._pageId, content);
+  }
+
+  void _onEdited() {
+    if (_loadingContent) return; // 程序化赋值不算编辑
+    _save.editText(_contentCtl.text);
+  }
+
+  void _reloadImages() {
+    setState(() => _assets = widget.db.assetsForPage(widget._pageId));
   }
 
   Future<void> _pickAndSaveImage() async {
-    if (_busy) return;
-    setState(() => _busy = true);
+    if (_busyImages) return;
+    setState(() => _busyImages = true);
     final messenger = ScaffoldMessenger.of(context);
     try {
       final files = await FilePicker.pickFiles(type: FileType.image);
@@ -187,51 +255,188 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
       final bytes = await file.readAsBytes();
       final stored = await widget.store.save(bytes, ext);
       await widget.db.recordAsset(stored);
-      await widget.db.attachAssetToPage(widget.page.id, stored.id);
-      _reload();
+      await widget.db.attachAssetToPage(widget._pageId, stored.id);
+      _reloadImages();
       messenger.showSnackBar(SnackBar(content: Text('已存为本机副本：编号 ${stored.id}（${stored.size} 字节）')));
     } catch (e) {
       messenger.showSnackBar(SnackBar(content: Text('保存失败：$e')));
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) setState(() => _busyImages = false);
     }
+  }
+
+  Future<void> _renameDialog() async {
+    final page = _page;
+    if (page == null) return;
+    final ctl = TextEditingController(text: page.title);
+    final title = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('重命名'),
+        content: TextField(
+          controller: ctl,
+          autofocus: true,
+          decoration: const InputDecoration(border: OutlineInputBorder(), labelText: '标题'),
+          onSubmitted: (v) => Navigator.pop(ctx, v),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, ctl.text), child: const Text('确定')),
+        ],
+      ),
+    );
+    if (title == null || title.trim().isEmpty) return;
+    await widget.db.renamePage(widget._pageId, title.trim());
+    if (!mounted) return;
+    setState(() => _page = null); // 触发重载
+    await _loadPage();
+  }
+
+  @override
+  void dispose() {
+    // 退出页面前把未落盘的编辑冲掉（fire-and-forget，数据库是全局单例不会丢）
+    _save.flush();
+    _save.disposeTimer();
+    _save.dispose();
+    _contentCtl.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final page = _page;
+    if (page == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
-      appBar: AppBar(title: Text(widget.page.title.isEmpty ? '（无标题）' : widget.page.title)),
-      body: FutureBuilder<List<Asset>>(
-        future: _assets,
-        builder: (context, snap) {
-          if (snap.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final assets = snap.data ?? const <Asset>[];
-          return ListView(
-            padding: const EdgeInsets.all(12),
-            children: [
-              Row(children: [
-                FilledButton.tonalIcon(
-                  onPressed: _busy ? null : _pickAndSaveImage,
-                  icon: const Icon(Icons.add_photo_alternate_outlined),
-                  label: const Text('添加图片'),
-                ),
-                const SizedBox(width: 12),
-                if (_busy) const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
-              ]),
-              const SizedBox(height: 12),
-              if (assets.isEmpty)
-                const Text('还没有图片。点上面「添加图片」选一张——\n它会被复制成本机副本（按内容指纹编号），删掉原图也不影响。',
-                    style: TextStyle(color: Colors.grey)),
-              for (final a in assets) ...[
-                _AssetView(store: widget.store, asset: a),
-                const SizedBox(height: 12),
-              ],
-            ],
-          );
-        },
+      appBar: AppBar(
+        title: GestureDetector(onTap: _renameDialog, child: Text(page.title.isEmpty ? '（无标题）' : page.title)),
+        actions: [
+          AnimatedBuilder(
+            animation: _save,
+            builder: (context, _) => _StatusChip(status: _save.status),
+          ),
+          IconButton(
+            tooltip: _faultOn ? '故障注入已开：下一次保存将失败（再点关闭）' : '故障注入：模拟写盘失败（演示"不假报已保存"）',
+            onPressed: () => setState(() => _faultOn = !_faultOn),
+            icon: Icon(_faultOn ? Icons.bug_report : Icons.bug_report_outlined,
+                color: _faultOn ? Colors.red : null),
+          ),
+        ],
       ),
+      body: ListView(
+        padding: const EdgeInsets.all(12),
+        children: [
+          if (_draft != null)
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                border: Border.all(color: Colors.orange.shade300),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(
+                  '检测到上次未保存的草稿（${_draft!.updatedAt.toLocal()}）——可能是异常退出所致',
+                  style: TextStyle(fontSize: 13, color: Colors.orange.shade900),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _draft!.content.length > 60 ? '${_draft!.content.substring(0, 60)}…' : _draft!.content,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                ),
+                const SizedBox(height: 8),
+                Row(children: [
+                  FilledButton(
+                    onPressed: _restoreDraft,
+                    child: const Text('恢复草稿'),
+                  ),
+                  const SizedBox(width: 8),
+                  TextButton(
+                    onPressed: _discardDraft,
+                    child: const Text('丢弃'),
+                  ),
+                ]),
+              ]),
+            ),
+          TextField(
+            controller: _contentCtl,
+            maxLines: null,
+            minLines: 6,
+            keyboardType: TextInputType.multiline,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              hintText: '写点什么…（停顿约一秒自动保存到本机）',
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(children: [
+            FilledButton.tonalIcon(
+              onPressed: _busyImages ? null : _pickAndSaveImage,
+              icon: const Icon(Icons.add_photo_alternate_outlined),
+              label: const Text('添加图片'),
+            ),
+            const SizedBox(width: 12),
+            if (_busyImages)
+              const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+          ]),
+          const SizedBox(height: 12),
+          FutureBuilder<List<Asset>>(
+            future: _assets,
+            builder: (context, snap) {
+              if (snap.connectionState != ConnectionState.done) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final assets = snap.data ?? const <Asset>[];
+              if (assets.isEmpty) {
+                return const Text('还没有图片。点上面「添加图片」选一张——\n它会被复制成本机副本（按内容指纹编号），删掉原图也不影响。',
+                    style: TextStyle(color: Colors.grey));
+              }
+              return Column(
+                children: [
+                  for (final a in assets) ...[
+                    _AssetView(store: widget.store, asset: a),
+                    const SizedBox(height: 12),
+                  ],
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 保存状态灯：五态文案 + 颜色（红=绝不假报已保存）。
+class _StatusChip extends StatelessWidget {
+  const _StatusChip({required this.status});
+
+  final SaveStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final (color, icon) = switch (status) {
+      SaveStatus.editing => (Colors.grey.shade600, Icons.edit_outlined),
+      SaveStatus.savedLocal => (Colors.green.shade700, Icons.check_circle),
+      SaveStatus.pendingSync => (Colors.green.shade700, Icons.check_circle_outline),
+      SaveStatus.saveFailed => (Colors.red.shade700, Icons.error_outline),
+      SaveStatus.conflict => (Colors.orange.shade800, Icons.warning_amber),
+    };
+    return Padding(
+      padding: const EdgeInsets.only(right: 4),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Icon(icon, size: 16, color: color),
+        const SizedBox(width: 4),
+        Text(
+          saveStatusLabel(status),
+          style: TextStyle(fontSize: 12, color: color),
+          overflow: TextOverflow.ellipsis,
+        ),
+      ]),
     );
   }
 }

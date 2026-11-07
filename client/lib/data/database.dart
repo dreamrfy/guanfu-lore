@@ -12,7 +12,7 @@ import 'pages_table.dart';
 
 part 'database.g.dart';
 
-@DriftDatabase(tables: [Pages, Assets, PageAssets, WebAssetBlobs])
+@DriftDatabase(tables: [Pages, Assets, PageAssets, WebAssetBlobs, Drafts])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_open());
 
@@ -20,7 +20,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -31,6 +31,10 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(assets);
             await m.createTable(pageAssets);
             await m.createTable(webAssetBlobs);
+          }
+          // v2→v3（P1-T05）：新增草稿表
+          if (from < 3) {
+            await m.createTable(drafts);
           }
         },
         beforeOpen: (details) async {
@@ -78,6 +82,24 @@ class AppDatabase extends _$AppDatabase {
         .write(PagesCompanion(title: Value(title), updatedAt: Value(DateTime.now())));
   }
 
+  /// 保存正文：本地版本号 rev 自增（T07 语义：云端未确认前 baseRev 不动）。
+  Future<void> updatePageContent(String id, String content) async {
+    await transaction(() async {
+      final row =
+          await (select(pages)..where((t) => t.id.equals(id))).getSingle();
+      await (update(pages)..where((t) => t.id.equals(id))).write(PagesCompanion(
+        content: Value(content),
+        updatedAt: Value(DateTime.now()),
+        rev: Value(row.rev + 1),
+      ));
+    });
+  }
+
+  /// 读取单条页面（不存在返回 null）。
+  Future<Page?> pageById(String id) {
+    return (select(pages)..where((t) => t.id.equals(id))).getSingleOrNull();
+  }
+
   /// 资源台账登记（幂等：同编号已存在则跳过）。
   Future<void> recordAsset(StoredAsset asset) async {
     await into(assets).insertOnConflictUpdate(AssetsCompanion.insert(
@@ -107,6 +129,23 @@ class AppDatabase extends _$AppDatabase {
       ..orderBy([OrderingTerm.asc(pageAssets.sortKey)]);
     final rows = await query.get();
     return rows.map((r) => r.readTable(assets)).toList();
+  }
+
+  /// 草稿：每个键击即时写（崩溃恢复用），保存成功或正常退出后清除。
+  Future<void> saveDraft(String pageId, String content) {
+    return into(drafts).insertOnConflictUpdate(DraftsCompanion.insert(
+          pageId: pageId,
+          content: Value(content),
+          updatedAt: DateTime.now(),
+        ));
+  }
+
+  Future<Draft?> draftFor(String pageId) {
+    return (select(drafts)..where((t) => t.pageId.equals(pageId))).getSingleOrNull();
+  }
+
+  Future<void> clearDraft(String pageId) {
+    return (delete(drafts)..where((t) => t.pageId.equals(pageId))).go();
   }
 }
 
