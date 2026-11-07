@@ -5,12 +5,14 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import 'asset_store_common.dart' show StoredAsset;
 import 'ids.dart';
+import 'assets_table.dart';
 import 'pages_table.dart';
 
 part 'database.g.dart';
 
-@DriftDatabase(tables: [Pages])
+@DriftDatabase(tables: [Pages, Assets, PageAssets, WebAssetBlobs])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_open());
 
@@ -18,13 +20,19 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) => m.createAll(),
-        // P1-T02 只有 v1；真实升级路径在此逐版本追加（迁移前自动备份见 backupDbFile）。
-        onUpgrade: (m, from, to) async {},
+        onUpgrade: (m, from, to) async {
+          // v1→v2（P1-T03）：新增资源三表；既有数据不动
+          if (from < 2) {
+            await m.createTable(assets);
+            await m.createTable(pageAssets);
+            await m.createTable(webAssetBlobs);
+          }
+        },
         beforeOpen: (details) async {
           // 断电/杀进程可靠性的底线：WAL + 参数绑定外键
           await customStatement('PRAGMA journal_mode = WAL');
@@ -68,6 +76,37 @@ class AppDatabase extends _$AppDatabase {
   Future<void> renamePage(String id, String title) {
     return (update(pages)..where((t) => t.id.equals(id)))
         .write(PagesCompanion(title: Value(title), updatedAt: Value(DateTime.now())));
+  }
+
+  /// 资源台账登记（幂等：同编号已存在则跳过）。
+  Future<void> recordAsset(StoredAsset asset) async {
+    await into(assets).insertOnConflictUpdate(AssetsCompanion.insert(
+          id: asset.id,
+          sha256: asset.sha256Hex,
+          size: asset.size,
+          ext: asset.ext,
+          createdAt: DateTime.now(),
+        ));
+  }
+
+  /// 页面挂载资源（幂等）。
+  Future<void> attachAssetToPage(String pageId, String assetId) async {
+    await into(pageAssets).insertOnConflictUpdate(PageAssetsCompanion.insert(
+          pageId: pageId,
+          assetId: assetId,
+          createdAt: DateTime.now(),
+        ));
+  }
+
+  /// 页面挂载的资源（按挂载顺序）。
+  Future<List<Asset>> assetsForPage(String pageId) async {
+    final query = select(assets).join([
+      innerJoin(pageAssets, pageAssets.assetId.equalsExp(assets.id)),
+    ])
+      ..where(pageAssets.pageId.equals(pageId))
+      ..orderBy([OrderingTerm.asc(pageAssets.sortKey)]);
+    final rows = await query.get();
+    return rows.map((r) => r.readTable(assets)).toList();
   }
 }
 
