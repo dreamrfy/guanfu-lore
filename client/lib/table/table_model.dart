@@ -12,11 +12,12 @@ class TableColumn {
 }
 
 class TableRowData {
-  TableRowData({required this.id, this.pid, Map<String, String>? cells})
+  TableRowData({required this.id, this.pid, this.clip, Map<String, String>? cells})
       : cells = cells ?? {};
 
   final String id;
   String? pid; // 打开过详情页（③）后指向记录页；null=尚未物化
+  String? clip; // 剪藏来源 ID（④）：已入库的剪藏记录，App 端去重锚点
   final Map<String, String> cells; // colId → 文本值；缺键=空
 }
 
@@ -43,7 +44,7 @@ class TableData {
 
 TableColumn _copyCol(TableColumn c) => TableColumn(id: c.id, name: c.name);
 TableRowData _copyRow(TableRowData r) =>
-    TableRowData(id: r.id, pid: r.pid, cells: Map.of(r.cells));
+    TableRowData(id: r.id, pid: r.pid, clip: r.clip, cells: Map.of(r.cells));
 
 TableData cloneTable(TableData t) => TableData(
       cols: [for (final c in t.cols) _copyCol(c)],
@@ -94,6 +95,26 @@ TableData addRow(TableData t) {
   return out;
 }
 
+/// 建行并直接填 cells（colId → 值）；clip/pid 可选（④ 剪藏入库一次性物化用）。
+TableData addRowFilled(
+  TableData t, {
+  Map<String, String> cells = const {},
+  String? clip,
+  String? pid,
+}) {
+  final out = cloneTable(t);
+  out.rows.add(TableRowData(id: newRowId(), pid: pid, clip: clip, cells: Map.of(cells)));
+  return out;
+}
+
+/// 按列名找列 id（没有则 null）。
+String? colIdByName(TableData t, String name) {
+  for (final c in t.cols) {
+    if (c.name == name) return c.id;
+  }
+  return null;
+}
+
 TableData updateCell(TableData t, String rowId, String colId, String value) {
   final out = cloneTable(t);
   final row = out.rowById(rowId);
@@ -132,6 +153,7 @@ String encodeTable(TableData t) {
         {
           'id': r.id,
           if (r.pid != null) 'pid': r.pid,
+          if (r.clip != null) 'clip': r.clip,
           'cells': {
             // 空值不落盘，JSON 保持精瘦
             for (final e in r.cells.entries)
@@ -166,6 +188,7 @@ TableData decodeTable(String content) {
           TableRowData(
             id: (e['id'] as String?) ?? newRowId(),
             pid: e['pid'] as String?,
+            clip: e['clip'] as String?,
             cells: {
               for (final entry in ((e['cells'] as Map?) ?? const {}).entries)
                 entry.key.toString(): entry.value?.toString() ?? '',

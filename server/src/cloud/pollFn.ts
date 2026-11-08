@@ -26,6 +26,8 @@ export interface PollIo {
   pipeline: PipelineDeps;
   loadState(): Promise<PollState | null>;
   saveState(s: PollState): Promise<void>;
+  /** 轮询后重建清单索引（V2.1 ④，R2 路线专用；缺省=不做，本地 SQLite 链路用不上） */
+  writeIndex?: () => Promise<number>;
   limit?: number;
 }
 
@@ -57,6 +59,15 @@ export async function pollOnce(io: PollIo): Promise<PollResult> {
   }
 
   const stats = await runPipeline(collected, io.pipeline);
+  // 清单索引重建（V2.1 ④）：尽力而为，失败只提示——索引旧一点不影响本轮入库结果
+  if (io.writeIndex) {
+    try {
+      const n = await io.writeIndex();
+      console.log("[bijiapp-poll] 清单索引已重建：" + n + " 条");
+    } catch (e) {
+      console.error("清单索引重建失败（App 端暂见旧清单，不影响入库）：" + String((e as Error).message));
+    }
+  }
   if (cursor) {
     try {
       await io.saveState({ cursor, token, updatedAt: new Date().toISOString() });
@@ -80,6 +91,7 @@ export async function main(event: unknown = null, context: unknown = null): Prom
     pipeline: deps,
     loadState: () => store.loadPollState(),
     saveState: (s) => store.savePollState(s),
+    writeIndex: () => store.writeClipIndex(),
   });
 }
 

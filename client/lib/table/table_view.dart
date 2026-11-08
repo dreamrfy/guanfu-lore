@@ -152,19 +152,22 @@ class _TablePageViewState extends State<TablePageView> {
             style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
       ]),
       const SizedBox(height: 8),
-      // 表体：横向可滚（列多时），行内纵向排
+      // 表体：纵向可滚（行多）套横向可滚（列多）——列宽是 dp，360dp 手机屏装不下几列
       Expanded(
         child: t.rows.isEmpty
             ? Center(
-                child: Text('还没有记录。点上面「加行」添加，\n点任意单元格直接填写。',
+                child: Text('还没有记录。点上面「加行」添加，\n点第一列打开记录页，点其他格编辑。',
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.grey, fontSize: 13)),
               )
             : SingleChildScrollView(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  _headerRow(t),
-                  for (final row in t.rows) _dataRow(t, row),
-                ]),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    _headerRow(t),
+                    for (final row in t.rows) _dataRow(t, row),
+                  ]),
+                ),
               ),
       ),
     ]);

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- V2.1 ④ 剪藏拉取的明文白名单：
+     10.0.2.2 = 模拟器宿主机（本地假服务端联调用）。
+     生产通道拍板后：方案 A（r2.dev）是 HTTPS 无需在此加域；方案 B（VPS HTTP 代理）需追加对应 IP。 -->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>

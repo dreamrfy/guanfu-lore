@@ -10,8 +10,8 @@
 //
 // 并发口径（阶段一）：唯一写入方是云函数定时轮询（每 30 分钟一次，串行），
 // 本地 CLI 用的 localStore（SQLite），互不相交。因此不设列表索引文件——
-// 清单类需求在阶段二客户端出现时再议（S3 ListObjectsV2 需要带查询串签名，届时实现）。
-import { getObject, putObject, type R2Config } from "./r2Store.ts";
+// 清单索引（V2.1 ④）：clips/index.json——服务端每次轮询后全量重建（ListObjectsV2 已实现），App 端只读。
+import { getObject, listObjectKeys, putObject, type R2Config } from "./r2Store.ts";
 import type { Clip } from "./types.ts";
 
 export interface PollStateJson {
@@ -71,4 +71,75 @@ export class R2ClipStore {
       contentType: "application/json",
     });
   }
+
+  // —— 清单索引（V2.1 ④：App 端拉取入口）——
+
+  /** 全量重建清单索引：列举 clips/ → 逐条读取 → 构建条目 → PUT clips/index.json。返回条数。 */
+  async writeClipIndex(): Promise<number> {
+    const keys = await listObjectKeys(this.cfg, { prefix: "clips/" });
+    const clipKeys = keys.filter(
+      (k) => /^clips\/[^/]+\.json$/.test(k) && k !== CLIP_INDEX_KEY
+    );
+    const clips: Clip[] = [];
+    for (const k of clipKeys) {
+      const buf = await getObject(this.cfg, k);
+      if (buf === null) continue;
+      try {
+        clips.push(JSON.parse(buf.toString("utf8")) as Clip);
+      } catch {
+        // 损坏记录跳过，不阻塞索引重建
+      }
+    }
+    const entries = buildClipIndexEntries(clips);
+    await putObject(
+      this.cfg,
+      CLIP_INDEX_KEY,
+      Buffer.from(JSON.stringify(entries, null, 2), "utf8"),
+      { contentType: "application/json" }
+    );
+    return entries.length;
+  }
+
+  /** 读取清单索引（缺失或损坏 → null，App 端按「无可拉取」处理） */
+  async getClipIndex(): Promise<ClipIndexEntry[] | null> {
+    const buf = await getObject(this.cfg, CLIP_INDEX_KEY);
+    if (buf === null) return null;
+    try {
+      const arr = JSON.parse(buf.toString("utf8")) as ClipIndexEntry[];
+      return Array.isArray(arr) ? arr : null;
+    } catch {
+      return null;
+    }
+  }
+}
+
+// —— 索引条目构建（纯函数，导出便于测试）——
+
+export interface ClipIndexEntry {
+  id: string;
+  title: string;
+  source: string;
+  savedAt: string;
+  status: string;
+}
+
+export const CLIP_INDEX_KEY = "clips/index.json";
+export const CLIP_INDEX_CAP = 500;
+
+/** 纯函数：Clip 列表 → 索引条目（剔除不可解析项、按入库时间倒序、封顶 CLIP_INDEX_CAP） */
+export function buildClipIndexEntries(clips: Clip[]): ClipIndexEntry[] {
+  const entries: ClipIndexEntry[] = [];
+  for (const c of clips) {
+    if (c === null || typeof c !== "object") continue;
+    if (typeof c.id !== "string" || c.id.length === 0) continue;
+    entries.push({
+      id: c.id,
+      title: typeof c.title === "string" ? c.title : "",
+      source: typeof c.source === "string" ? c.source : "unknown",
+      savedAt: typeof c.savedAt === "string" ? c.savedAt : "",
+      status: typeof c.status === "string" ? c.status : "unknown",
+    });
+  }
+  entries.sort((a, b) => (a.savedAt > b.savedAt ? -1 : a.savedAt < b.savedAt ? 1 : 0));
+  return entries.slice(0, CLIP_INDEX_CAP);
 }

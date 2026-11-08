@@ -1,9 +1,12 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart' hide Page;
+import 'package:http/http.dart' as http;
 
+import 'clip/clip_pull.dart';
 import 'controllers/save_controller.dart';
 import 'data/asset_store.dart';
 import 'data/database.dart';
@@ -50,6 +53,7 @@ class _HomePageState extends State<HomePage> {
   static const double _wideBreakpoint = 900; // ≥ 此宽度用左右分栏
   String? _selectedId; // 分栏模式下当前选中的页面
   bool _detailFullPage = false; // 整页切换（隐藏左侧树）
+  int _detailRev = 0; // 设置页等外部改动后强制重建详情（拉到新数据必须重载）
 
   @override
   void initState() {
@@ -62,6 +66,12 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _all = _db.listAllActive();
     });
+  }
+
+  /// 外部（设置页剪藏拉取等）改了库数据：刷新树 + 强制重建详情面板（丢弃其内存中的旧表 JSON）。
+  void _onExternalDataChange() {
+    setState(() => _detailRev++);
+    _reload();
   }
 
   Future<void> _newPageDialog() async {
@@ -369,7 +379,9 @@ class _HomePageState extends State<HomePage> {
             onPressed: () async {
               await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => SettingsPage(db: _db)),
+                MaterialPageRoute(
+                  builder: (_) => SettingsPage(db: _db, store: _store, onDataChanged: _onExternalDataChange),
+                ),
               );
             },
             icon: const Icon(Icons.settings_outlined),
@@ -429,7 +441,7 @@ class _HomePageState extends State<HomePage> {
           // 宽屏：左右分栏；整页切换时只显示详情
           if (wide && _selectedId != null && _detailFullPage) {
             return NoteDetailPage(
-              key: ValueKey(_selectedId),
+              key: ValueKey('$_selectedId·$_detailRev'),
               db: _db,
               store: _store,
               pageId: _selectedId!,
@@ -456,7 +468,7 @@ class _HomePageState extends State<HomePage> {
                             style: TextStyle(color: Colors.grey)),
                       )
                     : NoteDetailPage(
-                        key: ValueKey(_selectedId),
+                        key: ValueKey('$_selectedId·$_detailRev'),
                         db: _db,
                         store: _store,
                         pageId: _selectedId!,
@@ -616,7 +628,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
     if (!mounted) return;
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => RecordDetailPage(db: widget.db, pageId: pid)),
+      MaterialPageRoute(builder: (_) => RecordDetailPage(db: widget.db, store: widget.store, pageId: pid)),
     );
     // 返回后行数据可能有批注引起的变化；表格 JSON 不变，无需重载
   }
@@ -959,9 +971,13 @@ class _TrashPageState extends State<TrashPage> {
 
 /// 设置页（P1-T07）：存储占用 + 诊断日志（出厂脱敏，不含正文与密钥）。
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key, required this.db});
+  const SettingsPage({super.key, required this.db, required this.store, this.onDataChanged});
 
   final AppDatabase db;
+  final AssetStore store;
+
+  /// 剪藏拉取等外部写入后通知首页刷新（树+详情）。
+  final VoidCallback? onDataChanged;
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -1000,6 +1016,10 @@ class _SettingsPageState extends State<SettingsPage> {
             );
           },
         ),
+        const SizedBox(height: 4),
+        Text('剪藏入库（单向拉取）', style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: 8),
+        _ClipPullSection(db: widget.db, store: widget.store, onDataChanged: widget.onDataChanged),
         const Divider(height: 24),
         Row(children: [
           Expanded(
@@ -1323,9 +1343,10 @@ class _DraftBanner extends StatelessWidget {
 /// 记录页是隐藏型页面（type=record，挂在表下、树上不可见），表格视图是唯一入口，
 /// 返回即回到表格（记录↔页面双向定位）。批注走与普通页一致的保存链（状态灯/草稿/恢复）。
 class RecordDetailPage extends StatefulWidget {
-  const RecordDetailPage({super.key, required this.db, required this.pageId});
+  const RecordDetailPage({super.key, required this.db, required this.store, required this.pageId});
 
   final AppDatabase db;
+  final AssetStore store;
   final String pageId;
 
   @override
@@ -1337,6 +1358,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
   String? _editorContent;
   Page? _page;
   Draft? _draft;
+  Future<List<Asset>>? _assets;
 
   @override
   void initState() {
@@ -1356,6 +1378,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
     setState(() {
       _page = page;
       _editorContent = page?.content ?? '';
+      _assets = widget.db.assetsForPage(widget.pageId);
       // 崩溃恢复：草稿存在且与正文不同 → 顶部出恢复条
       _draft = (draft != null &&
               draft.content.isNotEmpty &&
@@ -1431,6 +1454,25 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
             initialContent: _editorContent ?? '',
             onChanged: (serialized) => _save.editText(serialized),
           ),
+          const SizedBox(height: 12),
+          FutureBuilder<List<Asset>>(
+            future: _assets,
+            builder: (context, snap) {
+              if (snap.connectionState != ConnectionState.done) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final assets = snap.data ?? const <Asset>[];
+              if (assets.isEmpty) return const SizedBox.shrink();
+              return Column(
+                children: [
+                  for (final a in assets) ...[
+                    _AssetView(store: widget.store, asset: a),
+                    const SizedBox(height: 12),
+                  ],
+                ],
+              );
+            },
+          ),
           const SizedBox(height: 24),
         ],
       ),
@@ -1457,6 +1499,172 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
           ),
         ),
       ]),
+    );
+  }
+}
+
+/// 剪藏入库区块（V2.1 ④）：服务端地址 + 目标表 + 立即拉取。
+/// 地址形如 R2 公开读域名（方案 A）或带 ?t=令牌 的服务代理（方案 B），令牌跟随每个请求。
+class _ClipPullSection extends StatefulWidget {
+  const _ClipPullSection({required this.db, required this.store, this.onDataChanged});
+
+  final AppDatabase db;
+  final AssetStore store;
+  final VoidCallback? onDataChanged;
+
+  @override
+  State<_ClipPullSection> createState() => _ClipPullSectionState();
+}
+
+class _ClipPullSectionState extends State<_ClipPullSection> {
+  final TextEditingController _ctl = TextEditingController();
+  String? _tableId;
+  List<Page> _tables = const [];
+  bool _busy = false;
+  String _report = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final base = await widget.db.settingValue('clip.baseUrl');
+    final tableId = await widget.db.settingValue('clip.tableId');
+    final all = await widget.db.listAllActive();
+    if (!mounted) return;
+    setState(() {
+      _ctl.text = base ?? '';
+      _tableId = tableId;
+      _tables = all.where((p) => p.type == PageTypes.table).toList();
+    });
+  }
+
+  Future<void> _pull() async {
+    final messenger = ScaffoldMessenger.of(context); // await 前捕获，跨异步安全
+    final base = _ctl.text.trim();
+    if (base.isEmpty) {
+      _toast('先填服务端地址');
+      return;
+    }
+    if (_tableId == null) {
+      _toast('先选择剪藏目标表（先去建一张多维表）');
+      return;
+    }
+    final tableOk = await widget.db.pageById(_tableId!);
+    if (tableOk == null || tableOk.type != PageTypes.table) {
+      _toast('目标表不存在或已被删除，请重新选择');
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _report = '';
+    });
+    try {
+      Future<List<int>> getBytes(String url) async {
+        final res = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 30));
+        if (res.statusCode != 200) {
+          throw Exception('HTTP ${res.statusCode}');
+        }
+        return res.bodyBytes;
+      }
+
+      final report = await pullClips(
+        db: widget.db,
+        store: widget.store,
+        baseUrl: base,
+        tablePageId: _tableId!,
+        deps: ClipPullDeps(
+          fetchIndex: (u) async => jsonDecode(utf8.decode(await getBytes(u))),
+          fetchClip: (u) async => jsonDecode(utf8.decode(await getBytes(u))),
+          fetchAsset: getBytes,
+        ),
+      );
+      await widget.db.setSettingValue('clip.baseUrl', base);
+      await widget.db.setSettingValue('clip.tableId', _tableId!);
+      widget.onDataChanged?.call();
+      if (!mounted) return;
+      setState(() {
+        _report = report.summary +
+            (report.failed.isEmpty ? '' : '\n失败明细：${report.failed.join('；')}');
+      });
+      messenger.showSnackBar(const SnackBar(content: Text('剪藏拉取完成')));
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _report = '拉取失败：$e');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  void _toast(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  @override
+  void dispose() {
+    _ctl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          TextField(
+            controller: _ctl,
+            keyboardType: TextInputType.url,
+            decoration: const InputDecoration(
+              labelText: '服务端地址',
+              hintText: 'https://pub-xxx.r2.dev 或 http://host:port?t=令牌',
+              border: OutlineInputBorder(),
+              isDense: true,
+            ),
+          ),
+          const SizedBox(height: 10),
+          DropdownButtonFormField<String?>(
+            initialValue: _tableId,
+            isExpanded: true,
+            decoration: const InputDecoration(
+              labelText: '剪藏目标表',
+              border: OutlineInputBorder(),
+              isDense: true,
+            ),
+            items: [
+              const DropdownMenuItem<String?>(value: null, child: Text('未选择')),
+              for (final t in _tables)
+                DropdownMenuItem<String?>(value: t.id, child: Text(t.title.isEmpty ? '（无标题）' : t.title)),
+            ],
+            onChanged: (v) async {
+              setState(() => _tableId = v);
+              if (v != null) await widget.db.setSettingValue('clip.tableId', v);
+            },
+          ),
+          const SizedBox(height: 10),
+          Row(children: [
+            FilledButton.icon(
+              onPressed: _busy ? null : _pull,
+              icon: const Icon(Icons.cloud_download_outlined, size: 18),
+              label: const Text('立即拉取'),
+            ),
+            if (_busy) ...[
+              const SizedBox(width: 10),
+              const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+            ],
+          ]),
+          if (_report.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Text(_report,
+                style: TextStyle(fontSize: 12, color: _report.startsWith('拉取失败') ? Colors.red.shade700 : Colors.grey.shade700)),
+          ],
+          const SizedBox(height: 8),
+          Text('说明：拉取把服务端已剪藏的文章写进目标表（标题/来源/时间/状态），记录页含原文文字与图片；已在库的自动跳过。',
+              style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+        ]),
+      ),
     );
   }
 }

@@ -9,10 +9,11 @@ import 'asset_store_common.dart' show StoredAsset;
 import 'ids.dart';
 import 'assets_table.dart';
 import 'pages_table.dart';
+import 'settings_table.dart';
 
 part 'database.g.dart';
 
-@DriftDatabase(tables: [Pages, Assets, PageAssets, WebAssetBlobs, Drafts])
+@DriftDatabase(tables: [Pages, Assets, PageAssets, WebAssetBlobs, Drafts, AppSettings])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_open());
 
@@ -20,7 +21,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -43,6 +44,10 @@ class AppDatabase extends _$AppDatabase {
           // v4→v5（V2.1 ① 页面类型系统）：pages 加 type 列，存量页面一律普通页面
           if (from < 5) {
             await m.addColumn(pages, pages.type);
+          }
+          // v5→v6（V2.1 ④ 剪藏入库通道）：新增应用设置表
+          if (from < 6) {
+            await m.createTable(appSettings);
           }
         },
         beforeOpen: (details) async {
@@ -315,6 +320,21 @@ class AppDatabase extends _$AppDatabase {
       n = await (delete(pages)..where((t) => t.deleted.equals(true))).go();
     });
     return n;
+  }
+
+  // —— 应用设置（V2.1 ④）——
+
+  Future<String?> settingValue(String key) async {
+    final row = await (select(appSettings)..where((t) => t.key.equals(key))).getSingleOrNull();
+    return row?.value;
+  }
+
+  Future<void> setSettingValue(String key, String value) {
+    return into(appSettings).insertOnConflictUpdate(AppSettingsCompanion.insert(
+      key: key,
+      value: Value(value),
+      updatedAt: DateTime.now(),
+    ));
   }
 }
 

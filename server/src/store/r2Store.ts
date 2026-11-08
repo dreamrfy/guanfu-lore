@@ -66,6 +66,8 @@ export interface SigV4Input {
   host: string;
   /** path-style 的完整路径，如 /{bucket}/{key}（斜杠不编码） */
   canonicalUri: string;
+  /** 已排序、已 URI 编码的查询串（如 "list-type=2&prefix=clips%2F"）；无查询省略 */
+  canonicalQuery?: string;
   /** 已排序的额外头部（键小写），不含 host 与 x-amz-* */
   extraHeaders?: Record<string, string>;
   payloadSha256Hex: string;
@@ -106,7 +108,7 @@ export function signRequest(input: SigV4Input): SigV4Result {
   const canonicalRequest = [
     input.method,
     input.canonicalUri,
-    "", // query 为空（上传不用查询参数）
+    input.canonicalQuery ?? "", // 无查询时保持空串（上传/读取不用查询参数）
     canonicalHeaders,
     signedHeaders,
     payloadHash,
@@ -225,4 +227,59 @@ export async function putObject(
     throw new Error(`R2 PUT ${key} 失败：HTTP ${res.status} ${text}`);
   }
   return { key, etag: res.headers.get("etag"), bytes: body.length };
+}
+
+/** 解析 ListObjectsV2 的 XML 响应，取 <Key> 列表（导出便于测试；只认严格匹配，不做通用 XML 解析） */
+export function parseListKeysXml(xml: string): string[] {
+  const out: string[] = [];
+  for (const m of xml.matchAll(/<Key>([^<]+)<\/Key>/g)) out.push(m[1]);
+  return out;
+}
+
+/**
+ * 列举桶内对象键（ListObjectsV2，带查询串签名，分页拉全）。
+ * 我们的键（clips/、assets/、state/）都是 URL 安全字符，无编码差异，返回原样键名。
+ */
+export async function listObjectKeys(
+  cfg: R2Config,
+  opts: { prefix?: string; maxKeys?: number; now?: Date } = {}
+): Promise<string[]> {
+  const host = `${cfg.accountId}.r2.cloudflarestorage.com`;
+  const keys: string[] = [];
+  let continuation: string | null = null;
+  do {
+    const params: Array<[string, string]> = [["list-type", "2"]];
+    if (opts.prefix) params.push(["prefix", opts.prefix]);
+    params.push(["max-keys", String(opts.maxKeys ?? 1000)]);
+    if (continuation) params.push(["continuation-token", continuation]);
+    // SigV4 要求查询参数按键名排序后再编码
+    params.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+    const canonicalQuery = params
+      .map(([k, v]) => uriEncode(k, true) + "=" + uriEncode(v, true))
+      .join("&");
+    const { authorization, headers } = signRequest({
+      method: "GET",
+      host,
+      canonicalUri: "/" + cfg.bucket,
+      canonicalQuery,
+      payloadSha256Hex: sha256Hex(Buffer.alloc(0)),
+      now: opts.now ?? new Date(),
+      accessKeyId: cfg.accessKeyId,
+      secretAccessKey: cfg.secretAccessKey,
+    });
+    const res = await fetch(`https://${host}/${cfg.bucket}?${canonicalQuery}`, {
+      method: "GET",
+      headers: { ...headers, authorization },
+    });
+    if (!res.ok) {
+      const text = (await res.text()).slice(0, 300);
+      throw new Error(`R2 LIST 失败：HTTP ${res.status} ${text}`);
+    }
+    const xml = await res.text();
+    keys.push(...parseListKeysXml(xml));
+    for (const m of xml.matchAll(/<NextContinuationToken>([^<]+)<\/NextContinuationToken>/g)) {
+      continuation = m[1];
+    }
+  } while (continuation);
+  return keys;
 }
