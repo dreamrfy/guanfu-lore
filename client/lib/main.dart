@@ -14,6 +14,8 @@ import 'data/save_state.dart';
 import 'data/storage_stats.dart';
 import 'editor/block_model.dart';
 import 'editor/blocks_editor.dart';
+import 'table/table_model.dart';
+import 'table/table_view.dart';
 
 void main() {
   runApp(const BijiApp());
@@ -548,7 +550,16 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
           : null;
     });
     // 基准对齐用序列化后的形态（编辑器 onChanged 回传的即此形态），防幽灵保存
-    _save.markSaved(encodeBlocks(decodeBlocks(page?.content ?? '')));
+    _save.markSaved(_normalizedBaseline(page));
+  }
+
+  /// 保存基准按页面类型取对应序列化形态（普通页=块 JSON；多维表=表 JSON）。
+  String _normalizedBaseline(Page? page) {
+    if (page == null) return '';
+    if (page.type == PageTypes.table) {
+      return encodeTable(decodeTable(page.content));
+    }
+    return encodeBlocks(decodeBlocks(page.content));
   }
 
   Future<void> _restoreDraft() async {
@@ -580,6 +591,45 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
     setState(() => _page = null);
     await _loadPage();
     widget.onTypeChanged?.call();
+  }
+
+  /// 崩溃恢复草稿条（普通页/多维表共用：表 JSON 草稿同样可恢复）。
+  Widget _draftBanner() {
+    final d = _draft!;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.orange.shade50,
+        border: Border.all(color: Colors.orange.shade300),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(
+          '检测到上次未保存的草稿（${d.updatedAt.toLocal()}）——可能是异常退出所致',
+          style: TextStyle(fontSize: 13, color: Colors.orange.shade900),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          d.content.length > 60 ? '${d.content.substring(0, 60)}…' : d.content,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+        ),
+        const SizedBox(height: 8),
+        Row(children: [
+          FilledButton(
+            onPressed: _restoreDraft,
+            child: const Text('恢复草稿'),
+          ),
+          const SizedBox(width: 8),
+          TextButton(
+            onPressed: _discardDraft,
+            child: const Text('丢弃'),
+          ),
+        ]),
+      ]),
+    );
   }
 
   Future<void> _writeContent(String content) async {
@@ -726,45 +776,25 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
         ],
       ),
       body: page.type == PageTypes.table
-          ? const _TablePagePlaceholder()
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (_draft != null) _draftBanner(),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: TablePageView(
+                      initialContent: _editorContent ?? '',
+                      onChanged: (serialized) => _save.editText(serialized),
+                    ),
+                  ),
+                ),
+              ],
+            )
           : ListView(
         padding: const EdgeInsets.all(12),
         children: [
-          if (_draft != null)
-            Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.orange.shade50,
-                border: Border.all(color: Colors.orange.shade300),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(
-                  '检测到上次未保存的草稿（${_draft!.updatedAt.toLocal()}）——可能是异常退出所致',
-                  style: TextStyle(fontSize: 13, color: Colors.orange.shade900),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _draft!.content.length > 60 ? '${_draft!.content.substring(0, 60)}…' : _draft!.content,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
-                ),
-                const SizedBox(height: 8),
-                Row(children: [
-                  FilledButton(
-                    onPressed: _restoreDraft,
-                    child: const Text('恢复草稿'),
-                  ),
-                  const SizedBox(width: 8),
-                  TextButton(
-                    onPressed: _discardDraft,
-                    child: const Text('丢弃'),
-                  ),
-                ]),
-              ]),
-            ),
+          if (_draft != null) _draftBanner(),
           if (_showTypePicker(page))
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -1240,26 +1270,6 @@ class _PickerOption extends StatelessWidget {
           ),
         ]),
       ),
-    );
-  }
-}
-
-/// 多维表页面占位（V2.1 ①）：表格视图由 ②（多维表最小版）提供。
-class _TablePagePlaceholder extends StatelessWidget {
-  const _TablePagePlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        Icon(Icons.grid_on, size: 44, color: Colors.blue.shade300),
-        const SizedBox(height: 12),
-        const Text('这是一张多维表', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 6),
-        Text('表格视图建设中：下一版提供加列、加行、\n单元格编辑与剪藏记录自动写入',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12, color: Colors.grey)),
-      ]),
     );
   }
 }
