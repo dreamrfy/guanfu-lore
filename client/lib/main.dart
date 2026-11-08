@@ -40,7 +40,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final AppDatabase _db = AppDatabase();
   late final AssetStore _store = PlatformAssetStore(db: _db);
-  Future<List<Page>>? _pages;
+  Future<List<Page>>? _all;
+  final Set<String> _collapsed = {}; // 页面树折叠状态（默认全展开）
 
   @override
   void initState() {
@@ -49,7 +50,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _reload() {
-    setState(() => _pages = _db.listActivePages());
+    setState(() => _all = _db.listAllActive());
   }
 
   Future<void> _newPageDialog() async {
@@ -94,6 +95,175 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// 单个树节点：展开/折叠 + 菜单（子页面/移动到/上移/下移）+ 长按拖拽换父。
+  Widget _nodeTile(BuildContext context, Page pg, int depth, bool hasChildren,
+      Map<String?, List<Page>> byParent) {
+    final collapsed = _collapsed.contains(pg.id);
+    final tile = ListTile(
+      contentPadding: EdgeInsets.only(left: 8 + depth * 22.0, right: 4),
+      leading: GestureDetector(
+        onTap: hasChildren
+            ? () => setState(() {
+                  collapsed ? _collapsed.remove(pg.id) : _collapsed.add(pg.id);
+                })
+            : null,
+        child: Icon(
+          hasChildren ? (collapsed ? Icons.expand_more : Icons.expand_less) : Icons.description_outlined,
+          color: hasChildren ? null : Colors.grey,
+        ),
+      ),
+      title: Text(pg.title.isEmpty ? '（无标题）' : pg.title),
+      subtitle: Text('建于 ${pg.createdAt.toLocal()}'.substring(0, 24)),
+      onTap: () => _openDetail(pg),
+      trailing: PopupMenuButton<String>(
+        onSelected: (v) => _onNodeMenu(pg, v),
+        itemBuilder: (_) => const [
+          PopupMenuItem(value: 'child', child: Text('添加子页面')),
+          PopupMenuItem(value: 'move', child: Text('移动到…')),
+          PopupMenuItem(value: 'up', child: Text('上移')),
+          PopupMenuItem(value: 'down', child: Text('下移')),
+        ],
+      ),
+    );
+
+    final draggable = LongPressDraggable<Page>(
+      data: pg,
+      dragAnchorStrategy: pointerDragAnchorStrategy,
+      feedback: Material(
+        elevation: 4,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Text(pg.title.isEmpty ? '（无标题）' : pg.title,
+              style: const TextStyle(fontSize: 13)),
+        ),
+      ),
+      childWhenDragging: Opacity(opacity: 0.35, child: tile),
+      child: tile,
+    );
+
+    return DragTarget<Page>(
+      onWillAcceptWithDetails: (d) => d.data.id != pg.id,
+      onAcceptWithDetails: (d) => _movePageTo(d.data, pg.id),
+      builder: (context, candidate, _) => Container(
+        decoration: candidate.isNotEmpty
+            ? BoxDecoration(color: Colors.blue.shade50, border: Border.all(color: Colors.blue.shade300))
+            : null,
+        child: draggable,
+      ),
+    );
+  }
+
+  Future<void> _onNodeMenu(Page pg, String action) async {
+    final messenger = ScaffoldMessenger.of(context);
+    switch (action) {
+      case 'child':
+        final ctl = TextEditingController();
+        final title = await showDialog<String>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text('在「${pg.title.isEmpty ? '无标题' : pg.title}」下新建'),
+            content: TextField(
+              controller: ctl,
+              autofocus: true,
+              decoration: const InputDecoration(labelText: '子页面标题', border: OutlineInputBorder()),
+              onSubmitted: (v) => Navigator.pop(ctx, v),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+              FilledButton(onPressed: () => Navigator.pop(ctx, ctl.text), child: const Text('创建')),
+            ],
+          ),
+        );
+        if (title == null) return;
+        final created = await _db.createPage(
+            title: title.trim().isEmpty ? '未命名' : title.trim(), parentId: pg.id);
+        DiagnosticsLog.I.add('page.created', id: created.id);
+        _reload();
+        break;
+      case 'move':
+        await _showMoveDialog(pg);
+        _reload();
+        break;
+      case 'up':
+        await _db.reorderSibling(pg.id, up: true);
+        _reload();
+        break;
+      case 'down':
+        await _db.reorderSibling(pg.id, up: false);
+        _reload();
+        break;
+    }
+    messenger; // keep analyzer quiet about unused capture
+  }
+
+  Future<void> _movePageTo(Page page, String? newParentId) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await _db.movePage(page.id, newParentId);
+      DiagnosticsLog.I.add('page.moved', id: page.id);
+      _reload();
+      messenger.showSnackBar(const SnackBar(content: Text('已移动')));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(
+        content: Text('已阻止：${e.toString().replaceAll('ArgumentError: ', '')}'),
+        backgroundColor: Colors.red.shade700,
+      ));
+    }
+  }
+
+  /// 「移动到…」对话框：树形列出候选目标（排除自身与子孙）+ 顶层选项。
+  Future<void> _showMoveDialog(Page page) async {
+    final all = await _db.listAllActive();
+    final excluded = await _db.descendantIdsOf(page.id); // 含自身
+    final byParent = <String?, List<Page>>{};
+    for (final pg in all) {
+      if (excluded.contains(pg.id)) continue;
+      byParent.putIfAbsent(pg.parentId, () => []).add(pg);
+    }
+    for (final list in byParent.values) {
+      list.sort((a, b) => a.sortKey.compareTo(b.sortKey));
+    }
+
+    if (!mounted) return;
+    final target = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('移动到…'),
+        content: SizedBox(
+          width: 320,
+          height: 360,
+          child: ListView(children: [
+            ListTile(
+              leading: const Icon(Icons.vertical_align_top),
+              title: const Text('顶层（无父级）'),
+              onTap: () => Navigator.pop(ctx, ''),
+            ),
+            for (final pg in _flatten(byParent, null, 0))
+              ListTile(
+                contentPadding: EdgeInsets.only(left: 8 + pg.$2 * 22.0, right: 8),
+                leading: const Icon(Icons.subdirectory_arrow_right, size: 18),
+                title: Text(pg.$1.title.isEmpty ? '（无标题）' : pg.$1.title,
+                    style: const TextStyle(fontSize: 13)),
+                onTap: () => Navigator.pop(ctx, pg.$1.id),
+              ),
+          ]),
+        ),
+      ),
+    );
+    if (target == null) return;
+    await _movePageTo(page, target.isEmpty ? null : target);
+  }
+
+  List<(Page, int)> _flatten(Map<String?, List<Page>> byParent, String? parent, int depth) {
+    final out = <(Page, int)>[];
+    for (final pg in byParent[parent] ?? const <Page>[]) {
+      out.add((pg, depth));
+      out.addAll(_flatten(byParent, pg.id, depth + 1));
+    }
+    return out;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -131,7 +301,7 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       body: FutureBuilder<List<Page>>(
-        future: _pages,
+        future: _all,
         builder: (context, snap) {
           if (snap.connectionState != ConnectionState.done) {
             return const Center(child: CircularProgressIndicator());
@@ -146,18 +316,40 @@ class _HomePageState extends State<HomePage> {
                   textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
             );
           }
-          return ListView.separated(
-            itemCount: pages.length,
-            separatorBuilder: (_, _) => const Divider(height: 1),
-            itemBuilder: (context, i) {
-              final pg = pages[i];
-              return ListTile(
-                leading: const Icon(Icons.description_outlined),
-                title: Text(pg.title.isEmpty ? '（无标题）' : pg.title),
-                subtitle: Text('建于 ${pg.createdAt.toLocal()}'.substring(0, 24)),
-                onTap: () => _openDetail(pg),
-              );
-            },
+          // 内存建树：parentId 分组、同辈按 sortKey/创建时间排序
+          final byParent = <String?, List<Page>>{};
+          for (final pg in pages) {
+            byParent.putIfAbsent(pg.parentId, () => []).add(pg);
+          }
+          for (final list in byParent.values) {
+            list.sort((a, b) {
+              final c = a.sortKey.compareTo(b.sortKey);
+              return c != 0 ? c : a.createdAt.compareTo(b.createdAt);
+            });
+          }
+
+          List<Widget> buildNodes(String? parent, int depth) {
+            final out = <Widget>[];
+            for (final pg in byParent[parent] ?? const <Page>[]) {
+              final hasChildren = (byParent[pg.id] ?? []).isNotEmpty;
+              out.add(_nodeTile(context, pg, depth, hasChildren, byParent));
+              if (hasChildren && !_collapsed.contains(pg.id)) {
+                out.addAll(buildNodes(pg.id, depth + 1));
+              }
+            }
+            return out;
+          }
+
+          return ListView(
+            children: [
+              ...buildNodes(null, 0),
+              const SizedBox(height: 80),
+              const Center(
+                child: Text('提示：长按页面拖到另一页上＝变成它的子页面；\n也可用每行右侧菜单「移动到…」。父页面拖进子孙会被阻止。',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey, fontSize: 12)),
+              ),
+            ],
           );
         },
       ),

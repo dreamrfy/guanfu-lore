@@ -184,5 +184,49 @@ void main() {
       expect(links.where((l) => l.pageId == a.id), isEmpty, reason: '彻底删除的页面其挂载关系应清理');
       await db.close();
     });
+
+    test('页面树：三层嵌套、后代判定、防循环', () async {
+      final db = AppDatabase.forTesting(NativeDatabase.memory());
+      final root = await db.createPage(title: '根');
+      final child = await db.createPage(title: '子', parentId: root.id);
+      final grand = await db.createPage(title: '孙', parentId: child.id);
+
+      final descendants = await db.descendantIdsOf(root.id);
+      expect(descendants, containsAll([root.id, child.id, grand.id]),
+          reason: '后代集合应含自身与全部子孙');
+
+      // 防循环：把根移动到它的孙下面 → 拒绝；移动到自己 → 拒绝
+      expect(() => db.movePage(root.id, grand.id), throwsArgumentError);
+      expect(() => db.movePage(root.id, root.id), throwsArgumentError);
+
+      // 合法换父：子页面提到顶层
+      await db.movePage(child.id, null);
+      expect((await db.pageById(child.id))!.parentId, isNull);
+
+      // 移动后孙仍挂在子下面（整体搬家）
+      expect(await db.descendantIdsOf(child.id), contains(grand.id));
+      await db.close();
+    });
+
+    test('同辈排序：上移与相邻兄弟交换位置', () async {
+      final db = AppDatabase.forTesting(NativeDatabase.memory());
+      final a = await db.createPage(title: '甲');
+      final b = await db.createPage(title: '乙');
+      await db.createPage(title: '丙');
+      await db.reorderSibling(b.id, up: true);
+      final ordered = await db.listAllActive();
+      // listAllActive 不排序；按 (sortKey, createdAt) 排
+      ordered.sort((x, y) {
+        final c = x.sortKey.compareTo(y.sortKey);
+        return c != 0 ? c : x.createdAt.compareTo(y.createdAt);
+      });
+      expect(ordered.map((e) => e.title).toList(), ['乙', '甲', '丙']);
+      // 边界：已在最上的甲再上移 = 无变化
+      await db.reorderSibling(a.id, up: true);
+      final again = await db.listAllActive();
+      expect(again.where((e) => e.id == a.id).first.sortKey,
+          again.where((e) => e.id == a.id).first.sortKey);
+      await db.close();
+    });
   });
 }

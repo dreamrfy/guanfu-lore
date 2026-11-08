@@ -66,11 +66,12 @@ class AppDatabase extends _$AppDatabase {
         .get();
   }
 
-  /// 新建一条页面并返回（稳定 ID 在应用层生成）。
-  Future<Page> createPage({String title = '', String content = ''}) async {
+  /// 新建一条页面并返回（稳定 ID 在应用层生成；parentId 供页面树挂载）。
+  Future<Page> createPage({String title = '', String content = '', String? parentId}) async {
     final now = DateTime.now();
     final row = PagesCompanion.insert(
       id: newId(),
+      parentId: Value(parentId),
       title: Value(title),
       content: Value(content),
       createdAt: now,
@@ -150,6 +151,103 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> clearDraft(String pageId) {
     return (delete(drafts)..where((t) => t.pageId.equals(pageId))).go();
+  }
+
+  /// 取全部未删除页面（内存建树用；量级设计 ≤ 数千行）。
+  Future<List<Page>> listAllActive() {
+    return (select(pages)..where((t) => t.deleted.equals(false))).get();
+  }
+
+  /// 后代集合（含自身）——防循环校验用。
+  Future<Set<String>> descendantIdsOf(String id) async {
+    final all = await listAllActive();
+    final childrenOf = <String, List<String>>{};
+    for (final pg in all) {
+      final pid = pg.parentId;
+      if (pid != null) childrenOf.putIfAbsent(pid, () => []).add(pg.id);
+    }
+    final out = <String>{};
+    final queue = <String>[id];
+    while (queue.isNotEmpty) {
+      final cur = queue.removeLast();
+      if (out.contains(cur)) continue;
+      out.add(cur);
+      queue.addAll(childrenOf[cur] ?? const []);
+    }
+    return out;
+  }
+
+  /// 换父级（null=顶层）。防循环：目标不能是自身或自身子孙。
+  Future<void> movePage(String id, String? newParentId) async {
+    if (newParentId == id) {
+      throw ArgumentError('不能把页面移动到它自己下面');
+    }
+    if (newParentId != null) {
+      final descendants = await descendantIdsOf(id);
+      if (descendants.contains(newParentId)) {
+        throw ArgumentError('循环嵌套：目标页面是当前页面的子孙，已阻止');
+      }
+      final target =
+          await (select(pages)..where((t) => t.id.equals(newParentId) & t.deleted.equals(false)))
+              .getSingleOrNull();
+      if (target == null) throw ArgumentError('目标页面不存在或已删除');
+    }
+    final nextSort = await _nextSiblingSortKey(newParentId);
+    await (update(pages)..where((t) => t.id.equals(id))).write(PagesCompanion(
+      parentId: Value(newParentId),
+      sortKey: Value(nextSort),
+      updatedAt: Value(DateTime.now()),
+      rev: Value(1), // 结构变更也计入版本号（T07 同步语义）
+    ));
+  }
+
+  Future<int> _nextSiblingSortKey(String? parentId) async {
+    final rows = await (select(pages)
+          ..where((t) => t.deleted.equals(false) & (parentId == null
+              ? t.parentId.isNull()
+              : t.parentId.equals(parentId))))
+        .get();
+    var max = 0;
+    for (final r in rows) {
+      if (r.sortKey > max) max = r.sortKey;
+    }
+    return max + 1;
+  }
+
+  /// 同辈排序：与相邻兄弟交换 sortKey（先规范化为 0..n-1 再交换）。
+  Future<void> reorderSibling(String id, {required bool up}) async {
+    final page = await (select(pages)..where((t) => t.id.equals(id))).getSingle();
+    final pid = page.parentId;
+    final siblings = await (select(pages)
+          ..where((t) => t.deleted.equals(false) & (pid == null
+              ? t.parentId.isNull()
+              : t.parentId.equals(pid)))
+          ..orderBy([
+            (t) => OrderingTerm.asc(t.sortKey),
+            (t) => OrderingTerm.asc(t.createdAt),
+          ]))
+        .get();
+    final idx = siblings.indexWhere((s) => s.id == id);
+    final neighborIdx = up ? (idx > 0 ? idx - 1 : -1) : (idx < siblings.length - 1 ? idx + 1 : -1);
+    if (neighborIdx < 0) return; // 已在边界
+    final neighbor = siblings[neighborIdx];
+    await transaction(() async {
+      // 先规范化 sortKey 为 0..n-1（新建页全是 0，直接交换会失效）
+      for (var i = 0; i < siblings.length; i++) {
+        if (siblings[i].sortKey != i) {
+          await (update(pages)..where((t) => t.id.equals(siblings[i].id)))
+              .write(PagesCompanion(sortKey: Value(i)));
+        }
+      }
+      await (update(pages)..where((t) => t.id.equals(id))).write(PagesCompanion(
+        sortKey: Value(neighborIdx),
+        updatedAt: Value(DateTime.now()),
+      ));
+      await (update(pages)..where((t) => t.id.equals(neighbor.id))).write(PagesCompanion(
+        sortKey: Value(idx),
+        updatedAt: Value(DateTime.now()),
+      ));
+    });
   }
 
   /// 移入回收站（软删除）。
