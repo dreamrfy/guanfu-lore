@@ -11,6 +11,8 @@ import 'data/diagnostics.dart';
 import 'data/migration_demo.dart';
 import 'data/save_state.dart';
 import 'data/storage_stats.dart';
+import 'editor/block_model.dart';
+import 'editor/blocks_editor.dart';
 
 void main() {
   runApp(const BijiApp());
@@ -460,24 +462,21 @@ class NoteDetailPage extends StatefulWidget {
 
 class _NoteDetailPageState extends State<NoteDetailPage> {
   late final SaveController _save;
-  late final TextEditingController _contentCtl;
+  String? _editorContent; // 传给块编辑器的内容（页面载入/草稿恢复时更新）
   Page? _page;
   Draft? _draft; // 崩溃恢复草稿（非空时顶部出恢复条）
   bool _faultOn = false;
   bool _busyImages = false;
-  bool _loadingContent = true;
   Future<List<Asset>>? _assets;
 
   @override
   void initState() {
     super.initState();
-    _contentCtl = TextEditingController();
     _save = SaveController(
       write: _writeContent,
       draftWrite: (c) => widget.db.saveDraft(widget._pageId, c), // 键击即时进草稿
       draftClear: () => widget.db.clearDraft(widget._pageId), // 主库落盘成功即清
     );
-    _contentCtl.addListener(_onEdited);
     _loadPage();
   }
 
@@ -487,8 +486,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
     if (!mounted) return;
     setState(() {
       _page = page;
-      _loadingContent = true;
-      _contentCtl.text = page?.content ?? ''; // 程序化赋值：守卫避免误标脏
+      _editorContent = page?.content ?? '';
       _assets = widget.db.assetsForPage(widget._pageId);
       // 崩溃恢复：草稿存在且与正文不同 → 显示恢复条
       _draft = (draft != null &&
@@ -497,19 +495,14 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
           ? draft
           : null;
     });
-    _loadingContent = false;
-    _save.markSaved(page?.content ?? ''); // 基准对齐：防止幽灵保存空跳 rev
+    // 基准对齐用序列化后的形态（编辑器 onChanged 回传的即此形态），防幽灵保存
+    _save.markSaved(encodeBlocks(decodeBlocks(page?.content ?? '')));
   }
 
   Future<void> _restoreDraft() async {
     final d = _draft;
     if (d == null) return;
-    setState(() {
-      _loadingContent = true;
-      _contentCtl.text = d.content;
-      _draft = null;
-    });
-    _loadingContent = false;
+    setState(() => _editorContent = d.content);
     DiagnosticsLog.I.add('draft.restored', id: widget._pageId);
     _save.editText(d.content); // 走正常保存链（成功后草稿由钩子清除）
   }
@@ -528,11 +521,6 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
     await widget.db.updatePageContent(widget._pageId, content);
     // 脱敏口径：只记字数，不记正文
     DiagnosticsLog.I.add('content.saved', id: widget._pageId, count: content.length);
-  }
-
-  void _onEdited() {
-    if (_loadingContent) return; // 程序化赋值不算编辑
-    _save.editText(_contentCtl.text);
   }
 
   void _reloadImages() {
@@ -600,7 +588,6 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
     _save.flush();
     _save.disposeTimer();
     _save.dispose();
-    _contentCtl.dispose();
     super.dispose();
   }
 
@@ -695,15 +682,9 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
                 ]),
               ]),
             ),
-          TextField(
-            controller: _contentCtl,
-            maxLines: null,
-            minLines: 6,
-            keyboardType: TextInputType.multiline,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: '写点什么…（停顿约一秒自动保存到本机）',
-            ),
+          BlocksEditor(
+            initialContent: _editorContent ?? '',
+            onChanged: (serialized) => _save.editText(serialized),
           ),
           const SizedBox(height: 12),
           Row(children: [
