@@ -116,4 +116,62 @@ void main() {
     expect(fired, isNotNull, reason: '首屏块打字必须走 onChanged，否则保存链全死');
     expect(fired, contains('hello'));
   });
+
+  group('Markdown 快捷输入（V2.1 ⑤）', () {
+    test('触发词匹配：七种全中、长短语不误伤、顺序不抢先', () {
+      expect(markdownTriggerOf('#')!.type, BlockType.h1);
+      expect(markdownTriggerOf('-')!.type, BlockType.bullet);
+      expect(markdownTriggerOf('>')!.type, BlockType.quote);
+      expect(markdownTriggerOf('[]')!.type, BlockType.todo);
+      expect(markdownTriggerOf('[]')!.checked, isFalse);
+      expect(markdownTriggerOf('[ ]')!.type, BlockType.todo);
+      expect(markdownTriggerOf('[x]')!.checked, isTrue);
+      expect(markdownTriggerOf('---')!.type, BlockType.divider);
+      // 不该误伤的
+      expect(markdownTriggerOf(''), isNull);
+      expect(markdownTriggerOf('abc-'), isNull);
+      expect(markdownTriggerOf('##'), isNull, reason: '只有一级标题，## 不触发');
+      expect(markdownTriggerOf('--'), isNull);
+    });
+
+    testWidgets('「- 」变列表、「# 」变标题、「[x] 」变已勾选', (tester) async {
+      final fired = <String>[];
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: BlocksEditor(initialContent: '', onChanged: fired.add),
+        ),
+      ));
+      final field = find.byType(TextField).first;
+      await tester.enterText(field, '- ');
+      await tester.pumpAndSettle();
+      expect(fired.last, contains('"t":"bullet"'), reason: fired.last);
+      expect(tester.widget<TextField>(field).controller!.text, '',
+          reason: '触发词不应残留在输入框（显示层与块模型一致）');
+      await tester.enterText(field, '# ');
+      await tester.pumpAndSettle();
+      expect(fired.last, contains('"t":"h1"'), reason: fired.last);
+      expect(tester.widget<TextField>(field).controller!.text, '');
+      await tester.enterText(field, '[x] ');
+      await tester.pumpAndSettle();
+      expect(fired.last, contains('"t":"todo"'), reason: fired.last);
+      expect(fired.last, contains('"d":true'), reason: fired.last);
+      expect(tester.widget<TextField>(field).controller!.text, '');
+    });
+
+    testWidgets('空块输入 / 弹块菜单，选类型后生效且 / 不留在正文', (tester) async {
+      final fired = <String>[];
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: BlocksEditor(initialContent: '', onChanged: fired.add),
+        ),
+      ));
+      await tester.enterText(find.byType(TextField).first, '/');
+      await tester.pumpAndSettle();
+      expect(find.text('块操作'), findsOneWidget, reason: '输入 / 应弹出块菜单');
+      await tester.tap(find.text('引用'));
+      await tester.pumpAndSettle();
+      expect(fired.last, contains('"t":"quote"'), reason: fired.last);
+      expect(fired.last, isNot(contains('/')), reason: '唤起符不留在正文');
+    });
+  });
 }

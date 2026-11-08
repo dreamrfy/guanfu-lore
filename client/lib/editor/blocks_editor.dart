@@ -82,6 +82,53 @@ class _BlocksEditorState extends State<BlocksEditor> {
   void _onTextChanged(String blockId, String text) {
     final i = _blocks.indexWhere((b) => b.id == blockId);
     if (i >= 0) _blocks[i] = _blocks[i].copy(text: text);
+    // V2.1 ⑤ FlowUs 化：'/' 弹块菜单；「触发词+空格」切块类型。
+    // 走控制器文本变化检测（不走硬件按键拦截），软键盘 IME 提交同样生效。
+    if (text == '/') {
+      _openSlashMenu(blockId);
+      return;
+    }
+    if (text.length >= 2 && text.endsWith(' ')) {
+      final trig = markdownTriggerOf(text.substring(0, text.length - 1));
+      if (trig != null) {
+        _applyMarkdownTrigger(blockId, trig);
+        return;
+      }
+    }
+    _fireChanged();
+  }
+
+  /// '/' 唤起符：清掉字符后弹块菜单（FlowUs 心智：/ 只是唤起，不留在正文）。
+  Future<void> _openSlashMenu(String blockId) async {
+    final i = _blocks.indexWhere((b) => b.id == blockId);
+    if (i < 0) return;
+    setState(() {
+      _blocks[i] = _blocks[i].copy(text: '');
+      _ctls[blockId]!.text = '';
+    });
+    _fireChanged();
+    await _showBlockMenu(context, _blocks[i]);
+  }
+
+  /// 触发词转换：整块文本就是「触发词+空格」，转类型后正文清空、光标归零。
+  void _applyMarkdownTrigger(String blockId, ({BlockType type, bool? checked}) trig) {
+    setState(() {
+      final i = _blocks.indexWhere((b) => b.id == blockId);
+      if (i < 0) return;
+      _blocks[i] = _blocks[i].copy(
+        type: trig.type,
+        text: '',
+        checked: trig.checked ?? false,
+      );
+      // 控制器文本必须显式清空：_syncControllers 只补建缺失项，不同步已有文本，
+      // 否则字段里残留触发词（显示层与块模型脱节）
+      final ctl = _ctls[blockId];
+      if (ctl != null) {
+        ctl.text = '';
+        ctl.selection = const TextSelection.collapsed(offset: 0);
+      }
+      _focus[blockId]?.requestFocus();
+    });
     _fireChanged();
   }
 

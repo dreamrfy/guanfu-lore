@@ -133,3 +133,22 @@ List<BlockData> splitBlock(List<BlockData> blocks, String blockId, int offset) {
   }
   return (blocks: out, mergedIntoId: prev.id, mergeOffset: prev.text.length);
 }
+
+/// Markdown 快捷输入触发词（V2.1 ⑤ FlowUs 化）：
+/// 光标前的文本【恰好等于】触发词时返回目标块类型，否则 null。
+/// 顺序敏感：长触发词在前，防止 '-' 抢先匹配 '---'、'[]' 抢先匹配 '[ ]'。
+({BlockType type, bool? checked})? markdownTriggerOf(String prefix) {
+  const table = <String, (BlockType, bool?)>{
+    '---': (BlockType.divider, null),
+    '[ ]': (BlockType.todo, false),
+    '[x]': (BlockType.todo, true),
+    '[]': (BlockType.todo, false),
+    '-': (BlockType.bullet, null),
+    '>': (BlockType.quote, null),
+    '#': (BlockType.h1, null),
+  };
+  for (final e in table.entries) {
+    if (prefix == e.key) return (type: e.value.$1, checked: e.value.$2);
+  }
+  return null;
+}

@@ -28,6 +28,16 @@ class $PagesTable extends Pages with TableInfo<$PagesTable, Page> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(PageTypes.page),
+  );
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
@@ -148,6 +158,7 @@ class $PagesTable extends Pages with TableInfo<$PagesTable, Page> {
   List<GeneratedColumn> get $columns => [
     id,
     parentId,
+    type,
     title,
     content,
     sortKey,
@@ -180,6 +191,12 @@ class $PagesTable extends Pages with TableInfo<$PagesTable, Page> {
       context.handle(
         _parentIdMeta,
         parentId.isAcceptableOrUnknown(data['parent_id']!, _parentIdMeta),
+      );
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
       );
     }
     if (data.containsKey('title')) {
@@ -263,6 +280,10 @@ class $PagesTable extends Pages with TableInfo<$PagesTable, Page> {
         DriftSqlType.string,
         data['${effectivePrefix}parent_id'],
       ),
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
       title: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}title'],
@@ -315,6 +336,7 @@ class $PagesTable extends Pages with TableInfo<$PagesTable, Page> {
 class Page extends DataClass implements Insertable<Page> {
   final String id;
   final String? parentId;
+  final String type;
   final String title;
   final String content;
   final int sortKey;
@@ -328,6 +350,7 @@ class Page extends DataClass implements Insertable<Page> {
   const Page({
     required this.id,
     this.parentId,
+    required this.type,
     required this.title,
     required this.content,
     required this.sortKey,
@@ -346,6 +369,7 @@ class Page extends DataClass implements Insertable<Page> {
     if (!nullToAbsent || parentId != null) {
       map['parent_id'] = Variable<String>(parentId);
     }
+    map['type'] = Variable<String>(type);
     map['title'] = Variable<String>(title);
     map['content'] = Variable<String>(content);
     map['sort_key'] = Variable<int>(sortKey);
@@ -367,6 +391,7 @@ class Page extends DataClass implements Insertable<Page> {
       parentId: parentId == null && nullToAbsent
           ? const Value.absent()
           : Value(parentId),
+      type: Value(type),
       title: Value(title),
       content: Value(content),
       sortKey: Value(sortKey),
@@ -390,6 +415,7 @@ class Page extends DataClass implements Insertable<Page> {
     return Page(
       id: serializer.fromJson<String>(json['id']),
       parentId: serializer.fromJson<String?>(json['parentId']),
+      type: serializer.fromJson<String>(json['type']),
       title: serializer.fromJson<String>(json['title']),
       content: serializer.fromJson<String>(json['content']),
       sortKey: serializer.fromJson<int>(json['sortKey']),
@@ -408,6 +434,7 @@ class Page extends DataClass implements Insertable<Page> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'parentId': serializer.toJson<String?>(parentId),
+      'type': serializer.toJson<String>(type),
       'title': serializer.toJson<String>(title),
       'content': serializer.toJson<String>(content),
       'sortKey': serializer.toJson<int>(sortKey),
@@ -424,6 +451,7 @@ class Page extends DataClass implements Insertable<Page> {
   Page copyWith({
     String? id,
     Value<String?> parentId = const Value.absent(),
+    String? type,
     String? title,
     String? content,
     int? sortKey,
@@ -437,6 +465,7 @@ class Page extends DataClass implements Insertable<Page> {
   }) => Page(
     id: id ?? this.id,
     parentId: parentId.present ? parentId.value : this.parentId,
+    type: type ?? this.type,
     title: title ?? this.title,
     content: content ?? this.content,
     sortKey: sortKey ?? this.sortKey,
@@ -452,6 +481,7 @@ class Page extends DataClass implements Insertable<Page> {
     return Page(
       id: data.id.present ? data.id.value : this.id,
       parentId: data.parentId.present ? data.parentId.value : this.parentId,
+      type: data.type.present ? data.type.value : this.type,
       title: data.title.present ? data.title.value : this.title,
       content: data.content.present ? data.content.value : this.content,
       sortKey: data.sortKey.present ? data.sortKey.value : this.sortKey,
@@ -470,6 +500,7 @@ class Page extends DataClass implements Insertable<Page> {
     return (StringBuffer('Page(')
           ..write('id: $id, ')
           ..write('parentId: $parentId, ')
+          ..write('type: $type, ')
           ..write('title: $title, ')
           ..write('content: $content, ')
           ..write('sortKey: $sortKey, ')
@@ -488,6 +519,7 @@ class Page extends DataClass implements Insertable<Page> {
   int get hashCode => Object.hash(
     id,
     parentId,
+    type,
     title,
     content,
     sortKey,
@@ -505,6 +537,7 @@ class Page extends DataClass implements Insertable<Page> {
       (other is Page &&
           other.id == this.id &&
           other.parentId == this.parentId &&
+          other.type == this.type &&
           other.title == this.title &&
           other.content == this.content &&
           other.sortKey == this.sortKey &&
@@ -520,6 +553,7 @@ class Page extends DataClass implements Insertable<Page> {
 class PagesCompanion extends UpdateCompanion<Page> {
   final Value<String> id;
   final Value<String?> parentId;
+  final Value<String> type;
   final Value<String> title;
   final Value<String> content;
   final Value<int> sortKey;
@@ -534,6 +568,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
   const PagesCompanion({
     this.id = const Value.absent(),
     this.parentId = const Value.absent(),
+    this.type = const Value.absent(),
     this.title = const Value.absent(),
     this.content = const Value.absent(),
     this.sortKey = const Value.absent(),
@@ -549,6 +584,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
   PagesCompanion.insert({
     required String id,
     this.parentId = const Value.absent(),
+    this.type = const Value.absent(),
     this.title = const Value.absent(),
     this.content = const Value.absent(),
     this.sortKey = const Value.absent(),
@@ -566,6 +602,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
   static Insertable<Page> custom({
     Expression<String>? id,
     Expression<String>? parentId,
+    Expression<String>? type,
     Expression<String>? title,
     Expression<String>? content,
     Expression<int>? sortKey,
@@ -581,6 +618,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (parentId != null) 'parent_id': parentId,
+      if (type != null) 'type': type,
       if (title != null) 'title': title,
       if (content != null) 'content': content,
       if (sortKey != null) 'sort_key': sortKey,
@@ -598,6 +636,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
   PagesCompanion copyWith({
     Value<String>? id,
     Value<String?>? parentId,
+    Value<String>? type,
     Value<String>? title,
     Value<String>? content,
     Value<int>? sortKey,
@@ -613,6 +652,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
     return PagesCompanion(
       id: id ?? this.id,
       parentId: parentId ?? this.parentId,
+      type: type ?? this.type,
       title: title ?? this.title,
       content: content ?? this.content,
       sortKey: sortKey ?? this.sortKey,
@@ -635,6 +675,9 @@ class PagesCompanion extends UpdateCompanion<Page> {
     }
     if (parentId.present) {
       map['parent_id'] = Variable<String>(parentId.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
     }
     if (title.present) {
       map['title'] = Variable<String>(title.value);
@@ -677,6 +720,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
     return (StringBuffer('PagesCompanion(')
           ..write('id: $id, ')
           ..write('parentId: $parentId, ')
+          ..write('type: $type, ')
           ..write('title: $title, ')
           ..write('content: $content, ')
           ..write('sortKey: $sortKey, ')
@@ -1844,6 +1888,7 @@ typedef $$PagesTableCreateCompanionBuilder =
     PagesCompanion Function({
       required String id,
       Value<String?> parentId,
+      Value<String> type,
       Value<String> title,
       Value<String> content,
       Value<int> sortKey,
@@ -1860,6 +1905,7 @@ typedef $$PagesTableUpdateCompanionBuilder =
     PagesCompanion Function({
       Value<String> id,
       Value<String?> parentId,
+      Value<String> type,
       Value<String> title,
       Value<String> content,
       Value<int> sortKey,
@@ -1888,6 +1934,11 @@ class $$PagesTableFilterComposer extends Composer<_$AppDatabase, $PagesTable> {
 
   ColumnFilters<String> get parentId => $composableBuilder(
     column: $table.parentId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1961,6 +2012,11 @@ class $$PagesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get title => $composableBuilder(
     column: $table.title,
     builder: (column) => ColumnOrderings(column),
@@ -2027,6 +2083,9 @@ class $$PagesTableAnnotationComposer
   GeneratedColumn<String> get parentId =>
       $composableBuilder(column: $table.parentId, builder: (column) => column);
 
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
   GeneratedColumn<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => column);
 
@@ -2088,6 +2147,7 @@ class $$PagesTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String?> parentId = const Value.absent(),
+                Value<String> type = const Value.absent(),
                 Value<String> title = const Value.absent(),
                 Value<String> content = const Value.absent(),
                 Value<int> sortKey = const Value.absent(),
@@ -2102,6 +2162,7 @@ class $$PagesTableTableManager
               }) => PagesCompanion(
                 id: id,
                 parentId: parentId,
+                type: type,
                 title: title,
                 content: content,
                 sortKey: sortKey,
@@ -2118,6 +2179,7 @@ class $$PagesTableTableManager
               ({
                 required String id,
                 Value<String?> parentId = const Value.absent(),
+                Value<String> type = const Value.absent(),
                 Value<String> title = const Value.absent(),
                 Value<String> content = const Value.absent(),
                 Value<int> sortKey = const Value.absent(),
@@ -2132,6 +2194,7 @@ class $$PagesTableTableManager
               }) => PagesCompanion.insert(
                 id: id,
                 parentId: parentId,
+                type: type,
                 title: title,
                 content: content,
                 sortKey: sortKey,
