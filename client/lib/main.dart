@@ -9,6 +9,7 @@ import 'data/asset_store.dart';
 import 'data/database.dart';
 import 'data/diagnostics.dart';
 import 'data/migration_demo.dart';
+import 'data/pages_table.dart';
 import 'data/save_state.dart';
 import 'data/storage_stats.dart';
 import 'editor/block_model.dart';
@@ -55,33 +56,81 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _reload() {
-    setState(() => _all = _db.listAllActive());
+    // 块体而非箭头：箭头会把赋值表达式的 Future 当返回值，debug 下触发 setState 红屏
+    setState(() {
+      _all = _db.listAllActive();
+    });
   }
 
   Future<void> _newPageDialog() async {
-    final ctl = TextEditingController();
-    final title = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('新建内容'),
-        content: TextField(
-          controller: ctl,
-          autofocus: true,
-          decoration: const InputDecoration(
-              labelText: '标题', border: OutlineInputBorder(), hintText: '写点什么，比如「周会记录」'),
-          onSubmitted: (v) => Navigator.pop(ctx, v),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, ctl.text), child: const Text('保存')),
-        ],
-      ),
-    );
-    if (title == null) return;
-    final page = await _db.createPage(title: title.trim().isEmpty ? '未命名' : title.trim());
+    final result = await _showCreateDialog(dialogTitle: '新建内容');
+    if (result == null) return;
+    final page = await _db.createPage(
+        title: result.title.trim().isEmpty ? '未命名' : result.title.trim(),
+        type: result.type);
     DiagnosticsLog.I.add('page.created', id: page.id);
     _reload();
     if (mounted) _openDetail(page);
+  }
+
+  /// 新建内容对话框（V2.1 ①）：标题 + 类型选择（普通页面 / 多维表）。
+  Future<({String title, String type})?> _showCreateDialog(
+      {required String dialogTitle}) async {
+    final ctl = TextEditingController();
+    String type = PageTypes.page;
+    if (!mounted) return null;
+    return showDialog<({String title, String type})>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Text(dialogTitle),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: ctl,
+                autofocus: true,
+                decoration: const InputDecoration(
+                    labelText: '标题', border: OutlineInputBorder(), hintText: '写点什么，比如「周会记录」'),
+                onSubmitted: (v) => Navigator.pop(ctx, (title: v, type: type)),
+              ),
+              const SizedBox(height: 14),
+              Text('类型', style: TextStyle(fontSize: 13, color: Colors.grey.shade700)),
+              const SizedBox(height: 6),
+              Row(children: [
+                Expanded(
+                  child: _TypeCard(
+                    selected: type == PageTypes.page,
+                    icon: Icons.description_outlined,
+                    name: '页面',
+                    desc: '写笔记、文档',
+                    onTap: () => setDialogState(() => type = PageTypes.page),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _TypeCard(
+                    selected: type == PageTypes.table,
+                    icon: Icons.grid_on,
+                    name: '多维表',
+                    desc: '像表格一样管理记录',
+                    onTap: () => setDialogState(() => type = PageTypes.table),
+                  ),
+                ),
+              ]),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, (title: ctl.text, type: type)),
+              child: const Text('创建'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _openDetail(Page page) {
@@ -126,6 +175,7 @@ class _HomePageState extends State<HomePage> {
   Widget _nodeTile(BuildContext context, Page pg, int depth, bool hasChildren,
       Map<String?, List<Page>> byParent) {
     final collapsed = _collapsed.contains(pg.id);
+    final isTable = pg.type == PageTypes.table;
     final tile = ListTile(
       contentPadding: EdgeInsets.only(left: 8 + depth * 22.0, right: 4),
       leading: GestureDetector(
@@ -135,11 +185,20 @@ class _HomePageState extends State<HomePage> {
                 })
             : null,
         child: Icon(
-          hasChildren ? (collapsed ? Icons.expand_more : Icons.expand_less) : Icons.description_outlined,
-          color: hasChildren ? null : Colors.grey,
+          hasChildren
+              ? (collapsed ? Icons.expand_more : Icons.expand_less)
+              : (isTable ? Icons.grid_on : Icons.description_outlined),
+          color: hasChildren ? null : (isTable ? Colors.blue.shade700 : Colors.grey),
         ),
       ),
-      title: Text(pg.title.isEmpty ? '（无标题）' : pg.title),
+      title: Row(children: [
+        if (hasChildren && isTable)
+          Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: Icon(Icons.grid_on, size: 15, color: Colors.blue.shade700),
+          ),
+        Expanded(child: Text(pg.title.isEmpty ? '（无标题）' : pg.title)),
+      ]),
       subtitle: Text('建于 ${pg.createdAt.toLocal()}'.substring(0, 24)),
       onTap: () => _openDetail(pg),
       trailing: PopupMenuButton<String>(
@@ -185,26 +244,13 @@ class _HomePageState extends State<HomePage> {
     final messenger = ScaffoldMessenger.of(context);
     switch (action) {
       case 'child':
-        final ctl = TextEditingController();
-        final title = await showDialog<String>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text('在「${pg.title.isEmpty ? '无标题' : pg.title}」下新建'),
-            content: TextField(
-              controller: ctl,
-              autofocus: true,
-              decoration: const InputDecoration(labelText: '子页面标题', border: OutlineInputBorder()),
-              onSubmitted: (v) => Navigator.pop(ctx, v),
-            ),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-              FilledButton(onPressed: () => Navigator.pop(ctx, ctl.text), child: const Text('创建')),
-            ],
-          ),
-        );
-        if (title == null) return;
+        final result = await _showCreateDialog(
+            dialogTitle: '在「${pg.title.isEmpty ? '无标题' : pg.title}」下新建');
+        if (result == null) return;
         final created = await _db.createPage(
-            title: title.trim().isEmpty ? '未命名' : title.trim(), parentId: pg.id);
+            title: result.title.trim().isEmpty ? '未命名' : result.title.trim(),
+            parentId: pg.id,
+            type: result.type);
         DiagnosticsLog.I.add('page.created', id: created.id);
         _reload();
         break;
@@ -435,6 +481,7 @@ class _HomePageState extends State<HomePage> {
 }
 
 /// 笔记详情：正文编辑 + 保存状态灯（P1-T04）+ 图片挂载（P1-T03）。
+/// V2.1 ①：按页面类型分支——普通页面进块编辑器（空页面出类型选择器），多维表进表格视图。
 /// [embedded]=true 时作为分栏面板内嵌（右上角多「整页切换」与「关闭」），false 时整页路由。
 class NoteDetailPage extends StatefulWidget {
   const NoteDetailPage({
@@ -446,6 +493,7 @@ class NoteDetailPage extends StatefulWidget {
     this.onClosed,
     this.onToggleFullPage,
     this.fullPage = false,
+    this.onTypeChanged,
   });
 
   final AppDatabase db;
@@ -455,6 +503,9 @@ class NoteDetailPage extends StatefulWidget {
   final VoidCallback? onClosed;
   final VoidCallback? onToggleFullPage;
   final bool fullPage;
+
+  /// 页面类型变化（空页面转多维表）后通知外层刷新树图标。
+  final VoidCallback? onTypeChanged;
 
   @override
   State<NoteDetailPage> createState() => _NoteDetailPageState();
@@ -467,6 +518,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
   Draft? _draft; // 崩溃恢复草稿（非空时顶部出恢复条）
   bool _faultOn = false;
   bool _busyImages = false;
+  bool _typePickerDismissed = false; // 空页面类型选择器被「写笔记」手动收起
   Future<List<Asset>>? _assets;
 
   @override
@@ -513,6 +565,23 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
     setState(() => _draft = null);
   }
 
+  /// 空页面类型选择器的显示条件（V2.1 ①）：普通页面 + 无草稿 + 正文只有空段落。
+  bool _showTypePicker(Page page) {
+    if (_typePickerDismissed || _draft != null) return false;
+    if (page.type != PageTypes.page) return false;
+    return decodeBlocks(page.content).every((b) => b.type == BlockType.p && b.text.trim().isEmpty);
+  }
+
+  /// 空普通页面 → 多维表（内容本来就空，无损失）。
+  Future<void> _convertToTable() async {
+    await widget.db.setPageType(widget._pageId, PageTypes.table);
+    DiagnosticsLog.I.add('page.typeChanged', id: widget._pageId);
+    if (!mounted) return;
+    setState(() => _page = null);
+    await _loadPage();
+    widget.onTypeChanged?.call();
+  }
+
   Future<void> _writeContent(String content) async {
     if (_faultOn) {
       DiagnosticsLog.I.add('content.saveFailed', id: widget._pageId, error: '故障注入：模拟写盘失败');
@@ -524,7 +593,9 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
   }
 
   void _reloadImages() {
-    setState(() => _assets = widget.db.assetsForPage(widget._pageId));
+    setState(() {
+      _assets = widget.db.assetsForPage(widget._pageId);
+    });
   }
 
   Future<void> _pickAndSaveImage() async {
@@ -606,7 +677,17 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
                 icon: const Icon(Icons.close),
               )
             : null,
-        title: GestureDetector(onTap: _renameDialog, child: Text(page.title.isEmpty ? '（无标题）' : page.title)),
+        title: GestureDetector(
+          onTap: _renameDialog,
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            if (page.type == PageTypes.table)
+              Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: Icon(Icons.grid_on, size: 18, color: Colors.blue.shade700),
+              ),
+            Flexible(child: Text(page.title.isEmpty ? '（无标题）' : page.title)),
+          ]),
+        ),
         actions: [
           AnimatedBuilder(
             animation: _save,
@@ -644,7 +725,9 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
           ),
         ],
       ),
-      body: ListView(
+      body: page.type == PageTypes.table
+          ? const _TablePagePlaceholder()
+          : ListView(
         padding: const EdgeInsets.all(12),
         children: [
           if (_draft != null)
@@ -681,6 +764,14 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
                   ),
                 ]),
               ]),
+            ),
+          if (_showTypePicker(page))
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _EmptyPageTypePicker(
+                onPickNote: () => setState(() => _typePickerDismissed = true),
+                onPickTable: _convertToTable,
+              ),
             ),
           BlocksEditor(
             initialContent: _editorContent ?? '',
@@ -1026,5 +1117,149 @@ class _AssetViewState extends State<_AssetView> {
         style: TextStyle(fontSize: 12, color: _intact ? Colors.grey : Colors.red),
       ),
     ]);
+  }
+}
+
+/// 新建对话框里的类型卡片（V2.1 ①）：普通页面 / 多维表 二选一。
+class _TypeCard extends StatelessWidget {
+  const _TypeCard({
+    required this.selected,
+    required this.icon,
+    required this.name,
+    required this.desc,
+    required this.onTap,
+  });
+
+  final bool selected;
+  final IconData icon;
+  final String name;
+  final String desc;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final border = selected ? Colors.blue.shade600 : Colors.grey.shade300;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        decoration: BoxDecoration(
+          border: Border.all(color: border, width: selected ? 2 : 1),
+          borderRadius: BorderRadius.circular(8),
+          color: selected ? Colors.blue.shade50 : null,
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(icon, size: 22, color: selected ? Colors.blue.shade700 : Colors.grey.shade700),
+          const SizedBox(height: 6),
+          Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+          Text(desc, style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+        ]),
+      ),
+    );
+  }
+}
+
+/// 空页面的内嵌类型选择器（V2.1 ①，仿 FlowUs 截图一）：写笔记 / 变多维表。
+class _EmptyPageTypePicker extends StatelessWidget {
+  const _EmptyPageTypePicker({required this.onPickNote, required this.onPickTable});
+
+  final VoidCallback onPickNote;
+  final VoidCallback onPickTable;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('这是一张空页面，你想用它做什么？',
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade800)),
+        const SizedBox(height: 10),
+        Row(children: [
+          Expanded(
+            child: _PickerOption(
+              icon: Icons.description_outlined,
+              name: '写笔记',
+              desc: '就在下面开始输入',
+              onTap: onPickNote,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: _PickerOption(
+              icon: Icons.grid_on,
+              name: '变多维表',
+              desc: '把这张页面变成表格',
+              onTap: onPickTable,
+            ),
+          ),
+        ]),
+      ]),
+    );
+  }
+}
+
+class _PickerOption extends StatelessWidget {
+  const _PickerOption({
+    required this.icon,
+    required this.name,
+    required this.desc,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String name;
+  final String desc;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(8),
+          color: Colors.white,
+        ),
+        child: Row(children: [
+          Icon(icon, size: 20, color: Colors.blue.shade700),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+              Text(desc, style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+            ]),
+          ),
+        ]),
+      ),
+    );
+  }
+}
+
+/// 多维表页面占位（V2.1 ①）：表格视图由 ②（多维表最小版）提供。
+class _TablePagePlaceholder extends StatelessWidget {
+  const _TablePagePlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(Icons.grid_on, size: 44, color: Colors.blue.shade300),
+        const SizedBox(height: 12),
+        const Text('这是一张多维表', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 6),
+        Text('表格视图建设中：下一版提供加列、加行、\n单元格编辑与剪藏记录自动写入',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12, color: Colors.grey)),
+      ]),
+    );
   }
 }

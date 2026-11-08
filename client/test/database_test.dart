@@ -11,6 +11,7 @@ import 'package:bijiapp/data/asset_store_common.dart';
 import 'package:bijiapp/data/asset_store_io.dart';
 import 'package:bijiapp/data/database.dart';
 import 'package:bijiapp/data/ids.dart';
+import 'package:bijiapp/data/pages_table.dart';
 
 /// Windows 测试宿主机没有随包的 sqlite3.dll，用系统自带的 winsqlite3.dll。
 void _setupSqliteForHostTests() {
@@ -65,6 +66,27 @@ void main() {
     final renamed = all.firstWhere((e) => e.id == a.id);
     expect(renamed.updatedAt.isAfter(renamed.createdAt) || renamed.updatedAt == renamed.createdAt,
         isTrue);
+    await db.close();
+  });
+
+  test('页面类型（V2.1 ①）：默认普通页、可建多维表、类型切换往返、非法类型拒绝', () async {
+    final db = AppDatabase.forTesting(NativeDatabase.memory());
+    // 默认类型 = 普通页面
+    final p = await db.createPage(title: '普通页');
+    expect(p.type, PageTypes.page);
+    // 显式建多维表
+    final t = await db.createPage(title: '剪藏库', type: PageTypes.table);
+    expect(t.type, PageTypes.table);
+    // 空页面转多维表 + 转回
+    await db.setPageType(p.id, PageTypes.table);
+    expect((await db.pageById(p.id))!.type, PageTypes.table);
+    await db.setPageType(p.id, PageTypes.page);
+    expect((await db.pageById(p.id))!.type, PageTypes.page);
+    // 类型切换计入版本号（单调递增）
+    expect((await db.pageById(p.id))!.rev, greaterThanOrEqualTo(2));
+    // 非法类型拒绝（建表与切换两条路）
+    await expectLater(db.createPage(title: 'x', type: 'kanban'), throwsArgumentError);
+    await expectLater(db.setPageType(p.id, 'kanban'), throwsArgumentError);
     await db.close();
   });
 

@@ -20,7 +20,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -39,6 +39,10 @@ class AppDatabase extends _$AppDatabase {
           // v3→v4（P1-T06）：pages 加 deletedAt 列
           if (from < 4) {
             await m.addColumn(pages, pages.deletedAt);
+          }
+          // v4→v5（V2.1 ① 页面类型系统）：pages 加 type 列，存量页面一律普通页面
+          if (from < 5) {
+            await m.addColumn(pages, pages.type);
           }
         },
         beforeOpen: (details) async {
@@ -66,12 +70,18 @@ class AppDatabase extends _$AppDatabase {
         .get();
   }
 
-  /// 新建一条页面并返回（稳定 ID 在应用层生成；parentId 供页面树挂载）。
-  Future<Page> createPage({String title = '', String content = '', String? parentId}) async {
+  /// 新建一条页面并返回（稳定 ID 在应用层生成；parentId 供页面树挂载；
+  /// type 见 PageTypes，V2.1 ① 支持建多维表页面）。
+  Future<Page> createPage(
+      {String title = '', String content = '', String? parentId, String type = PageTypes.page}) async {
+    if (!PageTypes.isValid(type)) {
+      throw ArgumentError('未知页面类型：$type');
+    }
     final now = DateTime.now();
     final row = PagesCompanion.insert(
       id: newId(),
       parentId: Value(parentId),
+      type: Value(type),
       title: Value(title),
       content: Value(content),
       createdAt: now,
@@ -80,6 +90,21 @@ class AppDatabase extends _$AppDatabase {
     await into(pages).insert(row);
     final created = await (select(pages)..where((t) => t.id.equals(row.id.value))).getSingle();
     return created;
+  }
+
+  /// 切换页面类型（V2.1 ①：空普通页面 ↔ 多维表）。是否允许转换由 UI 层把关（有正文不转）。
+  Future<void> setPageType(String id, String type) async {
+    if (!PageTypes.isValid(type)) {
+      throw ArgumentError('未知页面类型：$type');
+    }
+    await transaction(() async {
+      final row = await (select(pages)..where((t) => t.id.equals(id))).getSingle();
+      await (update(pages)..where((t) => t.id.equals(id))).write(PagesCompanion(
+        type: Value(type),
+        updatedAt: Value(DateTime.now()),
+        rev: Value(row.rev + 1), // 类型切换也是一次变更，计入版本号
+      ));
+    });
   }
 
   Future<void> renamePage(String id, String title) {
