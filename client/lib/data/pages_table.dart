@@ -4,8 +4,9 @@ import 'package:drift/drift.dart';
 class PageTypes {
   static const String page = 'page'; // 普通页面（块编辑器）
   static const String table = 'table'; // 多维表（表格视图，P2-② 提供视图）
+  static const String record = 'record'; // 多维表记录页（③：挂在表下，树上隐藏）
 
-  static bool isValid(String t) => t == page || t == table;
+  static bool isValid(String t) => t == page || t == table || t == record;
 }
 
 /// P1-T02 数据模型 v1：页面/笔记。

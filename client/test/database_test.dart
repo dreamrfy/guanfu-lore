@@ -90,6 +90,23 @@ void main() {
     await db.close();
   });
 
+  test('记录页（V2.1 ③）：record 类型挂在表下、可读写批注正文', () async {
+    final db = AppDatabase.forTesting(NativeDatabase.memory());
+    final table = await db.createPage(title: '剪藏库', type: PageTypes.table);
+    final rec = await db.createPage(
+        title: '我的文章', parentId: table.id, type: PageTypes.record);
+    expect(rec.type, PageTypes.record);
+    expect(rec.parentId, table.id);
+    // 批注正文读写
+    await db.updatePageContent(rec.id, '{"v":1,"b":[]}');
+    final got = await db.pageById(rec.id);
+    expect(got!.content, '{"v":1,"b":[]}');
+    expect(got.rev, 1, reason: '批注保存计入版本号');
+    // record 是合法类型但不在树显示逻辑内（树上隐藏属 UI 口径，这里验证数据层无碍）
+    expect((await db.listAllActive()).map((e) => e.id), containsAll([table.id, rec.id]));
+    await db.close();
+  });
+
   test('数据库：软删除标记生效（listActivePages 不含已删除）', () async {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     final a = await db.createPage(title: '将被删除');

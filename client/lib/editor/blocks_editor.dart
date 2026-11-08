@@ -50,6 +50,9 @@ class _BlocksEditorState extends State<BlocksEditor> {
     _focus.clear();
     for (final b in _blocks) {
       _ctls[b.id] = MarkdownTextController(text: b.text);
+      // 监听器必须在这里就挂上：否则首屏块的打字不触发 onChanged，保存链全死
+      // （P2-T03 存量缺陷：只有拆块/合并等结构操作后才由 _syncControllers 补挂）
+      _ctls[b.id]!.addListener(() => _onTextChanged(b.id, _ctls[b.id]!.text));
       _focus[b.id] = FocusNode(onKeyEvent: _keyHandler(b.id));
     }
     _loading = false;

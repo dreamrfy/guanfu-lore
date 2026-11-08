@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:bijiapp/editor/block_model.dart';
+import 'package:bijiapp/editor/blocks_editor.dart';
 import 'package:bijiapp/editor/markdown_controller.dart';
 
 void main() {
@@ -101,5 +102,18 @@ void main() {
     final span = MarkdownTextController.buildMarkdownSpan(
         'a **bold** b', const TextStyle(fontSize: 14), false);
     expect(span.toPlainText(), 'a **bold** b');
+  });
+
+  testWidgets('块编辑器：首屏块打字必须触发 onChanged（回归 P2-T03 装配缺陷）', (tester) async {
+    String? fired;
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: BlocksEditor(initialContent: '', onChanged: (s) => fired = s),
+      ),
+    ));
+    expect(fired, isNull, reason: '打开页面不应有幽灵保存');
+    await tester.enterText(find.byType(TextField).first, 'hello');
+    expect(fired, isNotNull, reason: '首屏块打字必须走 onChanged，否则保存链全死');
+    expect(fired, contains('hello'));
   });
 }

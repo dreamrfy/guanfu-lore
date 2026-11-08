@@ -9,10 +9,14 @@ class TablePageView extends StatefulWidget {
     super.key,
     required this.initialContent,
     required this.onChanged,
+    this.onOpenRecord,
   });
 
   final String initialContent;
   final ValueChanged<String> onChanged;
+
+  /// 点第一列（标题）打开记录详情页（③）；上层负责物化记录页。为 null 时点单元格一律编辑。
+  final void Function(TableRowData row)? onOpenRecord;
 
   @override
   State<TablePageView> createState() => _TablePageViewState();
@@ -211,6 +215,7 @@ class _TablePageViewState extends State<TablePageView> {
   }
 
   Widget _dataRow(TableData t, TableRowData row) {
+    final firstColId = t.cols.first.id;
     return Container(
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
@@ -218,16 +223,25 @@ class _TablePageViewState extends State<TablePageView> {
       child: Row(children: [
         for (final col in t.cols)
           SizedBox(
-            width: col.id == t.cols.first.id ? _firstCellWidth : _cellWidth,
+            width: col.id == firstColId ? _firstCellWidth : _cellWidth,
             child: InkWell(
-              onTap: () => _editCell(row, col),
+              onTap: () {
+                if (col.id == firstColId && widget.onOpenRecord != null) {
+                  widget.onOpenRecord!(row); // 首列=打开记录页（③）
+                } else {
+                  _editCell(row, col);
+                }
+              },
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
                 child: Text(
                   row.cells[col.id] ?? '',
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight: col.id == t.cols.first.id ? FontWeight.w600 : null,
+                    fontWeight: col.id == firstColId ? FontWeight.w600 : null,
+                    color: col.id == firstColId && widget.onOpenRecord != null
+                        ? Colors.blue.shade800
+                        : null,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

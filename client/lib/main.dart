@@ -294,6 +294,7 @@ class _HomePageState extends State<HomePage> {
     final byParent = <String?, List<Page>>{};
     for (final pg in all) {
       if (excluded.contains(pg.id)) continue;
+      if (pg.type == PageTypes.record) continue; // 记录页不可作为移动目标
       byParent.putIfAbsent(pg.parentId, () => []).add(pg);
     }
     for (final list in byParent.values) {
@@ -390,6 +391,7 @@ class _HomePageState extends State<HomePage> {
           // 内存建树：parentId 分组、同辈按 sortKey/创建时间排序
           final byParent = <String?, List<Page>>{};
           for (final pg in pages) {
+            if (pg.type == PageTypes.record) continue; // 记录页不入树（表格视图是唯一入口）
             byParent.putIfAbsent(pg.parentId, () => []).add(pg);
           }
           for (final list in byParent.values) {
@@ -593,42 +595,39 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
     widget.onTypeChanged?.call();
   }
 
+  /// 打开记录详情页（③）：未物化的行先建记录页并回写 pid（走表格自己的保存链）。
+  Future<void> _openRecord(Page tablePage, TableRowData row) async {
+    final t = decodeTable(_editorContent ?? '');
+    var pid = row.pid ?? '';
+    if (pid.isEmpty) {
+      final primary = row.cells[t.cols.first.id] ?? '';
+      final rec = await widget.db.createPage(
+        title: primary.trim().isEmpty ? '未命名记录' : primary.trim(),
+        parentId: tablePage.id,
+        type: PageTypes.record,
+      );
+      final json = encodeTable(setRowPid(t, row.id, rec.id));
+      if (!mounted) return;
+      setState(() => _editorContent = json);
+      _save.editText(json); // pid 持久化（走表格保存链）
+      pid = rec.id;
+      DiagnosticsLog.I.add('record.materialized', id: rec.id);
+    }
+    if (!mounted) return;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => RecordDetailPage(db: widget.db, pageId: pid)),
+    );
+    // 返回后行数据可能有批注引起的变化；表格 JSON 不变，无需重载
+  }
+
   /// 崩溃恢复草稿条（普通页/多维表共用：表 JSON 草稿同样可恢复）。
   Widget _draftBanner() {
     final d = _draft!;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.orange.shade50,
-        border: Border.all(color: Colors.orange.shade300),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(
-          '检测到上次未保存的草稿（${d.updatedAt.toLocal()}）——可能是异常退出所致',
-          style: TextStyle(fontSize: 13, color: Colors.orange.shade900),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          d.content.length > 60 ? '${d.content.substring(0, 60)}…' : d.content,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
-        ),
-        const SizedBox(height: 8),
-        Row(children: [
-          FilledButton(
-            onPressed: _restoreDraft,
-            child: const Text('恢复草稿'),
-          ),
-          const SizedBox(width: 8),
-          TextButton(
-            onPressed: _discardDraft,
-            child: const Text('丢弃'),
-          ),
-        ]),
-      ]),
+    return _DraftBanner(
+      draft: d,
+      onRestore: _restoreDraft,
+      onDiscard: _discardDraft,
     );
   }
 
@@ -786,6 +785,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
                     child: TablePageView(
                       initialContent: _editorContent ?? '',
                       onChanged: (serialized) => _save.editText(serialized),
+                      onOpenRecord: (row) => _openRecord(page, row),
                     ),
                   ),
                 ),
@@ -1270,6 +1270,193 @@ class _PickerOption extends StatelessWidget {
           ),
         ]),
       ),
+    );
+  }
+}
+
+/// 崩溃恢复草稿条（普通页/多维表/记录页三处共用）。
+class _DraftBanner extends StatelessWidget {
+  const _DraftBanner({
+    required this.draft,
+    required this.onRestore,
+    required this.onDiscard,
+  });
+
+  final Draft draft;
+  final VoidCallback onRestore;
+  final VoidCallback onDiscard;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.orange.shade50,
+        border: Border.all(color: Colors.orange.shade300),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(
+          '检测到上次未保存的草稿（${draft.updatedAt.toLocal()}）——可能是异常退出所致',
+          style: TextStyle(fontSize: 13, color: Colors.orange.shade900),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          draft.content.length > 60 ? '${draft.content.substring(0, 60)}…' : draft.content,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+        ),
+        const SizedBox(height: 8),
+        Row(children: [
+          FilledButton(onPressed: onRestore, child: const Text('恢复草稿')),
+          const SizedBox(width: 8),
+          TextButton(onPressed: onDiscard, child: const Text('丢弃')),
+        ]),
+      ]),
+    );
+  }
+}
+
+/// 记录详情页（V2.1 ③）：原文快照区 + 批注区（块编辑器）。
+/// 记录页是隐藏型页面（type=record，挂在表下、树上不可见），表格视图是唯一入口，
+/// 返回即回到表格（记录↔页面双向定位）。批注走与普通页一致的保存链（状态灯/草稿/恢复）。
+class RecordDetailPage extends StatefulWidget {
+  const RecordDetailPage({super.key, required this.db, required this.pageId});
+
+  final AppDatabase db;
+  final String pageId;
+
+  @override
+  State<RecordDetailPage> createState() => _RecordDetailPageState();
+}
+
+class _RecordDetailPageState extends State<RecordDetailPage> {
+  late final SaveController _save;
+  String? _editorContent;
+  Page? _page;
+  Draft? _draft;
+
+  @override
+  void initState() {
+    super.initState();
+    _save = SaveController(
+      write: _writeContent,
+      draftWrite: (c) => widget.db.saveDraft(widget.pageId, c),
+      draftClear: () => widget.db.clearDraft(widget.pageId),
+    );
+    _loadPage();
+  }
+
+  Future<void> _loadPage() async {
+    final page = await widget.db.pageById(widget.pageId);
+    final draft = await widget.db.draftFor(widget.pageId);
+    if (!mounted) return;
+    setState(() {
+      _page = page;
+      _editorContent = page?.content ?? '';
+      // 崩溃恢复：草稿存在且与正文不同 → 顶部出恢复条
+      _draft = (draft != null &&
+              draft.content.isNotEmpty &&
+              draft.content != (page?.content ?? ''))
+          ? draft
+          : null;
+    });
+    _save.markSaved(encodeBlocks(decodeBlocks(page?.content ?? '')));
+  }
+
+  Future<void> _writeContent(String content) async {
+    await widget.db.updatePageContent(widget.pageId, content);
+    // 脱敏口径：只记字数，不记正文
+    DiagnosticsLog.I.add('content.saved', id: widget.pageId, count: content.length);
+  }
+
+  Future<void> _restoreDraft() async {
+    final d = _draft;
+    if (d == null) return;
+    setState(() {
+      _editorContent = d.content;
+    });
+    DiagnosticsLog.I.add('draft.restored', id: widget.pageId);
+    _save.editText(d.content);
+  }
+
+  Future<void> _discardDraft() async {
+    await widget.db.clearDraft(widget.pageId);
+    if (!mounted) return;
+    setState(() {
+      _draft = null;
+    });
+  }
+
+  @override
+  void dispose() {
+    _save.flush();
+    _save.disposeTimer();
+    _save.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final page = _page;
+    if (page == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    return Scaffold(
+      appBar: AppBar(
+        title: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(Icons.article_outlined, size: 18, color: Colors.blue.shade700),
+          const SizedBox(width: 6),
+          Flexible(child: Text(page.title.isEmpty ? '（未命名记录）' : page.title)),
+        ]),
+        actions: [
+          AnimatedBuilder(
+            animation: _save,
+            builder: (context, _) => _StatusChip(status: _save.status),
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(12),
+        children: [
+          if (_draft != null)
+            _DraftBanner(draft: _draft!, onRestore: _restoreDraft, onDiscard: _discardDraft),
+          _snapshotSection(),
+          const SizedBox(height: 12),
+          Text('我的批注', style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 8),
+          BlocksEditor(
+            initialContent: _editorContent ?? '',
+            onChanged: (serialized) => _save.editText(serialized),
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  /// 原文快照区（③ 最小版）：剪藏文章入库后（④）自动填充真实快照；
+  /// 手工建的记录显示空态说明。
+  Widget _snapshotSection() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(children: [
+        Icon(Icons.article_outlined, size: 20, color: Colors.grey.shade600),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            '原文快照：暂无。剪藏文章入库后，这里自动展示原文。',
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+          ),
+        ),
+      ]),
     );
   }
 }
