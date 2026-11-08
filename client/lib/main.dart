@@ -7,8 +7,10 @@ import 'package:flutter/material.dart' hide Page;
 import 'controllers/save_controller.dart';
 import 'data/asset_store.dart';
 import 'data/database.dart';
+import 'data/diagnostics.dart';
 import 'data/migration_demo.dart';
 import 'data/save_state.dart';
+import 'data/storage_stats.dart';
 
 void main() {
   runApp(const BijiApp());
@@ -71,6 +73,7 @@ class _HomePageState extends State<HomePage> {
     );
     if (title == null) return;
     final page = await _db.createPage(title: title.trim().isEmpty ? '未命名' : title.trim());
+    DiagnosticsLog.I.add('page.created', id: page.id);
     _reload();
     if (mounted) _openDetail(page);
   }
@@ -114,6 +117,16 @@ class _HomePageState extends State<HomePage> {
               _reload();
             },
             icon: const Icon(Icons.delete),
+          ),
+          IconButton(
+            tooltip: '设置',
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => SettingsPage(db: _db)),
+              );
+            },
+            icon: const Icon(Icons.settings_outlined),
           ),
         ],
       ),
@@ -226,6 +239,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
       _draft = null;
     });
     _loadingContent = false;
+    DiagnosticsLog.I.add('draft.restored', id: widget._pageId);
     _save.editText(d.content); // 走正常保存链（成功后草稿由钩子清除）
   }
 
@@ -236,8 +250,13 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
   }
 
   Future<void> _writeContent(String content) async {
-    if (_faultOn) throw Exception('故障注入：模拟写盘失败');
+    if (_faultOn) {
+      DiagnosticsLog.I.add('content.saveFailed', id: widget._pageId, error: '故障注入：模拟写盘失败');
+      throw Exception('故障注入：模拟写盘失败');
+    }
     await widget.db.updatePageContent(widget._pageId, content);
+    // 脱敏口径：只记字数，不记正文
+    DiagnosticsLog.I.add('content.saved', id: widget._pageId, count: content.length);
   }
 
   void _onEdited() {
@@ -267,6 +286,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
       final stored = await widget.store.save(bytes, ext);
       await widget.db.recordAsset(stored);
       await widget.db.attachAssetToPage(widget._pageId, stored.id);
+      DiagnosticsLog.I.add('asset.saved', id: stored.id, count: bytes.length);
       _reloadImages();
       messenger.showSnackBar(SnackBar(content: Text('已存为本机副本：编号 ${stored.id}（${stored.size} 字节）')));
     } catch (e) {
@@ -334,6 +354,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
               final nav = Navigator.of(context);
               await widget.db.softDeletePage(widget._pageId);
               await widget.db.clearDraft(widget._pageId);
+              DiagnosticsLog.I.add('page.trashed', id: widget._pageId);
               if (!mounted) return;
               messenger.showSnackBar(const SnackBar(content: Text('已移入回收站')));
               if (nav.canPop()) nav.pop();
@@ -460,6 +481,7 @@ class _TrashPageState extends State<TrashPage> {
 
   Future<void> _restore(Page page) async {
     await widget.db.restorePage(page.id);
+    DiagnosticsLog.I.add('page.restored', id: page.id);
     if (!mounted) return;
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text('「${page.title.isEmpty ? '无标题' : page.title}」已恢复')));
@@ -484,6 +506,7 @@ class _TrashPageState extends State<TrashPage> {
     );
     if (yes != true) return;
     final n = await widget.db.emptyTrash();
+    DiagnosticsLog.I.add('trash.emptied', count: n);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('已彻底删除 $n 条')));
     _reload();
@@ -544,6 +567,108 @@ class _TrashPageState extends State<TrashPage> {
   }
 }
 
+/// 设置页（P1-T07）：存储占用 + 诊断日志（出厂脱敏，不含正文与密钥）。
+class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key, required this.db});
+
+  final AppDatabase db;
+
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  int _rev = 0; // 清空日志后强制刷新
+
+  @override
+  Widget build(BuildContext context) {
+    final diag = DiagnosticsLog.I;
+    return Scaffold(
+      appBar: AppBar(title: const Text('设置')),
+      body: ListView(padding: const EdgeInsets.all(12), children: [
+        Text('存储占用', style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: 8),
+        FutureBuilder<StorageStats>(
+          future: collectStorageStats(widget.db),
+          builder: (context, snap) {
+            if (snap.connectionState != ConnectionState.done) {
+              return const LinearProgressIndicator();
+            }
+            if (snap.hasError) return Text('读取失败：${snap.error}');
+            final s = snap.data!;
+            return Card(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(children: [
+                  _kv('数据库', s.dbLabel),
+                  _kv('图片副本', s.assetsLabel),
+                  _kv('页面数', '${s.pagesCount}'),
+                  _kv('资源数', '${s.assetsCount}'),
+                  _kv('待恢复草稿', '${s.draftsCount}'),
+                ]),
+              ),
+            );
+          },
+        ),
+        const Divider(height: 24),
+        Row(children: [
+          Expanded(
+            child: Text('诊断日志（已脱敏：不含正文与密钥，仅编号/计数）',
+                style: Theme.of(context).textTheme.titleSmall),
+          ),
+          TextButton(
+            onPressed: () {
+              diag.clear();
+              setState(() => _rev++);
+            },
+            child: const Text('清空日志'),
+          ),
+        ]),
+        Card(
+          key: ValueKey(_rev),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Builder(builder: (_) {
+              final lines = diag.latest();
+              if (lines.isEmpty) {
+                return const Text('暂无日志。正常使用会记录：保存成功/失败、图片入库、删除恢复等事件（只含编号与计数）。',
+                    style: TextStyle(color: Colors.grey, fontSize: 12));
+              }
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final line in lines)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: Text(line,
+                          style: const TextStyle(fontSize: 11, fontFamily: 'monospace')),
+                    ),
+                  if (diag.droppedCount > 0)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text('（已滚动丢弃 ${diag.droppedCount} 条更早日志）',
+                          style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                    ),
+                ],
+              );
+            }),
+          ),
+        ),
+      ]),
+    );
+  }
+
+  Widget _kv(String k, String v) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        Text(k, style: const TextStyle(fontSize: 13)),
+        Text(v, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+      ]),
+    );
+  }
+}
+
 /// 保存状态灯：五态文案 + 颜色（红=绝不假报已保存）。
 class _StatusChip extends StatelessWidget {
   const _StatusChip({required this.status});
@@ -599,6 +724,7 @@ class _AssetViewState extends State<_AssetView> {
   Future<void> _load() async {
     final bytes = await widget.store.read(widget.asset.id, widget.asset.ext);
     final intact = bytes != null && await widget.store.verify(widget.asset.id, widget.asset.ext, widget.asset.sha256);
+    if (!intact) DiagnosticsLog.I.add('asset.integrityFail', id: widget.asset.id);
     if (!mounted) return;
     setState(() {
       _bytes = bytes;
