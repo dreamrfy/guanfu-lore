@@ -42,6 +42,9 @@ class _HomePageState extends State<HomePage> {
   late final AssetStore _store = PlatformAssetStore(db: _db);
   Future<List<Page>>? _all;
   final Set<String> _collapsed = {}; // 页面树折叠状态（默认全展开）
+  static const double _wideBreakpoint = 900; // ≥ 此宽度用左右分栏
+  String? _selectedId; // 分栏模式下当前选中的页面
+  bool _detailFullPage = false; // 整页切换（隐藏左侧树）
 
   @override
   void initState() {
@@ -79,12 +82,21 @@ class _HomePageState extends State<HomePage> {
     if (mounted) _openDetail(page);
   }
 
-  void _openDetail(Page page) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => NoteDetailPage(db: _db, store: _store, pageId: page.id)),
-    );
-    _reload();
+  void _openDetail(Page page) {
+    final wide = MediaQuery.of(context).size.width >= _wideBreakpoint;
+    if (wide) {
+      // 分栏：右侧面板内嵌打开（树保持挂载，展开与滚动位置天然保留）
+      setState(() {
+        _selectedId = page.id;
+        _detailFullPage = false;
+      });
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) => NoteDetailPage(db: _db, store: _store, pageId: page.id)),
+      ).then((_) => _reload());
+    }
   }
 
   Future<void> _migrationDemo() async {
@@ -93,6 +105,19 @@ class _HomePageState extends State<HomePage> {
     messenger.showSnackBar(
       SnackBar(content: Text(report), duration: const Duration(seconds: 8)),
     );
+  }
+
+  /// 递归生成树节点列表。
+  List<Widget> _buildNodes(Map<String?, List<Page>> byParent, String? parent, int depth) {
+    final out = <Widget>[];
+    for (final pg in byParent[parent] ?? const <Page>[]) {
+      final hasChildren = (byParent[pg.id] ?? []).isNotEmpty;
+      out.add(_nodeTile(context, pg, depth, hasChildren, byParent));
+      if (hasChildren && !_collapsed.contains(pg.id)) {
+        out.addAll(_buildNodes(byParent, pg.id, depth + 1));
+      }
+    }
+    return out;
   }
 
   /// 单个树节点：展开/折叠 + 菜单（子页面/移动到/上移/下移）+ 长按拖拽换父。
@@ -310,12 +335,8 @@ class _HomePageState extends State<HomePage> {
             return Center(child: Text('数据库读取失败：${snap.error}'));
           }
           final pages = snap.data ?? const <Page>[];
-          if (pages.isEmpty) {
-            return const Center(
-              child: Text('还没有内容，点右下角 + 新建一条\n（重启应用后它应该还在）',
-                  textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
-            );
-          }
+          final wide = MediaQuery.of(context).size.width >= _wideBreakpoint;
+
           // 内存建树：parentId 分组、同辈按 sortKey/创建时间排序
           final byParent = <String?, List<Page>>{};
           for (final pg in pages) {
@@ -328,26 +349,75 @@ class _HomePageState extends State<HomePage> {
             });
           }
 
-          List<Widget> buildNodes(String? parent, int depth) {
-            final out = <Widget>[];
-            for (final pg in byParent[parent] ?? const <Page>[]) {
-              final hasChildren = (byParent[pg.id] ?? []).isNotEmpty;
-              out.add(_nodeTile(context, pg, depth, hasChildren, byParent));
-              if (hasChildren && !_collapsed.contains(pg.id)) {
-                out.addAll(buildNodes(pg.id, depth + 1));
-              }
-            }
-            return out;
+          Widget treeList() {
+            return ListView(
+              key: const PageStorageKey('tree-scroll'), // 保留滚动位置
+              children: [
+                ..._buildNodes(byParent, null, 0),
+                const SizedBox(height: 80),
+                const Center(
+                  child: Text('提示：长按页面拖到另一页上＝变成它的子页面；\n也可用每行右侧菜单「移动到…」。父页面拖进子孙会被阻止。',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey, fontSize: 12)),
+                ),
+              ],
+            );
           }
 
-          return ListView(
+          if (pages.isEmpty) {
+            return const Center(
+              child: Text('还没有内容，点右下角 + 新建一条\n（重启应用后它应该还在）',
+                  textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+            );
+          }
+
+          // 窄屏（手机）：整页树（详情走路由跳转）
+          if (!wide) return treeList();
+
+          // 宽屏：左右分栏；整页切换时只显示详情
+          if (wide && _selectedId != null && _detailFullPage) {
+            return NoteDetailPage(
+              key: ValueKey(_selectedId),
+              db: _db,
+              store: _store,
+              pageId: _selectedId!,
+              embedded: true,
+              fullPage: true,
+              onClosed: () => setState(() {
+                _selectedId = null;
+                _detailFullPage = false;
+                _reload(); // 关闭/删除后刷新树（含回收站变动）
+              }),
+              onToggleFullPage: () => setState(() => _detailFullPage = false),
+            );
+          }
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ...buildNodes(null, 0),
-              const SizedBox(height: 80),
-              const Center(
-                child: Text('提示：长按页面拖到另一页上＝变成它的子页面；\n也可用每行右侧菜单「移动到…」。父页面拖进子孙会被阻止。',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey, fontSize: 12)),
+              SizedBox(width: 340, child: treeList()),
+              const VerticalDivider(width: 1),
+              Expanded(
+                child: _selectedId == null
+                    ? Center(
+                        child: Text('在左侧选择一个页面\n或点右下角 + 新建',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.grey)),
+                      )
+                    : NoteDetailPage(
+                        key: ValueKey(_selectedId),
+                        db: _db,
+                        store: _store,
+                        pageId: _selectedId!,
+                        embedded: true,
+                        fullPage: false,
+                        onClosed: () => setState(() {
+                          _selectedId = null;
+                          _detailFullPage = false;
+                          _reload(); // 关闭/删除后刷新树
+                        }),
+                        onToggleFullPage: () =>
+                            setState(() => _detailFullPage = true),
+                      ),
               ),
             ],
           );
@@ -363,17 +433,26 @@ class _HomePageState extends State<HomePage> {
 }
 
 /// 笔记详情：正文编辑 + 保存状态灯（P1-T04）+ 图片挂载（P1-T03）。
+/// [embedded]=true 时作为分栏面板内嵌（右上角多「整页切换」与「关闭」），false 时整页路由。
 class NoteDetailPage extends StatefulWidget {
   const NoteDetailPage({
     super.key,
     required this.db,
     required this.store,
     required this._pageId,
+    this.embedded = false,
+    this.onClosed,
+    this.onToggleFullPage,
+    this.fullPage = false,
   });
 
   final AppDatabase db;
   final AssetStore store;
   final String _pageId;
+  final bool embedded;
+  final VoidCallback? onClosed;
+  final VoidCallback? onToggleFullPage;
+  final bool fullPage;
 
   @override
   State<NoteDetailPage> createState() => _NoteDetailPageState();
@@ -533,12 +612,25 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
     }
     return Scaffold(
       appBar: AppBar(
+        leading: widget.embedded
+            ? IconButton(
+                tooltip: '关闭（树上的位置与展开状态保留）',
+                onPressed: widget.onClosed,
+                icon: const Icon(Icons.close),
+              )
+            : null,
         title: GestureDetector(onTap: _renameDialog, child: Text(page.title.isEmpty ? '（无标题）' : page.title)),
         actions: [
           AnimatedBuilder(
             animation: _save,
             builder: (context, _) => _StatusChip(status: _save.status),
           ),
+          if (widget.embedded)
+            IconButton(
+              tooltip: widget.fullPage ? '退出整页，回到左右分栏' : '整页切换（隐藏左侧树）',
+              onPressed: widget.onToggleFullPage,
+              icon: Icon(widget.fullPage ? Icons.fullscreen_exit : Icons.fullscreen),
+            ),
           IconButton(
             tooltip: '移入回收站（可恢复）',
             onPressed: () async {
@@ -549,7 +641,11 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
               DiagnosticsLog.I.add('page.trashed', id: widget._pageId);
               if (!mounted) return;
               messenger.showSnackBar(const SnackBar(content: Text('已移入回收站')));
-              if (nav.canPop()) nav.pop();
+              if (widget.embedded) {
+                widget.onClosed?.call();
+              } else if (nav.canPop()) {
+                nav.pop();
+              }
             },
             icon: const Icon(Icons.delete),
           ),
