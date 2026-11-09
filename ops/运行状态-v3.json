@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T18:30:31.177Z",
+  "updatedAt": "2026-11-09T18:38:17.079Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 3,
-    "lastProbeAt": "2026-11-09T18:30:31.177Z"
+    "probeCount": 4,
+    "lastProbeAt": "2026-11-09T18:38:17.079Z"
   },
   "running": [],
   "history": [
@@ -39,6 +39,13 @@
       "startedAt": "2026-11-09T18:27:00.242Z",
       "finishedAt": "2026-11-09T18:30:31.177Z",
       "note": "浅色板全套+对比度核验；深色未找到开关拆为 M0-T14"
+    },
+    {
+      "taskId": "M0-T04",
+      "status": "done",
+      "startedAt": "2026-11-09T18:36:53.493Z",
+      "finishedAt": "2026-11-09T18:38:17.078Z",
+      "note": "字体栈+12档阶梯；图标三套=Lucide/自研Ic*/Google emoji；拆出 M0-T15"
     }
   ],
   "blocked": [],

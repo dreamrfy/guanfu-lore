@@ -1,0 +1,63 @@
+{
+ "totalSvg": 81,
+ "shapes": {
+  "12x12|vb=0 0 20 20|kids=1|strokeW=1px": 4,
+  "20x20|vb=0 0 24 24|kids=2|strokeW=2": 3,
+  "20x20|vb=0 0 20 20|kids=1|strokeW=1px": 18,
+  "20x20|vb=0 0 20 20|kids=5|strokeW=1px": 1,
+  "20x20|vb=0 0 24 24|kids=3|strokeW=2": 1,
+  "20x20|vb=0 0 20 20|kids=3|strokeW=1px": 4,
+  "16x16|vb=0 0 20 20|kids=2|strokeW=1px": 1,
+  "16x16|vb=0 0 20 20|kids=1|strokeW=1px": 6,
+  "16x16|vb=0 0 24 24|kids=3|strokeW=1.75": 1,
+  "20x20|vb=0 0 20 20|kids=2|strokeW=1px": 3
+ },
+ "samples": [
+  {
+   "key": "12x12|vb=0 0 20 20|kids=1|strokeW=1px",
+   "html": "<svg width=\"1em\" height=\"1em\" viewBox=\"0 0 20 20\" xmlns=\"http://www.w3.org/2000/svg\" data-icon=\"IcArrowDown01\" class=\"flex-shrink-0 fill-current inline w-3 h-3 text-grey3 pointer-events-none\" aria-hidden=\"true\" style=\"vertical-align: -0.15em;\"><path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M2.2928"
+  },
+  {
+   "key": "20x20|vb=0 0 24 24|kids=2|strokeW=2",
+   "html": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-chevrons-left w-5 h-5 text-grey3 animate-hover\" aria-hidden=\"true\"><path d=\"m11 17-5-5 5-5\"></path"
+  },
+  {
+   "key": "20x20|vb=0 0 20 20|kids=1|strokeW=1px",
+   "html": "<svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5 shrink-0\" aria-hidden=\"true\"><path d=\"M10 0.833984C10.517 0.833984 11.0196 0.993489 11.4395 1.28906L11.6133 1.42383L11.6182 1.42773L17.4512 6.42676C17.7273 6.66099 17.9491 6.95179 18.1016 7."
+  },
+  {
+   "key": "20x20|vb=0 0 20 20|kids=5|strokeW=1px",
+   "html": "<svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5 shrink-0\" aria-hidden=\"true\"><g clip-path=\"url(#clip_aside_ai_chat_icon)\"><circle cx=\"9.99997\" cy=\"10\" r=\"9\" stroke=\"currentColor\" stroke-width=\"1.66667\" stroke-linecap=\"round\" stroke-linejo"
+  },
+  {
+   "key": "20x20|vb=0 0 24 24|kids=2|strokeW=2",
+   "html": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-search w-5 h-5\" aria-hidden=\"true\"><path d=\"m21 21-4.34-4.34\"></path><circle cx=\"11\" cy=\"11\" r=\"8\""
+  },
+  {
+   "key": "20x20|vb=0 0 24 24|kids=2|strokeW=2",
+   "html": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-bell w-5 h-5\" aria-hidden=\"true\"><path d=\"M10.268 21a2 2 0 0 0 3.464 0\"></path><path d=\"M3.262 15."
+  }
+ ],
+ "bgIcons": [
+  {
+   "w": 18,
+   "h": 18,
+   "img": "url(\"https://cdn2.flowus.cn/emoji/google/u270d.svg\")"
+  },
+  {
+   "w": 18,
+   "h": 18,
+   "img": "url(\"https://cdn2.flowus.cn/emoji/google/u2702.svg\")"
+  },
+  {
+   "w": 20,
+   "h": 20,
+   "img": "url(\"https://cdn2.flowus.cn/emoji/google/u1f338.svg\")"
+  },
+  {
+   "w": 20,
+   "h": 20,
+   "img": "url(\"https://cdn2.flowus.cn/emoji/google/u1f5d3.svg\")"
+  }
+ ]
+}
