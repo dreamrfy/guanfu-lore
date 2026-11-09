@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T19:48:03.925Z",
+  "updatedAt": "2026-11-09T20:02:22.852Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 11,
-    "lastProbeAt": "2026-11-09T19:48:03.925Z"
+    "probeCount": 12,
+    "lastProbeAt": "2026-11-09T20:02:22.852Z"
   },
   "running": [],
   "history": [
@@ -95,6 +95,13 @@
       "startedAt": "2026-11-09T19:46:46.931Z",
       "finishedAt": "2026-11-09T19:48:03.924Z",
       "note": "基准规格汇总册：索引9条+速查卡+例外7条；交叉核对修正1处悬空引用"
+    },
+    {
+      "taskId": "M0-T12",
+      "status": "done",
+      "startedAt": "2026-11-09T19:56:55.279Z",
+      "finishedAt": "2026-11-09T20:02:22.851Z",
+      "note": "内核结论=用 appflowy_editor_ce；真机渲染验证；暴露块间距缺口拆 M0-T19"
     }
   ],
   "blocked": [],
