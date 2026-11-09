@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T22:11:32.392Z",
+  "updatedAt": "2026-11-09T22:20:51.995Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 25,
-    "lastProbeAt": "2026-11-09T22:11:32.392Z"
+    "probeCount": 26,
+    "lastProbeAt": "2026-11-09T22:20:51.995Z"
   },
   "running": [],
   "history": [
@@ -193,6 +193,13 @@
       "startedAt": "2026-11-09T22:06:59.402Z",
       "finishedAt": "2026-11-09T22:11:32.391Z",
       "note": "17/18字段string实测(含person/updated_at反直觉)；关联未生效拆M0-T29；清理零遗留"
+    },
+    {
+      "taskId": "M0-T27",
+      "status": "done-partial",
+      "startedAt": "2026-11-09T22:16:59.855Z",
+      "finishedAt": "2026-11-09T22:20:51.994Z",
+      "note": "MD快捷造块成功；type12=引述(疑推翻T17)、type25=代码块；空块34；布局三档无差异；拆M0-T30"
     }
   ],
   "blocked": [],

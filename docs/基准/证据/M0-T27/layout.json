@@ -1,0 +1,91 @@
+{
+ "steps": [
+  {
+   "mode": "紧密",
+   "clickedLayoutMenu": true,
+   "clickedMode": true,
+   "top": [
+    [
+     "16px/24px/w400",
+     62
+    ],
+    [
+     "14px/20px/w400",
+     22
+    ],
+    [
+     "12px/18px/w400",
+     15
+    ],
+    [
+     "14px/24px/w400",
+     6
+    ]
+   ]
+  },
+  {
+   "mode": "宽松",
+   "clickedLayoutMenu": true,
+   "clickedMode": true,
+   "top": [
+    [
+     "16px/24px/w400",
+     62
+    ],
+    [
+     "14px/20px/w400",
+     22
+    ],
+    [
+     "12px/18px/w400",
+     15
+    ],
+    [
+     "14px/24px/w400",
+     6
+    ]
+   ]
+  },
+  {
+   "mode": "默认",
+   "clickedLayoutMenu": true,
+   "clickedMode": true,
+   "top": [
+    [
+     "16px/24px/w400",
+     61
+    ],
+    [
+     "14px/20px/w400",
+     22
+    ],
+    [
+     "12px/18px/w400",
+     15
+    ],
+    [
+     "14px/24px/w400",
+     6
+    ]
+   ]
+  }
+ ],
+ "0 切换前": [
+  [
+   "16px/24px/w400",
+   13
+  ],
+  [
+   "14px/24px/w400",
+   6
+  ],
+  [
+   "14px/20px/w400",
+   6
+  ],
+  [
+   "16px/26px/w400",
+   4
+  ]
+ ]
+}

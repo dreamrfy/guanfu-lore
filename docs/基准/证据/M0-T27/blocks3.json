@@ -1,0 +1,183 @@
+{
+ "0 基线": 12,
+ "1 docId": "dff2f20e-4915-427d-820c-d6fbc0b0fb1a",
+ "2 输入": [
+  {
+   "k": "段落",
+   "ok": true
+  },
+  {
+   "k": "h1",
+   "ok": true
+  },
+  {
+   "k": "h2",
+   "ok": true
+  },
+  {
+   "k": "h3",
+   "ok": true
+  },
+  {
+   "k": "h4",
+   "ok": true
+  },
+  {
+   "k": "bullet",
+   "ok": true
+  },
+  {
+   "k": "number",
+   "ok": true
+  },
+  {
+   "k": "quote",
+   "ok": true
+  },
+  {
+   "k": "divider",
+   "ok": true
+  },
+  {
+   "k": "code",
+   "ok": true
+  }
+ ],
+ "3 块序列": [
+  {
+   "type": 0,
+   "level": null,
+   "len": 0
+  },
+  {
+   "type": 1,
+   "level": null,
+   "len": 8
+  },
+  {
+   "type": 7,
+   "level": 1,
+   "len": 3
+  },
+  {
+   "type": 7,
+   "level": 2,
+   "len": 3
+  },
+  {
+   "type": 7,
+   "level": 3,
+   "len": 3
+  },
+  {
+   "type": 7,
+   "level": 4,
+   "len": 3
+  },
+  {
+   "type": 4,
+   "level": 4,
+   "len": 3
+  },
+  {
+   "type": 5,
+   "level": 4,
+   "len": 3
+  },
+  {
+   "type": 12,
+   "level": 4,
+   "len": 4
+  },
+  {
+   "type": 9,
+   "level": null,
+   "len": 0
+  },
+  {
+   "type": 1,
+   "level": null,
+   "len": 0
+  },
+  {
+   "type": 25,
+   "level": null,
+   "len": 0
+  }
+ ],
+ "4 矩形数": 22,
+ "5 配对": [
+  {
+   "type": 0,
+   "level": null,
+   "h": 64,
+   "x": 716
+  },
+  {
+   "type": 1,
+   "level": null,
+   "h": 34,
+   "x": 716
+  },
+  {
+   "type": 7,
+   "level": 1,
+   "h": 57,
+   "x": 716
+  },
+  {
+   "type": 7,
+   "level": 2,
+   "h": 52,
+   "x": 716
+  },
+  {
+   "type": 7,
+   "level": 3,
+   "h": 34,
+   "x": 716
+  },
+  {
+   "type": 7,
+   "level": 4,
+   "h": 31,
+   "x": 716
+  },
+  {
+   "type": 4,
+   "level": 4,
+   "h": 36,
+   "x": 716
+  },
+  {
+   "type": 5,
+   "level": 4,
+   "h": 34,
+   "x": 716
+  },
+  {
+   "type": 12,
+   "level": 4,
+   "h": 26,
+   "x": 742
+  },
+  {
+   "type": 9,
+   "level": null,
+   "h": 36,
+   "x": 716
+  },
+  {
+   "type": 1,
+   "level": null,
+   "h": 34,
+   "x": 716
+  },
+  {
+   "type": 25,
+   "level": null,
+   "h": 26,
+   "x": 742
+  }
+ ]
+}
