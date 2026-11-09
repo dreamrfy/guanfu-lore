@@ -2,9 +2,9 @@
   "version": 3,
   "protocol": "探测式调度：定时任务每 5 分钟触发一次；读本文件判断“接着做下一个”还是“立即退出”。无固定收工时间，只在 ops/STOP 存在或任务跑空时停止。规则见 ops/看门狗-v3提示词.md",
   "taskSource": "开发任务表-v3.0-FlowUs复刻版.md",
-  "updatedAt": null,
+  "updatedAt": "2026-11-09T17:49:35.976Z",
   "runtime": {
-    "startedAt": null,
+    "startedAt": "2026-11-09T17:49:35.977Z",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 5,
