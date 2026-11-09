@@ -1,0 +1,441 @@
+{
+ "A1 侧栏页项 · 常态": {
+  "rect": {
+   "x": 8,
+   "y": 206,
+   "w": 211,
+   "h": 32
+  },
+  "bg": "rgba(0, 0, 0, 0)",
+  "color": "rgb(95, 94, 91)",
+  "radius": "6px",
+  "border": "1px solid rgba(0, 0, 0, 0)",
+  "shadow": null,
+  "padding": "0px 8px 0px 0px",
+  "margin": "0px 8px",
+  "font": "14px / 24px / w500",
+  "display": "flex",
+  "gap": "normal",
+  "zIndex": "auto",
+  "transition": "0.1s"
+ },
+ "A2 侧栏页项 · hover": {
+  "rect": {
+   "x": 8,
+   "y": 206,
+   "w": 211,
+   "h": 32
+  },
+  "bg": "rgba(0, 0, 0, 0.03)",
+  "color": "rgb(95, 94, 91)",
+  "radius": "6px",
+  "border": "1px solid rgba(0, 0, 0, 0)",
+  "shadow": null,
+  "padding": "0px 8px 0px 0px",
+  "margin": "0px 8px",
+  "font": "14px / 24px / w500",
+  "display": "flex",
+  "gap": "normal",
+  "zIndex": "auto",
+  "transition": "0.1s"
+ },
+ "B1 提示条容器": {
+  "rect": {
+   "x": 0,
+   "y": 805,
+   "w": 227,
+   "h": 140
+  },
+  "bg": "rgba(0, 0, 0, 0)",
+  "color": "rgb(55, 53, 47)",
+  "radius": "0px",
+  "border": "0px solid rgb(229, 229, 229)",
+  "shadow": null,
+  "padding": "0px",
+  "margin": "23px 0px 0px",
+  "font": "16px / 24px / w400",
+  "display": "block",
+  "gap": "normal",
+  "zIndex": "auto",
+  "transition": "0.1s"
+ },
+ "B2 提示条按钮 · 常态": {
+  "rect": {
+   "x": 49,
+   "y": 898,
+   "w": 157,
+   "h": 22
+  },
+  "bg": "rgba(0, 0, 0, 0)",
+  "color": "rgb(0, 0, 0)",
+  "radius": "0px",
+  "border": "0px solid rgb(229, 229, 229)",
+  "shadow": null,
+  "padding": "0px",
+  "margin": "4px 0px 0px",
+  "font": "13px / 22px / w500",
+  "display": "flex",
+  "gap": "4px",
+  "zIndex": "auto",
+  "transition": "0.1s"
+ },
+ "B3 提示条按钮 · hover": {
+  "rect": {
+   "x": 49,
+   "y": 898,
+   "w": 157,
+   "h": 22
+  },
+  "bg": "rgba(0, 0, 0, 0)",
+  "color": "rgb(0, 0, 0)",
+  "radius": "0px",
+  "border": "0px solid rgb(229, 229, 229)",
+  "shadow": null,
+  "padding": "0px",
+  "margin": "4px 0px 0px",
+  "font": "13px / 22px / w500",
+  "display": "flex",
+  "gap": "4px",
+  "zIndex": "auto",
+  "transition": "0.1s"
+ },
+ "C1 弹层容器": {
+  "area": 1814400,
+  "rect": {
+   "x": 0,
+   "y": 0,
+   "w": 1920,
+   "h": 945
+  },
+  "bg": "rgba(0, 0, 0, 0.2)",
+  "radius": "0px",
+  "shadow": null,
+  "padding": "0px",
+  "zIndex": "auto",
+  "cls": "next-modal-modal fixed inset-0 flex justify-center w-screen h-screen mask animat"
+ },
+ "C2 弹层标题区(空间头像行)": {
+  "rect": {
+   "x": 660,
+   "y": 142,
+   "w": 832,
+   "h": 20
+  },
+  "bg": "rgba(0, 0, 0, 0)",
+  "color": "rgb(0, 0, 0)",
+  "radius": "0px",
+  "border": "0px solid rgb(229, 229, 229)",
+  "shadow": null,
+  "padding": "0px",
+  "margin": "8px 0px 0px",
+  "font": "14px / 20px / w400",
+  "display": "flex",
+  "gap": "normal",
+  "zIndex": "auto",
+  "transition": "0.1s"
+ },
+ "C3 设置行-空间名": {
+  "rect": {
+   "x": 660,
+   "y": 382,
+   "w": 56,
+   "h": 20
+  },
+  "bg": "rgba(0, 0, 0, 0)",
+  "color": "rgb(0, 0, 0)",
+  "radius": "0px",
+  "border": "0px solid rgb(229, 229, 229)",
+  "shadow": null,
+  "padding": "0px",
+  "margin": "0px",
+  "font": "14px / 20px / w400",
+  "display": "block",
+  "gap": "normal",
+  "zIndex": "auto",
+  "transition": "0.1s"
+ },
+ "C4 弹层按钮-保存": {
+  "rect": {
+   "x": 660,
+   "y": 851,
+   "w": 54,
+   "h": 32
+  },
+  "bg": "rgb(2, 133, 255)",
+  "color": "rgb(255, 255, 255)",
+  "radius": "6px",
+  "border": "1px solid rgba(0, 0, 0, 0)",
+  "shadow": null,
+  "padding": "0px 12px",
+  "margin": "0px 12px 0px 0px",
+  "font": "14px / 20px / w500",
+  "display": "flex",
+  "gap": "normal",
+  "zIndex": "auto",
+  "transition": "0.1s"
+ },
+ "C5 弹层按钮-取消": {
+  "rect": {
+   "x": 726,
+   "y": 851,
+   "w": 54,
+   "h": 32
+  },
+  "bg": "rgb(255, 255, 255)",
+  "color": "rgb(0, 0, 0)",
+  "radius": "6px",
+  "border": "1px solid rgb(224, 224, 224)",
+  "shadow": null,
+  "padding": "0px 12px",
+  "margin": "0px",
+  "font": "14px / 20px / w500",
+  "display": "flex",
+  "gap": "normal",
+  "zIndex": "auto",
+  "transition": "0.1s"
+ },
+ "C6 只读标签-免费版": {
+  "rect": {
+   "x": 863.2,
+   "y": 496,
+   "w": 48,
+   "h": 22
+  },
+  "bg": "rgb(229, 229, 229)",
+  "color": "rgb(145, 145, 142)",
+  "radius": "2px",
+  "border": "0px solid rgb(229, 229, 229)",
+  "shadow": null,
+  "padding": "2px 6px",
+  "margin": "0px 0px 0px 8px",
+  "font": "12px / 18px / w400",
+  "display": "block",
+  "gap": "normal",
+  "zIndex": "auto",
+  "transition": "0.1s"
+ },
+ "C7 开关候选": [
+  {
+   "tag": "BUTTON",
+   "role": null,
+   "rect": {
+    "x": 187,
+    "y": 106,
+    "w": 24,
+    "h": 24
+   },
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": "6px",
+   "border": "rgb(229, 229, 229)"
+  },
+  {
+   "tag": "BUTTON",
+   "role": null,
+   "rect": {
+    "x": 1707,
+    "y": 8,
+    "w": 44,
+    "h": 32
+   },
+   "bg": "rgb(255, 255, 255)",
+   "radius": "6px",
+   "border": "rgb(224, 224, 224)"
+  },
+  {
+   "tag": "BUTTON",
+   "role": null,
+   "rect": {
+    "x": 1234,
+    "y": 55.5,
+    "w": 74,
+    "h": 28
+   },
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": "6px",
+   "border": "rgba(2, 133, 255, 0.3)"
+  },
+  {
+   "tag": "BUTTON",
+   "role": null,
+   "rect": {
+    "x": 1864,
+    "y": 869,
+    "w": 36,
+    "h": 36
+   },
+   "bg": "rgb(255, 255, 255)",
+   "radius": "9999px",
+   "border": "rgba(0, 0, 0, 0.06)"
+  },
+  {
+   "tag": "BUTTON",
+   "role": null,
+   "rect": {
+    "x": 1520,
+    "y": 66,
+    "w": 24,
+    "h": 24
+   },
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": "4px",
+   "border": "rgb(229, 229, 229)"
+  },
+  {
+   "tag": "BUTTON",
+   "role": null,
+   "rect": {
+    "x": 1451,
+    "y": 554,
+    "w": 41,
+    "h": 20
+   },
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": "0px",
+   "border": "rgb(229, 229, 229)"
+  },
+  {
+   "tag": "BUTTON",
+   "role": null,
+   "rect": {
+    "x": 1462,
+    "y": 629,
+    "w": 30,
+    "h": 18
+   },
+   "bg": "rgb(2, 133, 255)",
+   "radius": "9999px",
+   "border": "rgb(229, 229, 229)"
+  },
+  {
+   "tag": "BUTTON",
+   "role": null,
+   "rect": {
+    "x": 1462,
+    "y": 704,
+    "w": 30,
+    "h": 18
+   },
+   "bg": "rgb(2, 133, 255)",
+   "radius": "9999px",
+   "border": "rgb(229, 229, 229)"
+  },
+  {
+   "tag": "BUTTON",
+   "role": null,
+   "rect": {
+    "x": 1462,
+    "y": 779,
+    "w": 30,
+    "h": 18
+   },
+   "bg": "rgb(189, 189, 189)",
+   "radius": "9999px",
+   "border": "rgb(229, 229, 229)"
+  },
+  {
+   "tag": "BUTTON",
+   "role": null,
+   "rect": {
+    "x": 1423,
+    "y": 852,
+    "w": 69,
+    "h": 20
+   },
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": "0px",
+   "border": "rgb(229, 229, 229)"
+  }
+ ],
+ "D0 右上角候选": [
+  {
+   "x": 1759,
+   "y": 10,
+   "w": 28,
+   "h": 28
+  },
+  {
+   "x": 1763,
+   "y": 14,
+   "w": 20,
+   "h": 20
+  },
+  {
+   "x": 1795,
+   "y": 10,
+   "w": 28,
+   "h": 28
+  },
+  {
+   "x": 1799,
+   "y": 14,
+   "w": 20,
+   "h": 20
+  },
+  {
+   "x": 1831,
+   "y": 10,
+   "w": 28,
+   "h": 28
+  },
+  {
+   "x": 1835,
+   "y": 14,
+   "w": 20,
+   "h": 20
+  },
+  {
+   "x": 1876,
+   "y": 10,
+   "w": 28,
+   "h": 28
+  },
+  {
+   "x": 1880,
+   "y": 14,
+   "w": 20,
+   "h": 20
+  }
+ ],
+ "D1 下拉菜单容器": {
+  "area": 215460,
+  "rect": {
+   "x": 0,
+   "y": 0,
+   "w": 228,
+   "h": 945
+  },
+  "bg": "rgb(247, 247, 247)",
+  "radius": "0px",
+  "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 1px, rgba(0, 0, 0, 0) 0px 3px 6px 0px, rgba(0, 0, 0, 0) 0px 12px 20px 0px",
+  "padding": "0px",
+  "cls": "inset-y-0 left-0 z-[100] bg-aside aside max-h-min transform-gpu fixed "
+ },
+ "D2 菜单项": [
+  {
+   "t": "提及的页面引用 0",
+   "rect": {
+    "x": 851.5,
+    "y": 844,
+    "w": 125.5,
+    "h": 28
+   },
+   "radius": "4px",
+   "padding": "4px 8px",
+   "font": "14px/20px",
+   "color": "rgb(145, 145, 142)"
+  },
+  {
+   "t": "引用建议 Beta",
+   "rect": {
+    "x": 977.1,
+    "y": 844,
+    "w": 115.2,
+    "h": 28
+   },
+   "radius": "4px",
+   "padding": "4px 8px",
+   "font": "14px/20px",
+   "color": "rgb(145, 145, 142)"
+  }
+ ]
+}

@@ -1,0 +1,268 @@
+{
+ "1 弹层遮罩": {
+  "rect": {
+   "w": 1920,
+   "h": 945
+  },
+  "bg": "rgba(0, 0, 0, 0.2)",
+  "cls": "next-modal-modal fixed inset-0 flex justify-center w-screen h-screen mask animat"
+ },
+ "2 弹层面板": {
+  "rect": {
+   "x": 360,
+   "y": 50,
+   "w": 1200,
+   "h": 845
+  },
+  "bg": "rgb(255, 255, 255)",
+  "radius": "12px",
+  "padding": "0px",
+  "shadow": "rgba(0, 0, 0, 0.06) 0px 12px 20px 0px",
+  "cls": "flex overflow-y-auto w-[80vw] max-w-[1200px] h-[calc(100vh_-_100px)] min-h-[300px] next-mo"
+ },
+ "3 开关与勾选": [
+  {
+   "kind": "switch?",
+   "tag": "DIV",
+   "role": null,
+   "rect": {
+    "x": 1045.1,
+    "y": 848,
+    "w": 39.2,
+    "h": 20
+   },
+   "bg": "rgb(224, 224, 224)",
+   "radius": "2px",
+   "border": "0px rgb(229, 229, 229)",
+   "kids": 0
+  },
+  {
+   "kind": "switch?",
+   "tag": "DIV",
+   "role": null,
+   "rect": {
+    "x": 863.2,
+    "y": 496,
+    "w": 48,
+    "h": 22
+   },
+   "bg": "rgb(229, 229, 229)",
+   "radius": "2px",
+   "border": "0px rgb(229, 229, 229)",
+   "kids": 0
+  },
+  {
+   "kind": "switch?",
+   "tag": "BUTTON",
+   "role": null,
+   "rect": {
+    "x": 1462,
+    "y": 629,
+    "w": 30,
+    "h": 18
+   },
+   "bg": "rgb(2, 133, 255)",
+   "radius": "9999px",
+   "border": "0px rgb(229, 229, 229)",
+   "kids": 1
+  },
+  {
+   "kind": "switch?",
+   "tag": "DIV",
+   "role": null,
+   "rect": {
+    "x": 766,
+    "y": 702,
+    "w": 48,
+    "h": 22
+   },
+   "bg": "rgb(229, 229, 229)",
+   "radius": "2px",
+   "border": "0px rgb(229, 229, 229)",
+   "kids": 0
+  },
+  {
+   "kind": "switch?",
+   "tag": "BUTTON",
+   "role": null,
+   "rect": {
+    "x": 1462,
+    "y": 704,
+    "w": 30,
+    "h": 18
+   },
+   "bg": "rgb(2, 133, 255)",
+   "radius": "9999px",
+   "border": "0px rgb(229, 229, 229)",
+   "kids": 1
+  },
+  {
+   "kind": "switch?",
+   "tag": "BUTTON",
+   "role": null,
+   "rect": {
+    "x": 1462,
+    "y": 779,
+    "w": 30,
+    "h": 18
+   },
+   "bg": "rgb(189, 189, 189)",
+   "radius": "9999px",
+   "border": "0px rgb(229, 229, 229)",
+   "kids": 1
+  },
+  {
+   "kind": "switch?",
+   "tag": "DIV",
+   "role": null,
+   "rect": {
+    "x": 752,
+    "y": 1016,
+    "w": 48,
+    "h": 22
+   },
+   "bg": "rgb(229, 229, 229)",
+   "radius": "2px",
+   "border": "0px rgb(229, 229, 229)",
+   "kids": 0
+  },
+  {
+   "kind": "switch?",
+   "tag": "BUTTON",
+   "role": null,
+   "rect": {
+    "x": 1462,
+    "y": 1055,
+    "w": 30,
+    "h": 18
+   },
+   "bg": "rgb(189, 189, 189)",
+   "radius": "9999px",
+   "border": "0px rgb(229, 229, 229)",
+   "kids": 1
+  },
+  {
+   "kind": "switch?",
+   "tag": "BUTTON",
+   "role": null,
+   "rect": {
+    "x": 1462,
+    "y": 1119,
+    "w": 30,
+    "h": 18
+   },
+   "bg": "rgb(189, 189, 189)",
+   "radius": "9999px",
+   "border": "0px rgb(229, 229, 229)",
+   "kids": 1
+  },
+  {
+   "kind": "switch?",
+   "tag": "BUTTON",
+   "role": null,
+   "rect": {
+    "x": 1462,
+    "y": 1183,
+    "w": 30,
+    "h": 18
+   },
+   "bg": "rgb(189, 189, 189)",
+   "radius": "9999px",
+   "border": "0px rgb(229, 229, 229)",
+   "kids": 1
+  },
+  {
+   "kind": "switch?",
+   "tag": "BUTTON",
+   "role": null,
+   "rect": {
+    "x": 1462,
+    "y": 1247,
+    "w": 30,
+    "h": 18
+   },
+   "bg": "rgb(189, 189, 189)",
+   "radius": "9999px",
+   "border": "0px rgb(229, 229, 229)",
+   "kids": 1
+  },
+  {
+   "kind": "switch?",
+   "tag": "BUTTON",
+   "role": null,
+   "rect": {
+    "x": 1462,
+    "y": 1311,
+    "w": 30,
+    "h": 18
+   },
+   "bg": "rgb(189, 189, 189)",
+   "radius": "9999px",
+   "border": "0px rgb(229, 229, 229)",
+   "kids": 1
+  }
+ ],
+ "4 侧栏页项 · 选中": {
+  "rect": {
+   "x": 8,
+   "y": 206,
+   "w": 211,
+   "h": 32
+  },
+  "bg": "rgba(0, 0, 0, 0.03)",
+  "color": "rgb(95, 94, 91)",
+  "radius": "6px",
+  "border": "1px rgba(0, 0, 0, 0)",
+  "shadow": null,
+  "padding": "0px 8px 0px 0px",
+  "font": "14px/24px/w500"
+ },
+ "5 行内操作按钮": [
+  {
+   "x": 187,
+   "y": 106,
+   "w": 24,
+   "h": 24,
+   "html": "<button type=\"button\" aria-label=\"历史记录\" class=\"mr-2 flex h-6 w-6 shrin"
+  },
+  {
+   "x": 195,
+   "y": 148,
+   "w": 20,
+   "h": 20,
+   "html": "<button data-test-id=\"aside-toc-header-create-by-space\" class=\"flex h-"
+  },
+  {
+   "x": 166,
+   "y": 212,
+   "w": 20,
+   "h": 20,
+   "html": "<button data-test-id=\"aside-item-more\" class=\"items-center justify-cen"
+  },
+  {
+   "x": 190,
+   "y": 212,
+   "w": 20,
+   "h": 20,
+   "html": "<button data-test-id=\"aside-item-create-by-space\" class=\"animate-hover"
+  },
+  {
+   "x": 175,
+   "y": 264,
+   "w": 20,
+   "h": 20,
+   "html": "<button type=\"button\" aria-label=\"私人页面设置\" class=\"flex h-5 w-5 items-ce"
+  },
+  {
+   "x": 195,
+   "y": 264,
+   "w": 20,
+   "h": 20,
+   "html": "<button data-test-id=\"aside-toc-header-create-by-private\" class=\"flex "
+  }
+ ],
+ "6 下拉菜单": {
+  "error": "未找到菜单"
+ },
+ "7 菜单项": []
+}

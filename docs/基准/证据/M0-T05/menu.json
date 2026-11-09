@@ -1,0 +1,125 @@
+{
+ "wrap": {
+  "x": 180,
+  "y": 406,
+  "w": 224,
+  "h": 292
+ },
+ "panels": [
+  {
+   "rect": {
+    "w": 224,
+    "h": 292
+   },
+   "bg": "rgb(255, 255, 255)",
+   "radius": "12px",
+   "padding": "8px 0px",
+   "border": "1px rgba(0, 0, 0, 0.06)",
+   "shadow": "rgba(25, 25, 25, 0.04) 0px 5px 8px 0px, rgba(25, 25, 25, 0.05) 0"
+  },
+  {
+   "rect": {
+    "w": 222,
+    "h": 274
+   },
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": "0px",
+   "padding": "0px",
+   "border": "0px rgb(229, 229, 229)",
+   "shadow": null
+  },
+  {
+   "rect": {
+    "w": 222,
+    "h": 274
+   },
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": "0px",
+   "padding": "0px",
+   "border": "0px rgb(229, 229, 229)",
+   "shadow": null
+  }
+ ],
+ "items": [
+  {
+   "t": "添加到快速访问",
+   "y": 415,
+   "h": 32,
+   "w": 222,
+   "radius": "0px",
+   "padding": "0px",
+   "font": "16px/24px/w400",
+   "color": "rgb(0, 0, 0)"
+  },
+  {
+   "t": "拷贝副本",
+   "y": 456,
+   "h": 32,
+   "w": 222,
+   "radius": "0px",
+   "padding": "0px",
+   "font": "16px/24px/w400",
+   "color": "rgb(0, 0, 0)"
+  },
+  {
+   "t": "复制页面链接",
+   "y": 488,
+   "h": 32,
+   "w": 222,
+   "radius": "0px",
+   "padding": "0px",
+   "font": "16px/24px/w400",
+   "color": "rgb(0, 0, 0)"
+  },
+  {
+   "t": "重命名",
+   "y": 520,
+   "h": 32,
+   "w": 222,
+   "radius": "0px",
+   "padding": "0px",
+   "font": "16px/24px/w400",
+   "color": "rgb(0, 0, 0)"
+  },
+  {
+   "t": "移动到",
+   "y": 552,
+   "h": 32,
+   "w": 222,
+   "radius": "0px",
+   "padding": "0px",
+   "font": "16px/24px/w400",
+   "color": "rgb(0, 0, 0)"
+  },
+  {
+   "t": "删除",
+   "y": 584,
+   "h": 32,
+   "w": 222,
+   "radius": "0px",
+   "padding": "0px",
+   "font": "16px/24px/w400",
+   "color": "rgb(0, 0, 0)"
+  },
+  {
+   "t": "在侧边栏打开",
+   "y": 625,
+   "h": 32,
+   "w": 222,
+   "radius": "0px",
+   "padding": "0px",
+   "font": "16px/24px/w400",
+   "color": "rgb(0, 0, 0)"
+  },
+  {
+   "t": "在新窗口打开",
+   "y": 657,
+   "h": 32,
+   "w": 222,
+   "radius": "0px",
+   "padding": "0px",
+   "font": "16px/24px/w400",
+   "color": "rgb(0, 0, 0)"
+  }
+ ]
+}

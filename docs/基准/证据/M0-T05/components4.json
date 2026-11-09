@@ -1,0 +1,256 @@
+{
+ "A 浮层候选": [
+  {
+   "rect": {
+    "x": 180,
+    "y": 406,
+    "w": 224,
+    "h": 292
+   },
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": "0px",
+   "padding": "0px",
+   "border": "0px rgb(229, 229, 229)",
+   "shadow": null,
+   "cls": "-inset-full next-modal-dropdown dropDownContent",
+   "txt": "添加到快速访问 拷贝副本 复制页面链接 重命名 移动到 删除 在侧边栏打开 在新"
+  }
+ ],
+ "B 菜单项": [
+  {
+   "t": "两 两相欢的空间",
+   "y": 8,
+   "x": 8,
+   "h": 38,
+   "w": 211,
+   "radius": "6px",
+   "padding": "6px 0px",
+   "font": "16px/24px/w400",
+   "color": "rgb(55, 53, 47)"
+  },
+  {
+   "t": "两 两相欢的空间",
+   "y": 14,
+   "x": 8,
+   "h": 26,
+   "w": 181,
+   "radius": "0px",
+   "padding": "0px",
+   "font": "16px/24px/w400",
+   "color": "rgb(55, 53, 47)"
+  },
+  {
+   "t": "FlowUs AI",
+   "y": 102,
+   "x": 8,
+   "h": 32,
+   "w": 211,
+   "radius": "6px",
+   "padding": "0px",
+   "font": "14px/24px/w400",
+   "color": "rgb(55, 53, 47)"
+  },
+  {
+   "t": "空间",
+   "y": 142,
+   "x": 8,
+   "h": 32,
+   "w": 211,
+   "radius": "6px",
+   "padding": "0px",
+   "font": "12px/20px/w500",
+   "color": "rgb(145, 145, 142)"
+  },
+  {
+   "t": "空间",
+   "y": 142,
+   "x": 8,
+   "h": 32,
+   "w": 187,
+   "radius": "0px",
+   "padding": "0px 4px 0px 8px",
+   "font": "12px/20px/w500",
+   "color": "rgb(145, 145, 142)"
+  },
+  {
+   "t": "学习进度",
+   "y": 174,
+   "x": 0,
+   "h": 32,
+   "w": 227,
+   "radius": "0px",
+   "padding": "0px",
+   "font": "16px/24px/w400",
+   "color": "rgb(55, 53, 47)"
+  },
+  {
+   "t": "学习进度",
+   "y": 174,
+   "x": 0,
+   "h": 32,
+   "w": 227,
+   "radius": "0px",
+   "padding": "0px",
+   "font": "16px/24px/w400",
+   "color": "rgb(55, 53, 47)"
+  },
+  {
+   "t": "学习进度",
+   "y": 174,
+   "x": 0,
+   "h": 32,
+   "w": 227,
+   "radius": "0px",
+   "padding": "0px",
+   "font": "16px/24px/w400",
+   "color": "rgb(55, 53, 47)"
+  },
+  {
+   "t": "磷化工知识库",
+   "y": 206,
+   "x": 0,
+   "h": 32,
+   "w": 227,
+   "radius": "0px",
+   "padding": "0px",
+   "font": "16px/24px/w400",
+   "color": "rgb(55, 53, 47)"
+  },
+  {
+   "t": "磷化工知识库",
+   "y": 206,
+   "x": 0,
+   "h": 32,
+   "w": 227,
+   "radius": "0px",
+   "padding": "0px",
+   "font": "16px/24px/w400",
+   "color": "rgb(55, 53, 47)"
+  },
+  {
+   "t": "磷化工知识库",
+   "y": 206,
+   "x": 0,
+   "h": 32,
+   "w": 227,
+   "radius": "0px",
+   "padding": "0px",
+   "font": "16px/24px/w400",
+   "color": "rgb(55, 53, 47)"
+  },
+  {
+   "t": "私人",
+   "y": 258,
+   "x": 8,
+   "h": 32,
+   "w": 211,
+   "radius": "6px",
+   "padding": "0px",
+   "font": "12px/20px/w500",
+   "color": "rgb(145, 145, 142)"
+  },
+  {
+   "t": "私人",
+   "y": 258,
+   "x": 8,
+   "h": 32,
+   "w": 167,
+   "radius": "0px",
+   "padding": "0px 4px 0px 8px",
+   "font": "12px/20px/w500",
+   "color": "rgb(145, 145, 142)"
+  },
+  {
+   "t": "无标题多维表格",
+   "y": 290,
+   "x": 0,
+   "h": 32,
+   "w": 227,
+   "radius": "0px",
+   "padding": "0px",
+   "font": "16px/24px/w400",
+   "color": "rgb(55, 53, 47)"
+  },
+  {
+   "t": "无标题多维表格",
+   "y": 290,
+   "x": 0,
+   "h": 32,
+   "w": 227,
+   "radius": "0px",
+   "padding": "0px",
+   "font": "16px/24px/w400",
+   "color": "rgb(55, 53, 47)"
+  },
+  {
+   "t": "无标题多维表格",
+   "y": 290,
+   "x": 0,
+   "h": 32,
+   "w": 227,
+   "radius": "0px",
+   "padding": "0px",
+   "font": "16px/24px/w400",
+   "color": "rgb(55, 53, 47)"
+  },
+  {
+   "t": "配置",
+   "y": 322,
+   "x": 0,
+   "h": 32,
+   "w": 227,
+   "radius": "0px",
+   "padding": "0px",
+   "font": "16px/24px/w400",
+   "color": "rgb(55, 53, 47)"
+  },
+  {
+   "t": "配置",
+   "y": 322,
+   "x": 0,
+   "h": 32,
+   "w": 227,
+   "radius": "0px",
+   "padding": "0px",
+   "font": "16px/24px/w400",
+   "color": "rgb(55, 53, 47)"
+  }
+ ],
+ "C 输入框": [
+  {
+   "tag": "INPUT",
+   "type": "text",
+   "ph": "请输入空间名，长度需在 2-55 个字符之间",
+   "rect": {
+    "x": 661,
+    "y": 314,
+    "w": 830,
+    "h": 20
+   },
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": "0px",
+   "border": "0px rgb(229, 229, 229)",
+   "padding": "0px 12px",
+   "font": "14px/20px",
+   "color": "rgb(0, 0, 0)"
+  },
+  {
+   "tag": "INPUT",
+   "type": "text",
+   "ph": "请输入英文域名",
+   "rect": {
+    "x": 661,
+    "y": 437,
+    "w": 318,
+    "h": 30
+   },
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": "0px",
+   "border": "0px rgb(229, 229, 229)",
+   "padding": "0px 8px",
+   "font": "14px/20px",
+   "color": "rgb(0, 0, 0)"
+  }
+ ],
+ "D 勾选框候选": []
+}

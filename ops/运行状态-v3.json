@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T18:38:17.079Z",
+  "updatedAt": "2026-11-09T18:54:26.588Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 4,
-    "lastProbeAt": "2026-11-09T18:38:17.079Z"
+    "probeCount": 5,
+    "lastProbeAt": "2026-11-09T18:54:26.588Z"
   },
   "running": [],
   "history": [
@@ -46,6 +46,13 @@
       "startedAt": "2026-11-09T18:36:53.493Z",
       "finishedAt": "2026-11-09T18:38:17.078Z",
       "note": "字体栈+12档阶梯；图标三套=Lucide/自研Ic*/Google emoji；拆出 M0-T15"
+    },
+    {
+      "taskId": "M0-T05",
+      "status": "done-partial",
+      "startedAt": "2026-11-09T18:46:56.122Z",
+      "finishedAt": "2026-11-09T18:54:26.587Z",
+      "note": "按钮/菜单/弹层/开关/徽标/输入框实测；勾选框未见拆 M0-T16；误建页面已删"
     }
   ],
   "blocked": [],
