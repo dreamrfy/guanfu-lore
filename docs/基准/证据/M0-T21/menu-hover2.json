@@ -1,0 +1,242 @@
+{
+ "① 逐项 hover（重取坐标）": [
+  {
+   "t": "添加到快速访问",
+   "before": null,
+   "after": "rgba(0, 0, 0, 0.06)",
+   "radius": "8px",
+   "changed": null
+  },
+  {
+   "t": "拷贝副本",
+   "before": null,
+   "after": "rgba(0, 0, 0, 0.06)",
+   "radius": "8px",
+   "changed": null
+  },
+  {
+   "t": "复制页面链接",
+   "before": null,
+   "after": "rgba(0, 0, 0, 0.06)",
+   "radius": "8px",
+   "changed": null
+  },
+  {
+   "t": "重命名",
+   "before": null,
+   "after": "rgba(0, 0, 0, 0.06)",
+   "radius": "8px",
+   "changed": null
+  },
+  {
+   "t": "移动到",
+   "before": null,
+   "after": "rgba(0, 0, 0, 0.06)",
+   "radius": "8px",
+   "changed": null
+  },
+  {
+   "t": "删除",
+   "before": null,
+   "after": "rgba(0, 0, 0, 0.06)",
+   "radius": "8px",
+   "changed": null
+  },
+  {
+   "t": "在侧边栏打开",
+   "before": null,
+   "after": "rgba(0, 0, 0, 0.06)",
+   "radius": "8px",
+   "changed": null
+  },
+  {
+   "t": "在新窗口打开",
+   "before": null,
+   "after": "rgba(0, 0, 0, 0.06)",
+   "radius": "8px",
+   "changed": null
+  }
+ ],
+ "② 页面⋯面板各行状态": [
+  {
+   "t": "查找与替换 Ctrl+F",
+   "opacity": "1",
+   "pOpacity": "1",
+   "color": "rgb(0, 0, 0)",
+   "pColor": "rgb(0, 0, 0)",
+   "cursor": "none",
+   "pCursor": "none"
+  },
+  {
+   "t": "固定宽度",
+   "opacity": "1",
+   "pOpacity": "1",
+   "color": "rgb(0, 0, 0)",
+   "pColor": "rgb(0, 0, 0)",
+   "cursor": "pointer",
+   "pCursor": "none"
+  },
+  {
+   "t": "页面目录",
+   "opacity": "1",
+   "pOpacity": "1",
+   "color": "rgb(0, 0, 0)",
+   "pColor": "rgb(0, 0, 0)",
+   "cursor": "pointer",
+   "pCursor": "none"
+  },
+  {
+   "t": "小字号",
+   "opacity": "1",
+   "pOpacity": "1",
+   "color": "rgb(0, 0, 0)",
+   "pColor": "rgb(0, 0, 0)",
+   "cursor": "pointer",
+   "pCursor": "none"
+  },
+  {
+   "t": "评论位置",
+   "opacity": "1",
+   "pOpacity": "1",
+   "color": "rgb(0, 0, 0)",
+   "pColor": "rgb(0, 0, 0)",
+   "cursor": "none",
+   "pCursor": "none"
+  },
+  {
+   "t": "演示模式 Alt+Shift+P",
+   "opacity": "1",
+   "pOpacity": "1",
+   "color": "rgb(0, 0, 0)",
+   "pColor": "rgb(0, 0, 0)",
+   "cursor": "none",
+   "pCursor": "none"
+  },
+  {
+   "t": "锁定页面 Ctrl+L",
+   "opacity": "1",
+   "pOpacity": "1",
+   "color": "rgb(0, 0, 0)",
+   "pColor": "rgb(0, 0, 0)",
+   "cursor": "none",
+   "pCursor": "none"
+  },
+  {
+   "t": "复制页面链接",
+   "opacity": "1",
+   "pOpacity": "1",
+   "color": "rgb(0, 0, 0)",
+   "pColor": "rgb(0, 0, 0)",
+   "cursor": "none",
+   "pCursor": "none"
+  },
+  {
+   "t": "撤销 Ctrl+Z",
+   "opacity": "1",
+   "pOpacity": "1",
+   "color": "rgb(0, 0, 0)",
+   "pColor": "rgb(0, 0, 0)",
+   "cursor": "none",
+   "pCursor": "none"
+  },
+  {
+   "t": "重做 Ctrl+Shift+Z",
+   "opacity": "1",
+   "pOpacity": "1",
+   "color": "rgb(0, 0, 0)",
+   "pColor": "rgb(0, 0, 0)",
+   "cursor": "none",
+   "pCursor": "none"
+  },
+  {
+   "t": "页面历史",
+   "opacity": "1",
+   "pOpacity": "1",
+   "color": "rgb(0, 0, 0)",
+   "pColor": "rgb(0, 0, 0)",
+   "cursor": "none",
+   "pCursor": "none"
+  },
+  {
+   "t": "已解决评论",
+   "opacity": "1",
+   "pOpacity": "1",
+   "color": "rgb(0, 0, 0)",
+   "pColor": "rgb(0, 0, 0)",
+   "cursor": "none",
+   "pCursor": "none"
+  },
+  {
+   "t": "删除",
+   "opacity": "1",
+   "pOpacity": "1",
+   "color": "rgb(0, 0, 0)",
+   "pColor": "rgb(0, 0, 0)",
+   "cursor": "none",
+   "pCursor": "none"
+  },
+  {
+   "t": "复制为公众号格式",
+   "opacity": "1",
+   "pOpacity": "1",
+   "color": "rgb(0, 0, 0)",
+   "pColor": "rgb(0, 0, 0)",
+   "cursor": "none",
+   "pCursor": "none"
+  },
+  {
+   "t": "转换为模板",
+   "opacity": "1",
+   "pOpacity": "1",
+   "color": "rgb(0, 0, 0)",
+   "pColor": "rgb(0, 0, 0)",
+   "cursor": "pointer",
+   "pCursor": "none"
+  },
+  {
+   "t": "导入",
+   "opacity": "1",
+   "pOpacity": "1",
+   "color": "rgb(0, 0, 0)",
+   "pColor": "rgb(0, 0, 0)",
+   "cursor": "none",
+   "pCursor": "none"
+  },
+  {
+   "t": "导出页面",
+   "opacity": "1",
+   "pOpacity": "1",
+   "color": "rgb(0, 0, 0)",
+   "pColor": "rgb(0, 0, 0)",
+   "cursor": "none",
+   "pCursor": "none"
+  },
+  {
+   "t": "移动到 Ctrl+Shift+P",
+   "opacity": "1",
+   "pOpacity": "1",
+   "color": "rgb(0, 0, 0)",
+   "pColor": "rgb(0, 0, 0)",
+   "cursor": "none",
+   "pCursor": "none"
+  },
+  {
+   "t": "页面动态",
+   "opacity": "1",
+   "pOpacity": "1",
+   "color": "rgb(0, 0, 0)",
+   "pColor": "rgb(0, 0, 0)",
+   "cursor": "none",
+   "pCursor": "none"
+  },
+  {
+   "t": "查看页面信息",
+   "opacity": "1",
+   "pOpacity": "1",
+   "color": "rgb(0, 0, 0)",
+   "pColor": "rgb(0, 0, 0)",
+   "cursor": "none",
+   "pCursor": "none"
+  }
+ ]
+}

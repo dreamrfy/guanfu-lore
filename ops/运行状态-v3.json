@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T21:11:31.290Z",
+  "updatedAt": "2026-11-09T21:18:58.433Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 19,
-    "lastProbeAt": "2026-11-09T21:11:31.290Z"
+    "probeCount": 20,
+    "lastProbeAt": "2026-11-09T21:18:58.433Z"
   },
   "running": [],
   "history": [
@@ -151,6 +151,13 @@
       "startedAt": "2026-11-09T21:06:57.075Z",
       "finishedAt": "2026-11-09T21:11:31.290Z",
       "note": "勾选框三态(换图标+主色+删除线/hover无变化)；顺带采到斜杠菜单12项"
+    },
+    {
+      "taskId": "M0-T21",
+      "status": "done",
+      "startedAt": "2026-11-09T21:16:55.161Z",
+      "finishedAt": "2026-11-09T21:18:58.433Z",
+      "note": "菜单项hover黑6%(8/8)；与侧栏项3%不同；禁用态未找到"
     }
   ],
   "blocked": [],
