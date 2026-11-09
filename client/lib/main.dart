@@ -623,6 +623,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
   bool _busyImages = false;
   bool _typePickerDismissed = false; // 空页面类型选择器被「写笔记」手动收起
   final TextEditingController _titleCtl = TextEditingController(); // FlowUs 式内嵌标题
+  bool _showAssets = false; // 图片面板折叠（编辑器占主区域）
   Timer? _titleTimer;
   Future<List<Asset>>? _assets;
 
@@ -883,72 +884,94 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
                 ),
               ],
             )
-          : ListView(
-        padding: const EdgeInsets.all(12),
-        children: [
-          // FlowUs 式：标题就是正文顶部的大字，直接改即改库，侧栏同步
-          Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: TextField(
-              controller: _titleCtl,
-              onChanged: _onTitleChanged,
-              style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w700, height: 1.25),
-              decoration: const InputDecoration.collapsed(
-                hintText: '未命名',
-                hintStyle: TextStyle(fontSize: 30, fontWeight: FontWeight.w700, color: Color(0xFFB9BEC6)),
-                border: InputBorder.none,
-              ),
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
+                  child: TextField(
+                    controller: _titleCtl,
+                    onChanged: _onTitleChanged,
+                    style: const TextStyle(
+                        fontSize: 30, fontWeight: FontWeight.w700, height: 1.25),
+                    decoration: const InputDecoration.collapsed(
+                      hintText: '未命名',
+                      hintStyle: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFFB9BEC6)),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+                if (_draft != null)
+                  Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                      child: _draftBanner()),
+                if (_showTypePicker(page))
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                    child: _EmptyPageTypePicker(
+                      onPickNote: () => setState(() => _typePickerDismissed = true),
+                      onPickTable: _convertToTable,
+                    ),
+                  ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+                    child: FlowUsEditor(
+                      initialContent: _editorContent ?? '',
+                      onChanged: (serialized) => _save.editText(serialized),
+                    ),
+                  ),
+                ),
+                const Divider(height: 1),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  child: Row(children: [
+                    TextButton.icon(
+                      onPressed: _busyImages ? null : _pickAndSaveImage,
+                      icon: const Icon(Icons.add_photo_alternate_outlined, size: 18),
+                      label: const Text('添加图片', style: TextStyle(fontSize: 13)),
+                    ),
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () => setState(() => _showAssets = !_showAssets),
+                      child: Text(_showAssets ? '收起图片' : '图片',
+                          style: const TextStyle(fontSize: 13)),
+                    ),
+                  ]),
+                ),
+                if (_showAssets)
+                  SizedBox(
+                    height: 220,
+                    child: FutureBuilder<List<Asset>>(
+                      future: _assets,
+                      builder: (context, snap) {
+                        if (snap.connectionState != ConnectionState.done) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+                        final assets = snap.data ?? const <Asset>[];
+                        if (assets.isEmpty) {
+                          return const Center(
+                            child: Text('还没有图片。点左下「添加图片」——它会复制成本机副本（按内容编号）。',
+                                style: TextStyle(color: Colors.grey, fontSize: 12)),
+                          );
+                        }
+                        return ListView(
+                          padding: const EdgeInsets.all(8),
+                          children: [
+                            for (final a in assets) ...[
+                              _AssetView(store: widget.store, asset: a),
+                              const SizedBox(height: 8),
+                            ],
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+              ],
             ),
-          ),
-          const SizedBox(height: 8),
-          if (_draft != null) _draftBanner(),
-          if (_showTypePicker(page))
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _EmptyPageTypePicker(
-                onPickNote: () => setState(() => _typePickerDismissed = true),
-                onPickTable: _convertToTable,
-              ),
-            ),
-          FlowUsEditor(
-            initialContent: _editorContent ?? '',
-            onChanged: (serialized) => _save.editText(serialized),
-          ),
-          const SizedBox(height: 12),
-          Row(children: [
-            FilledButton.tonalIcon(
-              onPressed: _busyImages ? null : _pickAndSaveImage,
-              icon: const Icon(Icons.add_photo_alternate_outlined),
-              label: const Text('添加图片'),
-            ),
-            const SizedBox(width: 12),
-            if (_busyImages)
-              const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
-          ]),
-          const SizedBox(height: 12),
-          FutureBuilder<List<Asset>>(
-            future: _assets,
-            builder: (context, snap) {
-              if (snap.connectionState != ConnectionState.done) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              final assets = snap.data ?? const <Asset>[];
-              if (assets.isEmpty) {
-                return const Text('还没有图片。点上面「添加图片」选一张——\n它会被复制成本机副本（按内容指纹编号），删掉原图也不影响。',
-                    style: TextStyle(color: Colors.grey));
-              }
-              return Column(
-                children: [
-                  for (final a in assets) ...[
-                    _AssetView(store: widget.store, asset: a),
-                    const SizedBox(height: 12),
-                  ],
-                ],
-              );
-            },
-          ),
-        ],
-      ),
     );
   }
 }
@@ -1694,9 +1717,13 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
           const SizedBox(height: 12),
           Text('我的批注', style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: 8),
-          FlowUsEditor(
-            initialContent: _editorContent ?? '',
-            onChanged: (serialized) => _save.editText(serialized),
+          // 固定高度：编辑器内部自滚动（放在 ListView 里给无界高度会渲染不出来）
+          SizedBox(
+            height: 260,
+            child: FlowUsEditor(
+              initialContent: _editorContent ?? '',
+              onChanged: (serialized) => _save.editText(serialized),
+            ),
           ),
           const SizedBox(height: 12),
           FutureBuilder<List<Asset>>(
