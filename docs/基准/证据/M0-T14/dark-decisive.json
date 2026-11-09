@@ -1,0 +1,60 @@
+{
+ "1 浅色（默认）": {
+  "sidebar": {
+   "bg": "rgb(247, 247, 247)",
+   "border": "rgb(240, 240, 240)"
+  },
+  "bodyBg": "rgba(0, 0, 0, 0)",
+  "bodyColor": "rgb(55, 53, 47)",
+  "rootColorScheme": "normal",
+  "htmlClass": "next-scrollbar",
+  "prefersDark": false,
+  "aside": {
+   "bg": "rgb(247, 247, 247)",
+   "color": "rgb(55, 53, 47)",
+   "border": "rgb(240, 240, 240)",
+   "w": 228
+  }
+ },
+ "2 模拟系统深色后": {
+  "sidebar": {
+   "bg": "rgb(32, 32, 32)",
+   "border": "rgb(46, 46, 46)"
+  },
+  "bodyBg": "rgb(25, 25, 25)",
+  "bodyColor": "rgb(212, 212, 212)",
+  "rootColorScheme": "normal",
+  "htmlClass": "next-scrollbar",
+  "prefersDark": true,
+  "aside": {
+   "bg": "rgb(32, 32, 32)",
+   "color": "rgb(212, 212, 212)",
+   "border": "rgb(46, 46, 46)",
+   "w": 228
+  }
+ },
+ "3 差异": {
+  "prefersDarkChanged": true,
+  "bodyBgChanged": true,
+  "bodyColorChanged": true,
+  "sidebarBgChanged": true,
+  "htmlClassChanged": false
+ },
+ "4 恢复后": {
+  "sidebar": {
+   "bg": "rgb(247, 247, 247)",
+   "border": "rgb(240, 240, 240)"
+  },
+  "bodyBg": "rgba(0, 0, 0, 0)",
+  "bodyColor": "rgb(55, 53, 47)",
+  "rootColorScheme": "normal",
+  "htmlClass": "next-scrollbar",
+  "prefersDark": false,
+  "aside": {
+   "bg": "rgb(247, 247, 247)",
+   "color": "rgb(55, 53, 47)",
+   "border": "rgb(240, 240, 240)",
+   "w": 228
+  }
+ }
+}

@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T20:02:22.852Z",
+  "updatedAt": "2026-11-09T20:09:55.756Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 12,
-    "lastProbeAt": "2026-11-09T20:02:22.852Z"
+    "probeCount": 13,
+    "lastProbeAt": "2026-11-09T20:09:55.756Z"
   },
   "running": [],
   "history": [
@@ -102,6 +102,13 @@
       "startedAt": "2026-11-09T19:56:55.279Z",
       "finishedAt": "2026-11-09T20:02:22.851Z",
       "note": "内核结论=用 appflowy_editor_ce；真机渲染验证；暴露块间距缺口拆 M0-T19"
+    },
+    {
+      "taskId": "M0-T14",
+      "status": "done",
+      "startedAt": "2026-11-09T20:06:56.718Z",
+      "finishedAt": "2026-11-09T20:09:55.755Z",
+      "note": "深色主题存在(跟系统)；采全深色板；纠正 M0-T03 错误结论"
     }
   ],
   "blocked": [],

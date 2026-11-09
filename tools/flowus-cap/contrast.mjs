@@ -1,17 +1,22 @@
 /**
- * FlowUs 浅色调色板对比度核验（M0-T03 交付物）
+ * FlowUs 调色板对比度核验（M0-T03 浅色 / M0-T14 深色）
  *
  * 色值来自真 FlowUs 实测（见 docs/基准/基准-色彩.md），不是设计稿抄的。
+ * 深色板由 M0-T14 通过模拟 prefers-color-scheme: dark 实测得到。
  * 判定口径：WCAG 2.1 —— 正文 4.5:1，大字号（≥18.66px 粗体 或 ≥24px）3:1。
  *
- * 用法：node contrast.mjs [--markdown]
- * 退出码：有正文级组合不达标 → 1
+ * 用法：
+ *   node contrast.mjs            # 浅色
+ *   node contrast.mjs --dark     # 深色
+ *   node contrast.mjs --markdown
+ *   node contrast.mjs --strict   # 有不达标时退出码 1
  */
 const T_NORMAL = 4.5;
 const T_LARGE = 3.0;
+const MODE = process.argv.includes('--dark') ? 'dark' : 'light';
 
 // ---- 实测色板 ----
-const C = {
+const LIGHT = {
   primary: '#0285FF',        // active_color 基色 rgb(2,133,255)
   bgContent: '#FFFFFF',      // bg-white / bg-white1
   bgAside: '#F7F7F7',        // bg-aside 侧栏底
@@ -22,7 +27,29 @@ const C = {
   borderDefault: '#E5E5E5',  // 出现 307 次，默认边框
   borderAside: '#F0F0F0',    // border-grey7 侧栏右边框
   borderStrong: '#E0E0E0',   // border-grey5
+  hoverOverlay: '#000000',   // bg-black_006 = 黑 6%
+  hoverAlpha: 0.06,
+  selectOverlay: '#0285FF',  // bg-active_color_10 = 主色 10%
+  selectAlpha: 0.10,
 };
+
+const DARK = {
+  primary: '#0285FF',        // 主色在深色下不变（实测）
+  bgContent: '#191919',      // bg-white1 → rgb(25,25,25)
+  bgAside: '#202020',        // bg-aside  → rgb(32,32,32)
+  textMain: '#D4D4D4',       // text-t2 / text-black → rgb(212,212,212)
+  textSub: '#A0A0A0',        // text-grey2 / t2-medium → rgb(160,160,160)
+  textTertiary: '#717171',   // text-grey3 / t4-medium → rgb(113,113,113)
+  textBlack: '#D4D4D4',      // 深色下 "black" 也是 #D4D4D4（语义是"最强文字"）
+  borderDefault: '#2E2E2E',  // grey6 → rgb(46,46,46)
+  borderAside: '#2E2E2E',    // grey7 → rgb(46,46,46)
+  borderStrong: '#363636',   // grey5 → rgb(54,54,54)
+  hoverOverlay: '#FFFFFF',   // ★ 深色下变成白 6%
+  hoverAlpha: 0.06,
+  selectOverlay: '#0285FF',
+  selectAlpha: 0.10,
+};
+const C = MODE === 'dark' ? DARK : LIGHT;
 
 const hex2rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 const lin = (c) => { const v = c / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
@@ -41,8 +68,8 @@ const over = (fgHex, alpha, bgHex) => {
 const toHex = (rgb) => '#' + rgb.map((v) => v.toString(16).padStart(2, '0')).join('');
 
 const BLACK = '#000000';
-const HOVER = over(BLACK, 0.06, C.bgContent);   // 悬停底 rgba(0,0,0,0.06) 叠在内容底上
-const SELECT = over(C.primary, 0.10, C.bgContent); // 选中底 rgba(2,133,255,0.10) 叠在内容底上
+const HOVER = over(C.hoverOverlay, C.hoverAlpha, C.bgContent);   // 悬停底：浅色=黑6% / 深色=白6%
+const SELECT = over(C.selectOverlay, C.selectAlpha, C.bgContent); // 选中底：主色 10% 叠在内容底上
 
 const pairs = [
   ['正文 on 内容底', C.textMain, C.bgContent, T_NORMAL],
