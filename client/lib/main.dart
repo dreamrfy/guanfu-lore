@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform;
 import 'package:flutter/material.dart' hide Page;
 import 'package:http/http.dart' as http;
 
@@ -56,6 +56,16 @@ class _HomePageState extends State<HomePage> {
   bool _detailFullPage = false; // 整页切换（隐藏左侧树）
   int _detailRev = 0; // 设置页等外部改动后强制重建详情（拉到新数据必须重载）
   String? _hoveredId; // 页面行悬停状态（FlowUs 式悬停出 ＋/⋯）
+
+  /// 触屏/窄窗口没有 hover：动作图标必须常显，否则手机上永远点不到 ＋/⋯。
+  bool get _actionsAlwaysVisible {
+    if (defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS) {
+      return true;
+    }
+    final w = MediaQuery.of(context).size.width;
+    return w < 700;
+  }
 
   @override
   void initState() {
@@ -213,9 +223,9 @@ class _HomePageState extends State<HomePage> {
       onTap: () => _openDetail(pg),
       // FlowUs 惯例：鼠标悬停才浮出「＋（建子页）」与「⋯（菜单）」
       trailing: SizedBox(
-        width: 84,
+        width: 100,
         child: AnimatedOpacity(
-          opacity: _hoveredId == pg.id ? 1 : 0,
+          opacity: (_actionsAlwaysVisible || _hoveredId == pg.id) ? 1 : 0,
           duration: const Duration(milliseconds: 120),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
             IconButton(
@@ -292,7 +302,7 @@ class _HomePageState extends State<HomePage> {
                   fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.w600)),
           const Spacer(),
           AnimatedOpacity(
-            opacity: _hoveredId == '__section' ? 1 : 0,
+            opacity: (_actionsAlwaysVisible || _hoveredId == '__section') ? 1 : 0,
             duration: const Duration(milliseconds: 120),
             child: IconButton(
               visualDensity: VisualDensity.compact,
@@ -1337,82 +1347,48 @@ class _EmptyPageTypePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('这是一张空页面，你想用它做什么？',
-            style: TextStyle(fontSize: 13, color: Colors.grey.shade800)),
-        const SizedBox(height: 10),
-        Row(children: [
-          Expanded(
-            child: _PickerOption(
-              icon: Icons.description_outlined,
-              name: '写笔记',
-              desc: '就在下面开始输入',
-              onTap: onPickNote,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: _PickerOption(
-              icon: Icons.grid_on,
-              name: '变多维表',
-              desc: '把这张页面变成表格',
-              onTap: onPickTable,
-            ),
-          ),
-        ]),
-      ]),
-    );
-  }
-}
-
-class _PickerOption extends StatelessWidget {
-  const _PickerOption({
-    required this.icon,
-    required this.name,
-    required this.desc,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String name;
-  final String desc;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(8),
-          color: Colors.white,
+    // FlowUs 空页形态：一行提示 + 行式类型列表（不是卡片）
+    Widget row({
+      required IconData icon,
+      required String name,
+      required String desc,
+      VoidCallback? onTap,
+    }) {
+      final enabled = onTap != null;
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(6),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
+          child: Row(children: [
+            Icon(icon, size: 17, color: enabled ? const Color(0xFF4A5058) : Colors.grey.shade400),
+            const SizedBox(width: 10),
+            Text(name,
+                style: TextStyle(
+                    fontSize: 14,
+                    color: enabled ? const Color(0xFF1F2329) : Colors.grey.shade400)),
+            if (desc.isNotEmpty) ...[
+              const SizedBox(width: 8),
+              Text(desc, style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+            ],
+          ]),
         ),
-        child: Row(children: [
-          Icon(icon, size: 20, color: Colors.blue.shade700),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-              Text(desc, style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
-            ]),
-          ),
-        ]),
+      );
+    }
+
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Padding(
+        padding: const EdgeInsets.only(left: 6, bottom: 4),
+        child: Text('按回车开始编辑，或从下方选择',
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
       ),
-    );
+      row(icon: Icons.description_outlined, name: '页面', desc: '写笔记、文档', onTap: onPickNote),
+      row(icon: Icons.grid_on, name: '多维表', desc: '表格管理记录', onTap: onPickTable),
+      row(icon: Icons.folder_outlined, name: '文件夹', desc: '即将支持'),
+      row(icon: Icons.schema_outlined, name: '思维导图', desc: '即将支持'),
+    ]);
   }
 }
-
-/// 崩溃恢复草稿条（普通页/多维表/记录页三处共用）。
 class _DraftBanner extends StatelessWidget {
   const _DraftBanner({
     required this.draft,

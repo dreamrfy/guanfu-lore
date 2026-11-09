@@ -24,6 +24,7 @@ class TablePageView extends StatefulWidget {
 
 class _TablePageViewState extends State<TablePageView> {
   TableData? _t;
+  String _filter = ''; // 标题列本地过滤（FlowUs 的搜索框）
   static const double _cellWidth = 150;
   static const double _firstCellWidth = 190;
 
@@ -124,6 +125,71 @@ class _TablePageViewState extends State<TablePageView> {
     );
   }
 
+  /// 搜索过滤：只匹配首列（标题）文本，大小写不敏感。
+  List<TableRowData> _filteredRows(TableData t) {
+    if (_filter.isEmpty) return t.rows;
+    final key = _filter.toLowerCase();
+    final firstCol = t.cols.first.id;
+    return t.rows
+        .where((r) => (r.cells[firstCol] ?? '').toLowerCase().contains(key))
+        .toList();
+  }
+
+  /// 视图菜单（FlowUs 形态）：当前只有表格，其它视图标注即将支持。
+  Future<void> _showViewMenu(BuildContext context) async {
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: const Text('视图'),
+        children: [
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Row(children: [
+              Icon(Icons.check, size: 16),
+              SizedBox(width: 8),
+              Text('表格'),
+            ]),
+          ),
+          for (final name in const ['看板', '画廊', '目录', '时间轴', '日历', '收集表'])
+            SimpleDialogOption(
+              onPressed: null,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 24),
+                child: Row(children: [
+                  Text(name, style: TextStyle(color: Colors.grey.shade500, fontSize: 13)),
+                  const SizedBox(width: 8),
+                  Text('即将支持', style: TextStyle(color: Colors.grey.shade400, fontSize: 11)),
+                ]),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// 更多菜单：加列 / 加行 / 删除空行等（保持旧入口可用）。
+  Future<void> _showMoreMenu(BuildContext context) async {
+    final v = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          ListTile(
+            leading: const Icon(Icons.playlist_add, size: 20),
+            title: const Text('新建记录'),
+            onTap: () => Navigator.pop(ctx, 'row'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.view_column_outlined, size: 20),
+            title: const Text('新建列'),
+            onTap: () => Navigator.pop(ctx, 'col'),
+          ),
+        ]),
+      ),
+    );
+    if (v == 'row') _addRow();
+    if (v == 'col') _addColumn();
+  }
+
   void _toast(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
@@ -134,24 +200,91 @@ class _TablePageViewState extends State<TablePageView> {
   Widget build(BuildContext context) {
     final t = _t!;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      // 工具行：加列 / 加行
+      // 视图栏（FlowUs 形态）：左侧「表格 ▾」，右侧 搜索/⋯/创建▾
       Row(children: [
-        OutlinedButton.icon(
-          onPressed: _addColumn,
-          icon: const Icon(Icons.add, size: 16),
-          label: const Text('加列', style: TextStyle(fontSize: 13)),
+        InkWell(
+          onTap: () => _showViewMenu(context),
+          borderRadius: BorderRadius.circular(4),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              const Icon(Icons.table_chart_outlined, size: 16),
+              const SizedBox(width: 6),
+              const Text('表格', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500)),
+              const Icon(Icons.keyboard_arrow_down, size: 16),
+            ]),
+          ),
         ),
-        const SizedBox(width: 8),
-        OutlinedButton.icon(
-          onPressed: _addRow,
-          icon: const Icon(Icons.add, size: 16),
-          label: const Text('加行', style: TextStyle(fontSize: 13)),
+        const SizedBox(width: 6),
+        Text('${t.rows.length} 行',
+            style: TextStyle(fontSize: 11.5, color: Colors.grey.shade500)),
+        const Spacer(),
+        IconButton(
+          visualDensity: VisualDensity.compact,
+          tooltip: '更多（加列 / 加行）',
+          icon: const Icon(Icons.more_horiz, size: 18),
+          onPressed: () => _showMoreMenu(context),
         ),
-        const SizedBox(width: 8),
-        Text('${t.rows.length} 行 × ${t.cols.length} 列',
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+        const SizedBox(width: 2),
+        // 「创建 ▾」：点主体=新建记录，点箭头=加列
+        ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: Material(
+            color: const Color(0xFF2B7CF6),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              InkWell(
+                onTap: _addRow,
+                child: const Padding(
+                  padding: EdgeInsets.fromLTRB(12, 8, 10, 8),
+                  child: Text('创建',
+                      style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+                ),
+              ),
+              Container(width: 1, height: 18, color: Colors.white24),
+              PopupMenuButton<String>(
+                tooltip: '更多创建方式',
+                padding: EdgeInsets.zero,
+                onSelected: (v) {
+                  if (v == 'row') _addRow();
+                  if (v == 'col') _addColumn();
+                },
+                itemBuilder: (_) => const [
+                  PopupMenuItem(value: 'row', child: Text('新建记录')),
+                  PopupMenuItem(value: 'col', child: Text('新建列')),
+                ],
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                  child: Icon(Icons.keyboard_arrow_down, size: 16, color: Colors.white),
+                ),
+              ),
+            ]),
+          ),
+        ),
       ]),
-      const SizedBox(height: 8),
+      const SizedBox(height: 6),
+      // 搜索框（本地过滤标题列）
+      SizedBox(
+        height: 34,
+        child: TextField(
+          onChanged: (v) => setState(() => _filter = v.trim()),
+          style: const TextStyle(fontSize: 13),
+          decoration: InputDecoration(
+            isDense: true,
+            filled: true,
+            fillColor: const Color(0xFFF3F4F6),
+            prefixIcon: const Icon(Icons.search, size: 16),
+            prefixIconConstraints: const BoxConstraints(minWidth: 32),
+            hintText: '搜索',
+            hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(6),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(height: 6),
       // 表体：纵向可滚（行多）套横向可滚（列多）——列宽是 dp，360dp 手机屏装不下几列
       Expanded(
         child: t.rows.isEmpty
@@ -165,7 +298,7 @@ class _TablePageViewState extends State<TablePageView> {
                   scrollDirection: Axis.horizontal,
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     _headerRow(t),
-                    for (final row in t.rows) _dataRow(t, row),
+                    for (final row in _filteredRows(t)) _dataRow(t, row),
                   ]),
                 ),
               ),
