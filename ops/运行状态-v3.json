@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T23:09:13.964Z",
+  "updatedAt": "2026-11-09T23:19:51.689Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 31,
-    "lastProbeAt": "2026-11-09T23:09:13.964Z"
+    "probeCount": 32,
+    "lastProbeAt": "2026-11-09T23:19:51.689Z"
   },
   "running": [],
   "history": [
@@ -235,6 +235,13 @@
       "startedAt": "2026-11-09T23:06:59.146Z",
       "finishedAt": "2026-11-09T23:09:13.963Z",
       "note": "待办=type3；type12引述/待办争议结案；学习进度仍8字段；余项拆M0-T33"
+    },
+    {
+      "taskId": "M0-T33",
+      "status": "done-partial",
+      "startedAt": "2026-11-09T23:16:56.429Z",
+      "finishedAt": "2026-11-09T23:19:51.689Z",
+      "note": "高级块四件套已定性：文档内/免费版造不出（101项全菜单+点了无反应）；不阻塞M2；余项拆M0-T34"
     }
   ],
   "blocked": [],

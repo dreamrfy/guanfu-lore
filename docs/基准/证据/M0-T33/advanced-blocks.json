@@ -1,0 +1,38 @@
+{
+ "steps": [
+  {
+   "label": "思维导图",
+   "menuSize": 101,
+   "hasTarget": false,
+   "clicked": "思维导图 /swdt",
+   "added": [],
+   "changed": []
+  },
+  {
+   "label": "按钮",
+   "menuSize": 0,
+   "hasTarget": false,
+   "clicked": null,
+   "added": [],
+   "changed": []
+  },
+  {
+   "label": "同步块",
+   "menuSize": 0,
+   "hasTarget": false,
+   "clicked": null,
+   "added": [],
+   "changed": []
+  },
+  {
+   "label": "数据图表",
+   "menuSize": 0,
+   "hasTarget": false,
+   "clicked": null,
+   "added": [],
+   "changed": []
+  }
+ ],
+ "0 基线": 12,
+ "1 docId": "880bacc7-7de9-4aab-9887-caa0d4a0e405"
+}
