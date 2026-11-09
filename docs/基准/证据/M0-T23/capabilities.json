@@ -1,0 +1,17 @@
+{
+ "/api/rag/capabilities": {
+  "status": 401,
+  "len": 61,
+  "head": "{\"message\":\"未提供认证令牌\",\"error\":\"Unauthorized\",\"statusCode\":401}",
+  "hits": []
+ },
+ "/api/spaces/plans": {
+  "status": 200,
+  "len": 944,
+  "head": "{\"code\":200,\"data\":[{\"planType\":\"freePersonal\",\"name\":\"个人版\",\"block\":{\"max\":-1},\"members\":{\"max\":999},\"storage\":{\"max\":200},\"file\":{\"max\":2},\"guest\":{\"max\":5},\"template\":{\"max\":5},\"mapNodes\":{\"max\":300}},{\"planType\":\"personal\",\"name\":\"个人专业版\",\"block\":{\"max\":-1},\"members\":{\"max\":1},\"storage\":{\"max\":10485760},\"file\":{\"max\":5120},\"guest\":{\"max\":1000},\"template\":{\"max\":-1},\"mapNodes\":{\"max\":-1}},{\"planType\":\"freeTeam\",\"name\":\"小组版试用版\",\"block\":{\"max\":5000},\"members\":{\"max\":5},\"storage\":{\"max\":200},\"file\":{\"max\":2},\"guest\":{\"max\":5},\"template\":{\"max\":-1},\"mapNodes\":{\"max\":300}},{\"planType\":\"smallTeam\",",
+  "hits": [
+   "person",
+   "member"
+  ]
+ }
+}

@@ -1,0 +1,237 @@
+{
+ "total": 38,
+ "table": [
+  "人员",
+  "公式",
+  "关联",
+  "冻结列",
+  "创建人",
+  "创建时间",
+  "删除",
+  "勾选框",
+  "升序",
+  "单选",
+  "在右侧插入",
+  "在左侧插入",
+  "多选",
+  "拷贝副本",
+  "数字",
+  "文件媒体",
+  "文本",
+  "日期",
+  "更换类型",
+  "汇总",
+  "电话",
+  "筛选",
+  "管理选项",
+  "编辑人",
+  "编辑时间",
+  "网址链接",
+  "邮箱",
+  "降序",
+  "隐藏"
+ ],
+ "english": [
+  "aside-item-create-by-private",
+  "aside-item-create-by-space",
+  "aside-item-more",
+  "aside-item-toc",
+  "aside-toc-header-create-by-private",
+  "aside-toc-header-create-by-space",
+  "doc-title",
+  "drive-file-share",
+  "page-header-more"
+ ],
+ "detail": {
+  "aside-toc-header-create-by-space": {
+   "n": 1,
+   "visible": true,
+   "sample": ""
+  },
+  "aside-item-toc": {
+   "n": 12,
+   "visible": true,
+   "sample": "学习进度"
+  },
+  "aside-item-more": {
+   "n": 12,
+   "visible": false,
+   "sample": ""
+  },
+  "aside-item-create-by-space": {
+   "n": 2,
+   "visible": false,
+   "sample": ""
+  },
+  "aside-toc-header-create-by-private": {
+   "n": 1,
+   "visible": true,
+   "sample": ""
+  },
+  "aside-item-create-by-private": {
+   "n": 10,
+   "visible": false,
+   "sample": ""
+  },
+  "drive-file-share": {
+   "n": 1,
+   "visible": true,
+   "sample": "分享"
+  },
+  "page-header-more": {
+   "n": 1,
+   "visible": true,
+   "sample": ""
+  },
+  "doc-title": {
+   "n": 1,
+   "visible": true,
+   "sample": "​​"
+  },
+  "更换类型": {
+   "n": 1,
+   "visible": true,
+   "sample": "更换类型 单选"
+  },
+  "管理选项": {
+   "n": 1,
+   "visible": true,
+   "sample": "管理选项"
+  },
+  "在左侧插入": {
+   "n": 1,
+   "visible": true,
+   "sample": "在左侧插入"
+  },
+  "在右侧插入": {
+   "n": 1,
+   "visible": true,
+   "sample": "在右侧插入"
+  },
+  "升序": {
+   "n": 1,
+   "visible": true,
+   "sample": "升序"
+  },
+  "降序": {
+   "n": 1,
+   "visible": true,
+   "sample": "降序"
+  },
+  "筛选": {
+   "n": 1,
+   "visible": true,
+   "sample": "筛选"
+  },
+  "隐藏": {
+   "n": 1,
+   "visible": true,
+   "sample": "隐藏"
+  },
+  "冻结列": {
+   "n": 1,
+   "visible": true,
+   "sample": "冻结列"
+  },
+  "拷贝副本": {
+   "n": 1,
+   "visible": true,
+   "sample": "拷贝副本"
+  },
+  "删除": {
+   "n": 1,
+   "visible": true,
+   "sample": "删除"
+  },
+  "文本": {
+   "n": 1,
+   "visible": true,
+   "sample": "文本"
+  },
+  "数字": {
+   "n": 1,
+   "visible": true,
+   "sample": "数字"
+  },
+  "勾选框": {
+   "n": 1,
+   "visible": true,
+   "sample": "勾选框"
+  },
+  "单选": {
+   "n": 1,
+   "visible": true,
+   "sample": "单选"
+  },
+  "多选": {
+   "n": 1,
+   "visible": true,
+   "sample": "多选"
+  },
+  "日期": {
+   "n": 1,
+   "visible": true,
+   "sample": "日期"
+  },
+  "人员": {
+   "n": 1,
+   "visible": true,
+   "sample": "人员"
+  },
+  "文件媒体": {
+   "n": 1,
+   "visible": true,
+   "sample": "文件媒体"
+  },
+  "网址链接": {
+   "n": 1,
+   "visible": true,
+   "sample": "网址链接"
+  },
+  "邮箱": {
+   "n": 1,
+   "visible": true,
+   "sample": "邮箱"
+  },
+  "电话": {
+   "n": 1,
+   "visible": true,
+   "sample": "电话"
+  },
+  "公式": {
+   "n": 1,
+   "visible": true,
+   "sample": "公式"
+  },
+  "关联": {
+   "n": 1,
+   "visible": true,
+   "sample": "关联"
+  },
+  "汇总": {
+   "n": 1,
+   "visible": true,
+   "sample": "汇总"
+  },
+  "创建时间": {
+   "n": 1,
+   "visible": true,
+   "sample": "创建时间"
+  },
+  "创建人": {
+   "n": 1,
+   "visible": true,
+   "sample": "创建人"
+  },
+  "编辑时间": {
+   "n": 1,
+   "visible": true,
+   "sample": "编辑时间"
+  },
+  "编辑人": {
+   "n": 1,
+   "visible": true,
+   "sample": "编辑人"
+  }
+ }
+}

@@ -1,0 +1,535 @@
+[
+ {
+  "t": "更换类型 单选",
+  "attrs": {
+   "aria-expanded": "true",
+   "data-state": "open",
+   "data-list-item": "d481c50d-a8a1-42e7-8559-91f8fe5a9281-0",
+   "data-test-id": "更换类型",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcMenuNext",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M7.77783 6.21931C7.77783 5.96603 8.07231 5.82673 8.26812 5.9",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div aria-expanded=\"true\"><div class=\"text-left flex\" data-state=\"open\"><div data-list-item=\"d481c50d-a8a1-42e7-8559-91f8fe5a9281-0\" data-test-id=\"更换类型\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover te"
+ },
+ {
+  "t": "管理选项",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "d481c50d-a8a1-42e7-8559-91f8fe5a9281-1",
+   "data-test-id": "管理选项",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcSettings",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M8.0662 1.209C8.6899 1.072 9.33702 1 9.99977 1C10.6625 1 11.",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"d481c50d-a8a1-42e7-8559-91f8fe5a9281-1\" data-test-id=\"管理选项\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\" "
+ },
+ {
+  "t": "在左侧插入",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "d481c50d-a8a1-42e7-8559-91f8fe5a9281-3",
+   "data-test-id": "在左侧插入",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcArrowLeft02",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M1.22221 10.6285C0.925931 10.2618 0.925931 9.73809 1.22221 9",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"d481c50d-a8a1-42e7-8559-91f8fe5a9281-3\" data-test-id=\"在左侧插入\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\""
+ },
+ {
+  "t": "在右侧插入",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "d481c50d-a8a1-42e7-8559-91f8fe5a9281-4",
+   "data-test-id": "在右侧插入",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcArrowRight02",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M18.7778 10.6285C19.0741 10.2618 19.0741 9.73809 18.7778 9.3",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"d481c50d-a8a1-42e7-8559-91f8fe5a9281-4\" data-test-id=\"在右侧插入\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\""
+ },
+ {
+  "t": "升序",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "d481c50d-a8a1-42e7-8559-91f8fe5a9281-6",
+   "data-test-id": "升序",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcAscending",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M13.9449 3.1886C14.294 2.93713 14.7648 2.93713 15.1139 3.188",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"d481c50d-a8a1-42e7-8559-91f8fe5a9281-6\" data-test-id=\"升序\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\" st"
+ },
+ {
+  "t": "降序",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "d481c50d-a8a1-42e7-8559-91f8fe5a9281-7",
+   "data-test-id": "降序",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcDescending",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M13.9449 16.8114C14.294 17.0629 14.7648 17.0629 15.1139 16.8",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"d481c50d-a8a1-42e7-8559-91f8fe5a9281-7\" data-test-id=\"降序\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\" st"
+ },
+ {
+  "t": "筛选",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "d481c50d-a8a1-42e7-8559-91f8fe5a9281-8",
+   "data-test-id": "筛选",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcFilter",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M2.10326 2.55746C2.27171 2.21611 2.61936 2 3.00001 2H17C17.3",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"d481c50d-a8a1-42e7-8559-91f8fe5a9281-8\" data-test-id=\"筛选\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\" st"
+ },
+ {
+  "t": "隐藏",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "d481c50d-a8a1-42e7-8559-91f8fe5a9281-10",
+   "data-test-id": "隐藏",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcHide",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M3.48413 2.75654C3.89474 2.38719 4.52702 2.42063 4.89637 2.8",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"d481c50d-a8a1-42e7-8559-91f8fe5a9281-10\" data-test-id=\"隐藏\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\" s"
+ },
+ {
+  "t": "冻结列",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "d481c50d-a8a1-42e7-8559-91f8fe5a9281-11",
+   "data-test-id": "冻结列",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcPin",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M6.81057 1C6.82251 1 6.83448 1 6.84647 1L13.1894 1C13.5017 0",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"d481c50d-a8a1-42e7-8559-91f8fe5a9281-11\" data-test-id=\"冻结列\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\" "
+ },
+ {
+  "t": "拷贝副本",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "d481c50d-a8a1-42e7-8559-91f8fe5a9281-12",
+   "data-test-id": "拷贝副本",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcDuplicate",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M7.10525 3.39284C7.10526 2.08809 8.149 1 9.47365 1H14.6449C1",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"d481c50d-a8a1-42e7-8559-91f8fe5a9281-12\" data-test-id=\"拷贝副本\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\""
+ },
+ {
+  "t": "删除",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "d481c50d-a8a1-42e7-8559-91f8fe5a9281-13",
+   "data-test-id": "删除",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcTrash",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M8.875 1C7.54167 1 6.36833 1.88 5.995 3.16L5.75 4H5.16222H2.",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"d481c50d-a8a1-42e7-8559-91f8fe5a9281-13\" data-test-id=\"删除\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\" s"
+ },
+ {
+  "t": "基础属性",
+  "attrs": {},
+  "cls": "text-t2 text-grey3 ml-4 h-9 flex items-center",
+  "html": "<div class=\"text-t2 text-grey3 ml-4 h-9 flex items-center\">基础属性</div>"
+ },
+ {
+  "t": "文本",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "1c6df2df-1e43-40a4-872f-49e14f1da43f-0",
+   "data-test-id": "文本",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcPropertyText",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M2 3C1.44772 3 1 3.44772 1 4C1 4.55228 1.44772 5 2 5H18C18.5",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"1c6df2df-1e43-40a4-872f-49e14f1da43f-0\" data-test-id=\"文本\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\"><d"
+ },
+ {
+  "t": "数字",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "1c6df2df-1e43-40a4-872f-49e14f1da43f-1",
+   "data-test-id": "数字",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcChartNumber",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M1 16C1 15.4477 1.44772 15 2 15H18C18.5523 15 19 15.4477 19 ",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"1c6df2df-1e43-40a4-872f-49e14f1da43f-1\" data-test-id=\"数字\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\"><d"
+ },
+ {
+  "t": "勾选框",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "1c6df2df-1e43-40a4-872f-49e14f1da43f-2",
+   "data-test-id": "勾选框",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcCheck",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M13.4382 6.89141C13.7744 7.13343 13.8507 7.60214 13.6087 7.9",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"1c6df2df-1e43-40a4-872f-49e14f1da43f-2\" data-test-id=\"勾选框\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\"><"
+ },
+ {
+  "t": "单选",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "1c6df2df-1e43-40a4-872f-49e14f1da43f-3",
+   "data-test-id": "单选",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcCheck02",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M17.614 3.21069C18.0499 3.54975 18.1284 4.17803 17.7894 4.61",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"1c6df2df-1e43-40a4-872f-49e14f1da43f-3\" data-test-id=\"单选\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\"><d"
+ },
+ {
+  "t": "多选",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "1c6df2df-1e43-40a4-872f-49e14f1da43f-4",
+   "data-test-id": "多选",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcMultipleChoice",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M5.60865 3.4378C5.85068 3.10165 5.77438 2.63294 5.43823 2.39",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"1c6df2df-1e43-40a4-872f-49e14f1da43f-4\" data-test-id=\"多选\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\"><d"
+ },
+ {
+  "t": "日期",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "1c6df2df-1e43-40a4-872f-49e14f1da43f-5",
+   "data-test-id": "日期",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcCalendar",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M7 2C7.55228 2 8 2.44772 8 3H13C13 2.44772 13.4477 2 14 2C14",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"1c6df2df-1e43-40a4-872f-49e14f1da43f-5\" data-test-id=\"日期\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\"><d"
+ },
+ {
+  "t": "人员",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "1c6df2df-1e43-40a4-872f-49e14f1da43f-6",
+   "data-test-id": "人员",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcMember",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M8.09524 5C7.37025 5 6.80952 5.57443 6.80952 6.25C6.80952 6.",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"1c6df2df-1e43-40a4-872f-49e14f1da43f-6\" data-test-id=\"人员\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\"><d"
+ },
+ {
+  "t": "文件媒体",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "1c6df2df-1e43-40a4-872f-49e14f1da43f-7",
+   "data-test-id": "文件媒体",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcPaperclip",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M14.55 4.9242C13.2552 3.69193 11.1365 3.69193 9.84172 4.9242",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"1c6df2df-1e43-40a4-872f-49e14f1da43f-7\" data-test-id=\"文件媒体\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\">"
+ },
+ {
+  "t": "网址链接",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "1c6df2df-1e43-40a4-872f-49e14f1da43f-8",
+   "data-test-id": "网址链接",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcLink",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M13.189 2.00017C12.0364 1.98977 10.9336 2.45033 10.1161 3.27",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"1c6df2df-1e43-40a4-872f-49e14f1da43f-8\" data-test-id=\"网址链接\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\">"
+ },
+ {
+  "t": "邮箱",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "1c6df2df-1e43-40a4-872f-49e14f1da43f-9",
+   "data-test-id": "邮箱",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcMail",
+   "aria-hidden": "true",
+   "d": "M16.4004 3C17.8471 3.00021 19 4.19377 19 5.625V15.375C19 16.",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"1c6df2df-1e43-40a4-872f-49e14f1da43f-9\" data-test-id=\"邮箱\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\"><d"
+ },
+ {
+  "t": "电话",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "1c6df2df-1e43-40a4-872f-49e14f1da43f-10",
+   "data-test-id": "电话",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcCall",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M3.90161 2.79945C5.00427 1.69679 6.77625 1.75783 7.85866 2.8",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"1c6df2df-1e43-40a4-872f-49e14f1da43f-10\" data-test-id=\"电话\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\"><"
+ },
+ {
+  "t": "高级属性",
+  "attrs": {},
+  "cls": "text-t2 text-grey3 h-9 ml-4 flex items-center",
+  "html": "<div class=\"text-t2 text-grey3 h-9 ml-4 flex items-center\">高级属性</div>"
+ },
+ {
+  "t": "公式",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "0dfd2d33-3424-4577-810f-4df58c4b1dda-0",
+   "data-test-id": "公式",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcFormula",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M3.26553 4.08871C2.58383 3.20403 3.29372 2 4.49701 2H16.0037",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"0dfd2d33-3424-4577-810f-4df58c4b1dda-0\" data-test-id=\"公式\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\"><d"
+ },
+ {
+  "t": "关联",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "0dfd2d33-3424-4577-810f-4df58c4b1dda-1",
+   "data-test-id": "关联",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcAssociation",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M6 7C4.34315 7 3 8.34315 3 10C3 11.6569 4.34315 13 6 13H7.6C",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"0dfd2d33-3424-4577-810f-4df58c4b1dda-1\" data-test-id=\"关联\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\"><d"
+ },
+ {
+  "t": "汇总",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "0dfd2d33-3424-4577-810f-4df58c4b1dda-2",
+   "data-test-id": "汇总",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcRollup",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M4 9C4 6.51472 6.01472 4.5 8.5 4.5C10.9853 4.5 13 6.51472 13",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"0dfd2d33-3424-4577-810f-4df58c4b1dda-2\" data-test-id=\"汇总\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\"><d"
+ },
+ {
+  "t": "创建时间",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "0dfd2d33-3424-4577-810f-4df58c4b1dda-3",
+   "data-test-id": "创建时间",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcClockPlus",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M10 4.25C10.4142 4.25 10.75 4.58579 10.75 5V9.05465L13.3316 ",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"0dfd2d33-3424-4577-810f-4df58c4b1dda-3\" data-test-id=\"创建时间\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\">"
+ },
+ {
+  "t": "创建人",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "0dfd2d33-3424-4577-810f-4df58c4b1dda-4",
+   "data-test-id": "创建人",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcUserAdd",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M4.94548 12.7311C4.1624 13.1838 4 13.6123 4 13.7692C4 14.358",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"0dfd2d33-3424-4577-810f-4df58c4b1dda-4\" data-test-id=\"创建人\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\"><"
+ },
+ {
+  "t": "编辑时间",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "0dfd2d33-3424-4577-810f-4df58c4b1dda-5",
+   "data-test-id": "编辑时间",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcClockCheck",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M17.4755 13.42C17.7958 13.6826 17.8426 14.1552 17.58 14.4755",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"0dfd2d33-3424-4577-810f-4df58c4b1dda-5\" data-test-id=\"编辑时间\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\">"
+ },
+ {
+  "t": "编辑人",
+  "attrs": {
+   "data-state": "closed",
+   "data-list-item": "0dfd2d33-3424-4577-810f-4df58c4b1dda-6",
+   "data-test-id": "编辑人",
+   "viewBox": "0 0 20 20",
+   "xmlns": "http://www.w3.org/2000/svg",
+   "data-icon": "IcUserEdit",
+   "aria-hidden": "true",
+   "fill-rule": "evenodd",
+   "clip-rule": "evenodd",
+   "d": "M14.7881 8.75818C15.4657 8.08061 16.5642 8.0806 17.2418 8.75",
+   "fill-opacity": "0.85"
+  },
+  "cls": "",
+  "html": "<div><div class=\"text-left flex\" data-state=\"closed\"><div data-list-item=\"0dfd2d33-3424-4577-810f-4df58c4b1dda-6\" data-test-id=\"编辑人\" class=\"py-1.5 px-2.5 mx-1 relative flex items-center w-full justify-between active-bg animate-hover text-ellipsis rounded-lg\"><"
+ }
+]
