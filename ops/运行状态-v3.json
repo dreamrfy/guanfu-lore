@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T22:51:12.342Z",
+  "updatedAt": "2026-11-09T23:00:06.684Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 29,
-    "lastProbeAt": "2026-11-09T22:51:12.342Z"
+    "probeCount": 30,
+    "lastProbeAt": "2026-11-09T23:00:06.684Z"
   },
   "running": [],
   "history": [
@@ -221,6 +221,13 @@
       "startedAt": "2026-11-09T22:46:57.733Z",
       "finishedAt": "2026-11-09T22:51:12.342Z",
       "note": "7种视图string全实测(gallery/list/form补齐)；收集表自带table+form；24vs26未查清；建一删一零遗留"
+    },
+    {
+      "taskId": "M0-T31",
+      "status": "done-partial",
+      "startedAt": "2026-11-09T22:56:57.564Z",
+      "finishedAt": "2026-11-09T23:00:06.683Z",
+      "note": "结案16/24 vs 16/26(层级不同)；确认type25=代码块(14/21)；锚点法成功；待办仍未造出拆M0-T32"
     }
   ],
   "blocked": [],

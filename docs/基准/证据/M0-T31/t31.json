@@ -1,0 +1,79 @@
+{
+ "0 基线": 12,
+ "1 docId": "4bd10a96-3320-4057-ac9b-9df013cceaa8",
+ "2 待办菜单项": [],
+ "3 点了": null,
+ "4 块序列": [
+  {
+   "type": 0,
+   "level": null,
+   "text": ""
+  },
+  {
+   "type": 1,
+   "level": null,
+   "text": "AAA段落唯一文本"
+  },
+  {
+   "type": 12,
+   "level": null,
+   "text": "BBB引述唯一文本"
+  },
+  {
+   "type": 25,
+   "level": null,
+   "text": "code_line_1\ncode_line_"
+  }
+ ],
+ "5 锚点测量": [
+  {
+   "anchor": "AAA段落唯一文本",
+   "found": true,
+   "leafH": 21,
+   "leafW": 127,
+   "x": 718,
+   "fs": "16px",
+   "lh": "26px",
+   "block": {
+    "w": 708,
+    "h": 34,
+    "x": 716,
+    "y": 221
+   }
+  },
+  {
+   "anchor": "BBB引述唯一文本",
+   "found": true,
+   "leafH": 21,
+   "leafW": 124,
+   "x": 737,
+   "fs": "16px",
+   "lh": "26px",
+   "block": {
+    "w": 681,
+    "h": 26,
+    "x": 735,
+    "y": 261
+   }
+  },
+  {
+   "anchor": "CCC待办唯一文本",
+   "found": false
+  },
+  {
+   "anchor": "code_line_1",
+   "found": true,
+   "leafH": 17,
+   "leafW": 85,
+   "x": 749,
+   "fs": "14px",
+   "lh": "21px",
+   "block": {
+    "w": 679,
+    "h": 63,
+    "x": 745,
+    "y": 341
+   }
+  }
+ ]
+}

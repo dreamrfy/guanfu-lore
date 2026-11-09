@@ -1,0 +1,74 @@
+{
+ "chain": [
+  {
+   "level": 0,
+   "tag": "SPAN",
+   "cls": "_nj97hl",
+   "fs": "16px",
+   "lh": "26px",
+   "h": 21,
+   "w": 127,
+   "x": 722
+  },
+  {
+   "level": 1,
+   "tag": "DIV",
+   "cls": "whitespace-pre-wrap px-0.5 py-1 text-t1 group break-words _1",
+   "fs": "16px",
+   "lh": "26px",
+   "h": 34,
+   "w": 708,
+   "x": 720
+  },
+  {
+   "level": 2,
+   "tag": "SECTION",
+   "cls": "relative cursor-text w-full my-px",
+   "fs": "16px",
+   "lh": "24px",
+   "h": 34,
+   "w": 708,
+   "x": 720
+  },
+  {
+   "level": 3,
+   "tag": "DIV",
+   "cls": "next-space-page-content block-list pt-5 relative flex flex-c",
+   "fs": "16px",
+   "lh": "24px",
+   "h": 228,
+   "w": 708,
+   "x": 720
+  },
+  {
+   "level": 4,
+   "tag": "ARTICLE",
+   "cls": "flex flex-col relative w-full block-content flex-1 min-w-0",
+   "fs": "16px",
+   "lh": "24px",
+   "h": 745,
+   "w": 708,
+   "x": 720
+  },
+  {
+   "level": 5,
+   "tag": "DIV",
+   "cls": "flex flex-grow flex-shrink-0 w-full cursor-text",
+   "fs": "16px",
+   "lh": "24px",
+   "h": 745,
+   "w": 708,
+   "x": 720
+  },
+  {
+   "level": 6,
+   "tag": "DIV",
+   "cls": "items-center flex relative flex-1 flex-col px-24",
+   "fs": "16px",
+   "lh": "24px",
+   "h": 897,
+   "w": 1692,
+   "x": 228
+  }
+ ]
+}
