@@ -1,0 +1,36 @@
+{
+ "引述": "ok",
+ "代码": "ok",
+ "折叠": "ok",
+ "表格": "ok",
+ "分割线": "ok",
+ "项目列表": "ok",
+ "编号列表": "ok",
+ "块序列": [
+  {
+   "type": 0,
+   "txt": "",
+   "dataKeys": "description,format,pageFixedWidth,segments"
+  },
+  {
+   "type": 1,
+   "txt": "/",
+   "dataKeys": "format,pageFixedWidth,segments"
+  },
+  {
+   "type": 1,
+   "txt": "",
+   "dataKeys": "format,pageFixedWidth"
+  },
+  {
+   "type": 12,
+   "txt": "样本引述",
+   "dataKeys": "format,pageFixedWidth,segments"
+  },
+  {
+   "type": 25,
+   "txt": "",
+   "dataKeys": "format,pageFixedWidth,segments"
+  }
+ ]
+}

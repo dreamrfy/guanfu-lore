@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T21:18:58.433Z",
+  "updatedAt": "2026-11-09T21:33:08.132Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 20,
-    "lastProbeAt": "2026-11-09T21:18:58.433Z"
+    "probeCount": 21,
+    "lastProbeAt": "2026-11-09T21:33:08.132Z"
   },
   "running": [],
   "history": [
@@ -158,6 +158,13 @@
       "startedAt": "2026-11-09T21:16:55.161Z",
       "finishedAt": "2026-11-09T21:18:58.433Z",
       "note": "菜单项hover黑6%(8/8)；与侧栏项3%不同；禁用态未找到"
+    },
+    {
+      "taskId": "M0-T22",
+      "status": "done-partial",
+      "startedAt": "2026-11-09T21:26:55.324Z",
+      "finishedAt": "2026-11-09T21:33:08.131Z",
+      "note": "斜杠菜单全量8组90项77码；造块定type未成(出type=25)拆M0-T25；两临时页已删"
     }
   ],
   "blocked": [],
