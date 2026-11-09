@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T22:40:49.215Z",
+  "updatedAt": "2026-11-09T22:51:12.342Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 28,
-    "lastProbeAt": "2026-11-09T22:40:49.215Z"
+    "probeCount": 29,
+    "lastProbeAt": "2026-11-09T22:51:12.342Z"
   },
   "running": [],
   "history": [
@@ -214,6 +214,13 @@
       "startedAt": "2026-11-09T22:36:57.244Z",
       "finishedAt": "2026-11-09T22:40:49.215Z",
       "note": "关联=relation实测+字段结构；已核查学习进度未被污染(8字段不变)；视图string/options转M0-T30"
+    },
+    {
+      "taskId": "M0-T30",
+      "status": "done-partial",
+      "startedAt": "2026-11-09T22:46:57.733Z",
+      "finishedAt": "2026-11-09T22:51:12.342Z",
+      "note": "7种视图string全实测(gallery/list/form补齐)；收集表自带table+form；24vs26未查清；建一删一零遗留"
     }
   ],
   "blocked": [],

@@ -1,0 +1,46 @@
+{
+ "results": [
+  {
+   "label": "画廊",
+   "docId": "ef06f7d1-fa8f-4c4e-9978-6407cd5835b4",
+   "clicked": true,
+   "views": [
+    {
+     "type": "gallery",
+     "title": "默认视图"
+    }
+   ],
+   "deletedLeft": 0
+  },
+  {
+   "label": "目录",
+   "docId": "4066db6a-51b3-4f4d-96a2-82ebe1af6d7c",
+   "clicked": true,
+   "views": [
+    {
+     "type": "list",
+     "title": "默认视图"
+    }
+   ],
+   "deletedLeft": 0
+  },
+  {
+   "label": "收集表",
+   "docId": "f26ac6a8-6e77-42a7-8d9d-28441386964a",
+   "clicked": true,
+   "views": [
+    {
+     "type": "table",
+     "title": "表格"
+    },
+    {
+     "type": "form",
+     "title": "默认视图"
+    }
+   ],
+   "deletedLeft": 0
+  }
+ ],
+ "0 基线": 12,
+ "9 最终基线": 12
+}
