@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T18:21:49.546Z",
+  "updatedAt": "2026-11-09T18:30:31.177Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 2,
-    "lastProbeAt": "2026-11-09T18:21:49.546Z"
+    "probeCount": 3,
+    "lastProbeAt": "2026-11-09T18:30:31.177Z"
   },
   "running": [],
   "history": [
@@ -32,6 +32,13 @@
       "startedAt": "2026-11-09T18:17:01.571Z",
       "finishedAt": "2026-11-09T18:21:49.545Z",
       "note": "全局框架规格：侧栏228固定/内容列708居中/overlay滚动条，5视口验证"
+    },
+    {
+      "taskId": "M0-T03",
+      "status": "done-partial",
+      "startedAt": "2026-11-09T18:27:00.242Z",
+      "finishedAt": "2026-11-09T18:30:31.177Z",
+      "note": "浅色板全套+对比度核验；深色未找到开关拆为 M0-T14"
     }
   ],
   "blocked": [],

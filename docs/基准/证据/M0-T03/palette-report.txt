@@ -1,0 +1,44 @@
+=== 语义 token（class → 色值）===
+
+[bg]
+  bg-aside                     rgb(247,247,247)           hits=3
+  bg-white1                    rgb(255,255,255)           hits=3
+  bg-active_color_10           rgba(2,133,255,0.1)        hits=3
+  bg-black_006                 rgba(0,0,0,0.06)           hits=2
+  bg-white                     rgb(255,255,255)           hits=1
+  bg-grey6                     rgb(229,229,229)           hits=1
+  bg-active_color              rgba(2,133,255,0.05)       hits=1
+  bg-grey5                     rgb(224,224,224)           hits=1
+
+[text]
+  text-grey3                   rgb(145,145,142)           hits=19
+  text-grey2                   rgb(95,94,91)              hits=18 ⚠变体1
+  text-t2-medium               rgb(95,94,91)              hits=12 ⚠变体3
+  text-t2                      rgb(55,53,47)              hits=2
+  text-t4-medium               rgb(145,145,142)           hits=2
+  text-black                   rgb(0,0,0)                 hits=2
+  text-h4                      rgb(0,0,0)                 hits=1
+  text-black2                  rgb(0,0,0)                 hits=1
+  text-t4                      rgb(95,94,91)              hits=1
+  text-t3-medium               rgb(0,0,0)                 hits=1
+
+[border]
+  border-grey7                 rgb(240,240,240)           hits=2
+  border-r                     rgb(240,240,240)           hits=1
+  border-grey5                 rgb(224,224,224)           hits=1
+  border-b                     rgba(2,133,255,0.1)        hits=1 ⚠变体1
+  border-active_colo           rgba(2,133,255,0.1)        hits=1
+  border-active_color          rgba(2,133,255,0.3)        hits=1
+
+=== 一 token 多值（需要按上下文区分，多是 hover/选中态）===
+  text-t2-medium: rgb(95,94,91)(12) vs rgb(145,145,142)(4) vs rgb(0,0,0)(2) vs rgb(55,53,47)(1)
+  text-grey2: rgb(95,94,91)(18) vs rgb(0,0,0)(1)
+  border-b: rgba(2,133,255,0.1)(1) vs rgb(229,229,229)(1)
+
+=== 出现最多的色值（不依赖 class）===
+  color: rgb(145,145,142)(93), rgb(55,53,47)(73), rgb(95,94,91)(47), rgb(0,0,0)(11)
+  borderColor: rgb(229,229,229)(307), rgb(240,240,240)(2), rgb(145,145,142)(2), rgba(0,0,0,0.06)(2), rgb(224,224,224)(1), rgba(2,133,255,0.1)(1), rgba(2,133,255,0.3)(1)
+  background: rgb(255,255,255)(6), rgb(247,247,247)(3), rgba(0,0,0,0.06)(3), rgba(2,133,255,0.1)(3), rgb(250,225,67)(1), rgb(229,229,229)(1), rgba(2,133,255,0.05)(1), rgb(224,224,224)(1)
+
+token 总数: 24 | 元素: 328
+已写出: E:/dev/tmp/flowus-cap/capture/m0-t03/palette.json
