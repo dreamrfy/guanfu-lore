@@ -27,6 +27,8 @@ node capture.mjs <名字> [选项]
 | `--nth <数字>` | `--click` 命中第几个（默认 0） |
 | `--wait <毫秒>` | 导航/点击后的等待时间（默认 3000） |
 | `--max <数字>` | 最多导出多少元素（默认 1500，超出会标 `truncated`） |
+| `--no-text` | 只采几何与样式，**不采任何文字**（`own` / `txt` 一律置空） |
+| `--mask <选择器>` | 截图前把该子树文字变透明（**布局分毫不动**），用于截图里不暴露私人内容 |
 
 ### 例子
 
@@ -34,12 +36,21 @@ node capture.mjs <名字> [选项]
 # 采一屏：点到侧栏第一个「无标题」页面（侧栏项的选择器）
 node capture.mjs shell-sample --click "无标题" --scope '[data-test-id="aside-item-toc"]' --nth 0 --full
 
-# 采集侧栏子树
-node capture.mjs sidebar --tag '[data-test-id="aside-item-toc"]'
+# 采一屏：只取几何 + 遮字截图（不把页面文字带进仓库）
+node capture.mjs frame --click "归档历史材料" --scope '[data-test-id="aside-item-toc"]' --no-text --mask ".main-panel" --full
 
-# 直接按地址采集
-node capture.mjs db-table --url "https://flowus.cn/<页面id>"
+# 跨视口量布局（响应式规则用这个，别只看一个宽度）
+node measure-responsive.mjs
+
+# 挨个点开侧栏页面，报告每页正文长度（用来找空白页）
+node find-blank.mjs
 ```
+
+## 隐私与禁区
+
+- **默认会采集页面文字**（`own` / `txt`）。只要几何就加 `--no-text`；截图不想暴露内容就加 `--mask`。
+- 采集禁区：真 FlowUs 的「配置」页面 —— 脚本内置拒绝（退出码 2）。
+- 截图里的私人内容**会随证据提交进仓库**。仓库是私有的，但仍建议：能遮就遮（`--mask`）、能不带文字就不带（`--no-text`）。`M0-T01` 的证据是早期未遮字版本，含用户个人笔记正文，如需替换可重采。
 
 ## 产物格式
 
@@ -51,6 +62,7 @@ node capture.mjs db-table --url "https://flowus.cn/<页面id>"
 | `elements.json` | **核心**。每个可见元素的：DOM 路径、标签、`data-test-id`、role、aria-label、class、文字（`own` 直接文字 / `txt` 含子节点）、矩形（x/y/w/h）、以及计算样式（字体族/字号/字重/行高/字距/颜色/背景/内外边距/圆角/边框/display/position/gap/overflow/阴影/不透明度/z-index） |
 | `tokens.json` | CSS 自定义属性（`--xxx`）的声明数与解析值 |
 | `fonts.json` | 页面里 `@font-face` 的字体清单与加载状态 |
+| `scrollbars.json` | 文档与各滚动容器的 `offsetWidth / clientWidth / scrollHeight` 及 `scrollbarW`（据此判断滚动条是否占布局宽度） |
 
 ## 硬约束
 

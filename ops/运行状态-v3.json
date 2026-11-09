@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T18:10:36.900Z",
+  "updatedAt": "2026-11-09T18:21:49.546Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 1,
-    "lastProbeAt": "2026-11-09T18:10:36.900Z"
+    "probeCount": 2,
+    "lastProbeAt": "2026-11-09T18:21:49.546Z"
   },
   "running": [],
   "history": [
@@ -25,6 +25,13 @@
       "startedAt": "2026-11-09T18:07:43.512Z",
       "finishedAt": "2026-11-09T18:10:36.900Z",
       "note": "采集器 capture.mjs + 一屏样板，388 元素记录，验收通过"
+    },
+    {
+      "taskId": "M0-T02",
+      "status": "done",
+      "startedAt": "2026-11-09T18:17:01.571Z",
+      "finishedAt": "2026-11-09T18:21:49.545Z",
+      "note": "全局框架规格：侧栏228固定/内容列708居中/overlay滚动条，5视口验证"
     }
   ],
   "blocked": [],

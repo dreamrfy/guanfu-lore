@@ -56,6 +56,8 @@ const scope = opt('scope', null);
 const nth = parseInt(opt('nth', '0'), 10);
 const waitMs = parseInt(opt('wait', '3000'), 10);
 const maxN = parseInt(opt('max', '1500'), 10);
+const noText = !!opt('no-text', false);
+const mask = opt('mask', null);
 
 fs.mkdirSync(outDir, { recursive: true });
 
@@ -85,6 +87,15 @@ try {
     process.exit(2);
   }
 
+  // ---- 遮字（布局不变，只让文字不可见；用于截图里不暴露私人内容）----
+  if (mask) {
+    await page.addStyleTag({
+      content:
+        `${mask}, ${mask} * { color: transparent !important; -webkit-text-fill-color: transparent !important; text-shadow: none !important; }`,
+    });
+    await page.waitForTimeout(300);
+  }
+
   // ---- 视口 ----
   const viewport = await page.evaluate(() => ({
     innerWidth: window.innerWidth,
@@ -105,7 +116,7 @@ try {
 
   // ---- 元素尺寸与计算样式 ----
   const result = await page.evaluate(
-    ({ sel, maxN }) => {
+    ({ sel, maxN, noText }) => {
       const SKIP = ['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE', 'HEAD', 'META', 'LINK', 'TITLE', 'BR'];
       const out = [];
       const root = sel ? document.querySelector(sel) : document.body;
@@ -124,8 +135,8 @@ try {
         for (const n of el.childNodes) if (n.nodeType === 3) own += n.textContent;
         own = own.replace(/\s+/g, ' ').trim().slice(0, 120);
 
-        // 容器文字标签（截断，便于直接看出这个元素是什么）
-        const txt = (el.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+        // 容器文字标签（截断，便于直接看出这个元素是什么）；--no-text 时留空
+        const txt = noText ? '' : (el.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 80);
 
         out.push({
           i: out.length,
@@ -135,7 +146,7 @@ try {
           role: el.getAttribute('role') || null,
           aria: el.getAttribute('aria-label') || null,
           cls: String(el.className || '').slice(0, 140) || null,
-          own,
+          own: noText ? '' : own,
           txt,
           rect: {
             x: +r.x.toFixed(1), y: +r.y.toFixed(1),
@@ -179,8 +190,41 @@ try {
       walk(root, root.tagName.toLowerCase());
       return { count: out.length, truncated: out.length >= maxN, elements: out };
     },
-    { sel: tag, maxN }
+    { sel: tag, maxN, noText }
   );
+
+  // ---- 滚动条度量 ----
+  const scrollbars = await page.evaluate(() => {
+    const de = document.documentElement;
+    const out = {
+      docClientW: de.clientWidth,
+      docOffsetW: de.offsetWidth,
+      docScrollbarW: de.offsetWidth - de.clientWidth,
+      docClientH: de.clientHeight,
+      docOffsetH: de.offsetHeight,
+      docScrollbarH: de.offsetHeight - de.clientHeight,
+      innerW: window.innerWidth,
+      innerH: window.innerHeight,
+      scrollers: [],
+    };
+    document.querySelectorAll('*').forEach((e) => {
+      const cs = getComputedStyle(e);
+      const scrollable = (cs.overflowY === 'auto' || cs.overflowY === 'scroll');
+      if (!scrollable) return;
+      const r = e.getBoundingClientRect();
+      if (r.width < 300 || r.height < 150) return;
+      out.scrollers.push({
+        cls: String(e.className || '').slice(0, 90),
+        x: +r.x.toFixed(1), y: +r.y.toFixed(1), w: +r.width.toFixed(1), h: +r.height.toFixed(1),
+        scrollH: e.scrollHeight, clientH: e.clientHeight,
+        offsetW: e.offsetWidth, clientW: e.clientWidth,
+        scrollbarW: e.offsetWidth - e.clientWidth,
+        overflowY: cs.overflowY,
+      });
+      if (out.scrollers.length >= 8) return;
+    });
+    return out;
+  });
 
   // ---- 设计 token（CSS 自定义属性）----
   const tokens = await page.evaluate(() => {
@@ -223,6 +267,7 @@ try {
     url: curUrl,
     title: curTitle,
     tag: tag || 'body',
+    noText,
     viewport,
     elementCount: result.count ?? null,
     truncated: result.truncated ?? null,
@@ -232,6 +277,7 @@ try {
   };
 
   fs.writeFileSync(path.join(outDir, 'meta.json'), JSON.stringify(meta, null, 2));
+  fs.writeFileSync(path.join(outDir, 'scrollbars.json'), JSON.stringify(scrollbars, null, 2));
   fs.writeFileSync(path.join(outDir, 'elements.json'), JSON.stringify(result, null, 1));
   fs.writeFileSync(path.join(outDir, 'tokens.json'), JSON.stringify(tokens, null, 1));
   fs.writeFileSync(path.join(outDir, 'fonts.json'), JSON.stringify(fonts, null, 1));
@@ -242,6 +288,7 @@ try {
   console.log('元素:', meta.elementCount, meta.truncated ? '(已截断)' : '');
   console.log('设计 token:', meta.tokenDeclared, '声明 /', meta.tokenResolved, '可解析');
   console.log('字体:', meta.fontCount);
+  console.log('文档滚动条:', scrollbars.docScrollbarW, 'px 宽 /', scrollbars.docScrollbarH, 'px 高 | 可滚动容器:', scrollbars.scrollers.length, '个');
   console.log('输出目录:', outDir);
 } finally {
   await browser.close();
