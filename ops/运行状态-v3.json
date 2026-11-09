@@ -8,17 +8,25 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T01:56:00+08:00",
+  "updatedAt": "2026-11-09T18:10:36.900Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 0,
-    "lastProbeAt": null
+    "probeCount": 1,
+    "lastProbeAt": "2026-11-09T18:10:36.900Z"
   },
   "running": [],
-  "history": [],
+  "history": [
+    {
+      "taskId": "M0-T01",
+      "status": "done",
+      "startedAt": "2026-11-09T18:07:43.512Z",
+      "finishedAt": "2026-11-09T18:10:36.900Z",
+      "note": "采集器 capture.mjs + 一屏样板，388 元素记录，验收通过"
+    }
+  ],
   "blocked": [],
   "deferred": [],
   "notes": null

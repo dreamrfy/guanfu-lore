@@ -1,0 +1,24 @@
+{
+  "name": "m0-t01-sample",
+  "capturedAt": "2026-11-09T18:09:33.143Z",
+  "url": "https://flowus.cn/3c8d3ec2-a573-4a49-a953-6956766a7f67",
+  "title": "无标题",
+  "tag": "body",
+  "viewport": {
+    "innerWidth": 1920,
+    "innerHeight": 945,
+    "dpr": 1,
+    "screenW": 1920,
+    "screenH": 1080,
+    "availW": 1920,
+    "availH": 1032,
+    "scrollW": 1920,
+    "scrollH": 945,
+    "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36"
+  },
+  "elementCount": 388,
+  "truncated": false,
+  "tokenDeclared": 3,
+  "tokenResolved": 3,
+  "fontCount": 390
+}
