@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T23:40:52.035Z",
+  "updatedAt": "2026-11-09T23:49:42.549Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 34,
-    "lastProbeAt": "2026-11-09T23:40:52.035Z"
+    "probeCount": 35,
+    "lastProbeAt": "2026-11-09T23:49:42.549Z"
   },
   "running": [],
   "history": [
@@ -256,6 +256,13 @@
       "startedAt": "2026-11-09T23:37:01.923Z",
       "finishedAt": "2026-11-09T23:40:52.034Z",
       "note": "type15=文件夹确认；修正T14/T21两处记账错(表里TODO实为已完成)；余项转M2现采"
+    },
+    {
+      "taskId": "M0-T36",
+      "status": "done",
+      "startedAt": "2026-11-09T23:46:54.915Z",
+      "finishedAt": "2026-11-09T23:49:42.549Z",
+      "note": "M0模块收口：入口文档分类清单+交付条目+开发状态V3.0段；M0剩余TODO=0，M1就绪"
     }
   ],
   "blocked": [],
