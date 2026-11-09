@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T23:30:32.749Z",
+  "updatedAt": "2026-11-09T23:40:52.035Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 33,
-    "lastProbeAt": "2026-11-09T23:30:32.749Z"
+    "probeCount": 34,
+    "lastProbeAt": "2026-11-09T23:40:52.035Z"
   },
   "running": [],
   "history": [
@@ -249,6 +249,13 @@
       "startedAt": "2026-11-09T23:27:01.843Z",
       "finishedAt": "2026-11-09T23:30:32.748Z",
       "note": "type15疑似文件夹(7子节点/无icon)；options未采到；修结构隐患 T13→T36 移到末尾"
+    },
+    {
+      "taskId": "M0-T35",
+      "status": "done-partial",
+      "startedAt": "2026-11-09T23:37:01.923Z",
+      "finishedAt": "2026-11-09T23:40:52.034Z",
+      "note": "type15=文件夹确认；修正T14/T21两处记账错(表里TODO实为已完成)；余项转M2现采"
     }
   ],
   "blocked": [],

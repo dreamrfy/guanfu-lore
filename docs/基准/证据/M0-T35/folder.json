@@ -1,0 +1,18 @@
+{
+ "0 基线": 12,
+ "1 docId": "54c85c46-4dd3-4934-9507-cb0679ba0836",
+ "2 点文件夹": true,
+ "3 块结构": {
+  "total": 1,
+  "root": {
+   "type": 15,
+   "dataKeys": [
+    "description",
+    "format",
+    "pageFixedWidth",
+    "segments"
+   ],
+   "subNodes": 0
+  }
+ }
+}
