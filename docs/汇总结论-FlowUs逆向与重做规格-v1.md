@@ -42,9 +42,11 @@
 
 **已下载并安装**：官方渠道（flowus.cn/download → 扫码 → 腾讯应用宝官方页）取得 `com.next.space.cflow` **2.8.6**（117MB，5+ dex），已装进模拟器 `test1` 并启动（中文界面，登录页：微信登录 / 手机号邮箱登录 / 注册账号）。
 
-**架构判定（字节级证据）**：
+**架构判定（字节级 + REA/apktool 证据）**：
 - 解包 dex 扫描：`io/flutter`=0、`com/facebook/react`=0、`hermes`=0；`kotlin` 关键字 3.5k~12.7k 处；`lib/` 下仅 arm64-v8a/armeabi-v7a 共 31 个库，无 flutter/react/hermes 库。
-- 结论：**安卓端是原生 Kotlin 应用**（很可能 Jetpack Compose），WebView 引用仅个位数（用于打开网页这类边角）。
+- **`androidx/compose` 命中 29007 处** → UI 是 **Jetpack Compose 原生**；`retrofit2` 205、`okhttp3` 879、`kotlinx/coroutines` 2842（REST 客户端 + 协程）；`androidx/webkit`=0、`WebViewClient` 仅 20 处（WebView 只用于边角网页）。
+- Manifest（REA apktool 2.11.1 解码）：包名 `com.next.space.cflow`，compileSdk 34；原生模块按 Activity 分层——`com.next.space.cflow.editor.ui.activity.*`（编辑器）、`user.ui.activity.*`（登录/引导）、`com.xxf.media.*`（相册/预览）等。
+- 结论：**安卓端是原生 Kotlin + Jetpack Compose 应用**，编辑器也是原生实现——**不是 Flutter/RN，也不是套壳 WebView**。
 
 **这条对我们是重要事实**：FlowUs 三端 = 桌面 Electron 薄壳（webview 加载 Web）+ Web 端 React/Tiptap + 安卓原生 Kotlin，**三套实现**。也就是说：
 1. 移动端交互不能从桌面端代码推导，必须实机走查（待登录后补）；
