@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T19:28:14.170Z",
+  "updatedAt": "2026-11-09T19:45:03.747Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 9,
-    "lastProbeAt": "2026-11-09T19:28:14.170Z"
+    "probeCount": 10,
+    "lastProbeAt": "2026-11-09T19:45:03.747Z"
   },
   "running": [],
   "history": [
@@ -81,6 +81,13 @@
       "startedAt": "2026-11-09T19:26:54.463Z",
       "finishedAt": "2026-11-09T19:28:14.170Z",
       "note": "字段/视图/记录结构+视图format全套；记录即页面块；拆 M0-T18"
+    },
+    {
+      "taskId": "M0-T10",
+      "status": "done",
+      "startedAt": "2026-11-09T19:36:55.158Z",
+      "finishedAt": "2026-11-09T19:45:03.746Z",
+      "note": "导出四项实测(无HTML)；包结构=页面树镜像；顺带采到页面⋯长面板20+项"
     }
   ],
   "blocked": [],
