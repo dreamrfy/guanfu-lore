@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T18:54:26.588Z",
+  "updatedAt": "2026-11-09T19:01:18.372Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 5,
-    "lastProbeAt": "2026-11-09T18:54:26.588Z"
+    "probeCount": 6,
+    "lastProbeAt": "2026-11-09T19:01:18.372Z"
   },
   "running": [],
   "history": [
@@ -53,6 +53,13 @@
       "startedAt": "2026-11-09T18:46:56.122Z",
       "finishedAt": "2026-11-09T18:54:26.587Z",
       "note": "按钮/菜单/弹层/开关/徽标/输入框实测；勾选框未见拆 M0-T16；误建页面已删"
+    },
+    {
+      "taskId": "M0-T06",
+      "status": "done",
+      "startedAt": "2026-11-09T18:56:55.567Z",
+      "finishedAt": "2026-11-09T19:01:18.372Z",
+      "note": "界面全清单 48 项(🟢29/🟡19)；新增删除横幅/确认弹窗/空页选择器/15个钩子"
     }
   ],
   "blocked": [],
