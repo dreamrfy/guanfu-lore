@@ -1,0 +1,109 @@
+{
+ "doc": "2ba0f24d-6108-4a8c-87d1-740a00fc6979",
+ "steps": [
+  {
+   "target": "数字",
+   "menuOk": true,
+   "clicked": true,
+   "beforeType": "select",
+   "afterType": "number",
+   "changed": true
+  },
+  {
+   "target": "勾选框",
+   "menuOk": true,
+   "clicked": true,
+   "beforeType": "number",
+   "afterType": "checkbox",
+   "changed": true
+  },
+  {
+   "target": "人员",
+   "menuOk": true,
+   "clicked": true,
+   "beforeType": "checkbox",
+   "afterType": "person",
+   "changed": true
+  },
+  {
+   "target": "文件媒体",
+   "menuOk": true,
+   "clicked": true,
+   "beforeType": "person",
+   "afterType": "file",
+   "changed": true
+  },
+  {
+   "target": "邮箱",
+   "menuOk": true,
+   "clicked": true,
+   "beforeType": "file",
+   "afterType": "email",
+   "changed": true
+  },
+  {
+   "target": "电话",
+   "menuOk": true,
+   "clicked": true,
+   "beforeType": "email",
+   "afterType": "phone",
+   "changed": true
+  },
+  {
+   "target": "公式",
+   "menuOk": true,
+   "clicked": true,
+   "beforeType": "phone",
+   "afterType": "formula",
+   "changed": true
+  },
+  {
+   "target": "关联",
+   "menuOk": true,
+   "clicked": true,
+   "beforeType": "formula",
+   "afterType": "formula",
+   "changed": false
+  },
+  {
+   "target": "汇总",
+   "menuOk": true,
+   "clicked": true,
+   "beforeType": "formula",
+   "afterType": "rollup",
+   "changed": true
+  },
+  {
+   "target": "创建人",
+   "menuOk": true,
+   "clicked": true,
+   "beforeType": "rollup",
+   "afterType": "created_by",
+   "changed": true
+  },
+  {
+   "target": "编辑时间",
+   "menuOk": true,
+   "clicked": true,
+   "beforeType": "created_by",
+   "afterType": "updated_at",
+   "changed": true
+  },
+  {
+   "target": "编辑人",
+   "menuOk": true,
+   "clicked": true,
+   "beforeType": "updated_at",
+   "afterType": "updated_by",
+   "changed": true
+  },
+  {
+   "target": "单选",
+   "menuOk": true,
+   "clicked": true,
+   "beforeType": "updated_by",
+   "afterType": "select",
+   "changed": true
+  }
+ ]
+}

@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T21:59:37.535Z",
+  "updatedAt": "2026-11-09T22:11:32.392Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 24,
-    "lastProbeAt": "2026-11-09T21:59:37.535Z"
+    "probeCount": 25,
+    "lastProbeAt": "2026-11-09T22:11:32.392Z"
   },
   "running": [],
   "history": [
@@ -186,6 +186,13 @@
       "startedAt": "2026-11-09T21:56:55.486Z",
       "finishedAt": "2026-11-09T21:59:37.534Z",
       "note": "方法失败(9捷径只成1个)；type=25二次出现未定名；改进方案转M0-T28；清理零遗留"
+    },
+    {
+      "taskId": "M0-T26",
+      "status": "done-partial",
+      "startedAt": "2026-11-09T22:06:59.402Z",
+      "finishedAt": "2026-11-09T22:11:32.391Z",
+      "note": "17/18字段string实测(含person/updated_at反直觉)；关联未生效拆M0-T29；清理零遗留"
     }
   ],
   "blocked": [],
