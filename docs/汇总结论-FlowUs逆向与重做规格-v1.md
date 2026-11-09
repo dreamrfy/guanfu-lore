@@ -52,6 +52,13 @@
 1. 移动端交互不能从桌面端代码推导，必须实机走查（待登录后补）；
 2. 我们的 Flutter「一套代码三端」是不同路线，好处是省重复实现，代价是不能像 FlowUs 那样按平台定制交互——所以交互规格要按**平台形态**分别定：桌面按悬停/右键，移动按长按/底部面板。
 
+**安卓端文案证据（apktool 解 `res/values-zh/strings.xml`）**：
+- 新建入口项：`create_document` 新建页面 / `create_table_page` 新建多维表页面 / `create_folder` 新建文件夹 / `create_mind_map` 新建思维导图页面 / `create_subpage` 新建子页面。
+- **移动端空页与桌面不同**：`editor_fragment_note_empty_text_0..3` = 「当前页面空荡荡」+「创建新页面」「目录树」「新建」——桌面是「页面类型选择列表」，移动端是「空态提示 + 三个动作」。
+- 拖拽相关：`adapter_block_type_template_button_close_text_0`「点击输入，也可以拖拽块至此处」、`pageitemdragcallback_kt_str_0`「文件夹不能拖动到多维表子级」、`indicator_tyro_workout_text_0`「创建并拖动块」。
+
+→ 结论：**移动端交互规格必须单独定**（不能照搬桌面）。
+
 ## 四、代码层不能回答、需要安卓端补的
 
 1. 移动端新建入口/长按菜单的形态（触屏没有 hover，惯例通常是长按/滑动）；
