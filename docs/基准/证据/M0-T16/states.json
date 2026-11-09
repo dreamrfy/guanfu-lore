@@ -1,0 +1,578 @@
+{
+ "①1 常态": {
+  "rect": {
+   "x": 8,
+   "y": 206,
+   "w": 211,
+   "h": 32
+  },
+  "bg": "rgba(0, 0, 0, 0)",
+  "color": "rgb(95, 94, 91)",
+  "radius": "6px",
+  "outline": "3px none rgb(95, 94, 91)",
+  "boxShadow": null,
+  "opacity": "1",
+  "cursor": "pointer"
+ },
+ "①2 hover": {
+  "rect": {
+   "x": 8,
+   "y": 206,
+   "w": 211,
+   "h": 32
+  },
+  "bg": "rgba(0, 0, 0, 0.03)",
+  "color": "rgb(95, 94, 91)",
+  "radius": "6px",
+  "outline": "3px none rgb(95, 94, 91)",
+  "boxShadow": null,
+  "opacity": "1",
+  "cursor": "pointer"
+ },
+ "①3 选中·鼠标已移开": {
+  "rect": {
+   "x": 8,
+   "y": 206,
+   "w": 211,
+   "h": 32
+  },
+  "bg": "rgba(0, 0, 0, 0.06)",
+  "color": "rgb(0, 0, 0)",
+  "radius": "6px",
+  "outline": "3px none rgb(0, 0, 0)",
+  "boxShadow": null,
+  "opacity": "1",
+  "cursor": "pointer"
+ },
+ "①4 未选中对照": {
+  "rect": {
+   "x": 8,
+   "y": 322,
+   "w": 211,
+   "h": 32
+  },
+  "bg": "rgba(0, 0, 0, 0)",
+  "color": "rgb(95, 94, 91)",
+  "radius": "6px",
+  "outline": "3px none rgb(95, 94, 91)",
+  "boxShadow": null,
+  "opacity": "1",
+  "cursor": "pointer"
+ },
+ "②1 菜单项（常态全量）": [
+  {
+   "t": "添加到快速访问",
+   "x": 181,
+   "y": 235,
+   "w": 222,
+   "h": 32,
+   "bg": "rgba(0, 0, 0, 0)",
+   "color": "rgb(0, 0, 0)",
+   "radius": "0px",
+   "opacity": "1",
+   "cursor": "none",
+   "cls": ""
+  },
+  {
+   "t": "添加到快速访问",
+   "x": 181,
+   "y": 235,
+   "w": 222,
+   "h": 32,
+   "bg": "rgba(0, 0, 0, 0)",
+   "color": "rgb(0, 0, 0)",
+   "radius": "0px",
+   "opacity": "1",
+   "cursor": "none",
+   "cls": "text-left flex"
+  },
+  {
+   "t": "添加到快速访问",
+   "x": 185,
+   "y": 235,
+   "w": 214,
+   "h": 32,
+   "bg": "rgba(0, 0, 0, 0)",
+   "color": "rgb(0, 0, 0)",
+   "radius": "8px",
+   "opacity": "1",
+   "cursor": "pointer",
+   "cls": "py-1.5 px-2.5 mx-1 relative flex items-center w-full justify"
+  },
+  {
+   "t": "拷贝副本",
+   "x": 181,
+   "y": 276,
+   "w": 222,
+   "h": 32,
+   "bg": "rgba(0, 0, 0, 0)",
+   "color": "rgb(0, 0, 0)",
+   "radius": "0px",
+   "opacity": "1",
+   "cursor": "none",
+   "cls": ""
+  },
+  {
+   "t": "拷贝副本",
+   "x": 181,
+   "y": 276,
+   "w": 222,
+   "h": 32,
+   "bg": "rgba(0, 0, 0, 0)",
+   "color": "rgb(0, 0, 0)",
+   "radius": "0px",
+   "opacity": "1",
+   "cursor": "none",
+   "cls": "text-left flex"
+  },
+  {
+   "t": "拷贝副本",
+   "x": 185,
+   "y": 276,
+   "w": 214,
+   "h": 32,
+   "bg": "rgba(0, 0, 0, 0)",
+   "color": "rgb(0, 0, 0)",
+   "radius": "8px",
+   "opacity": "1",
+   "cursor": "pointer",
+   "cls": "py-1.5 px-2.5 mx-1 relative flex items-center w-full justify"
+  },
+  {
+   "t": "复制页面链接",
+   "x": 181,
+   "y": 308,
+   "w": 222,
+   "h": 32,
+   "bg": "rgba(0, 0, 0, 0)",
+   "color": "rgb(0, 0, 0)",
+   "radius": "0px",
+   "opacity": "1",
+   "cursor": "none",
+   "cls": ""
+  },
+  {
+   "t": "复制页面链接",
+   "x": 181,
+   "y": 308,
+   "w": 222,
+   "h": 32,
+   "bg": "rgba(0, 0, 0, 0)",
+   "color": "rgb(0, 0, 0)",
+   "radius": "0px",
+   "opacity": "1",
+   "cursor": "none",
+   "cls": "text-left flex"
+  },
+  {
+   "t": "复制页面链接",
+   "x": 185,
+   "y": 308,
+   "w": 214,
+   "h": 32,
+   "bg": "rgba(0, 0, 0, 0)",
+   "color": "rgb(0, 0, 0)",
+   "radius": "8px",
+   "opacity": "1",
+   "cursor": "pointer",
+   "cls": "py-1.5 px-2.5 mx-1 relative flex items-center w-full justify"
+  },
+  {
+   "t": "重命名",
+   "x": 181,
+   "y": 340,
+   "w": 222,
+   "h": 32,
+   "bg": "rgba(0, 0, 0, 0)",
+   "color": "rgb(0, 0, 0)",
+   "radius": "0px",
+   "opacity": "1",
+   "cursor": "none",
+   "cls": ""
+  },
+  {
+   "t": "重命名",
+   "x": 181,
+   "y": 340,
+   "w": 222,
+   "h": 32,
+   "bg": "rgba(0, 0, 0, 0)",
+   "color": "rgb(0, 0, 0)",
+   "radius": "0px",
+   "opacity": "1",
+   "cursor": "none",
+   "cls": "text-left flex"
+  },
+  {
+   "t": "重命名",
+   "x": 185,
+   "y": 340,
+   "w": 214,
+   "h": 32,
+   "bg": "rgba(0, 0, 0, 0)",
+   "color": "rgb(0, 0, 0)",
+   "radius": "8px",
+   "opacity": "1",
+   "cursor": "pointer",
+   "cls": "py-1.5 px-2.5 mx-1 relative flex items-center w-full justify"
+  }
+ ],
+ "②2 菜单项 hover": {
+  "y": 235,
+  "bg": "rgba(0, 0, 0, 0)",
+  "color": "rgb(0, 0, 0)",
+  "radius": "8px",
+  "cls": "py-1.5 px-2.5 mx-1 relative flex items-center w-full justify"
+ },
+ "③0 内容列": {
+  "x": 720,
+  "w": 708,
+  "y": 180
+ },
+ "③1 hover 扫描（内容列左缘 ±）": [
+  {
+   "dx": -60,
+   "x": 660,
+   "seenCount": 2,
+   "seen": [
+    {
+     "tag": "svg",
+     "x": 723,
+     "y": 158,
+     "w": 20,
+     "h": 20,
+     "icon": "IcIcon",
+     "cls": "[object SVGAnimatedString]"
+    },
+    {
+     "tag": "svg",
+     "x": 720,
+     "y": 848,
+     "w": 20,
+     "h": 20,
+     "icon": "IcArrowHide",
+     "cls": "[object SVGAnimatedString]"
+    }
+   ]
+  },
+  {
+   "dx": -40,
+   "x": 680,
+   "seenCount": 2,
+   "seen": [
+    {
+     "tag": "svg",
+     "x": 723,
+     "y": 158,
+     "w": 20,
+     "h": 20,
+     "icon": "IcIcon",
+     "cls": "[object SVGAnimatedString]"
+    },
+    {
+     "tag": "svg",
+     "x": 720,
+     "y": 848,
+     "w": 20,
+     "h": 20,
+     "icon": "IcArrowHide",
+     "cls": "[object SVGAnimatedString]"
+    }
+   ]
+  },
+  {
+   "dx": -24,
+   "x": 696,
+   "seenCount": 3,
+   "seen": [
+    {
+     "tag": "svg",
+     "x": 723,
+     "y": 158,
+     "w": 20,
+     "h": 20,
+     "icon": "IcIcon",
+     "cls": "[object SVGAnimatedString]"
+    },
+    {
+     "tag": "svg",
+     "x": 700,
+     "y": 278,
+     "w": 16,
+     "h": 16,
+     "icon": "IcMenu",
+     "cls": "[object SVGAnimatedString]"
+    },
+    {
+     "tag": "svg",
+     "x": 720,
+     "y": 848,
+     "w": 20,
+     "h": 20,
+     "icon": "IcArrowHide",
+     "cls": "[object SVGAnimatedString]"
+    }
+   ]
+  },
+  {
+   "dx": -12,
+   "x": 708,
+   "seenCount": 4,
+   "seen": [
+    {
+     "tag": "svg",
+     "x": 723,
+     "y": 158,
+     "w": 20,
+     "h": 20,
+     "icon": "IcIcon",
+     "cls": "[object SVGAnimatedString]"
+    },
+    {
+     "tag": "svg",
+     "x": 700,
+     "y": 278,
+     "w": 16,
+     "h": 16,
+     "icon": "IcMenu",
+     "cls": "[object SVGAnimatedString]"
+    },
+    {
+     "tag": "svg",
+     "x": 698,
+     "y": 292,
+     "w": 20,
+     "h": 20,
+     "icon": "IcBlockAdd",
+     "cls": "[object SVGAnimatedString]"
+    },
+    {
+     "tag": "svg",
+     "x": 720,
+     "y": 848,
+     "w": 20,
+     "h": 20,
+     "icon": "IcArrowHide",
+     "cls": "[object SVGAnimatedString]"
+    }
+   ]
+  },
+  {
+   "dx": 0,
+   "x": 720,
+   "seenCount": 4,
+   "seen": [
+    {
+     "tag": "svg",
+     "x": 723,
+     "y": 158,
+     "w": 20,
+     "h": 20,
+     "icon": "IcIcon",
+     "cls": "[object SVGAnimatedString]"
+    },
+    {
+     "tag": "svg",
+     "x": 700,
+     "y": 278,
+     "w": 16,
+     "h": 16,
+     "icon": "IcMenu",
+     "cls": "[object SVGAnimatedString]"
+    },
+    {
+     "tag": "svg",
+     "x": 698,
+     "y": 292,
+     "w": 20,
+     "h": 20,
+     "icon": "IcBlockAdd",
+     "cls": "[object SVGAnimatedString]"
+    },
+    {
+     "tag": "svg",
+     "x": 720,
+     "y": 848,
+     "w": 20,
+     "h": 20,
+     "icon": "IcArrowHide",
+     "cls": "[object SVGAnimatedString]"
+    }
+   ]
+  },
+  {
+   "dx": 12,
+   "x": 732,
+   "seenCount": 3,
+   "seen": [
+    {
+     "tag": "svg",
+     "x": 723,
+     "y": 158,
+     "w": 20,
+     "h": 20,
+     "icon": "IcIcon",
+     "cls": "[object SVGAnimatedString]"
+    },
+    {
+     "tag": "svg",
+     "x": 700,
+     "y": 278,
+     "w": 16,
+     "h": 16,
+     "icon": "IcMenu",
+     "cls": "[object SVGAnimatedString]"
+    },
+    {
+     "tag": "svg",
+     "x": 720,
+     "y": 848,
+     "w": 20,
+     "h": 20,
+     "icon": "IcArrowHide",
+     "cls": "[object SVGAnimatedString]"
+    }
+   ]
+  },
+  {
+   "dx": 24,
+   "x": 744,
+   "seenCount": 3,
+   "seen": [
+    {
+     "tag": "svg",
+     "x": 723,
+     "y": 158,
+     "w": 20,
+     "h": 20,
+     "icon": "IcIcon",
+     "cls": "[object SVGAnimatedString]"
+    },
+    {
+     "tag": "svg",
+     "x": 700,
+     "y": 278,
+     "w": 16,
+     "h": 16,
+     "icon": "IcMenu",
+     "cls": "[object SVGAnimatedString]"
+    },
+    {
+     "tag": "svg",
+     "x": 720,
+     "y": 848,
+     "w": 20,
+     "h": 20,
+     "icon": "IcArrowHide",
+     "cls": "[object SVGAnimatedString]"
+    }
+   ]
+  }
+ ],
+ "④ 焦点环序列": [
+  {
+   "tag": "A",
+   "testId": null,
+   "outline": "3px none rgb(0, 0, 0)",
+   "boxShadow": null,
+   "radius": "4px",
+   "rect": {
+    "x": 252,
+    "y": 8,
+    "w": 92,
+    "h": 32
+   }
+  },
+  {
+   "tag": "BUTTON",
+   "testId": "drive-file-share",
+   "outline": "2px solid rgba(0, 0, 0, 0)",
+   "boxShadow": null,
+   "radius": "6px",
+   "rect": {
+    "x": 1707,
+    "y": 8,
+    "w": 44,
+    "h": 32
+   }
+  },
+  {
+   "tag": "BUTTON",
+   "testId": null,
+   "outline": "3px none rgb(2, 133, 255)",
+   "boxShadow": null,
+   "radius": "6px",
+   "rect": {
+    "x": 1234,
+    "y": 56,
+    "w": 74,
+    "h": 28
+   }
+  },
+  {
+   "tag": "DIV",
+   "testId": null,
+   "outline": "0px none rgb(55, 53, 47)",
+   "boxShadow": null,
+   "radius": "0px",
+   "rect": {
+    "x": 720,
+    "y": 180,
+    "w": 708,
+    "h": 64
+   }
+  },
+  {
+   "tag": "DIV",
+   "testId": null,
+   "outline": "0px none rgb(55, 53, 47)",
+   "boxShadow": null,
+   "radius": "0px",
+   "rect": {
+    "x": 720,
+    "y": 307,
+    "w": 708,
+    "h": 34
+   }
+  },
+  {
+   "tag": "DIV",
+   "testId": null,
+   "outline": "0px none rgb(55, 53, 47)",
+   "boxShadow": null,
+   "radius": "0px",
+   "rect": {
+    "x": 720,
+    "y": 307,
+    "w": 708,
+    "h": 34
+   }
+  },
+  {
+   "tag": "DIV",
+   "testId": null,
+   "outline": "0px none rgb(55, 53, 47)",
+   "boxShadow": null,
+   "radius": "0px",
+   "rect": {
+    "x": 720,
+    "y": 307,
+    "w": 708,
+    "h": 34
+   }
+  },
+  {
+   "tag": "DIV",
+   "testId": null,
+   "outline": "0px none rgb(55, 53, 47)",
+   "boxShadow": null,
+   "radius": "0px",
+   "rect": {
+    "x": 720,
+    "y": 307,
+    "w": 708,
+    "h": 34
+   }
+  }
+ ]
+}

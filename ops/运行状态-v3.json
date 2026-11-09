@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T20:20:02.619Z",
+  "updatedAt": "2026-11-09T20:29:11.313Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 14,
-    "lastProbeAt": "2026-11-09T20:20:02.619Z"
+    "probeCount": 15,
+    "lastProbeAt": "2026-11-09T20:29:11.313Z"
   },
   "running": [],
   "history": [
@@ -116,6 +116,13 @@
       "startedAt": "2026-11-09T20:17:49.771Z",
       "finishedAt": "2026-11-09T20:20:02.618Z",
       "note": "图标57个(51自研+6Lucide)；发现两家混用；含语义对照表"
+    },
+    {
+      "taskId": "M0-T16",
+      "status": "done-partial",
+      "startedAt": "2026-11-09T20:26:58.981Z",
+      "finishedAt": "2026-11-09T20:29:11.312Z",
+      "note": "三态分离(选中黑6%)+块手柄热区+焦点环；修正菜单项圆角4→8px；拆 M0-T20/T21"
     }
   ],
   "blocked": [],
