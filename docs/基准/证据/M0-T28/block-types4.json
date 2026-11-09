@@ -1,0 +1,141 @@
+{
+ "steps": [
+  {
+   "label": "折叠列表",
+   "kw": "折叠列表",
+   "menuItems": [
+    "基础块",
+    "折叠列表 /折叠列表",
+    "转换为",
+    "折叠列表 /折叠列表"
+   ],
+   "hasTestId": false,
+   "clicked": "折叠列表 /折叠列表",
+   "added": [
+    6
+   ],
+   "changed": [],
+   "types": [
+    0,
+    6
+   ]
+  },
+  {
+   "label": "折叠标题1",
+   "kw": "折叠标题1",
+   "menuItems": [
+    "基础块",
+    "折叠标题1 /折叠标题1",
+    "转换为",
+    "折叠标题1 /折叠标题1"
+   ],
+   "hasTestId": false,
+   "clicked": "折叠标题1 /折叠标题1",
+   "added": [],
+   "changed": [
+    {
+     "from": 6,
+     "to": 38
+    }
+   ],
+   "types": [
+    0,
+    38
+   ]
+  },
+  {
+   "label": "简单表格",
+   "kw": "简单表格",
+   "menuItems": [
+    "基础块",
+    "简单表格 /简单表格"
+   ],
+   "hasTestId": false,
+   "clicked": "简单表格 /简单表格",
+   "added": [
+    28,
+    28,
+    28
+   ],
+   "changed": [
+    {
+     "from": 38,
+     "to": 27
+    }
+   ],
+   "types": [
+    0,
+    27,
+    28,
+    28,
+    28
+   ]
+  },
+  {
+   "label": "思维导图",
+   "kw": "思维导图",
+   "menuItems": [],
+   "hasTestId": false,
+   "clicked": null,
+   "added": [],
+   "changed": [],
+   "types": [
+    0,
+    27,
+    28,
+    28,
+    28
+   ]
+  },
+  {
+   "label": "按钮",
+   "kw": "按钮",
+   "menuItems": [],
+   "hasTestId": false,
+   "clicked": null,
+   "added": [],
+   "changed": [],
+   "types": [
+    0,
+    27,
+    28,
+    28,
+    28
+   ]
+  },
+  {
+   "label": "同步块",
+   "kw": "同步块",
+   "menuItems": [],
+   "hasTestId": false,
+   "clicked": null,
+   "added": [],
+   "changed": [],
+   "types": [
+    0,
+    27,
+    28,
+    28,
+    28
+   ]
+  },
+  {
+   "label": "数据图表",
+   "kw": "数据图表",
+   "menuItems": [],
+   "hasTestId": false,
+   "clicked": null,
+   "added": [],
+   "changed": [],
+   "types": [
+    0,
+    27,
+    28,
+    28,
+    28
+   ]
+  }
+ ],
+ "0 基线": 12,
+ "1 docId": "bdb41a2a-d683-43cc-8525-eae9ebd18187"
+}
