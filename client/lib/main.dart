@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -16,7 +17,7 @@ import 'data/pages_table.dart';
 import 'data/save_state.dart';
 import 'data/storage_stats.dart';
 import 'editor/block_model.dart';
-import 'editor/blocks_editor.dart';
+import 'editor/flowus_editor.dart';
 import 'table/table_model.dart';
 import 'table/table_view.dart';
 
@@ -54,6 +55,7 @@ class _HomePageState extends State<HomePage> {
   String? _selectedId; // 分栏模式下当前选中的页面
   bool _detailFullPage = false; // 整页切换（隐藏左侧树）
   int _detailRev = 0; // 设置页等外部改动后强制重建详情（拉到新数据必须重载）
+  String? _hoveredId; // 页面行悬停状态（FlowUs 式悬停出 ＋/⋯）
 
   @override
   void initState() {
@@ -74,12 +76,9 @@ class _HomePageState extends State<HomePage> {
     _reload();
   }
 
-  Future<void> _newPageDialog() async {
-    final result = await _showCreateDialog(dialogTitle: '新建内容');
-    if (result == null) return;
-    final page = await _db.createPage(
-        title: result.title.trim().isEmpty ? '未命名' : result.title.trim(),
-        type: result.type);
+  /// FlowUs 式新建：不弹对话框，直接建页并打开（标题留空，在页面里改）。
+  Future<void> _createPage({String? parentId, String type = PageTypes.page}) async {
+    final page = await _db.createPage(parentId: parentId, type: type);
     DiagnosticsLog.I.add('page.created', id: page.id);
     _reload();
     if (mounted) _openDetail(page);
@@ -211,17 +210,43 @@ class _HomePageState extends State<HomePage> {
           ),
         Expanded(child: Text(pg.title.isEmpty ? '（无标题）' : pg.title)),
       ]),
-      subtitle: Text('建于 ${pg.createdAt.toLocal()}'.substring(0, 24)),
       onTap: () => _openDetail(pg),
-      trailing: PopupMenuButton<String>(
-        onSelected: (v) => _onNodeMenu(pg, v),
-        itemBuilder: (_) => const [
-          PopupMenuItem(value: 'child', child: Text('添加子页面')),
-          PopupMenuItem(value: 'move', child: Text('移动到…')),
-          PopupMenuItem(value: 'up', child: Text('上移')),
-          PopupMenuItem(value: 'down', child: Text('下移')),
-        ],
+      // FlowUs 惯例：鼠标悬停才浮出「＋（建子页）」与「⋯（菜单）」
+      trailing: SizedBox(
+        width: 84,
+        child: AnimatedOpacity(
+          opacity: _hoveredId == pg.id ? 1 : 0,
+          duration: const Duration(milliseconds: 120),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              tooltip: '新建子页面',
+              icon: const Icon(Icons.add, size: 18),
+              onPressed: () => _createPage(parentId: pg.id),
+            ),
+            PopupMenuButton<String>(
+              tooltip: '更多',
+              icon: const Icon(Icons.more_horiz, size: 18),
+              onSelected: (v) => _onNodeMenu(pg, v),
+              itemBuilder: (_) => const [
+                PopupMenuItem(value: 'rename', child: Text('重命名')),
+                PopupMenuItem(value: 'move', child: Text('移动到…')),
+                PopupMenuItem(value: 'up', child: Text('上移')),
+                PopupMenuItem(value: 'down', child: Text('下移')),
+                PopupMenuItem(value: 'table', child: Text('转为多维表')),
+              ],
+            ),
+          ]),
+        ),
       ),
+    );
+
+    final hoverTracked = MouseRegion(
+      onEnter: (_) => setState(() => _hoveredId = pg.id),
+      onExit: (_) => setState(() {
+        if (_hoveredId == pg.id) _hoveredId = null;
+      }),
+      child: tile,
     );
 
     final draggable = LongPressDraggable<Page>(
@@ -236,8 +261,8 @@ class _HomePageState extends State<HomePage> {
               style: const TextStyle(fontSize: 13)),
         ),
       ),
-      childWhenDragging: Opacity(opacity: 0.35, child: tile),
-      child: tile,
+      childWhenDragging: Opacity(opacity: 0.35, child: hoverTracked),
+      child: hoverTracked,
     );
 
     return DragTarget<Page>(
@@ -252,9 +277,69 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// 分区头：标题 + 悬停浮出的「+」（FlowUs 惯例，替代右下角悬浮按钮）。
+  Widget _sectionHeader(String title) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hoveredId = '__section'),
+      onExit: (_) => setState(() {
+        if (_hoveredId == '__section') _hoveredId = null;
+      }),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 12, right: 6, top: 6, bottom: 2),
+        child: Row(children: [
+          Text(title,
+              style: TextStyle(
+                  fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.w600)),
+          const Spacer(),
+          AnimatedOpacity(
+            opacity: _hoveredId == '__section' ? 1 : 0,
+            duration: const Duration(milliseconds: 120),
+            child: IconButton(
+              visualDensity: VisualDensity.compact,
+              tooltip: '新建页面',
+              icon: const Icon(Icons.add, size: 18),
+              onPressed: () => _createPage(),
+            ),
+          ),
+        ]),
+      ),
+    );
+  }
+
+  Future<void> _renamePage(Page pg) async {
+    final ctl = TextEditingController(text: pg.title);
+    final title = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('重命名'),
+        content: TextField(
+          controller: ctl,
+          autofocus: true,
+          decoration: const InputDecoration(border: OutlineInputBorder(), labelText: '标题'),
+          onSubmitted: (v) => Navigator.pop(ctx, v),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, ctl.text), child: const Text('确定')),
+        ],
+      ),
+    );
+    if (title == null || title.trim().isEmpty) return;
+    await _db.renamePage(pg.id, title.trim());
+  }
+
   Future<void> _onNodeMenu(Page pg, String action) async {
     final messenger = ScaffoldMessenger.of(context);
     switch (action) {
+      case 'rename':
+        await _renamePage(pg);
+        _reload();
+        break;
+      case 'table':
+        await _db.setPageType(pg.id, PageTypes.table);
+        DiagnosticsLog.I.add('page.typeChanged', id: pg.id);
+        _reload();
+        break;
       case 'child':
         final result = await _showCreateDialog(
             dialogTitle: '在「${pg.title.isEmpty ? '无标题' : pg.title}」下新建');
@@ -417,22 +502,23 @@ class _HomePageState extends State<HomePage> {
             return ListView(
               key: const PageStorageKey('tree-scroll'), // 保留滚动位置
               children: [
+                _sectionHeader('页面'),
                 ..._buildNodes(byParent, null, 0),
                 const SizedBox(height: 80),
-                const Center(
-                  child: Text('提示：长按页面拖到另一页上＝变成它的子页面；\n也可用每行右侧菜单「移动到…」。父页面拖进子孙会被阻止。',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey, fontSize: 12)),
-                ),
               ],
             );
           }
 
           if (pages.isEmpty) {
-            return const Center(
-              child: Text('还没有内容，点右下角 + 新建一条\n（重启应用后它应该还在）',
-                  textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
-            );
+            return Column(children: [
+              _sectionHeader('页面'),
+              const Expanded(
+                child: Center(
+                  child: Text('还没有页面：把鼠标移到上方「页面」右侧的 + 新建',
+                      textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+                ),
+              ),
+            ]);
           }
 
           // 窄屏（手机）：整页树（详情走路由跳转）
@@ -453,6 +539,7 @@ class _HomePageState extends State<HomePage> {
                 _reload(); // 关闭/删除后刷新树（含回收站变动）
               }),
               onToggleFullPage: () => setState(() => _detailFullPage = false),
+              onTitleChanged: _reload,
             );
           }
           return Row(
@@ -481,16 +568,12 @@ class _HomePageState extends State<HomePage> {
                         }),
                         onToggleFullPage: () =>
                             setState(() => _detailFullPage = true),
+                        onTitleChanged: _reload,
                       ),
               ),
             ],
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _newPageDialog,
-        tooltip: '新建内容',
-        child: const Icon(Icons.add),
       ),
     );
   }
@@ -510,6 +593,7 @@ class NoteDetailPage extends StatefulWidget {
     this.onToggleFullPage,
     this.fullPage = false,
     this.onTypeChanged,
+    this.onTitleChanged,
   });
 
   final AppDatabase db;
@@ -523,6 +607,9 @@ class NoteDetailPage extends StatefulWidget {
   /// 页面类型变化（空页面转多维表）后通知外层刷新树图标。
   final VoidCallback? onTypeChanged;
 
+  /// 标题改名后通知外层刷新侧栏（标题与侧栏同源）。
+  final VoidCallback? onTitleChanged;
+
   @override
   State<NoteDetailPage> createState() => _NoteDetailPageState();
 }
@@ -535,6 +622,8 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
   bool _faultOn = false;
   bool _busyImages = false;
   bool _typePickerDismissed = false; // 空页面类型选择器被「写笔记」手动收起
+  final TextEditingController _titleCtl = TextEditingController(); // FlowUs 式内嵌标题
+  Timer? _titleTimer;
   Future<List<Asset>>? _assets;
 
   @override
@@ -554,6 +643,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
     if (!mounted) return;
     setState(() {
       _page = page;
+      _titleCtl.text = page?.title ?? '';
       _editorContent = page?.content ?? '';
       _assets = widget.db.assetsForPage(widget._pageId);
       // 崩溃恢复：草稿存在且与正文不同 → 显示恢复条
@@ -567,13 +657,13 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
     _save.markSaved(_normalizedBaseline(page));
   }
 
-  /// 保存基准按页面类型取对应序列化形态（普通页=块 JSON；多维表=表 JSON）。
+  /// 保存基准按页面类型取对应序列化形态（普通页=编辑器文档 JSON；多维表=表 JSON）。
   String _normalizedBaseline(Page? page) {
     if (page == null) return '';
     if (page.type == PageTypes.table) {
       return encodeTable(decodeTable(page.content));
     }
-    return encodeBlocks(decodeBlocks(page.content));
+    return normalizedContent(page.content);
   }
 
   Future<void> _restoreDraft() async {
@@ -588,6 +678,17 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
     await widget.db.clearDraft(widget._pageId);
     if (!mounted) return;
     setState(() => _draft = null);
+  }
+
+  /// 内嵌标题改名：防抖落库，侧栏通过 onTitleChanged 即时刷新（单一数据源）。
+  void _onTitleChanged(String value) {
+    setState(() {}); // 同步 AppBar 上的标题文本
+    _titleTimer?.cancel();
+    _titleTimer = Timer(const Duration(milliseconds: 400), () async {
+      final t = value.trim();
+      await widget.db.renamePage(widget._pageId, t);
+      widget.onTitleChanged?.call();
+    });
   }
 
   /// 空页面类型选择器的显示条件（V2.1 ①）：普通页面 + 无草稿 + 正文只有空段落。
@@ -687,32 +788,6 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
     }
   }
 
-  Future<void> _renameDialog() async {
-    final page = _page;
-    if (page == null) return;
-    final ctl = TextEditingController(text: page.title);
-    final title = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('重命名'),
-        content: TextField(
-          controller: ctl,
-          autofocus: true,
-          decoration: const InputDecoration(border: OutlineInputBorder(), labelText: '标题'),
-          onSubmitted: (v) => Navigator.pop(ctx, v),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, ctl.text), child: const Text('确定')),
-        ],
-      ),
-    );
-    if (title == null || title.trim().isEmpty) return;
-    await widget.db.renamePage(widget._pageId, title.trim());
-    if (!mounted) return;
-    setState(() => _page = null); // 触发重载
-    await _loadPage();
-  }
 
   @override
   void dispose() {
@@ -720,6 +795,8 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
     _save.flush();
     _save.disposeTimer();
     _save.dispose();
+    _titleTimer?.cancel();
+    _titleCtl.dispose();
     super.dispose();
   }
 
@@ -738,17 +815,20 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
                 icon: const Icon(Icons.close),
               )
             : null,
-        title: GestureDetector(
-          onTap: _renameDialog,
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
+        title: Row(mainAxisSize: MainAxisSize.min, children: [
             if (page.type == PageTypes.table)
               Padding(
                 padding: const EdgeInsets.only(right: 6),
                 child: Icon(Icons.grid_on, size: 18, color: Colors.blue.shade700),
               ),
-            Flexible(child: Text(page.title.isEmpty ? '（无标题）' : page.title)),
-          ]),
-        ),
+          Flexible(
+            child: Text(
+              _titleCtl.text.isEmpty ? '（无标题）' : _titleCtl.text,
+              style: const TextStyle(fontSize: 16),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ]),
         actions: [
           AnimatedBuilder(
             animation: _save,
@@ -806,6 +886,21 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
           : ListView(
         padding: const EdgeInsets.all(12),
         children: [
+          // FlowUs 式：标题就是正文顶部的大字，直接改即改库，侧栏同步
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: TextField(
+              controller: _titleCtl,
+              onChanged: _onTitleChanged,
+              style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w700, height: 1.25),
+              decoration: const InputDecoration.collapsed(
+                hintText: '未命名',
+                hintStyle: TextStyle(fontSize: 30, fontWeight: FontWeight.w700, color: Color(0xFFB9BEC6)),
+                border: InputBorder.none,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
           if (_draft != null) _draftBanner(),
           if (_showTypePicker(page))
             Padding(
@@ -815,7 +910,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
                 onPickTable: _convertToTable,
               ),
             ),
-          BlocksEditor(
+          FlowUsEditor(
             initialContent: _editorContent ?? '',
             onChanged: (serialized) => _save.editText(serialized),
           ),
@@ -1355,6 +1450,10 @@ class RecordDetailPage extends StatefulWidget {
 
 class _RecordDetailPageState extends State<RecordDetailPage> {
   late final SaveController _save;
+  // 所属多维表与其记录行（属性区数据源）
+  TableData? _table;
+  String? _tablePageId;
+  String? _rowId;
   String? _editorContent;
   Page? _page;
   Draft? _draft;
@@ -1386,7 +1485,152 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
           ? draft
           : null;
     });
-    _save.markSaved(encodeBlocks(decodeBlocks(page?.content ?? '')));
+    _save.markSaved(normalizedContent(page?.content ?? ''));
+    await _loadTableRow(page);
+  }
+
+  /// 记录页挂在多维表下：读父表 JSON，定位自己那一行（FlowUs 记录页=属性区+正文）。
+  Future<void> _loadTableRow(Page? page) async {
+    final parentId = page?.parentId;
+    if (parentId == null) return;
+    final parent = await widget.db.pageById(parentId);
+    if (parent == null || parent.type != PageTypes.table) return;
+    final t = decodeTable(parent.content);
+    TableRowData? row;
+    for (final r in t.rows) {
+      if (r.pid == widget.pageId) row = r;
+    }
+    if (!mounted) return;
+    setState(() {
+      _tablePageId = parentId;
+      _table = t;
+      _rowId = row?.id;
+    });
+  }
+
+  Future<void> _writeTable(TableData next) async {
+    final pid = _tablePageId;
+    if (pid == null) return;
+    await widget.db.updatePageContent(pid, encodeTable(next));
+    if (!mounted) return;
+    setState(() => _table = next);
+  }
+
+  Future<void> _editCell(String colId) async {
+    final t = _table;
+    final rowId = _rowId;
+    if (t == null || rowId == null) return;
+    final col = t.colById(colId);
+    final row = t.rowById(rowId);
+    if (col == null || row == null) return;
+    final ctl = TextEditingController(text: row.cells[colId] ?? '');
+    final v = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(col.name.isEmpty ? '属性' : col.name),
+        content: TextField(
+          controller: ctl,
+          autofocus: true,
+          decoration: const InputDecoration(border: OutlineInputBorder(), hintText: '未填写'),
+          onSubmitted: (x) => Navigator.pop(ctx, x),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, ctl.text), child: const Text('确定')),
+        ],
+      ),
+    );
+    if (v == null) return;
+    await _writeTable(updateCell(t, rowId, colId, v));
+  }
+
+  Future<void> _addProperty() async {
+    final t = _table;
+    final rowId = _rowId;
+    if (t == null || rowId == null) return;
+    final ctl = TextEditingController(text: '属性${t.cols.length}');
+    final name = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('添加属性'),
+        content: TextField(
+          controller: ctl,
+          autofocus: true,
+          decoration: const InputDecoration(border: OutlineInputBorder(), labelText: '属性名'),
+          onSubmitted: (x) => Navigator.pop(ctx, x),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, ctl.text), child: const Text('添加')),
+        ],
+      ),
+    );
+    if (name == null || name.trim().isEmpty) return;
+    await _writeTable(addColumn(t, name: name.trim()));
+  }
+
+  IconData _colIcon(String name) {
+    if (name.contains('时间') || name.contains('日期')) return Icons.access_time;
+    if (name.contains('标签')) return Icons.tag;
+    if (name.contains('来源') || name.contains('链接')) return Icons.link;
+    if (name.contains('状态')) return Icons.check_circle_outline;
+    return Icons.notes;
+  }
+
+  /// 属性区（FlowUs 记录页形态）：每行「图标 + 属性名 + 值」，空值显示「未填写」。
+  Widget _propertiesSection() {
+    final t = _table;
+    final rowId = _rowId;
+    if (t == null || rowId == null) {
+      // 不是表格记录（普通页面调用）→ 退化为原来的快照占位
+      return _snapshotSection();
+    }
+    final row = t.rowById(rowId);
+    if (row == null) return _snapshotSection();
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      for (final col in t.cols)
+        InkWell(
+          onTap: () => _editCell(col.id),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 2),
+            child: Row(children: [
+              Icon(_colIcon(col.name), size: 17, color: Colors.grey.shade600),
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 110,
+                child: Text(col.name.isEmpty ? '属性' : col.name,
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                    overflow: TextOverflow.ellipsis),
+              ),
+              Expanded(
+                child: Text(
+                  (row.cells[col.id] ?? '').isEmpty ? '未填写' : row.cells[col.id]!,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: (row.cells[col.id] ?? '').isEmpty
+                        ? Colors.grey.shade400
+                        : const Color(0xFF1F2329),
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ]),
+          ),
+        ),
+      InkWell(
+        onTap: _addProperty,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+          child: Row(children: [
+            Icon(Icons.add_circle_outline, size: 17, color: Colors.grey.shade600),
+            const SizedBox(width: 8),
+            Text('添加属性', style: TextStyle(fontSize: 13, color: Colors.grey.shade700)),
+          ]),
+        ),
+      ),
+      const Divider(height: 20),
+    ]);
   }
 
   Future<void> _writeContent(String content) async {
@@ -1446,11 +1690,11 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
         children: [
           if (_draft != null)
             _DraftBanner(draft: _draft!, onRestore: _restoreDraft, onDiscard: _discardDraft),
-          _snapshotSection(),
+          _propertiesSection(),
           const SizedBox(height: 12),
           Text('我的批注', style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: 8),
-          BlocksEditor(
+          FlowUsEditor(
             initialContent: _editorContent ?? '',
             onChanged: (serialized) => _save.editText(serialized),
           ),
