@@ -1,0 +1,62 @@
+[
+ {
+  "url": "https://flowus.cn/api/users/me",
+  "status": 200,
+  "len": 1612
+ },
+ {
+  "url": "https://flowus.cn/api/users/7dea6b72-fe58-417d-a1a0-924a8b62786e/root",
+  "status": 200,
+  "len": 3404
+ },
+ {
+  "url": "https://flowus.cn/api/spaces/fc73b897-81ef-454a-9497-05f8a4f89f73/root",
+  "status": 200,
+  "len": 43367
+ },
+ {
+  "url": "https://flowus.cn/api/spaces/fc73b897-81ef-454a-9497-05f8a4f89f73/visitsHistory",
+  "status": 200,
+  "len": 158410
+ },
+ {
+  "url": "https://flowus.cn/api/docs/698a44a7-b324-4234-94ba-380e58f3638e",
+  "status": 200,
+  "len": 900
+ },
+ {
+  "url": "https://flowus.cn/api/rag/capabilities",
+  "status": 200,
+  "len": 26584
+ },
+ {
+  "url": "https://flowus.cn/api/ai/config",
+  "status": 200,
+  "len": 10317
+ },
+ {
+  "url": "https://flowus.cn/api/spaces/plans",
+  "status": 200,
+  "len": 944
+ },
+ {
+  "url": "https://flowus.cn/api/docs/698a44a7-b324-4234-94ba-380e58f3638e",
+  "status": 200,
+  "len": 900
+ },
+ {
+  "url": "https://flowus.cn/api/activity/list",
+  "status": 200,
+  "len": 13189
+ },
+ {
+  "url": "https://flowus.cn/api/docs/6fcef75c-2637-42e8-86d7-2d59bdef4807",
+  "status": 200,
+  "len": 21757
+ },
+ {
+  "url": "https://flowus.cn/api/docs/8c1a13be-007d-4250-9c30-ecf7723fbfba",
+  "status": 200,
+  "len": 3994
+ }
+]

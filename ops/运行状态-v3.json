@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T19:08:21.639Z",
+  "updatedAt": "2026-11-09T19:20:21.892Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 7,
-    "lastProbeAt": "2026-11-09T19:08:21.639Z"
+    "probeCount": 8,
+    "lastProbeAt": "2026-11-09T19:20:21.892Z"
   },
   "running": [],
   "history": [
@@ -67,6 +67,13 @@
       "startedAt": "2026-11-09T19:06:58.955Z",
       "finishedAt": "2026-11-09T19:08:21.639Z",
       "note": "动效体系(0.1s ease-out x547)+三种hover揭示模式+右键同菜单"
+    },
+    {
+      "taskId": "M0-T08",
+      "status": "done-partial",
+      "startedAt": "2026-11-09T19:16:55.674Z",
+      "finishedAt": "2026-11-09T19:20:21.892Z",
+      "note": "块模型逆向：数字type+UUID键对象+segments/enhancer；接口面；拆 M0-T17"
     }
   ],
   "blocked": [],

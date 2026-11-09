@@ -1,0 +1,32 @@
+{
+ "docId": "8c1a13be-007d-4250-9c30-ecf7723fbfba",
+ "status": 200,
+ "len": 3994,
+ "topKeys": [
+  "code",
+  "data"
+ ],
+ "typeCounts": {
+  "user": 3,
+  "emoji": 2
+ },
+ "shapes": {
+  "code,data": 1,
+  "blocks,collectionViews,comments,discussions,roles": 1,
+  "5580f813-d922-4322-94f6-fa29b7163376,65c92384-10d8-41c5-bc93-6370d7bb1fac,8bb2ce46-964c-4e15-ac72-dc3c26d28c47,8c1a13be-007d-4250-9c30-ecf7723fbfba": 1,
+  "backgroundColor,createdAt,createdBy,data,discussions,isTemplate,moved,parentId,permissions,spaceId,status,subNodes,templatePages,textColor,title,type,updatedAt,": 1,
+  "description,format,pageFixedWidth,segments": 1,
+  "commentAlignment": 1,
+  "enhancer,text,type": 1,
+  "": 1,
+  "role,type,userId": 1,
+  "cover,coverPos,icon,pageFixedWidth,segments": 1,
+  "type,value": 1,
+  "bold,code,italic,lineThrough,underline": 1,
+  "createdAt,createdBy,role,type,userId": 1,
+  "format,pageFixedWidth": 1,
+  "copied_from,cover,coverPos,format,icon,pageFixedWidth,segments": 1,
+  "commentAlignment,fontFormat,pageLayout": 1,
+  "5580f813-d922-4322-94f6-fa29b7163376,65c92384-10d8-41c5-bc93-6370d7bb1fac,8bb2ce46-964c-4e15-ac72-dc3c26d28c47,8c1a13be-007d-4250-9c30-ecf7723fbfba,fc73b897-81e": 1
+ }
+}

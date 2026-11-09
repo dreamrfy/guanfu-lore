@@ -1,0 +1,150 @@
+{
+ "0": {
+  "count": 157,
+  "dataKeys": {
+   "format": 23,
+   "segments": 156,
+   "pageFixedWidth": 23,
+   "collectionProperties": 141,
+   "icon": 3,
+   "cover": 7,
+   "coverPos": 7,
+   "description": 9,
+   "directoryMenu": 2,
+   "collectionCardColor": 2,
+   "copied_from": 1
+  },
+  "segShapes": {
+   "enhancer,text,type": 144
+  },
+  "sampleSegKeys": [
+   "text<string>",
+   "type<number>",
+   "enhancer<object>"
+  ],
+  "titleType": "string",
+  "subKey": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35"
+ },
+ "1": {
+  "count": 136,
+  "dataKeys": {
+   "format": 136,
+   "segments": 131,
+   "pageFixedWidth": 136,
+   "level": 31
+  },
+  "segShapes": {
+   "enhancer,text,type": 129,
+   "enhancer,text,type,url": 1
+  },
+  "sampleSegKeys": [
+   "text<string>",
+   "type<number>",
+   "enhancer<object>"
+  ],
+  "titleType": "string",
+  "subKey": null
+ },
+ "4": {
+  "count": 18,
+  "dataKeys": {
+   "format": 18,
+   "segments": 18,
+   "pageFixedWidth": 18
+  },
+  "segShapes": {
+   "enhancer,text,type": 18
+  },
+  "sampleSegKeys": [
+   "text<string>",
+   "type<number>",
+   "enhancer<object>"
+  ],
+  "titleType": "string",
+  "subKey": null
+ },
+ "7": {
+  "count": 20,
+  "dataKeys": {
+   "level": 20,
+   "format": 20,
+   "segments": 20,
+   "pageFixedWidth": 20
+  },
+  "segShapes": {
+   "enhancer,text,type": 20
+  },
+  "sampleSegKeys": [
+   "text<string>",
+   "type<number>",
+   "enhancer<object>"
+  ],
+  "titleType": "string",
+  "subKey": null
+ },
+ "15": {
+  "count": 1,
+  "dataKeys": {
+   "cover": 1,
+   "format": 1,
+   "coverPos": 1,
+   "segments": 1,
+   "description": 1,
+   "pageFixedWidth": 1
+  },
+  "segShapes": {
+   "enhancer,text,type": 1
+  },
+  "sampleSegKeys": [
+   "text<string>",
+   "type<number>",
+   "enhancer<object>"
+  ],
+  "titleType": "string",
+  "subKey": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35"
+ },
+ "18": {
+  "count": 4,
+  "dataKeys": {
+   "format": 4,
+   "schema": 4,
+   "segments": 4,
+   "description": 2,
+   "pageFixedWidth": 3,
+   "collectionPageProperties": 4,
+   "icon": 2,
+   "cover": 2,
+   "coverPos": 2
+  },
+  "segShapes": {
+   "enhancer,text,type": 3
+  },
+  "sampleSegKeys": [
+   "text<string>",
+   "type<number>",
+   "enhancer<object>"
+  ],
+  "titleType": "string",
+  "subKey": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35"
+ },
+ "19": {
+  "count": 2,
+  "dataKeys": {
+   "cover": 2,
+   "schema": 2,
+   "coverPos": 2,
+   "segments": 2,
+   "collectionPageProperties": 2
+  },
+  "segShapes": {
+   "enhancer,text,type": 2
+  },
+  "sampleSegKeys": [
+   "text<string>",
+   "type<number>",
+   "enhancer<object>"
+  ],
+  "titleType": "string",
+  "subKey": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35"
+ }
+}
