@@ -1,0 +1,48 @@
+{
+ "1 type15": [
+  {
+   "type": 15,
+   "hasSubNodes": 7,
+   "subTypes": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    19,
+    19
+   ],
+   "dataKeys": [
+    "cover",
+    "coverPos",
+    "description",
+    "format",
+    "pageFixedWidth",
+    "segments"
+   ],
+   "segCount": 1,
+   "textLen": 6,
+   "titleLen": 6,
+   "isTemplate": null,
+   "hasChildren": false
+  }
+ ],
+ "2 基线": 12,
+ "3 docId": "112098ca-a3ed-4578-8b1b-90505f1ad7af",
+ "4 加选项前": [
+  {
+   "name": "标题",
+   "type": "title",
+   "optionsType": "undefined",
+   "optionSample": null
+  },
+  {
+   "name": "分类",
+   "type": "select",
+   "optionsType": "array",
+   "optionSample": []
+  }
+ ],
+ "5 点管理选项": true,
+ "6 选项编辑器": []
+}
