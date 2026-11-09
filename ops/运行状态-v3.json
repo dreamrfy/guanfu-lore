@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T23:00:06.684Z",
+  "updatedAt": "2026-11-09T23:09:13.964Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 30,
-    "lastProbeAt": "2026-11-09T23:00:06.684Z"
+    "probeCount": 31,
+    "lastProbeAt": "2026-11-09T23:09:13.964Z"
   },
   "running": [],
   "history": [
@@ -228,6 +228,13 @@
       "startedAt": "2026-11-09T22:56:57.564Z",
       "finishedAt": "2026-11-09T23:00:06.683Z",
       "note": "结案16/24 vs 16/26(层级不同)；确认type25=代码块(14/21)；锚点法成功；待办仍未造出拆M0-T32"
+    },
+    {
+      "taskId": "M0-T32",
+      "status": "done-partial",
+      "startedAt": "2026-11-09T23:06:59.146Z",
+      "finishedAt": "2026-11-09T23:09:13.963Z",
+      "note": "待办=type3；type12引述/待办争议结案；学习进度仍8字段；余项拆M0-T33"
     }
   ],
   "blocked": [],
