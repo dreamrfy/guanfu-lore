@@ -52,12 +52,16 @@ class FlowUsEditor extends StatefulWidget {
     required this.onChanged,
     this.autoFocus = false,
     this.readOnly = false,
+    this.onReady,
   });
 
   final String initialContent;
   final ValueChanged<String> onChanged;
   final bool autoFocus;
   final bool readOnly;
+
+  /// 测试/诊断用：编辑器状态就绪后回调（可用来驱动文档操作）。
+  final void Function(EditorState state)? onReady;
 
   @override
   State<FlowUsEditor> createState() => _FlowUsEditorState();
@@ -76,6 +80,7 @@ class _FlowUsEditorState extends State<FlowUsEditor> {
     _lastEmitted = contentFromDocument(_editorState.document);
     _sub = _editorState.transactionStream.listen((_) => _onEditorChanged());
     _ready = true;
+    widget.onReady?.call(_editorState);
   }
 
   @override
@@ -122,6 +127,12 @@ class _FlowUsEditorState extends State<FlowUsEditor> {
       editable: !widget.readOnly,
       autoFocus: widget.autoFocus,
       blockComponentBuilders: _buildBlockComponents(style),
+      // 默认斜杠命令挂的是它自己的英文菜单；必须显式替换成我们的中文菜单项
+      characterShortcutEvents: [
+        customSlashCommand(_buildSelectionMenuItems()),
+        ...standardCharacterShortcutEvents
+            .where((e) => e.key != 'show the slash menu'),
+      ],
     );
   }
 }
