@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T19:45:03.747Z",
+  "updatedAt": "2026-11-09T19:48:03.925Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 10,
-    "lastProbeAt": "2026-11-09T19:45:03.747Z"
+    "probeCount": 11,
+    "lastProbeAt": "2026-11-09T19:48:03.925Z"
   },
   "running": [],
   "history": [
@@ -88,6 +88,13 @@
       "startedAt": "2026-11-09T19:36:55.158Z",
       "finishedAt": "2026-11-09T19:45:03.746Z",
       "note": "导出四项实测(无HTML)；包结构=页面树镜像；顺带采到页面⋯长面板20+项"
+    },
+    {
+      "taskId": "M0-T11",
+      "status": "done",
+      "startedAt": "2026-11-09T19:46:46.931Z",
+      "finishedAt": "2026-11-09T19:48:03.924Z",
+      "note": "基准规格汇总册：索引9条+速查卡+例外7条；交叉核对修正1处悬空引用"
     }
   ],
   "blocked": [],
