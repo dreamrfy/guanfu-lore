@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T21:00:34.736Z",
+  "updatedAt": "2026-11-09T21:11:31.290Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 18,
-    "lastProbeAt": "2026-11-09T21:00:34.736Z"
+    "probeCount": 19,
+    "lastProbeAt": "2026-11-09T21:11:31.290Z"
   },
   "running": [],
   "history": [
@@ -144,6 +144,13 @@
       "startedAt": "2026-11-09T20:56:59.347Z",
       "finishedAt": "2026-11-09T21:00:34.735Z",
       "note": "块高34/间距2/行距24；与spike的29px对上7px差；拆 M0-T24"
+    },
+    {
+      "taskId": "M0-T20",
+      "status": "done",
+      "startedAt": "2026-11-09T21:06:57.075Z",
+      "finishedAt": "2026-11-09T21:11:31.290Z",
+      "note": "勾选框三态(换图标+主色+删除线/hover无变化)；顺带采到斜杠菜单12项"
     }
   ],
   "blocked": [],
