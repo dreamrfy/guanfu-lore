@@ -1,0 +1,116 @@
+{
+ "1 选择集合浮层": [
+  {
+   "w": 240,
+   "h": 292,
+   "text": "选择集合 无标题多维表格 无标题多维表格 学习进度 微信公众号剪藏 网页剪藏"
+  }
+ ],
+ "2 选集合": true,
+ "3 选后浮层": [],
+ "4 schema": [
+  {
+   "name": "标题",
+   "type": "title",
+   "keys": "name,type"
+  },
+  {
+   "name": "分类",
+   "type": "relation",
+   "keys": "collectionId,formula,name,options,pairProperty,spaceId,type"
+  },
+  {
+   "name": "任务",
+   "type": "title",
+   "keys": "name,options,type"
+  },
+  {
+   "name": "状态",
+   "type": "select",
+   "keys": "name,options,type"
+  },
+  {
+   "name": "同步分类",
+   "type": "relation",
+   "keys": "collectionId,name,pairProperty,spaceId,type"
+  },
+  {
+   "name": "类型",
+   "type": "select",
+   "keys": "name,options,type"
+  },
+  {
+   "name": "周次",
+   "type": "select",
+   "keys": "name,options,type"
+  },
+  {
+   "name": "备注",
+   "type": "text",
+   "keys": "name,options,type"
+  },
+  {
+   "name": "年份",
+   "type": "select",
+   "keys": "name,options,type"
+  },
+  {
+   "name": "月份",
+   "type": "select",
+   "keys": "name,options,type"
+  }
+ ],
+ "5 有确认按钮": false,
+ "6 最终 schema": [
+  {
+   "name": "标题",
+   "type": "title",
+   "keys": "name,type"
+  },
+  {
+   "name": "分类",
+   "type": "relation",
+   "keys": "collectionId,formula,name,options,pairProperty,spaceId,type"
+  },
+  {
+   "name": "任务",
+   "type": "title",
+   "keys": "name,options,type"
+  },
+  {
+   "name": "状态",
+   "type": "select",
+   "keys": "name,options,type"
+  },
+  {
+   "name": "同步分类",
+   "type": "relation",
+   "keys": "collectionId,name,pairProperty,spaceId,type"
+  },
+  {
+   "name": "类型",
+   "type": "select",
+   "keys": "name,options,type"
+  },
+  {
+   "name": "周次",
+   "type": "select",
+   "keys": "name,options,type"
+  },
+  {
+   "name": "备注",
+   "type": "text",
+   "keys": "name,options,type"
+  },
+  {
+   "name": "年份",
+   "type": "select",
+   "keys": "name,options,type"
+  },
+  {
+   "name": "月份",
+   "type": "select",
+   "keys": "name,options,type"
+  }
+ ]
+}

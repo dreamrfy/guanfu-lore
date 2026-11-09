@@ -1,0 +1,45 @@
+{
+ "totalBlocks": 4,
+ "schemaBlocks": 1,
+ "perBlock": [
+  {
+   "uuid": "0e207dcb",
+   "blockType": 18,
+   "fieldCount": 8,
+   "fields": [
+    {
+     "name": "任务",
+     "type": "title"
+    },
+    {
+     "name": "状态",
+     "type": "select"
+    },
+    {
+     "name": "同步分类",
+     "type": "relation"
+    },
+    {
+     "name": "类型",
+     "type": "select"
+    },
+    {
+     "name": "周次",
+     "type": "select"
+    },
+    {
+     "name": "备注",
+     "type": "text"
+    },
+    {
+     "name": "年份",
+     "type": "select"
+    },
+    {
+     "name": "月份",
+     "type": "select"
+    }
+   ]
+  }
+ ]
+}

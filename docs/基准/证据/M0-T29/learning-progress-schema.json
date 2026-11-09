@@ -1,0 +1,53 @@
+{
+ "blocks": 4,
+ "fields": [
+  {
+   "k": "title",
+   "name": "任务",
+   "type": "title",
+   "keys": "name,options,type"
+  },
+  {
+   "k": "03bf7038-f2dd-409c-a794-b7a48f1e762e",
+   "name": "状态",
+   "type": "select",
+   "keys": "name,options,type"
+  },
+  {
+   "k": "3a3e1d0c-9d13-4b4e-82c1-e9004655551e",
+   "name": "同步分类",
+   "type": "relation",
+   "keys": "collectionId,name,pairProperty,spaceId,type"
+  },
+  {
+   "k": "5b3a5f98-1056-4501-997e-39061e950356",
+   "name": "类型",
+   "type": "select",
+   "keys": "name,options,type"
+  },
+  {
+   "k": "71c7131a-5266-4642-9ba2-8e5bae00691a",
+   "name": "周次",
+   "type": "select",
+   "keys": "name,options,type"
+  },
+  {
+   "k": "918e4bca-5eb0-4c9c-b817-fd25b441c282",
+   "name": "备注",
+   "type": "text",
+   "keys": "name,options,type"
+  },
+  {
+   "k": "bb892a97-65ec-48d6-b2eb-8555335879cd",
+   "name": "年份",
+   "type": "select",
+   "keys": "name,options,type"
+  },
+  {
+   "k": "d66a70ba-f437-4059-ab1f-1029df5f45bf",
+   "name": "月份",
+   "type": "select",
+   "keys": "name,options,type"
+  }
+ ]
+}

@@ -1,0 +1,42 @@
+{
+ "0 基线": 12,
+ "1 docId": "17dffeec-1330-4836-a29f-394c585743a5",
+ "2 点表格": true,
+ "3 初始 schema": [
+  {
+   "name": "标题",
+   "type": "title",
+   "keys": "name,type",
+   "optionsType": "undefined"
+  },
+  {
+   "name": "分类",
+   "type": "select",
+   "keys": "name,options,type",
+   "optionsType": "array"
+  }
+ ],
+ "4 点更换类型": true,
+ "5 有关联testid": 1,
+ "6 关联后浮层": [
+  {
+   "w": 240,
+   "h": 292,
+   "text": "选择集合 无标题多维表格 无标题多维表格 学习进度 微信公众号剪藏 网页剪藏"
+  }
+ ],
+ "7 关联后 schema": [
+  {
+   "name": "标题",
+   "type": "title",
+   "keys": "name,type",
+   "optionsType": "undefined"
+  },
+  {
+   "name": "分类",
+   "type": "select",
+   "keys": "name,options,type",
+   "optionsType": "array"
+  }
+ ]
+}
