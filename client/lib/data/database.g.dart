@@ -38,6 +38,16 @@ class $PagesTable extends Pages with TableInfo<$PagesTable, Page> {
     requiredDuringInsert: false,
     defaultValue: const Constant(PageTypes.page),
   );
+  static const VerificationMeta _iconMeta = const VerificationMeta('icon');
+  @override
+  late final GeneratedColumn<String> icon = GeneratedColumn<String>(
+    'icon',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
@@ -159,6 +169,7 @@ class $PagesTable extends Pages with TableInfo<$PagesTable, Page> {
     id,
     parentId,
     type,
+    icon,
     title,
     content,
     sortKey,
@@ -197,6 +208,12 @@ class $PagesTable extends Pages with TableInfo<$PagesTable, Page> {
       context.handle(
         _typeMeta,
         type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    }
+    if (data.containsKey('icon')) {
+      context.handle(
+        _iconMeta,
+        icon.isAcceptableOrUnknown(data['icon']!, _iconMeta),
       );
     }
     if (data.containsKey('title')) {
@@ -284,6 +301,10 @@ class $PagesTable extends Pages with TableInfo<$PagesTable, Page> {
         DriftSqlType.string,
         data['${effectivePrefix}type'],
       )!,
+      icon: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon'],
+      )!,
       title: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}title'],
@@ -337,6 +358,7 @@ class Page extends DataClass implements Insertable<Page> {
   final String id;
   final String? parentId;
   final String type;
+  final String icon;
   final String title;
   final String content;
   final int sortKey;
@@ -351,6 +373,7 @@ class Page extends DataClass implements Insertable<Page> {
     required this.id,
     this.parentId,
     required this.type,
+    required this.icon,
     required this.title,
     required this.content,
     required this.sortKey,
@@ -370,6 +393,7 @@ class Page extends DataClass implements Insertable<Page> {
       map['parent_id'] = Variable<String>(parentId);
     }
     map['type'] = Variable<String>(type);
+    map['icon'] = Variable<String>(icon);
     map['title'] = Variable<String>(title);
     map['content'] = Variable<String>(content);
     map['sort_key'] = Variable<int>(sortKey);
@@ -392,6 +416,7 @@ class Page extends DataClass implements Insertable<Page> {
           ? const Value.absent()
           : Value(parentId),
       type: Value(type),
+      icon: Value(icon),
       title: Value(title),
       content: Value(content),
       sortKey: Value(sortKey),
@@ -416,6 +441,7 @@ class Page extends DataClass implements Insertable<Page> {
       id: serializer.fromJson<String>(json['id']),
       parentId: serializer.fromJson<String?>(json['parentId']),
       type: serializer.fromJson<String>(json['type']),
+      icon: serializer.fromJson<String>(json['icon']),
       title: serializer.fromJson<String>(json['title']),
       content: serializer.fromJson<String>(json['content']),
       sortKey: serializer.fromJson<int>(json['sortKey']),
@@ -435,6 +461,7 @@ class Page extends DataClass implements Insertable<Page> {
       'id': serializer.toJson<String>(id),
       'parentId': serializer.toJson<String?>(parentId),
       'type': serializer.toJson<String>(type),
+      'icon': serializer.toJson<String>(icon),
       'title': serializer.toJson<String>(title),
       'content': serializer.toJson<String>(content),
       'sortKey': serializer.toJson<int>(sortKey),
@@ -452,6 +479,7 @@ class Page extends DataClass implements Insertable<Page> {
     String? id,
     Value<String?> parentId = const Value.absent(),
     String? type,
+    String? icon,
     String? title,
     String? content,
     int? sortKey,
@@ -466,6 +494,7 @@ class Page extends DataClass implements Insertable<Page> {
     id: id ?? this.id,
     parentId: parentId.present ? parentId.value : this.parentId,
     type: type ?? this.type,
+    icon: icon ?? this.icon,
     title: title ?? this.title,
     content: content ?? this.content,
     sortKey: sortKey ?? this.sortKey,
@@ -482,6 +511,7 @@ class Page extends DataClass implements Insertable<Page> {
       id: data.id.present ? data.id.value : this.id,
       parentId: data.parentId.present ? data.parentId.value : this.parentId,
       type: data.type.present ? data.type.value : this.type,
+      icon: data.icon.present ? data.icon.value : this.icon,
       title: data.title.present ? data.title.value : this.title,
       content: data.content.present ? data.content.value : this.content,
       sortKey: data.sortKey.present ? data.sortKey.value : this.sortKey,
@@ -501,6 +531,7 @@ class Page extends DataClass implements Insertable<Page> {
           ..write('id: $id, ')
           ..write('parentId: $parentId, ')
           ..write('type: $type, ')
+          ..write('icon: $icon, ')
           ..write('title: $title, ')
           ..write('content: $content, ')
           ..write('sortKey: $sortKey, ')
@@ -520,6 +551,7 @@ class Page extends DataClass implements Insertable<Page> {
     id,
     parentId,
     type,
+    icon,
     title,
     content,
     sortKey,
@@ -538,6 +570,7 @@ class Page extends DataClass implements Insertable<Page> {
           other.id == this.id &&
           other.parentId == this.parentId &&
           other.type == this.type &&
+          other.icon == this.icon &&
           other.title == this.title &&
           other.content == this.content &&
           other.sortKey == this.sortKey &&
@@ -554,6 +587,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
   final Value<String> id;
   final Value<String?> parentId;
   final Value<String> type;
+  final Value<String> icon;
   final Value<String> title;
   final Value<String> content;
   final Value<int> sortKey;
@@ -569,6 +603,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
     this.id = const Value.absent(),
     this.parentId = const Value.absent(),
     this.type = const Value.absent(),
+    this.icon = const Value.absent(),
     this.title = const Value.absent(),
     this.content = const Value.absent(),
     this.sortKey = const Value.absent(),
@@ -585,6 +620,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
     required String id,
     this.parentId = const Value.absent(),
     this.type = const Value.absent(),
+    this.icon = const Value.absent(),
     this.title = const Value.absent(),
     this.content = const Value.absent(),
     this.sortKey = const Value.absent(),
@@ -603,6 +639,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
     Expression<String>? id,
     Expression<String>? parentId,
     Expression<String>? type,
+    Expression<String>? icon,
     Expression<String>? title,
     Expression<String>? content,
     Expression<int>? sortKey,
@@ -619,6 +656,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
       if (id != null) 'id': id,
       if (parentId != null) 'parent_id': parentId,
       if (type != null) 'type': type,
+      if (icon != null) 'icon': icon,
       if (title != null) 'title': title,
       if (content != null) 'content': content,
       if (sortKey != null) 'sort_key': sortKey,
@@ -637,6 +675,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
     Value<String>? id,
     Value<String?>? parentId,
     Value<String>? type,
+    Value<String>? icon,
     Value<String>? title,
     Value<String>? content,
     Value<int>? sortKey,
@@ -653,6 +692,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
       id: id ?? this.id,
       parentId: parentId ?? this.parentId,
       type: type ?? this.type,
+      icon: icon ?? this.icon,
       title: title ?? this.title,
       content: content ?? this.content,
       sortKey: sortKey ?? this.sortKey,
@@ -678,6 +718,9 @@ class PagesCompanion extends UpdateCompanion<Page> {
     }
     if (type.present) {
       map['type'] = Variable<String>(type.value);
+    }
+    if (icon.present) {
+      map['icon'] = Variable<String>(icon.value);
     }
     if (title.present) {
       map['title'] = Variable<String>(title.value);
@@ -721,6 +764,7 @@ class PagesCompanion extends UpdateCompanion<Page> {
           ..write('id: $id, ')
           ..write('parentId: $parentId, ')
           ..write('type: $type, ')
+          ..write('icon: $icon, ')
           ..write('title: $title, ')
           ..write('content: $content, ')
           ..write('sortKey: $sortKey, ')
@@ -2151,6 +2195,7 @@ typedef $$PagesTableCreateCompanionBuilder =
       required String id,
       Value<String?> parentId,
       Value<String> type,
+      Value<String> icon,
       Value<String> title,
       Value<String> content,
       Value<int> sortKey,
@@ -2168,6 +2213,7 @@ typedef $$PagesTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String?> parentId,
       Value<String> type,
+      Value<String> icon,
       Value<String> title,
       Value<String> content,
       Value<int> sortKey,
@@ -2201,6 +2247,11 @@ class $$PagesTableFilterComposer extends Composer<_$AppDatabase, $PagesTable> {
 
   ColumnFilters<String> get type => $composableBuilder(
     column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get icon => $composableBuilder(
+    column: $table.icon,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2279,6 +2330,11 @@ class $$PagesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get title => $composableBuilder(
     column: $table.title,
     builder: (column) => ColumnOrderings(column),
@@ -2348,6 +2404,9 @@ class $$PagesTableAnnotationComposer
   GeneratedColumn<String> get type =>
       $composableBuilder(column: $table.type, builder: (column) => column);
 
+  GeneratedColumn<String> get icon =>
+      $composableBuilder(column: $table.icon, builder: (column) => column);
+
   GeneratedColumn<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => column);
 
@@ -2410,6 +2469,7 @@ class $$PagesTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String?> parentId = const Value.absent(),
                 Value<String> type = const Value.absent(),
+                Value<String> icon = const Value.absent(),
                 Value<String> title = const Value.absent(),
                 Value<String> content = const Value.absent(),
                 Value<int> sortKey = const Value.absent(),
@@ -2425,6 +2485,7 @@ class $$PagesTableTableManager
                 id: id,
                 parentId: parentId,
                 type: type,
+                icon: icon,
                 title: title,
                 content: content,
                 sortKey: sortKey,
@@ -2442,6 +2503,7 @@ class $$PagesTableTableManager
                 required String id,
                 Value<String?> parentId = const Value.absent(),
                 Value<String> type = const Value.absent(),
+                Value<String> icon = const Value.absent(),
                 Value<String> title = const Value.absent(),
                 Value<String> content = const Value.absent(),
                 Value<int> sortKey = const Value.absent(),
@@ -2457,6 +2519,7 @@ class $$PagesTableTableManager
                 id: id,
                 parentId: parentId,
                 type: type,
+                icon: icon,
                 title: title,
                 content: content,
                 sortKey: sortKey,

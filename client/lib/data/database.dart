@@ -21,7 +21,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -48,6 +48,10 @@ class AppDatabase extends _$AppDatabase {
           // v5→v6（V2.1 ④ 剪藏入库通道）：新增应用设置表
           if (from < 6) {
             await m.createTable(appSettings);
+          }
+          // v6→v7（视觉对齐）：pages 加 icon 列（emoji 图标）
+          if (from < 7) {
+            await m.addColumn(pages, pages.icon);
           }
         },
         beforeOpen: (details) async {
@@ -320,6 +324,36 @@ class AppDatabase extends _$AppDatabase {
       n = await (delete(pages)..where((t) => t.deleted.equals(true))).go();
     });
     return n;
+  }
+
+  /// 设置页面图标（emoji；空串=清除）。
+  Future<void> setPageIcon(String id, String icon) {
+    return (update(pages)..where((t) => t.id.equals(id)))
+        .write(PagesCompanion(icon: Value(icon), updatedAt: Value(DateTime.now())));
+  }
+
+  /// 祖先链（从顶层到直接父级，不含自身）。
+  Future<List<Page>> ancestorsOf(String id) async {
+    final out = <Page>[];
+    var cur = await pageById(id);
+    var guard = 0;
+    while (cur?.parentId != null && guard < 50) {
+      final parent = await pageById(cur!.parentId!);
+      if (parent == null || parent.deleted) break;
+      out.insert(0, parent);
+      cur = parent;
+      guard++;
+    }
+    return out;
+  }
+
+  /// 彻底删除单个页面（不进回收站，不可恢复）。
+  Future<void> deletePageForever(String id) async {
+    await transaction(() async {
+      await (delete(pageAssets)..where((t) => t.pageId.equals(id))).go();
+      await (delete(drafts)..where((t) => t.pageId.equals(id))).go();
+      await (delete(pages)..where((t) => t.id.equals(id))).go();
+    });
   }
 
   // —— 应用设置（V2.1 ④）——

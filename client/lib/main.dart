@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform;
 import 'package:flutter/material.dart' hide Page;
+import 'package:flutter/services.dart';
+// ignore: implementation_imports —— documentToMarkdown 未从主入口导出，只能从 src 引入
+import 'package:appflowy_editor_ce/src/plugins/markdown/document_markdown.dart';
 import 'package:http/http.dart' as http;
 
 import 'clip/clip_pull.dart';
@@ -56,6 +58,7 @@ class _HomePageState extends State<HomePage> {
   bool _detailFullPage = false; // 整页切换（隐藏左侧树）
   int _detailRev = 0; // 设置页等外部改动后强制重建详情（拉到新数据必须重载）
   String? _hoveredId; // 页面行悬停状态（FlowUs 式悬停出 ＋/⋯）
+  String _query = ''; // 侧栏搜索关键词（按标题过滤）
 
   /// 触屏/窄窗口没有 hover：动作图标必须常显，否则手机上永远点不到 ＋/⋯。
   bool get _actionsAlwaysVisible {
@@ -213,6 +216,11 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       title: Row(children: [
+        if (pg.icon.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: Text(pg.icon, style: const TextStyle(fontSize: 14)),
+          ),
         if (hasChildren && isTable)
           Padding(
             padding: const EdgeInsets.only(right: 4),
@@ -285,6 +293,38 @@ class _HomePageState extends State<HomePage> {
         child: draggable,
       ),
     );
+  }
+
+  /// 搜索过滤：命中项 + 其所有祖先都保留（否则树会断开）。
+  Map<String?, List<Page>> _filterTree(Map<String?, List<Page>> byParent) {
+    if (_query.isEmpty) return byParent;
+    final key = _query.toLowerCase();
+    final all = <Page>[];
+    for (final list in byParent.values) {
+      all.addAll(list);
+    }
+    final byId = {for (final p in all) p.id: p};
+    final keep = <String>{};
+    for (final p in all) {
+      if (p.title.toLowerCase().contains(key)) {
+        keep.add(p.id);
+        var cur = p;
+        var guard = 0;
+        while (cur.parentId != null && guard < 50) {
+          keep.add(cur.parentId!);
+          final nxt = byId[cur.parentId!];
+          if (nxt == null) break;
+          cur = nxt;
+          guard++;
+        }
+      }
+    }
+    final out = <String?, List<Page>>{};
+    for (final e in byParent.entries) {
+      final list = e.value.where((p) => keep.contains(p.id)).toList();
+      if (list.isNotEmpty) out[e.key] = list;
+    }
+    return out;
   }
 
   /// 分区头：标题 + 悬停浮出的「+」（FlowUs 惯例，替代右下角悬浮按钮）。
@@ -509,14 +549,49 @@ class _HomePageState extends State<HomePage> {
           }
 
           Widget treeList() {
-            return ListView(
-              key: const PageStorageKey('tree-scroll'), // 保留滚动位置
-              children: [
-                _sectionHeader('页面'),
-                ..._buildNodes(byParent, null, 0),
-                const SizedBox(height: 80),
-              ],
-            );
+            final visible = _filterTree(byParent);
+            return Column(children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 6, 8, 2),
+                child: SizedBox(
+                  height: 32,
+                  child: TextField(
+                    onChanged: (v) => setState(() => _query = v.trim()),
+                    style: const TextStyle(fontSize: 13),
+                    decoration: InputDecoration(
+                      isDense: true,
+                      filled: true,
+                      fillColor: const Color(0xFFF3F4F6),
+                      prefixIcon: const Icon(Icons.search, size: 16),
+                      prefixIconConstraints: const BoxConstraints(minWidth: 30),
+                      hintText: '搜索',
+                      hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(6),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  key: const PageStorageKey('tree-scroll'), // 保留滚动位置
+                  children: [
+                    _sectionHeader('页面'),
+                    ..._buildNodes(visible, null, 0),
+                    if (_query.isNotEmpty && visible.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text('没有匹配「$_query」的页面',
+                            style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                      ),
+                    const SizedBox(height: 80),
+                  ],
+                ),
+              ),
+            ]);
           }
 
           if (pages.isEmpty) {
@@ -634,6 +709,9 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
   bool _typePickerDismissed = false; // 空页面类型选择器被「写笔记」手动收起
   final TextEditingController _titleCtl = TextEditingController(); // FlowUs 式内嵌标题
   bool _showAssets = false; // 图片面板折叠（编辑器占主区域）
+  List<Page> _ancestors = const []; // 面包屑祖先链
+  String _icon = ''; // 页面 emoji 图标
+  bool _deleted = false; // 已移入回收站（顶部出恢复横幅）
   Timer? _titleTimer;
   Future<List<Asset>>? _assets;
 
@@ -652,8 +730,12 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
     final page = await widget.db.pageById(widget._pageId);
     final draft = await widget.db.draftFor(widget._pageId);
     if (!mounted) return;
+    final ancestors = page == null ? <Page>[] : await widget.db.ancestorsOf(page.id);
+    if (!mounted) return;
     setState(() {
       _page = page;
+      _ancestors = ancestors;
+      _icon = page?.icon ?? '';
       _titleCtl.text = page?.title ?? '';
       _editorContent = page?.content ?? '';
       _assets = widget.db.assetsForPage(widget._pageId);
@@ -689,6 +771,107 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
     await widget.db.clearDraft(widget._pageId);
     if (!mounted) return;
     setState(() => _draft = null);
+  }
+
+  /// 移入回收站：FlowUs 形态——页面不关闭，顶部出现「已删除」横幅（可恢复/彻底删除）。
+  Future<void> _deleteToTrash() async {
+    await widget.db.softDeletePage(widget._pageId);
+    await widget.db.clearDraft(widget._pageId);
+    DiagnosticsLog.I.add('page.trashed', id: widget._pageId);
+    if (!mounted) return;
+    setState(() => _deleted = true);
+    widget.onTitleChanged?.call(); // 侧栏刷新（该页从树上消失）
+  }
+
+  Future<void> _restoreFromTrash() async {
+    await widget.db.restorePage(widget._pageId);
+    DiagnosticsLog.I.add('page.restored', id: widget._pageId);
+    if (!mounted) return;
+    setState(() => _deleted = false);
+    widget.onTitleChanged?.call();
+  }
+
+  Future<void> _purgePage() async {
+    final yes = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('彻底删除？'),
+        content: const Text('该页面将被永久删除，此操作不可恢复。'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('彻底删除'),
+          ),
+        ],
+      ),
+    );
+    if (yes != true) return;
+    await widget.db.deletePageForever(widget._pageId);
+    widget.onTitleChanged?.call();
+    if (!mounted) return;
+    if (widget.embedded) {
+      widget.onClosed?.call();
+    } else {
+      Navigator.of(context).maybePop();
+    }
+  }
+
+  /// 页面图标（emoji）：内置一组常用图标 + 清除。
+  Future<void> _pickIcon() async {
+    const icons = [
+      '📄', '📝', '📚', '📊', '📈', '🗂️', '📁', '💡', '🎯', '✅',
+      '🔥', '⭐', '🧠', '🛠️', '🧪', '🌱', '☕', '🎧', '💬', '🔖',
+      '🧾', '📌', '🗓️', '⏳', '🏷️', '🔍', '🚀', '🎨', '🧩', '🍀',
+    ];
+    final picked = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('选择图标'),
+        content: SizedBox(
+          width: 320,
+          child: Wrap(spacing: 8, runSpacing: 8, children: [
+            for (final e in icons)
+              InkWell(
+                onTap: () => Navigator.pop(ctx, e),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(6),
+                    color: const Color(0xFFF3F4F6),
+                  ),
+                  child: Text(e, style: const TextStyle(fontSize: 20)),
+                ),
+              ),
+          ]),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, ''), child: const Text('清除图标')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+        ],
+      ),
+    );
+    if (picked == null) return;
+    await widget.db.setPageIcon(widget._pageId, picked);
+    if (!mounted) return;
+    setState(() => _icon = picked);
+    widget.onTitleChanged?.call(); // 侧栏图标同步
+  }
+
+  /// 导出 Markdown：把当前文档转成 MD 复制到剪贴板。
+  Future<void> _exportMarkdown() async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final doc = documentFromContent(_editorContent ?? '');
+      final title = _titleCtl.text.trim();
+      final body = documentToMarkdown(doc);
+      final md = title.isEmpty ? body : '# $title\n\n$body';
+      await Clipboard.setData(ClipboardData(text: md));
+      messenger.showSnackBar(SnackBar(content: Text('已复制 Markdown（${md.length} 字）')));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('导出失败：$e')));
+    }
   }
 
   /// 内嵌标题改名：防抖落库，侧栏通过 onTitleChanged 即时刷新（单一数据源）。
@@ -853,21 +1036,19 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
             ),
           IconButton(
             tooltip: '移入回收站（可恢复）',
-            onPressed: () async {
-              final messenger = ScaffoldMessenger.of(context);
-              final nav = Navigator.of(context);
-              await widget.db.softDeletePage(widget._pageId);
-              await widget.db.clearDraft(widget._pageId);
-              DiagnosticsLog.I.add('page.trashed', id: widget._pageId);
-              if (!mounted) return;
-              messenger.showSnackBar(const SnackBar(content: Text('已移入回收站')));
-              if (widget.embedded) {
-                widget.onClosed?.call();
-              } else if (nav.canPop()) {
-                nav.pop();
-              }
-            },
+            onPressed: _deleted ? null : _deleteToTrash,
             icon: const Icon(Icons.delete),
+          ),
+          // 导出菜单（Markdown 等）
+          PopupMenuButton<String>(
+            tooltip: '导出',
+            icon: const Icon(Icons.ios_share, size: 20),
+            onSelected: (v) {
+              if (v == 'md') _exportMarkdown();
+            },
+            itemBuilder: (_) => const [
+              PopupMenuItem(value: 'md', child: Text('导出 Markdown（复制到剪贴板）')),
+            ],
           ),
           IconButton(
             tooltip: _faultOn ? '故障注入已开：下一次保存将失败（再点关闭）' : '故障注入：模拟写盘失败（演示"不假报已保存"）',
@@ -897,22 +1078,79 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
           : Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // 已删除横幅（FlowUs 形态：删了不关页，可恢复/彻底删除）
+                if (_deleted)
+                  Container(
+                    color: const Color(0xFFC62828),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(children: [
+                      const Expanded(
+                        child: Text('该页面已删除',
+                            style: TextStyle(color: Colors.white, fontSize: 13)),
+                      ),
+                      TextButton(
+                        style: TextButton.styleFrom(foregroundColor: Colors.white),
+                        onPressed: _restoreFromTrash,
+                        child: const Text('恢复'),
+                      ),
+                      const SizedBox(width: 4),
+                      OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: const BorderSide(color: Colors.white70),
+                        ),
+                        onPressed: _purgePage,
+                        child: const Text('彻底删除'),
+                      ),
+                    ]),
+                  ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
-                  child: TextField(
-                    controller: _titleCtl,
-                    onChanged: _onTitleChanged,
-                    style: const TextStyle(
-                        fontSize: 30, fontWeight: FontWeight.w700, height: 1.25),
-                    decoration: const InputDecoration.collapsed(
-                      hintText: '未命名',
-                      hintStyle: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFFB9BEC6)),
-                      border: InputBorder.none,
-                    ),
-                  ),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    // 面包屑：上级路径
+                    if (_ancestors.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 2, bottom: 4),
+                        child: Text(
+                          _ancestors
+                              .map((a) => a.title.isEmpty ? '（无标题）' : a.title)
+                              .join('  /  '),
+                          style: TextStyle(fontSize: 11.5, color: Colors.grey.shade500),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      // 页面图标（emoji）
+                      InkWell(
+                        onTap: _pickIcon,
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          child: _icon.isEmpty
+                              ? Icon(Icons.add_reaction_outlined,
+                                  size: 24, color: Colors.grey.shade400)
+                              : Text(_icon, style: const TextStyle(fontSize: 26)),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: TextField(
+                          controller: _titleCtl,
+                          onChanged: _onTitleChanged,
+                          style: const TextStyle(
+                              fontSize: 30, fontWeight: FontWeight.w700, height: 1.25),
+                          decoration: const InputDecoration.collapsed(
+                            hintText: '未命名',
+                            hintStyle: TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFFB9BEC6)),
+                            border: InputBorder.none,
+                          ),
+                        ),
+                      ),
+                    ]),
+                  ]),
                 ),
                 if (_draft != null)
                   Padding(
