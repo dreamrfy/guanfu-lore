@@ -1,0 +1,632 @@
+{
+ "count": 57,
+ "icons": [
+  {
+   "name": "IcAdd",
+   "file": "IcAdd.svg",
+   "surfaces": [
+    "外壳",
+    "侧栏hover",
+    "行内菜单",
+    "页面⋯面板",
+    "导出子菜单",
+    "空间设置"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 544
+  },
+  {
+   "name": "IcAi",
+   "file": "IcAi.svg",
+   "surfaces": [
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 1564
+  },
+  {
+   "name": "IcArrowDown01",
+   "file": "IcArrowDown01.svg",
+   "surfaces": [
+    "外壳",
+    "侧栏hover",
+    "行内菜单",
+    "页面⋯面板",
+    "导出子菜单",
+    "空间设置"
+   ],
+   "renderedSize": "12x12",
+   "bytes": 644
+  },
+  {
+   "name": "IcArrowHide",
+   "file": "IcArrowHide.svg",
+   "surfaces": [
+    "外壳",
+    "侧栏hover",
+    "行内菜单",
+    "页面⋯面板",
+    "导出子菜单",
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 489
+  },
+  {
+   "name": "IcArrowRight01",
+   "file": "IcArrowRight01.svg",
+   "surfaces": [
+    "外壳",
+    "侧栏hover",
+    "行内菜单",
+    "页面⋯面板",
+    "导出子菜单",
+    "空间设置"
+   ],
+   "renderedSize": "12x12",
+   "bytes": 700
+  },
+  {
+   "name": "IcBlockRightSidebarOpen",
+   "file": "IcBlockRightSidebarOpen.svg",
+   "surfaces": [
+    "行内菜单"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 728
+  },
+  {
+   "name": "IcClose",
+   "file": "IcClose.svg",
+   "surfaces": [
+    "外壳",
+    "侧栏hover",
+    "行内菜单",
+    "页面⋯面板",
+    "导出子菜单",
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 820
+  },
+  {
+   "name": "IcCoin",
+   "file": "IcCoin.svg",
+   "surfaces": [
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 1263
+  },
+  {
+   "name": "IcComment",
+   "file": "IcComment.svg",
+   "surfaces": [
+    "外壳",
+    "侧栏hover",
+    "行内菜单",
+    "页面⋯面板",
+    "导出子菜单",
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 1229
+  },
+  {
+   "name": "IcCommentResolved",
+   "file": "IcCommentResolved.svg",
+   "surfaces": [
+    "页面⋯面板",
+    "导出子菜单"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 1285
+  },
+  {
+   "name": "IcDownload",
+   "file": "IcDownload.svg",
+   "surfaces": [
+    "页面⋯面板",
+    "导出子菜单"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 805
+  },
+  {
+   "name": "IcDuplicate",
+   "file": "IcDuplicate.svg",
+   "surfaces": [
+    "行内菜单"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 1994
+  },
+  {
+   "name": "IcEdit02",
+   "file": "IcEdit02.svg",
+   "surfaces": [
+    "行内菜单"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 1587
+  },
+  {
+   "name": "IcExportPage",
+   "file": "IcExportPage.svg",
+   "surfaces": [
+    "页面⋯面板",
+    "导出子菜单"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 1403
+  },
+  {
+   "name": "IcFolderContent",
+   "file": "IcFolderContent.svg",
+   "surfaces": [
+    "外壳",
+    "行内菜单",
+    "页面⋯面板",
+    "导出子菜单",
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 1070
+  },
+  {
+   "name": "IcGeneralSetting",
+   "file": "IcGeneralSetting.svg",
+   "surfaces": [
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 2063
+  },
+  {
+   "name": "IcGift",
+   "file": "IcGift.svg",
+   "surfaces": [
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 1592
+  },
+  {
+   "name": "IcHistory",
+   "file": "IcHistory.svg",
+   "surfaces": [
+    "外壳",
+    "侧栏hover",
+    "行内菜单",
+    "页面⋯面板",
+    "导出子菜单",
+    "空间设置"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 790
+  },
+  {
+   "name": "IcIcon",
+   "file": "IcIcon.svg",
+   "surfaces": [
+    "外壳",
+    "侧栏hover",
+    "行内菜单",
+    "页面⋯面板",
+    "导出子菜单",
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 2614
+  },
+  {
+   "name": "IcImage",
+   "file": "IcImage.svg",
+   "surfaces": [
+    "外壳",
+    "侧栏hover",
+    "行内菜单",
+    "页面⋯面板",
+    "导出子菜单",
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 875
+  },
+  {
+   "name": "IcInfo",
+   "file": "IcInfo.svg",
+   "surfaces": [
+    "页面⋯面板",
+    "导出子菜单"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 916
+  },
+  {
+   "name": "IcInviteHelp",
+   "file": "IcInviteHelp.svg",
+   "surfaces": [
+    "空间设置"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 2346
+  },
+  {
+   "name": "IcJumpTo",
+   "file": "IcJumpTo.svg",
+   "surfaces": [
+    "行内菜单"
+   ],
+   "renderedSize": "14x14",
+   "bytes": 653
+  },
+  {
+   "name": "IcLink",
+   "file": "IcLink.svg",
+   "surfaces": [
+    "行内菜单",
+    "页面⋯面板",
+    "导出子菜单",
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 2493
+  },
+  {
+   "name": "IcList",
+   "file": "IcList.svg",
+   "surfaces": [
+    "页面⋯面板",
+    "导出子菜单"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 1388
+  },
+  {
+   "name": "IcLock",
+   "file": "IcLock.svg",
+   "surfaces": [
+    "页面⋯面板",
+    "导出子菜单"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 962
+  },
+  {
+   "name": "IcLogOut",
+   "file": "IcLogOut.svg",
+   "surfaces": [
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 1620
+  },
+  {
+   "name": "IcMarkdown",
+   "file": "IcMarkdown.svg",
+   "surfaces": [
+    "导出子菜单"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 1104
+  },
+  {
+   "name": "IcMenuNext",
+   "file": "IcMenuNext.svg",
+   "surfaces": [
+    "页面⋯面板",
+    "导出子菜单"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 471
+  },
+  {
+   "name": "IcMore",
+   "file": "IcMore.svg",
+   "surfaces": [
+    "外壳",
+    "侧栏hover",
+    "行内菜单",
+    "页面⋯面板",
+    "导出子菜单",
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 736
+  },
+  {
+   "name": "IcMove",
+   "file": "IcMove.svg",
+   "surfaces": [
+    "行内菜单",
+    "页面⋯面板",
+    "导出子菜单"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 848
+  },
+  {
+   "name": "IcPageHistory",
+   "file": "IcPageHistory.svg",
+   "surfaces": [
+    "页面⋯面板",
+    "导出子菜单"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 1697
+  },
+  {
+   "name": "IcPages",
+   "file": "IcPages.svg",
+   "surfaces": [
+    "外壳",
+    "侧栏hover",
+    "行内菜单",
+    "页面⋯面板",
+    "导出子菜单",
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 1316
+  },
+  {
+   "name": "IcQuestion",
+   "file": "IcQuestion.svg",
+   "surfaces": [
+    "外壳",
+    "侧栏hover",
+    "行内菜单",
+    "页面⋯面板",
+    "导出子菜单",
+    "空间设置"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 1721
+  },
+  {
+   "name": "IcQuickAccess",
+   "file": "IcQuickAccess.svg",
+   "surfaces": [
+    "外壳",
+    "侧栏hover",
+    "行内菜单",
+    "页面⋯面板",
+    "导出子菜单",
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 1035
+  },
+  {
+   "name": "IcSearch",
+   "file": "IcSearch.svg",
+   "surfaces": [
+    "外壳",
+    "侧栏hover",
+    "行内菜单",
+    "页面⋯面板",
+    "导出子菜单",
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 732
+  },
+  {
+   "name": "IcSettingapps",
+   "file": "IcSettingapps.svg",
+   "surfaces": [
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 973
+  },
+  {
+   "name": "IcSettingglobeShare",
+   "file": "IcSettingglobeShare.svg",
+   "surfaces": [
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 2170
+  },
+  {
+   "name": "IcSettingmember",
+   "file": "IcSettingmember.svg",
+   "surfaces": [
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 1918
+  },
+  {
+   "name": "IcSettings",
+   "file": "IcSettings.svg",
+   "surfaces": [
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 4166
+  },
+  {
+   "name": "IcShoppingCart",
+   "file": "IcShoppingCart.svg",
+   "surfaces": [
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 1353
+  },
+  {
+   "name": "IcSpace",
+   "file": "IcSpace.svg",
+   "surfaces": [
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 1663
+  },
+  {
+   "name": "IcSubscribe",
+   "file": "IcSubscribe.svg",
+   "surfaces": [
+    "外壳",
+    "侧栏hover",
+    "行内菜单",
+    "页面⋯面板",
+    "导出子菜单",
+    "空间设置"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 998
+  },
+  {
+   "name": "IcTable",
+   "file": "IcTable.svg",
+   "surfaces": [
+    "外壳",
+    "侧栏hover",
+    "行内菜单",
+    "页面⋯面板",
+    "导出子菜单",
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 602
+  },
+  {
+   "name": "IcTemplate",
+   "file": "IcTemplate.svg",
+   "surfaces": [
+    "页面⋯面板",
+    "导出子菜单"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 1063
+  },
+  {
+   "name": "IcTimeline",
+   "file": "IcTimeline.svg",
+   "surfaces": [
+    "页面⋯面板",
+    "导出子菜单"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 976
+  },
+  {
+   "name": "IcTrash",
+   "file": "IcTrash.svg",
+   "surfaces": [
+    "外壳",
+    "侧栏hover",
+    "行内菜单",
+    "页面⋯面板",
+    "导出子菜单",
+    "空间设置"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 1677
+  },
+  {
+   "name": "IcUpgrade",
+   "file": "IcUpgrade.svg",
+   "surfaces": [
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 1064
+  },
+  {
+   "name": "IcUser",
+   "file": "IcUser.svg",
+   "surfaces": [
+    "空间设置"
+   ],
+   "renderedSize": "20x20",
+   "bytes": 1378
+  },
+  {
+   "name": "MIcPdf",
+   "file": "MIcPdf.svg",
+   "surfaces": [
+    "导出子菜单"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 2306
+  },
+  {
+   "name": "MIcWord",
+   "file": "MIcWord.svg",
+   "surfaces": [
+    "导出子菜单"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 1237
+  },
+  {
+   "name": "MoveHorizontal",
+   "file": "MoveHorizontal.svg",
+   "surfaces": [
+    "页面⋯面板",
+    "导出子菜单"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 420
+  },
+  {
+   "name": "Presentation",
+   "file": "Presentation.svg",
+   "surfaces": [
+    "页面⋯面板",
+    "导出子菜单"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 442
+  },
+  {
+   "name": "Redo2",
+   "file": "Redo2.svg",
+   "surfaces": [
+    "页面⋯面板",
+    "导出子菜单"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 452
+  },
+  {
+   "name": "Search",
+   "file": "Search.svg",
+   "surfaces": [
+    "页面⋯面板",
+    "导出子菜单"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 389
+  },
+  {
+   "name": "Store",
+   "file": "Store.svg",
+   "surfaces": [
+    "外壳",
+    "侧栏hover",
+    "行内菜单",
+    "页面⋯面板",
+    "导出子菜单",
+    "空间设置"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 702
+  },
+  {
+   "name": "Undo2",
+   "file": "Undo2.svg",
+   "surfaces": [
+    "页面⋯面板",
+    "导出子菜单"
+   ],
+   "renderedSize": "16x16",
+   "bytes": 453
+  }
+ ]
+}
