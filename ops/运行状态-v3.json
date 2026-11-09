@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T21:49:15.519Z",
+  "updatedAt": "2026-11-09T21:59:37.535Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 23,
-    "lastProbeAt": "2026-11-09T21:49:15.519Z"
+    "probeCount": 24,
+    "lastProbeAt": "2026-11-09T21:59:37.535Z"
   },
   "running": [],
   "history": [
@@ -179,6 +179,13 @@
       "startedAt": "2026-11-09T21:46:57.004Z",
       "finishedAt": "2026-11-09T21:49:15.518Z",
       "note": "纠正页面H1(40/64)vs文档标题(30/45)、行高随布局变(24/26)；标出块高矛盾；列表缩进26；拆M0-T27"
+    },
+    {
+      "taskId": "M0-T25",
+      "status": "done-partial",
+      "startedAt": "2026-11-09T21:56:55.486Z",
+      "finishedAt": "2026-11-09T21:59:37.534Z",
+      "note": "方法失败(9捷径只成1个)；type=25二次出现未定名；改进方案转M0-T28；清理零遗留"
     }
   ],
   "blocked": [],

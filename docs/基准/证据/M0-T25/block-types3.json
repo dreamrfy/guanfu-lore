@@ -1,0 +1,89 @@
+{
+ "0 基线": [
+  "0e207dcb-a6fe-40d8-8867-af42cf465a72",
+  "05db2d4f-865c-4f3c-808a-6509331fc496",
+  "4d6d9bb8-9e15-40c2-ac8e-b1a871bbf08b",
+  "c579c282-66f3-4e1d-80ea-e893fd646772",
+  "3c8d3ec2-a573-4a49-a953-6956766a7f67",
+  "e94d0289-344d-44f2-bf6e-0a2a89549c95",
+  "106fa568-bb8e-46ec-bac2-b7dc7b0cab1a",
+  "2cfcdc76-668a-48b7-81c1-a64106f2c3d0",
+  "11572688-3c81-4054-a204-37f948284708",
+  "3bc1de67-adf9-4180-8c25-9e066265387c",
+  "e3864fa1-4582-4057-868c-21cb13ee127e",
+  "8c1a13be-007d-4250-9c30-ecf7723fbfba"
+ ],
+ "1 docId": "e502a6af-30cd-44bf-9dd6-f7bf053adb78",
+ "2 逐块结果": [
+  {
+   "label": "引述文字",
+   "code": "/yswz",
+   "added": [
+    {
+     "type": 12,
+     "level": null,
+     "keys": "format,pageFixedWidth,segments"
+    }
+   ],
+   "total": 2
+  },
+  {
+   "label": "代码片段",
+   "code": "/dmpd",
+   "added": [],
+   "total": 2
+  },
+  {
+   "label": "折叠列表",
+   "code": "/zdlb",
+   "added": [],
+   "total": 2
+  },
+  {
+   "label": "折叠标题1",
+   "code": "/zdbt1",
+   "added": [],
+   "total": 2
+  },
+  {
+   "label": "简单表格",
+   "code": "/jdbg",
+   "added": [],
+   "total": 2
+  },
+  {
+   "label": "分割线",
+   "code": "/fgx",
+   "added": [],
+   "total": 2
+  },
+  {
+   "label": "项目列表",
+   "code": "/xmlb",
+   "added": [],
+   "total": 2
+  },
+  {
+   "label": "编号列表",
+   "code": "/bhlb",
+   "added": [],
+   "total": 2
+  },
+  {
+   "label": "思维导图",
+   "code": "/swdt",
+   "added": [],
+   "total": 2
+  }
+ ],
+ "3 最终块序列": [
+  {
+   "type": 0,
+   "level": null
+  },
+  {
+   "type": 25,
+   "level": null
+  }
+ ]
+}
