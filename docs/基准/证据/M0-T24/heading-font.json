@@ -1,0 +1,353 @@
+{
+ "rows": [
+  {
+   "tag": "DIV",
+   "w": 52,
+   "h": 32,
+   "x": 244,
+   "fontSize": "16px",
+   "lineHeight": "24px",
+   "fontWeight": "400",
+   "sample": "账号"
+  },
+  {
+   "tag": "DIV",
+   "w": 28,
+   "h": 24,
+   "x": 256,
+   "fontSize": "14px",
+   "lineHeight": "24px",
+   "fontWeight": "400",
+   "sample": "账号"
+  },
+  {
+   "tag": "DIV",
+   "w": 708,
+   "h": 152,
+   "x": 716,
+   "fontSize": "16px",
+   "lineHeight": "24px",
+   "fontWeight": "400",
+   "sample": "添加图标\n添加封面\n"
+  },
+  {
+   "tag": "DIV",
+   "w": 708,
+   "h": 88,
+   "x": 716,
+   "fontSize": "16px",
+   "lineHeight": "24px",
+   "fontWeight": "400",
+   "sample": "添加图标\n添加封面\n"
+  },
+  {
+   "tag": "DIV",
+   "w": 56,
+   "h": 20,
+   "x": 743,
+   "fontSize": "14px",
+   "lineHeight": "20px",
+   "fontWeight": "400",
+   "sample": "添加图标"
+  },
+  {
+   "tag": "DIV",
+   "w": 708,
+   "h": 64,
+   "x": 716,
+   "fontSize": "16px",
+   "lineHeight": "24px",
+   "fontWeight": "400",
+   "sample": "账号"
+  },
+  {
+   "tag": "H1",
+   "w": 708,
+   "h": 64,
+   "x": 716,
+   "fontSize": "40px",
+   "lineHeight": "64px",
+   "fontWeight": "600",
+   "sample": "账号"
+  },
+  {
+   "tag": "SPAN",
+   "w": 80,
+   "h": 53,
+   "x": 716,
+   "fontSize": "40px",
+   "lineHeight": "64px",
+   "fontWeight": "600",
+   "sample": "账号"
+  },
+  {
+   "tag": "SPAN",
+   "w": 187,
+   "h": 40,
+   "x": 718,
+   "fontSize": "30px",
+   "lineHeight": "45px",
+   "fontWeight": "600",
+   "sample": "STEAM（墙）"
+  },
+  {
+   "tag": "SPAN",
+   "w": 48,
+   "h": 21,
+   "x": 718,
+   "fontSize": "16px",
+   "lineHeight": "26px",
+   "fontWeight": "400",
+   "sample": "官网："
+  },
+  {
+   "tag": "DIV",
+   "w": 236,
+   "h": 21,
+   "x": 766,
+   "fontSize": "16px",
+   "lineHeight": "26px",
+   "fontWeight": "400",
+   "sample": "https://st"
+  },
+  {
+   "tag": "SPAN",
+   "w": 236,
+   "h": 21,
+   "x": 766,
+   "fontSize": "16px",
+   "lineHeight": "26px",
+   "fontWeight": "400",
+   "sample": "https://st"
+  },
+  {
+   "tag": "SPAN",
+   "w": 215,
+   "h": 40,
+   "x": 718,
+   "fontSize": "30px",
+   "lineHeight": "45px",
+   "fontWeight": "600",
+   "sample": "Z-Library（"
+  },
+  {
+   "tag": "SPAN",
+   "w": 48,
+   "h": 21,
+   "x": 718,
+   "fontSize": "16px",
+   "lineHeight": "26px",
+   "fontWeight": "400",
+   "sample": "官网："
+  },
+  {
+   "tag": "DIV",
+   "w": 117,
+   "h": 21,
+   "x": 766,
+   "fontSize": "16px",
+   "lineHeight": "26px",
+   "fontWeight": "400",
+   "sample": "https://z-"
+  },
+  {
+   "tag": "SPAN",
+   "w": 117,
+   "h": 21,
+   "x": 766,
+   "fontSize": "16px",
+   "lineHeight": "26px",
+   "fontWeight": "400",
+   "sample": "https://z-"
+  },
+  {
+   "tag": "SPAN",
+   "w": 252,
+   "h": 21,
+   "x": 718,
+   "fontSize": "16px",
+   "lineHeight": "26px",
+   "fontWeight": "400",
+   "sample": "账号：dreamrf"
+  },
+  {
+   "tag": "SPAN",
+   "w": 139,
+   "h": 21,
+   "x": 718,
+   "fontSize": "16px",
+   "lineHeight": "26px",
+   "fontWeight": "400",
+   "sample": "密码：gcsb001"
+  },
+  {
+   "tag": "SPAN",
+   "w": 252,
+   "h": 21,
+   "x": 718,
+   "fontSize": "16px",
+   "lineHeight": "26px",
+   "fontWeight": "400",
+   "sample": "邮箱：dreamrf"
+  },
+  {
+   "tag": "SPAN",
+   "w": 154,
+   "h": 40,
+   "x": 718,
+   "fontSize": "30px",
+   "lineHeight": "45px",
+   "fontWeight": "600",
+   "sample": "AWS（墙）"
+  },
+  {
+   "tag": "SPAN",
+   "w": 48,
+   "h": 21,
+   "x": 718,
+   "fontSize": "16px",
+   "lineHeight": "26px",
+   "fontWeight": "400",
+   "sample": "官网："
+  },
+  {
+   "tag": "DIV",
+   "w": 224,
+   "h": 21,
+   "x": 766,
+   "fontSize": "16px",
+   "lineHeight": "26px",
+   "fontWeight": "400",
+   "sample": "https://si"
+  },
+  {
+   "tag": "SPAN",
+   "w": 224,
+   "h": 21,
+   "x": 766,
+   "fontSize": "16px",
+   "lineHeight": "26px",
+   "fontWeight": "400",
+   "sample": "https://si"
+  },
+  {
+   "tag": "SPAN",
+   "w": 252,
+   "h": 21,
+   "x": 718,
+   "fontSize": "16px",
+   "lineHeight": "26px",
+   "fontWeight": "400",
+   "sample": "账号：dreamrf"
+  },
+  {
+   "tag": "SPAN",
+   "w": 48,
+   "h": 21,
+   "x": 718,
+   "fontSize": "16px",
+   "lineHeight": "26px",
+   "fontWeight": "400",
+   "sample": "密码："
+  },
+  {
+   "tag": "SPAN",
+   "w": 252,
+   "h": 21,
+   "x": 718,
+   "fontSize": "16px",
+   "lineHeight": "26px",
+   "fontWeight": "400",
+   "sample": "邮箱：dreamrf"
+  },
+  {
+   "tag": "SPAN",
+   "w": 519,
+   "h": 40,
+   "x": 718,
+   "fontSize": "30px",
+   "lineHeight": "45px",
+   "fontWeight": "600",
+   "sample": "nic.eu.org"
+  },
+  {
+   "tag": "SPAN",
+   "w": 131,
+   "h": 21,
+   "x": 718,
+   "fontSize": "16px",
+   "lineHeight": "26px",
+   "fontWeight": "400",
+   "sample": "账号：TY190-F"
+  },
+  {
+   "tag": "SPAN",
+   "w": 139,
+   "h": 21,
+   "x": 718,
+   "fontSize": "16px",
+   "lineHeight": "26px",
+   "fontWeight": "400",
+   "sample": "密码：gcsb001"
+  },
+  {
+   "tag": "SPAN",
+   "w": 252,
+   "h": 21,
+   "x": 718,
+   "fontSize": "16px",
+   "lineHeight": "26px",
+   "fontWeight": "400",
+   "sample": "邮箱：dreamrf"
+  }
+ ],
+ "groups": {
+  "16px/24px/w400": {
+   "n": 4,
+   "heights": [
+    32,
+    64,
+    88,
+    152
+   ]
+  },
+  "14px/24px/w400": {
+   "n": 1,
+   "heights": [
+    24
+   ]
+  },
+  "14px/20px/w400": {
+   "n": 2,
+   "heights": [
+    20
+   ]
+  },
+  "40px/64px/w600": {
+   "n": 2,
+   "heights": [
+    53,
+    64
+   ]
+  },
+  "30px/45px/w600": {
+   "n": 18,
+   "heights": [
+    40
+   ]
+  },
+  "16px/26px/w400": {
+   "n": 122,
+   "heights": [
+    21,
+    47
+   ]
+  },
+  "16px/26px/w600": {
+   "n": 1,
+   "heights": [
+    21
+   ]
+  }
+ }
+}

@@ -1,0 +1,85 @@
+{
+ "账号页（段落+标题）": {
+  "docId": "11572688-3c81-4054-a204-37f948284708",
+  "apiBlocks": 118,
+  "domBlocks": 120,
+  "paired": 118,
+  "summary": {
+   "type7/lv1": {
+    "n": 18,
+    "hMin": 34,
+    "hMed": 34,
+    "hMax": 164,
+    "xValues": [
+     716
+    ],
+    "singleLineHeights": [
+     34
+    ]
+   },
+   "type1": {
+    "n": 71,
+    "hMin": 34,
+    "hMed": 34,
+    "hMax": 57,
+    "xValues": [
+     716
+    ],
+    "singleLineHeights": [
+     34,
+     57
+    ]
+   },
+   "type1/lv1": {
+    "n": 29,
+    "hMin": 34,
+    "hMed": 57,
+    "hMax": 60,
+    "xValues": [
+     716
+    ],
+    "singleLineHeights": [
+     34,
+     57
+    ]
+   }
+  }
+ },
+ "无标题页（段落+项目列表）": {
+  "docId": "e94d0289-344d-44f2-bf6e-0a2a89549c95",
+  "apiBlocks": 19,
+  "domBlocks": 42,
+  "paired": 19,
+  "summary": {
+   "type1": {
+    "n": 7,
+    "hMin": 34,
+    "hMed": 34,
+    "hMax": 64,
+    "xValues": [
+     716
+    ],
+    "singleLineHeights": [
+     34,
+     36
+    ]
+   },
+   "type4": {
+    "n": 12,
+    "hMin": 26,
+    "hMed": 36,
+    "hMax": 62,
+    "xValues": [
+     716,
+     742
+    ],
+    "singleLineHeights": [
+     26,
+     34,
+     36,
+     52
+    ]
+   }
+  }
+ }
+}

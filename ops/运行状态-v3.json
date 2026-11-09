@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T21:39:55.008Z",
+  "updatedAt": "2026-11-09T21:49:15.519Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 22,
-    "lastProbeAt": "2026-11-09T21:39:55.008Z"
+    "probeCount": 23,
+    "lastProbeAt": "2026-11-09T21:49:15.519Z"
   },
   "running": [],
   "history": [
@@ -172,6 +172,13 @@
       "startedAt": "2026-11-09T21:36:57.836Z",
       "finishedAt": "2026-11-09T21:39:55.007Z",
       "note": "29个中文test-id(18类型+11菜单)；纠正T18错误结论；确认免费版200MB；拆M0-T26"
+    },
+    {
+      "taskId": "M0-T24",
+      "status": "done-partial",
+      "startedAt": "2026-11-09T21:46:57.004Z",
+      "finishedAt": "2026-11-09T21:49:15.518Z",
+      "note": "纠正页面H1(40/64)vs文档标题(30/45)、行高随布局变(24/26)；标出块高矛盾；列表缩进26；拆M0-T27"
     }
   ],
   "blocked": [],
