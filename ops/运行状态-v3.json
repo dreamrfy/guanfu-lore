@@ -1,17 +1,23 @@
 {
-  "version": 3,
-  "protocol": "探测式调度：定时任务每 5 分钟触发一次；读本文件判断“接着做下一个”还是“立即退出”。无固定收工时间，只在 ops/STOP 存在或任务跑空时停止。规则见 ops/看门狗-v3提示词.md",
+  "version": 4,
+  "protocol": "每次触发=全新会话。读本文件判断：并发已满就退出；否则原子认领一个「状态 TODO 且模块不与 running 冲突」的任务。同一会话内做完一个立刻接着做下一个，不等下一轮；上下文到 70% 收尾换新会话。无固定收工时间，仅在 ops/STOP 或无可领任务时停止。规则见 ops/看门狗-v3提示词.md",
   "taskSource": "开发任务表-v3.0-FlowUs复刻版.md",
-  "updatedAt": "2026-11-09T17:49:35.976Z",
+  "maxConcurrent": 2,
+  "contextStopSignals": {
+    "maxTasksPerSession": 2,
+    "maxToolCallsPerSession": 60
+  },
+  "lockDir": "ops/锁",
+  "updatedAt": "2026-11-10T01:56:00+08:00",
   "runtime": {
-    "startedAt": "2026-11-09T17:49:35.977Z",
+    "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
-    "pollIntervalMin": 5,
+    "pollIntervalMin": 10,
     "probeCount": 0,
     "lastProbeAt": null
   },
-  "current": null,
+  "running": [],
   "history": [],
   "blocked": [],
   "deferred": [],
