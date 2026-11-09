@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T20:29:11.313Z",
+  "updatedAt": "2026-11-09T20:40:53.595Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 15,
-    "lastProbeAt": "2026-11-09T20:29:11.313Z"
+    "probeCount": 16,
+    "lastProbeAt": "2026-11-09T20:40:53.595Z"
   },
   "running": [],
   "history": [
@@ -123,6 +123,13 @@
       "startedAt": "2026-11-09T20:26:58.981Z",
       "finishedAt": "2026-11-09T20:29:11.312Z",
       "note": "三态分离(选中黑6%)+块手柄热区+焦点环；修正菜单项圆角4→8px；拆 M0-T20/T21"
+    },
+    {
+      "taskId": "M0-T17",
+      "status": "done-partial",
+      "startedAt": "2026-11-09T20:36:58.541Z",
+      "finishedAt": "2026-11-09T20:40:53.594Z",
+      "note": "确认8种type；[]触发AI踩坑；勾选框未采拆M0-T22；两页彻底清除"
     }
   ],
   "blocked": [],
