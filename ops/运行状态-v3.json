@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T06:17:01.879Z",
+  "updatedAt": "2026-11-10T06:34:25.080Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -515,6 +515,20 @@
       "startedAt": "2026-11-10T13:50:00.000Z",
       "finishedAt": "2026-11-10T06:17:01.879Z",
       "note": "装配：演示壳接库+保存链+草稿恢复横幅，修 ScaffoldMessenger bug；交付exe+3张对照图；318测试；不宣布M2完成(6项未收口)"
+    },
+    {
+      "taskId": "M2-T24",
+      "status": "done",
+      "startedAt": "2026-11-10T14:40:00.000Z",
+      "finishedAt": "2026-11-10T06:34:25.080Z",
+      "note": "emoji字体回退(emojiFontFallback+fontFamilyFallback)；release截图确认📰/✂️正常渲染"
+    },
+    {
+      "taskId": "M2-T19",
+      "status": "todo-again",
+      "startedAt": "2026-11-10T14:20:00.000Z",
+      "finishedAt": "2026-11-10T06:34:25.080Z",
+      "note": "认领未开工（估算每类型约200行组件代码），恢复TODO"
     }
   ],
   "blocked": [],

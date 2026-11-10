@@ -466,7 +466,14 @@ class _PageItemState extends State<_PageItem> {
           width: s,
           height: s,
           child: Center(
-            child: Text(widget.node.icon, style: const TextStyle(fontSize: 16, height: 1)),
+            child: Text(
+              widget.node.icon,
+              style: const TextStyle(
+                fontSize: 16,
+                height: 1,
+                fontFamilyFallback: FlowUsTypography.emojiFontFallback,
+              ),
+            ),
           ),
         );
       }

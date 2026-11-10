@@ -209,6 +209,14 @@ class FlowUsColors extends ThemeExtension<FlowUsColors> {
 abstract final class FlowUsTypography {
   /// 字体栈**照抄**。首位的 my-quote 在真 FlowUs 里加载失败、实际回退到微软雅黑——
   /// 我们照抄栈即可，**不要换字体**（换了就不一致）。
+  /// emoji 字体回退链（M2-T24）：主字体栈只有西文/中文，emoji 会落到 tofu，
+  /// Windows 上靠 `Segoe UI Emoji` 兜底
+  static const List<String> emojiFontFallback = [
+    'Segoe UI Emoji',
+    'Noto Color Emoji',
+    'Apple Color Emoji',
+  ];
+
   static const String fontFamily =
       'my-quote, "PingFang SC", "Microsoft YaHei", ui-sans-serif, -apple-system, '
       'BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, '
