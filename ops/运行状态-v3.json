@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T02:50:24.326Z",
+  "updatedAt": "2026-11-10T03:03:09.761Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -389,6 +389,13 @@
       "startedAt": "2026-11-10T02:41:00.000Z",
       "finishedAt": "2026-11-10T02:50:24.326Z",
       "note": "93 SVG 进 assets + 生成 flowus_icons.dart(92) + 六界面换真图标；238 测试全绿；10 个图标无资产→拆 M1-T14"
+    },
+    {
+      "taskId": "M1-T14",
+      "status": "done",
+      "startedAt": "2026-11-10T03:05:00.000Z",
+      "finishedAt": "2026-11-10T03:03:09.761Z",
+      "note": "抠 DOM 补 9 个 SVG（101 图标），侧栏/空页占位清零；shell 无 Material 图标；238 测试全绿；测试页已删净"
     }
   ],
   "blocked": [],

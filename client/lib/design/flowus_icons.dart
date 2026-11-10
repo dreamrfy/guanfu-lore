@@ -5,7 +5,7 @@
 //
 // 两个坑：
 //   1. 这套图标**混了两家**：FlowUs 自研 Ic* 是**填充式**（viewBox 20×20，靠 fill-current 上色）；
-//      Lucide 那 8 个是**描边式**（viewBox 24×24，stroke=currentColor）。
+//      Lucide 那 9 个是**描边式**（viewBox 24×24，stroke=currentColor）。
 //      两家用同一个 ColorFilter(srcIn) 上色都能对，但**不要**把描边图标当填充图标改 viewBox。
 //   2. 渲染尺寸是**按位置定的**（16 与 20 是主力：16×16 共 29 个、20×20 共 25 个），
 //      所以这里不把尺寸写死，由调用方传（默认 16）。
@@ -15,6 +15,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 /// 图标文件名常量（= assets/icons/ 下的文件名，不含扩展名）
 abstract final class FlowUsIc {
+  static const String luBell = 'Bell';
   static const String add = 'IcAdd';
   static const String addBoard = 'IcAddBoard';
   static const String ai = 'IcAi';
@@ -27,8 +28,10 @@ abstract final class FlowUsIc {
   static const String arrowShow = 'IcArrowShow';
   static const String ascending = 'IcAscending';
   static const String association = 'IcAssociation';
+  static const String avatar = 'IcAvatar';
   static const String blockFullPageOpen = 'IcBlockFullPageOpen';
   static const String blockRightSidebarOpen = 'IcBlockRightSidebarOpen';
+  static const String board = 'IcBoard';
   static const String calendar = 'IcCalendar';
   static const String call = 'IcCall';
   static const String chartNumber = 'IcChartNumber';
@@ -48,14 +51,19 @@ abstract final class FlowUsIc {
   static const String exclusiveChoice = 'IcExclusiveChoice';
   static const String exportPage = 'IcExportPage';
   static const String filter = 'IcFilter';
+  static const String folder = 'IcFolder';
   static const String folderContent = 'IcFolderContent';
+  static const String formNew = 'IcFormNew';
   static const String formula = 'IcFormula';
+  static const String gallery = 'IcGallery';
   static const String generalSetting = 'IcGeneralSetting';
   static const String gift = 'IcGift';
   static const String hideIcon = 'IcHide';
   static const String history = 'IcHistory';
+  static const String home = 'IcHome';
   static const String icon = 'IcIcon';
   static const String image = 'IcImage';
+  static const String importIcon = 'IcImport';
   static const String info = 'IcInfo';
   static const String inviteHelp = 'IcInviteHelp';
   static const String jumpTo = 'IcJumpTo';
@@ -67,6 +75,7 @@ abstract final class FlowUsIc {
   static const String markdown = 'IcMarkdown';
   static const String member = 'IcMember';
   static const String menuNext = 'IcMenuNext';
+  static const String mindmap = 'IcMindmap';
   static const String more = 'IcMore';
   static const String move = 'IcMove';
   static const String multipleChoice = 'IcMultipleChoice';
@@ -110,6 +119,7 @@ abstract final class FlowUsIc {
 
   /// 全部图标名（92 个，按名字排序）
   static const List<String> all = [
+    'Bell',
     'IcAdd',
     'IcAddBoard',
     'IcAi',
@@ -122,8 +132,10 @@ abstract final class FlowUsIc {
     'IcArrowShow',
     'IcAscending',
     'IcAssociation',
+    'IcAvatar',
     'IcBlockFullPageOpen',
     'IcBlockRightSidebarOpen',
+    'IcBoard',
     'IcCalendar',
     'IcCall',
     'IcChartNumber',
@@ -143,14 +155,19 @@ abstract final class FlowUsIc {
     'IcExclusiveChoice',
     'IcExportPage',
     'IcFilter',
+    'IcFolder',
     'IcFolderContent',
+    'IcFormNew',
     'IcFormula',
+    'IcGallery',
     'IcGeneralSetting',
     'IcGift',
     'IcHide',
     'IcHistory',
+    'IcHome',
     'IcIcon',
     'IcImage',
+    'IcImport',
     'IcInfo',
     'IcInviteHelp',
     'IcJumpTo',
@@ -162,6 +179,7 @@ abstract final class FlowUsIc {
     'IcMarkdown',
     'IcMember',
     'IcMenuNext',
+    'IcMindmap',
     'IcMore',
     'IcMove',
     'IcMultipleChoice',

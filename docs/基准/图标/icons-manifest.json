@@ -1,5 +1,5 @@
 {
- "count": 92,
+ "count": 101,
  "icons": [
   {
    "name": "IcAdd",
@@ -876,6 +876,87 @@
     "导出子菜单"
    ],
    "renderedSize": "16x16"
+  },
+  {
+   "name": "IcMindmap",
+   "file": "IcMindmap.svg",
+   "surfaces": [
+    "空页类型选择器"
+   ],
+   "renderedSize": "20x20",
+   "note": "data-icon=IcMindmap"
+  },
+  {
+   "name": "IcBoard",
+   "file": "IcBoard.svg",
+   "surfaces": [
+    "空页类型选择器"
+   ],
+   "renderedSize": "20x20",
+   "note": "data-icon=IcBoard"
+  },
+  {
+   "name": "IcGallery",
+   "file": "IcGallery.svg",
+   "surfaces": [
+    "空页类型选择器"
+   ],
+   "renderedSize": "20x20",
+   "note": "data-icon=IcGallery"
+  },
+  {
+   "name": "IcFormNew",
+   "file": "IcFormNew.svg",
+   "surfaces": [
+    "空页类型选择器"
+   ],
+   "renderedSize": "20x20",
+   "note": "data-icon=IcFormNew"
+  },
+  {
+   "name": "IcImport",
+   "file": "IcImport.svg",
+   "surfaces": [
+    "空页类型选择器"
+   ],
+   "renderedSize": "20x20",
+   "note": "data-icon=IcImport"
+  },
+  {
+   "name": "IcFolder",
+   "file": "IcFolder.svg",
+   "surfaces": [
+    "空页类型选择器"
+   ],
+   "renderedSize": "20x20",
+   "note": "data-icon=IcFolder"
+  },
+  {
+   "name": "IcHome",
+   "file": "IcHome.svg",
+   "surfaces": [
+    "侧栏图标行"
+   ],
+   "renderedSize": "20x20",
+   "note": "无 data-icon（按语义自命名：首页）"
+  },
+  {
+   "name": "IcAvatar",
+   "file": "IcAvatar.svg",
+   "surfaces": [
+    "侧栏图标行"
+   ],
+   "renderedSize": "20x20",
+   "note": "无 data-icon（按语义自命名：头像）"
+  },
+  {
+   "name": "Bell",
+   "file": "Bell.svg",
+   "surfaces": [
+    "侧栏图标行"
+   ],
+   "renderedSize": "20x20",
+   "note": "无 data-icon（按语义自命名：通知）"
   }
  ]
 }

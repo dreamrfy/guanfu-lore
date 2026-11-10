@@ -221,14 +221,14 @@ class _IconRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = flowUsColors(context);
-    // 实测（M1-T07 证据）：5 个图标依次是「首页 / 头像 / 搜索 / 通知 / 更多」。
-    // ⚠️ 其中**首页、头像、通知这 3 个没有采到 SVG**（M0-T15 收割时它们没有 `data-icon` 属性），
-    //    所以仍用 Material 占位 —— 已拆 **M1-T14** 补采这 3 个图标，补齐后这里换成 FlowUsSvgIcon。
+    // 实测（M1-T07 证据）：5 个图标依次是「首页 / 头像 / 搜索 / 通知 / 更多」，全部 20×20。
+    // 首页/头像/通知这 3 个在 M0-T15 收割时**没有 `data-icon` 属性**（所以当时漏了），
+    // M1-T14 从 DOM 里直接把 <svg> 原文抠出来补上（名字按语义自命名，见 manifest 的 note）。
     const icons = <Widget>[
-      Icon(Icons.home_outlined, size: FlowUsComponents.toolButtonIconSize),
-      Icon(Icons.face_outlined, size: FlowUsComponents.toolButtonIconSize),
+      FlowUsSvgIcon(FlowUsIc.home, size: FlowUsComponents.toolButtonIconSize),
+      FlowUsSvgIcon(FlowUsIc.avatar, size: FlowUsComponents.toolButtonIconSize),
       FlowUsSvgIcon(FlowUsIc.luSearch, size: FlowUsComponents.toolButtonIconSize),
-      Icon(Icons.notifications_none, size: FlowUsComponents.toolButtonIconSize),
+      FlowUsSvgIcon(FlowUsIc.luBell, size: FlowUsComponents.toolButtonIconSize),
       FlowUsSvgIcon(FlowUsIc.more, size: FlowUsComponents.toolButtonIconSize),
     ];
     return SizedBox(

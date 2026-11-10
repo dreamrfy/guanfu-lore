@@ -115,23 +115,23 @@ class _EntryRow extends StatefulWidget {
 class _EntryRowState extends State<_EntryRow> {
   bool _hovered = false;
 
-  /// 有实采 SVG 的返回图标名（String），**没采到的返回 Material IconData** 占位
-  /// （思维导图/看板/画廊/目录/时间轴/日历/收集表 这几项的空页类型图标 M0 没收割到，已记在 M1-T14）
-  Object get _icon => switch (widget.entry.label) {
-        '页面' => FlowUsIc.pages,
-        'AI 写作' => FlowUsIc.aiFill,
-        '文件夹' => FlowUsIc.folderContent,
-        '思维导图' => Icons.account_tree_outlined,
-        '模板' => Icons.dashboard_outlined,
-        '导入' => Icons.upload_outlined,
-        '表格' => FlowUsIc.table,
-        '看板' => Icons.view_kanban_outlined,
-        '画廊' => Icons.grid_view_outlined,
-        '目录' => Icons.list_alt_outlined,
-        '时间轴' => Icons.timeline_outlined,
-        '日历' => Icons.calendar_today_outlined,
-        '收集表' => Icons.fact_check_outlined,
-        _ => FlowUsIc.pages,
+  /// 13 项全部用**实采图标名**（M1-T14 补齐：思维导图/看板/画廊/收集表/导入/文件夹；
+  /// 另外目录/时间轴/日历/模板/页面/AI/表格本来就有）。名字取自真 FlowUs 的 `data-icon`。
+  String get _icon => switch (widget.entry.label) {
+        '页面' => FlowUsIc.pageEmpty, // IcPageEmpty
+        'AI 写作' => FlowUsIc.ai, // IcAi
+        '文件夹' => FlowUsIc.folder, // IcFolder
+        '思维导图' => FlowUsIc.mindmap, // IcMindmap
+        '模板' => FlowUsIc.template, // IcTemplate
+        '导入' => FlowUsIc.importIcon, // IcImport
+        '表格' => FlowUsIc.table, // IcTable
+        '看板' => FlowUsIc.board, // IcBoard
+        '画廊' => FlowUsIc.gallery, // IcGallery
+        '目录' => FlowUsIc.list, // IcList
+        '时间轴' => FlowUsIc.timeline, // IcTimeline
+        '日历' => FlowUsIc.calendar, // IcCalendar
+        '收集表' => FlowUsIc.formNew, // IcFormNew
+        _ => FlowUsIc.pageEmpty,
       };
 
   @override
@@ -156,11 +156,8 @@ class _EntryRowState extends State<_EntryRow> {
               SizedBox(
                 width: FlowUsLayout.blankEntryIconSize,
                 height: FlowUsLayout.blankEntryIconSize,
-                child: _icon is String
-                    ? FlowUsSvgIcon(_icon as String,
-                        size: FlowUsLayout.blankEntryIconSize, color: widget.color)
-                    : Icon(_icon as IconData,
-                        size: FlowUsLayout.blankEntryIconSize, color: widget.color),
+                child: FlowUsSvgIcon(_icon,
+                    size: FlowUsLayout.blankEntryIconSize, color: widget.color),
               ),
               const SizedBox(width: 12),
               Text(widget.entry.label,

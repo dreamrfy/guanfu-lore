@@ -10,9 +10,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:bijiapp/design/flowus_icons.dart';
 
 void main() {
-  test('FlowUsIc.all 有 92 个且没有重复', () {
-    expect(FlowUsIc.all.length, 92);
-    expect(FlowUsIc.all.toSet().length, 92);
+  test('FlowUsIc.all 有 101 个且没有重复（M1-T14 补齐 9 个后）', () {
+    expect(FlowUsIc.all.length, 101);
+    expect(FlowUsIc.all.toSet().length, 101);
   });
 
   test('每个图标名都有对应的 assets/icons/<名字>.svg', () {
@@ -24,9 +24,9 @@ void main() {
     expect(missing, isEmpty, reason: '这些图标名在 assets/icons/ 下没有文件：$missing');
   });
 
-  test('资产目录里的 svg 数量与清单一致（93 = 92 个清单项 + 1 个未登记）', () {
+  test('资产目录里的 svg 数量与清单一致（102 = 101 个清单项 + 1 个未登记）', () {
     final files = Directory('assets/icons').listSync().whereType<File>().where((f) => f.path.endsWith('.svg')).toList();
-    expect(files.length, 93, reason: '目录里实际有 ${files.length} 个 svg');
+    expect(files.length, 102, reason: '目录里实际有 ${files.length} 个 svg');
     // 反向也查一遍：目录里有、但清单没登记的（多出来的那个），确保只是漏登记而不是名字不一致
     final names = FlowUsIc.all.toSet();
     final unlisted = files

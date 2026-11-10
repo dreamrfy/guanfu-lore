@@ -71,7 +71,7 @@ void main() {
     final pageRow = find.ancestor(of: find.text('页面'), matching: find.byType(Container)).first;
     final r = tester.getRect(pageRow);
     expect(r.height, closeTo(FlowUsLayout.blankEntryHeight, 0.5));
-    final icon = tester.getRect(svgIcon(FlowUsIc.pages).first);
+    final icon = tester.getRect(svgIcon(FlowUsIc.pageEmpty).first);
     expect(icon.width, closeTo(FlowUsLayout.blankEntryIconSize, 0.5));
     // 相邻行 y 步进 36
     final pageY = tester.getRect(find.text('页面')).top;
