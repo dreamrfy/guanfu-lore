@@ -1,0 +1,19 @@
+{
+  "task": "M1-T07 右下角浮动圆钮 · 补采",
+  "capturedAt": "2026-11-10T06:05:00+08:00",
+  "source": "M0-T02/elements.json + 现场复测（CDP）",
+  "findings": {
+    "容器": ".service-center fixed right-10 bottom-10 → x=1864, y=813, 36×92（1920 视口：right 40=10×4, bottom 40；两钮间 gap 20）",
+    "上钮·AI 触发": "36×36 @y=823（容器内顶 10），全圆 9999、白底 rgb(255,255,255)、边框 1px rgba(0,0,0,0.06)；图标 20×20（自研 svg 无 data-icon，cls h-5 w-5 overflow-visible）；class ai-chat-trigger",
+    "下钮·帮助": "BUTTON 36×36 @y=869，全圆、白底、边框同上；图标 IcQuestion 16×16（不是 20）",
+    "两钮间距": "823+36=859 → 869：gap 10；容器高 92 = 10 + 36 + 10 + 36",
+    "展开面板": "现场未展开（无触发样本）——div.hidden transition-all duration-300 存在但 display:none；M1-T07 只做钮本体，展开面板留待真实样本"
+  },
+  "implementationRules": [
+    "两钮 36×36 全圆白底边框 rgba(0,0,0,0.06)，右下角 fixed（right 40 / bottom 40）",
+    "上钮图标 20×20（AI）、下钮图标 16×16（IcQuestion 帮助）",
+    "钮间垂直 gap 10",
+    "展开面板未采到 → 不实现，接口留 onAiTap/onHelpTap"
+  ],
+  "screenshots": ["floating.png"]
+}

@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 
 import '../design/tokens.dart';
 import 'flowus_banner.dart';
+import 'flowus_floating.dart';
 import 'flowus_tabbar.dart';
 
 /// 侧栏页项 ⋯/右键菜单的 8 项（实测顺序，分隔线在第 1 项与第 6 项「删除」之后）
@@ -724,6 +725,9 @@ class FlowUsShell extends StatelessWidget {
     this.showDeleteBanner = false,
     this.onDeleteRestore,
     this.onDeleteConfirm,
+    this.showFloatingButtons = false,
+    this.onFloatingAiTap,
+    this.onFloatingHelpTap,
   });
 
   final SidebarData data;
@@ -742,6 +746,11 @@ class FlowUsShell extends StatelessWidget {
   final bool showDeleteBanner;
   final VoidCallback? onDeleteRestore;
   final VoidCallback? onDeleteConfirm;
+
+  /// 右下角浮动圆钮（M1-T07）：true 显示
+  final bool showFloatingButtons;
+  final VoidCallback? onFloatingAiTap;
+  final VoidCallback? onFloatingHelpTap;
 
   @override
   Widget build(BuildContext context) {
@@ -787,6 +796,16 @@ class FlowUsShell extends StatelessWidget {
                                     fontWeight: FlowUsTypography.pageTitle.fontWeight,
                                     color: c.textTertiary)),
                           ),
+                          // 右下角浮动圆钮（fixed 相对主区；主区右缘=视口右缘，所以 right/bottom 一致）
+                          if (showFloatingButtons)
+                            Positioned(
+                              right: 40,
+                              bottom: 40,
+                              child: FlowUsFloatingButtons(
+                                onAiTap: onFloatingAiTap,
+                                onHelpTap: onFloatingHelpTap,
+                              ),
+                            ),
                         ],
                       );
                     },
