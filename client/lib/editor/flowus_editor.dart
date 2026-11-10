@@ -137,26 +137,36 @@ class _FlowUsEditorState extends State<FlowUsEditor> {
   }
 }
 
-/// FlowUs 风格排版：正文 15、行高 1.7、块间距紧凑、标题字号接近截图。
+/// FlowUs 风格排版（M2-T05：全部换成实测值，替换掉原来的"拍脑袋"值）
+///
+/// 实测依据：
+///   · 正文 **16 / 26**（行高倍数 26/16 = 1.625）、字色 **#37352F**（`基准-正文行高与块结构` M0-T31）
+///   · 字重只用 **400 / 500 / 600**（`基准-字体与图标`）→ 加粗是 **w600**，不是内核默认的 w700
+///   · 行内代码：16 号 + 背景 **rgba(2,133,255,0.1)**（在「网站」页量到 8 个带此底色的块，即含行内代码的段落）
+///   · 链接色 = 主色 **#0285FF**
+///   · 高亮底色**未实测**（先用 appflowy 默认，已在任务表标注）
 EditorStyle _flowUsEditorStyle(BuildContext context) {
-  const body = TextStyle(fontSize: 15, height: 1.7, color: Color(0xFF1F2329));
+  const bodyFontSize = 16.0;
+  const bodyLineHeightPx = 26.0;
+  const body = TextStyle(fontSize: bodyFontSize, height: bodyLineHeightPx / bodyFontSize, color: Color(0xFF37352F));
   return EditorStyle.desktop(
     padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
-    cursorColor: const Color(0xFF1F2329),
-    selectionColor: const Color(0x332B7CF6),
+    cursorColor: const Color(0xFF0285FF),
+    selectionColor: const Color(0x1A0285FF),
     textStyleConfiguration: const TextStyleConfiguration(
       text: body,
-      bold: TextStyle(fontWeight: FontWeight.w700),
+      // 实测：FlowUs 的字重只有 400/500/600 三档 → 加粗 = w600
+      bold: TextStyle(fontWeight: FontWeight.w600),
       italic: TextStyle(fontStyle: FontStyle.italic),
       underline: TextStyle(decoration: TextDecoration.underline),
       strikethrough: TextStyle(decoration: TextDecoration.lineThrough),
-      href: TextStyle(color: Color(0xFF2B7CF6), decoration: TextDecoration.underline),
+      href: TextStyle(color: Color(0xFF0285FF), decoration: TextDecoration.underline),
       code: TextStyle(
         fontFamily: 'monospace',
-        fontSize: 13.5,
-        backgroundColor: Color(0x14000000),
+        fontSize: bodyFontSize,
+        backgroundColor: Color(0x1A0285FF), // rgba(2,133,255,0.1)
       ),
-      lineHeight: 1.7,
+      lineHeight: bodyLineHeightPx / bodyFontSize,
     ),
   );
 }
