@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T02:05:37.092Z",
+  "updatedAt": "2026-11-10T02:17:24.404Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -368,6 +368,13 @@
       "startedAt": "2026-11-10T02:20:00.000Z",
       "finishedAt": "2026-11-10T02:05:37.092Z",
       "note": "补采胶囊20/4/6/14-20+四组配色、日期 YYYY/MM/DD HH:mm；cell_renderers.dart 接进骨架；11 断言，全量214绿"
+    },
+    {
+      "taskId": "M1-T09",
+      "status": "done",
+      "startedAt": "2026-11-10T02:07:00.000Z",
+      "finishedAt": "2026-11-10T02:17:24.404Z",
+      "note": "回收站浮层实测：面板638×608/搜索框616×32/列头46/行612×38·58/动作钮20×20；trash_panel 8断言，全量222绿"
     }
   ],
   "blocked": [],

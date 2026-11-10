@@ -407,6 +407,56 @@ abstract final class FlowUsTable {
   static const double checkboxSize = 16;
 }
 
+// ---------------------------------------------------------------------------
+// 回收站面板（M1-T09 实测，2026-11-10）
+//
+// 面板 638×608、圆角 12、白底、1px rgba(0,0,0,0.06)、阴影 rgba(25,25,25,0.04) 0 5px 8px；
+// 搜索框 616×32（外面 10 边距）、底 #F7F7F7、圆角 6、输入内边距 12、14/20；
+// 列头高 46（「页面」距左 15、「删除时间」距左 345）、14/20 #91918E；
+// 行 612 宽、单行高 38 / 带副标题 58、圆角 4、内边距 9/7；标题 14/20 w600 #000、副标题 12/18 #91918E、
+// 时间 14/20 #5F5E5B；行内两钮 20×20、间距 8、右内边距 7。
+// ---------------------------------------------------------------------------
+
+abstract final class FlowUsTrash {
+  static const double panelWidth = 638;
+  static const double panelHeight = 608;
+  static const double panelRadius = 12;
+  static const Color panelBorderColor = Color(0x0F000000);
+  static const Color panelBg = Color(0xFFFFFFFF);
+
+  static const double searchMargin = 10; // m-2.5
+  static const double searchHeight = 32;
+  static const double searchRadius = 6;
+  static const Color searchBg = Color(0xFFF7F7F7);
+  static const double searchPaddingH = 12;
+  static const String searchHint = '在回收站中搜索';
+
+  static const double columnHeaderHeight = 46;
+  static const double titleColumnInset = 15; // 「页面」距列头容器左边
+  static const double timeColumnInset = 345; // 「删除时间」距列头容器左边
+  static const Color columnHeaderColor = Color(0xFF91918E);
+
+  static const double rowWidth = 612;
+  static const double rowSingleHeight = 38;
+  static const double rowDoubleHeight = 58;
+  static const double rowRadius = 4;
+  static const double rowPaddingV = 9;
+  static const double rowPaddingH = 7;
+  static const double rowIconSize = 20;
+  static const double rowIconGap = 8;
+  static const double rowActionSize = 20;
+  static const double rowActionGap = 8;
+  static const Color rowTitleColor = Color(0xFF000000);
+  static const Color rowSubtitleColor = Color(0xFF91918E);
+  static const Color rowTimeColor = Color(0xFF5F5E5B);
+  /// 行内动作钮到行右缘的距离：819?（实测 delete 右缘 841，行右缘 848 → 7）
+  static const double rowActionInsetRight = 7;
+
+  /// 底部「清空回收站」：**只有截图依据**（文字与位置），样式与尺寸未实测
+  static const String clearLabel = '清空回收站';
+  static const Color clearColor = Color(0xFF91918E);
+}
+
 /// 选项颜色（单选/多选的胶囊配色）。实测 4 组；其余色相未采到，先不编。
 abstract final class FlowUsOptionColors {
   static const _green = (bg: Color(0xFFD2ECD5), fg: Color(0xFF3B5B46));
