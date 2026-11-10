@@ -5,6 +5,7 @@ import 'package:appflowy_editor_ce/appflowy_editor_ce.dart';
 import 'package:flutter/material.dart';
 
 import 'block_action_menu.dart';
+import 'block_color_panel.dart';
 import 'block_handle.dart';
 import 'block_submenus.dart';
 import 'code_block_component.dart';
@@ -175,6 +176,12 @@ class _FlowUsEditorState extends State<FlowUsEditor> {
     _closeBlockMenu();
   }
 
+  /// M2-T31：背景颜色（null = 清除）
+  Future<void> _onBlockBackground(Node node, Color? color) async {
+    await applyBlockBackground(_editorState, node, color);
+    _closeBlockMenu();
+  }
+
   /// 底部「块数统计」= 块数（不含页面根节点本身）
   int _countNodes(Node node) {
     var n = -1; // 根节点是页面，不算块
@@ -258,6 +265,7 @@ class _FlowUsEditorState extends State<FlowUsEditor> {
                             onAction: (a) => _onBlockAction(a, anchor.node),
                             onConvert: (t) => _onBlockConvert(anchor.node, t),
                             onAlign: (l) => _onBlockAlign(anchor.node, l),
+                            onPickBackground: (c) => _onBlockBackground(anchor.node, c),
                           ),
                         ),
                       ),

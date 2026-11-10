@@ -17,6 +17,7 @@ import 'package:appflowy_editor_ce/appflowy_editor_ce.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'block_color_panel.dart';
 import 'block_submenus.dart';
 
 
@@ -122,6 +123,7 @@ class BlockActionMenu extends StatefulWidget {
     required this.onAction,
     this.onConvert,
     this.onAlign,
+    this.onPickBackground,
   });
 
   /// 底部「块数统计: N」
@@ -134,6 +136,9 @@ class BlockActionMenu extends StatefulWidget {
 
   /// 对齐方式（M2-T27）：左对齐 / 居中对齐 / 右对齐
   final ValueChanged<String>? onAlign;
+
+  /// 背景颜色（M2-T31）：null = 无颜色
+  final ValueChanged<Color?>? onPickBackground;
 
   @override
   State<BlockActionMenu> createState() => _BlockActionMenuState();
@@ -149,6 +154,10 @@ class _BlockActionMenuState extends State<BlockActionMenu> {
       return;
     }
     if (kind == BlockAction.align && widget.onAlign != null) {
+      setState(() => _submenu = _submenu == kind ? null : kind);
+      return;
+    }
+    if (kind == BlockAction.color && widget.onPickBackground != null) {
       setState(() => _submenu = _submenu == kind ? null : kind);
       return;
     }
@@ -205,6 +214,12 @@ class _BlockActionMenuState extends State<BlockActionMenu> {
           onPick: (t) {
             setState(() => _submenu = null);
             widget.onAlign!(t);
+          },
+        ),
+      BlockAction.color when widget.onPickBackground != null => FlowUsColorPanel(
+          onPickBackground: (c) {
+            setState(() => _submenu = null);
+            widget.onPickBackground!(c);
           },
         ),
       _ => null,
