@@ -8,14 +8,14 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-09T23:49:42.549Z",
+  "updatedAt": "2026-11-10T00:00:44.504Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
     "stopReason": null,
     "pollIntervalMin": 10,
-    "probeCount": 35,
-    "lastProbeAt": "2026-11-09T23:49:42.549Z"
+    "probeCount": 36,
+    "lastProbeAt": "2026-11-10T00:00:44.504Z"
   },
   "running": [],
   "history": [
@@ -263,6 +263,13 @@
       "startedAt": "2026-11-09T23:46:54.915Z",
       "finishedAt": "2026-11-09T23:49:42.549Z",
       "note": "M0模块收口：入口文档分类清单+交付条目+开发状态V3.0段；M0剩余TODO=0，M1就绪"
+    },
+    {
+      "taskId": "M1-T01",
+      "status": "done",
+      "startedAt": "2026-11-09T23:56:56.704Z",
+      "finishedAt": "2026-11-10T00:00:44.503Z",
+      "note": "design/tokens.dart 七组常量+25断言全绿；留弃清单：界面层全弃、数据与保存链全留"
     }
   ],
   "blocked": [],
