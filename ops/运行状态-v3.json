@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T05:35:12.312Z",
+  "updatedAt": "2026-11-10T05:41:17.523Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -487,6 +487,13 @@
       "startedAt": "2026-11-10T10:50:00.000Z",
       "finishedAt": "2026-11-10T05:35:12.312Z",
       "note": "页面⋯面板：补测行高31/分隔7条→7组，22项实现+7断言；子菜单与真机截图拆M2-T22；293测试过"
+    },
+    {
+      "taskId": "M2-T14",
+      "status": "partial",
+      "startedAt": "2026-11-10T11:40:00.000Z",
+      "finishedAt": "2026-11-10T05:41:17.523Z",
+      "note": "page_save_pipeline：防抖+草稿+恢复判定+flush；内存SQLite 8断言全绿；未接演示壳（并入T15）"
     }
   ],
   "blocked": [],
