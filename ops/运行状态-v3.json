@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T00:00:44.504Z",
+  "updatedAt": "2026-11-10T00:06:58.203Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -270,6 +270,13 @@
       "startedAt": "2026-11-09T23:56:56.704Z",
       "finishedAt": "2026-11-10T00:00:44.503Z",
       "note": "design/tokens.dart 七组常量+25断言全绿；留弃清单：界面层全弃、数据与保存链全留"
+    },
+    {
+      "taskId": "M1-T02",
+      "status": "done",
+      "startedAt": "2026-11-10T00:06:58.203Z",
+      "finishedAt": "2026-11-10T02:20:00.000Z",
+      "note": "flowus_shell.dart 侧栏 228 三段+容量卡片；9 断言全绿 analyze 0；图标占位待 T13"
     }
   ],
   "blocked": [],
