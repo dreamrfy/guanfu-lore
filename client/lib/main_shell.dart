@@ -80,7 +80,21 @@ class _ShellAppState extends State<ShellApp> {
     await _bootstrapWith(widget.database!);
   }
 
-  Future<void> _bootstrapReal() async => _bootstrapWith(AppDatabase());
+  Future<void> _bootstrapReal() async {
+    final db = AppDatabase();
+    await _bootstrapWith(db);
+    // 诊断：把真正落盘的库路径写进 boot 日志（release 没有控制台）
+    try {
+      final f = await appDbFile('bijiapp');
+      final log = File('${Directory.systemTemp.path}${Platform.pathSeparator}bijiapp-boot.log');
+      await log.writeAsString('DB OK path=${f.path} exists=${await f.exists()}\n');
+    } catch (e) {
+      try {
+        final log = File('${Directory.systemTemp.path}${Platform.pathSeparator}bijiapp-boot.log');
+        await log.writeAsString('DB PATH ERROR ${e}\n');
+      } catch (_) {}
+    }
+  }
 
   Future<void> _bootstrapWith(AppDatabase db) async {
     final pages = await db.listAllActive();

@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T09:31:53.000Z",
+  "updatedAt": "2026-11-10T09:44:59.000Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -613,6 +613,13 @@
       "startedAt": "2026-11-10T09:31:53.000Z",
       "finishedAt": "2026-11-10T09:31:53.000Z",
       "note": "修复:迁移改用customSelect只取id/content;加启动失败红条+TEMP日志;验证无横幅;回归待下轮"
+    },
+    {
+      "taskId": "M2-T33",
+      "status": "done-partial",
+      "startedAt": "2026-11-10T09:37:14.000Z",
+      "finishedAt": "2026-11-10T09:44:59.000Z",
+      "note": "迁移异常已修(无红条无日志),但库路径exists=false→drift在用内存库,落盘未解决;拆M2-T34"
     }
   ],
   "blocked": [],
