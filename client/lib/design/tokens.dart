@@ -79,6 +79,13 @@ abstract final class FlowUsLayout {
 
   /// 滚动条：**overlay 型，不占布局宽度**（实测 offsetWidth - clientWidth = 0）
   static const bool scrollbarIsOverlay = true;
+
+  /// 空页类型选择器（M1-T08 补采，证据 M1-T08/blank-state.json）
+  static const double blankHintHeight = 36; // 提示行 708×36
+  static const double blankEntryHeight = 36; // 入口行高 36
+  static const double blankEntryRadius = 4; // 入口行圆角 4
+  static const double blankEntryIconSize = 20; // 入口图标 20×20
+  static const double blankGroupGap = 16; // 「多维表」分组标题上间隔（462→514 = 36+16）
 }
 
 // ---------------------------------------------------------------------------
@@ -323,6 +330,40 @@ abstract final class FlowUsMotion {
 
   /// 全站最长 0.5s，且**无弹跳/回弹缓动**
   static const Duration longest = Duration(milliseconds: 500);
+}
+
+// ---------------------------------------------------------------------------
+// 右下角浮动圆钮 + 帮助菜单（M1-T07 实测，2026-11-10）
+//
+// 两个圆钮：36×36、全圆、白底、1px 边框 rgba(0,0,0,0.06)、都贴右边 20。
+// 上钮（FlowUs AI）距底 86、下钮（帮助）距底 40 → 两钮间距 = 86 − 40 − 36 = 10。
+// 悬停实测：**底色与边框都不变**（所以悬停不做视觉变化，只换光标）。
+// ---------------------------------------------------------------------------
+
+abstract final class FlowUsFloating {
+  static const double buttonSize = 36;
+  static const double insetRight = 20;
+  static const double aiBottom = 86; // 上钮（AI 助手）
+  static const double helpBottom = 40; // 下钮（帮助）
+  static const double gap = aiBottom - helpBottom - buttonSize; // 10
+  static const double borderWidth = 1;
+  static const Color borderColor = Color(0x0F000000); // rgba(0,0,0,0.06) = 15/255
+  static const double aiIconSize = 20; // 实测 svg 20×20（渐变圆脸）
+  static const double helpIconSize = 16; // 实测 IcQuestion w-4 h-4 = 16×16
+
+  /// 帮助菜单：260×332，贴右边 20、距底 84；内边距 8/0、圆角 12、白底
+  static const double menuWidth = 260;
+  static const double menuInsetRight = 20;
+  static const double menuBottom = 84;
+  static const double menuRadius = 12;
+  static const double menuPaddingV = 8;
+  static const double menuItemHeight = 32; // 行距 32（文字 14/20，垂直居中）
+  static const double menuItemTextInset = 39; // 文字左缘（相对菜单）
+  static const double menuSeparatorInset = 17; // 分隔线左缘
+  static const double menuSeparatorWidth = 226;
+  static const double menuSeparatorMarginV = 4;
+  static const double menuFooterHeight = 22;
+  static const Color menuSeparatorColor = Color(0xFFE5E5E5);
 }
 
 // ---------------------------------------------------------------------------

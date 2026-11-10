@@ -1,0 +1,73 @@
+{
+ "vw": 1920,
+ "vh": 945,
+ "dpr": 1,
+ "zoom": "1",
+ "chain": [
+  {
+   "tag": "BUTTON",
+   "cls": "btn-helper animate-click flex h-9 w-9 items-center justify-c",
+   "x": 1864,
+   "y": 869,
+   "w": 36,
+   "h": 36,
+   "right": 20,
+   "bottom": 40,
+   "pos": "static",
+   "rightCss": "auto",
+   "bottomCss": "auto"
+  },
+  {
+   "tag": "DIV",
+   "cls": "text-left flex",
+   "x": 1864,
+   "y": 869,
+   "w": 36,
+   "h": 36,
+   "right": 20,
+   "bottom": 40,
+   "pos": "static",
+   "rightCss": "auto",
+   "bottomCss": "auto"
+  },
+  {
+   "tag": "DIV",
+   "cls": "service-center fixed right-10 bottom-10 transition-all z-50 ",
+   "x": 1864,
+   "y": 813,
+   "w": 36,
+   "h": 92,
+   "right": 20,
+   "bottom": 40,
+   "pos": "fixed",
+   "rightCss": "40px",
+   "bottomCss": "40px"
+  },
+  {
+   "tag": "DIV",
+   "cls": "main-panel w-full overflow-hidden flex flex-col flex-1 h-ful",
+   "x": 228,
+   "y": 0,
+   "w": 1692,
+   "h": 945,
+   "right": 0,
+   "bottom": 0,
+   "pos": "static",
+   "rightCss": "auto",
+   "bottomCss": "auto"
+  },
+  {
+   "tag": "DIV",
+   "cls": "relative flex flex-1 h-full min-h-0 w-full overflow-x-hidden",
+   "x": 228,
+   "y": 0,
+   "w": 1692,
+   "h": 945,
+   "right": 0,
+   "bottom": 0,
+   "pos": "relative",
+   "rightCss": "0px",
+   "bottomCss": "0px"
+  }
+ ]
+}

@@ -796,11 +796,11 @@ class FlowUsShell extends StatelessWidget {
                                     fontWeight: FlowUsTypography.pageTitle.fontWeight,
                                     color: c.textTertiary)),
                           ),
-                          // 右下角浮动圆钮（fixed 相对主区；主区右缘=视口右缘，所以 right/bottom 一致）
+                          // 右下角浮动圆钮（M1-T07）：浮层自己定位（钮距右 20 / 距底 86 与 40；菜单距底 84），
+                          // 所以这里铺满整个主区，不在这里给 right/bottom —— 实测渲染距右缘是 **20** 而不是 CSS 里的 right:40
+                          // （fixed 的包含块比视口宽 20px，见 docs/基准/证据/M1-T07/offset-chain.json）
                           if (showFloatingButtons)
-                            Positioned(
-                              right: 40,
-                              bottom: 40,
+                            Positioned.fill(
                               child: FlowUsFloatingButtons(
                                 onAiTap: onFloatingAiTap,
                                 onHelpTap: onFloatingHelpTap,

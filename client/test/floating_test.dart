@@ -1,6 +1,6 @@
-// 右下角浮动圆钮校验（M1-T07）
+// 右下角浮动圆钮 + 帮助菜单校验（M1-T07）
 //
-// 数值依据 docs/基准/证据/M1-T07/floating.json。
+// 数值依据：docs/基准/证据/M1-T07/offset-chain.json、help-menu-rows.json（2026-11-10 现场实测）。
 // 跑法：cd client && flutter test test/floating_test.dart
 
 import 'package:flutter/material.dart';
@@ -34,40 +34,134 @@ Future<void> _pumpShell(
 }
 
 void main() {
-  // 在浮动钮组范围内找（侧栏 AI 行有同名图标，必须限定范围）
-  Finder floating(Finder child) => find.descendant(
-        of: find.byType(FlowUsFloatingButtons),
-        matching: child,
-      );
+  Finder floating(Finder child) =>
+      find.descendant(of: find.byType(FlowUsFloatingButtons), matching: child);
 
-  testWidgets('两钮 36×36 全圆白底；右下角 right40/bottom40；钮间 gap 10', (tester) async {
+  Finder buttonOf(IconData icon) =>
+      find.ancestor(of: floating(find.byIcon(icon)), matching: find.byType(Container)).first;
+
+  testWidgets('两钮 36×36 全圆白底 1px 边框；距右 20、距底 86 / 40（实测渲染值）', (tester) async {
     await _pumpShell(tester);
-    final ai = tester.getRect(floating(find.byIcon(Icons.auto_awesome)));
-    final help = tester.getRect(floating(find.byIcon(Icons.question_mark)));
-    // 图标 20 / 16
-    expect(ai.width, closeTo(FlowUsComponents.toolButtonIconSize, 0.5));
-    expect(help.width, closeTo(16, 0.5));
-    // 钮容器 36×36
-    final aiBtn = tester.getRect(find.ancestor(of: floating(find.byIcon(Icons.auto_awesome)), matching: find.byType(Container)).first);
-    expect(aiBtn.width, FlowUsComponents.floatingButton);
-    expect(aiBtn.height, FlowUsComponents.floatingButton);
-    // 位置：右缘 = 1920−40，下缘 = 945−40
-    final group = tester.getRect(find.byType(FlowUsFloatingButtons));
-    expect(group.right, closeTo(1880, 0.5));
-    expect(group.bottom, closeTo(905, 0.5));
-    // 钮间 gap 10（容器 92 = 顶 10 + 36 + 10 + 36，与实测一致）
-    expect(group.height, closeTo(92, 0.5));
+    final ai = tester.getRect(buttonOf(Icons.auto_awesome));
+    final help = tester.getRect(buttonOf(Icons.question_mark));
+
+    for (final r in [ai, help]) {
+      expect(r.width, closeTo(FlowUsComponents.floatingButton, 0.5));
+      expect(r.height, closeTo(FlowUsComponents.floatingButton, 0.5));
+    }
+    // 实测 x=1864 → 右缘 1900 = 1920 − 20；AI 钮距底 86、帮助钮距底 40
+    expect(ai.right, closeTo(1900, 0.5));
+    expect(help.right, closeTo(1900, 0.5));
+    expect(945 - ai.bottom, closeTo(FlowUsFloating.aiBottom, 0.5));
+    expect(945 - help.bottom, closeTo(FlowUsFloating.helpBottom, 0.5));
+    // 钮间 gap = 86 − 40 − 36 = 10
+    expect(
+      FlowUsFloating.aiBottom - FlowUsFloating.helpBottom - FlowUsComponents.floatingButton,
+      closeTo(FlowUsFloating.gap, 0.01),
+    );
+
+    final deco = tester.widget<Container>(buttonOf(Icons.auto_awesome)).decoration as BoxDecoration;
+    expect(deco.shape, BoxShape.circle);
+    expect(deco.color, Colors.white);
+    expect((deco.border! as Border).top.color, const Color(0x0F000000)); // rgba(0,0,0,0.06)
+    expect((deco.border! as Border).top.width, 1);
   });
 
-  testWidgets('点两钮 → 回调；不显示时无钮', (tester) async {
-    var aiTapped = false;
-    var helpTapped = false;
-    await _pumpShell(tester, onAi: () => aiTapped = true, onHelp: () => helpTapped = true);
-    await tester.tap(floating(find.byIcon(Icons.auto_awesome)));
-    await tester.tap(floating(find.byIcon(Icons.question_mark)));
-    expect(aiTapped, isTrue);
-    expect(helpTapped, isTrue);
+  testWidgets('图标尺寸 20（AI）/ 16（帮助）', (tester) async {
+    await _pumpShell(tester);
+    expect(tester.widget<Icon>(floating(find.byIcon(Icons.auto_awesome))).size, 20);
+    expect(tester.widget<Icon>(floating(find.byIcon(Icons.question_mark))).size, 16);
+  });
 
+  testWidgets('点帮助钮 → 菜单 8 条 + 版本脚注；再点收起', (tester) async {
+    await _pumpShell(tester);
+    expect(find.text('帮助中心'), findsNothing);
+
+    await tester.tap(floating(find.byIcon(Icons.question_mark)));
+    await tester.pumpAndSettle();
+    for (final label in [
+      '帮助中心',
+      '在线客服',
+      '问题反馈',
+      '更新日志',
+      '键盘快捷键',
+      '快捷命令',
+      '导入任务列表',
+      '官方网站',
+    ]) {
+      expect(find.text(label), findsOneWidget, reason: '菜单缺 $label');
+    }
+    expect(find.text('FlowUs 1.146.0'), findsOneWidget);
+
+    await tester.tap(floating(find.byIcon(Icons.question_mark)));
+    await tester.pumpAndSettle();
+    expect(find.text('帮助中心'), findsNothing);
+  });
+
+  testWidgets('菜单几何：宽 260、距右 20、距底 84', (tester) async {
+    await _pumpShell(tester);
+    await tester.tap(floating(find.byIcon(Icons.question_mark)));
+    await tester.pumpAndSettle();
+
+    final menu = tester.getRect(find.ancestor(of: find.text('帮助中心'), matching: find.byType(Container)).last);
+    expect(menu.width, closeTo(FlowUsFloating.menuWidth, 0.5));
+    expect(1920 - menu.right, closeTo(FlowUsFloating.menuInsetRight, 0.5));
+    expect(945 - menu.bottom, closeTo(FlowUsFloating.menuBottom, 0.5));
+  });
+
+  testWidgets('菜单行：高 32、文字 14/20 纯黑 #000', (tester) async {
+    await _pumpShell(tester);
+    await tester.tap(floating(find.byIcon(Icons.question_mark)));
+    await tester.pumpAndSettle();
+
+    final t = tester.widget<Text>(find.text('帮助中心'));
+    expect(t.style?.fontSize, 14);
+    expect(t.style?.height, closeTo(20 / 14, 0.0001));
+    expect(t.style?.color, const Color(0xFF000000)); // 实测纯黑，不是正文的 #37352F
+
+    final row = tester.getRect(find.ancestor(of: find.text('帮助中心'), matching: find.byType(SizedBox)).first);
+    expect(row.height, closeTo(FlowUsFloating.menuItemHeight, 0.5));
+  });
+
+  testWidgets('分隔线 3 条：宽 226、色 #E5E5E5', (tester) async {
+    await _pumpShell(tester);
+    await tester.tap(floating(find.byIcon(Icons.question_mark)));
+    await tester.pumpAndSettle();
+
+    final seps = tester
+        .widgetList<Container>(find.descendant(
+          of: find.byType(FlowUsFloatingButtons),
+          matching: find.byWidgetPredicate((w) => w is Container && w.constraints?.maxHeight == 1),
+        ))
+        .toList();
+    expect(seps.length, 3, reason: '三组之间 2 条 + 版本脚注前 1 条');
+    expect(seps.first.constraints!.maxWidth, closeTo(FlowUsFloating.menuSeparatorWidth, 0.5));
+    expect(seps.first.color, FlowUsFloating.menuSeparatorColor);
+
+    final footer = tester.widget<Text>(find.text('FlowUs 1.146.0'));
+    expect(footer.style?.fontSize, 12);
+    expect(footer.style?.color, const Color(0xFF91918E));
+  });
+
+  testWidgets('点菜单项 → 收起菜单（条目回调由 Shell 透传，本轮只验收起）', (tester) async {
+    await _pumpShell(tester);
+    await tester.tap(floating(find.byIcon(Icons.question_mark)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('键盘快捷键'));
+    await tester.pumpAndSettle();
+    expect(find.text('帮助中心'), findsNothing);
+  });
+
+  testWidgets('点 AI 钮 → 回调；AI 面板属 M9', (tester) async {
+    var ai = false;
+    await _pumpShell(tester, onAi: () => ai = true);
+    await tester.tap(floating(find.byIcon(Icons.auto_awesome)));
+    await tester.pumpAndSettle();
+    expect(ai, isTrue);
+    expect(find.text('帮助中心'), findsNothing);
+  });
+
+  testWidgets('不显示时没有浮层', (tester) async {
     await _pumpShell(tester, show: false);
     expect(find.byType(FlowUsFloatingButtons), findsNothing);
   });
