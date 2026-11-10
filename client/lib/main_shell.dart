@@ -24,6 +24,9 @@ import 'shell/flowus_trash_panel.dart';
 /// 演示页标题：只认这一篇，避免动到用户自己的页面
 const String kDemoPageTitle = '学习进度';
 
+/// 演示页在侧栏里的 id（与真 FlowUs 截图状态一致：默认选中「学习进度」）
+const String kDemoPageId = 'study';
+
 void main() => runApp(const ShellApp());
 
 class ShellApp extends StatefulWidget {
@@ -37,7 +40,7 @@ class ShellApp extends StatefulWidget {
 }
 
 class _ShellAppState extends State<ShellApp> {
-  String? _selectedId = 'study'; // 默认选中「学习进度」，与真 FlowUs 截图状态一致
+  String? _selectedId = kDemoPageId; // 默认选中「学习进度」，与真 FlowUs 截图状态一致
   var _seq = 0;
 
   // M1-T13 交付演示：把 M1 做出来的东西都摆出来（标签条 / 浮动钮 / 回收站浮层）
@@ -85,25 +88,30 @@ class _ShellAppState extends State<ShellApp> {
 
   Future<void> _bootstrapReal() async {
     // M2-T35：启动先做一次自动备份（db + wal + shm，保留最新 10 组），再做任何读写
+    //
+    // ⚠️ 备份的是**演示库**，不是真实笔记库：
+    //   真实库 `bijiapp.sqlite` 装的是用户自己从 FlowUs 迁来的笔记，演示壳不碰它；
+    //   演示库 `bijiapp-demo.sqlite` 才是演示壳写演示文档的地方。
+    //   （2026-11-10 审阅发现：演示壳此前一直用真实库，会往用户库里塞演示页。）
     String backupNote = 'backup=skipped';
     try {
-      final f = await appDbFile('bijiapp');
+      final f = await appDbFile(kDemoDbName);
       final made = await backupDbWithRotation(f, keep: 10);
       backupNote = 'backup=${made?.path ?? 'none'}';
     } catch (e) {
       backupNote = 'backup error $e';
     }
-    final db = AppDatabase();
+    final db = AppDatabase.demo();
     await _bootstrapWith(db);
     // 诊断：把真正落盘的库路径写进 boot 日志（release 没有控制台）
     try {
-      final f = await appDbFile('bijiapp');
+      final f = await appDbFile(kDemoDbName);
       final log = File('${Directory.systemTemp.path}${Platform.pathSeparator}bijiapp-boot.log');
       await log.writeAsString('DB OK path=${f.path} exists=${await f.exists()} $backupNote\n');
     } catch (e) {
       try {
         final log = File('${Directory.systemTemp.path}${Platform.pathSeparator}bijiapp-boot.log');
-        await log.writeAsString('DB PATH ERROR ${e}\n');
+        await log.writeAsString('DB PATH ERROR $e\n');
       } catch (_) {}
     }
   }
@@ -158,6 +166,14 @@ class _ShellAppState extends State<ShellApp> {
   /// 当前页标题（M2-T02）：主区输入框、侧栏页项、标签条三处同步
   String _currentTitle = '学习进度';
 
+  /// 当前打开的是不是**演示页**（只有演示页接了保存链）。
+  ///
+  /// 侧栏里那十几项（磷化工知识库 / 磷矿 / 磷酸…）是为了和真 FlowUs 截图对照而**写死的演示条目**，
+  /// 它们在库里并不存在、也没有接保存链。所以：
+  ///   · 点到非演示页 → 标题框显示那一项的标题，但**不落库**（否则会把演示页的标题改掉）；
+  ///   · 正文也停在演示正文上（不假装切了页）。
+  bool get _isDemoPage => _selectedId == kDemoPageId;
+
   void _onTitleChanged(String v) {
     final id = _selectedId;
     setState(() {
@@ -183,6 +199,9 @@ class _ShellAppState extends State<ShellApp> {
 
   /// 防抖后的落库（演示壳：这里只落内存；真库在 M2-T14 保存链接入 pages 表）
   Future<void> _onTitleSave(String v) async {
+    // ⚠️ 只有演示页接保存链：侧栏里那些写死的对照条目在库里并不存在，
+    // 若在这里照落库，会把演示页的标题改成别的页面的标题。
+    if (!_isDemoPage) return;
     _pipe?.editTitle(v);
     await Future<void>.delayed(const Duration(milliseconds: 30));
     _savedTitles[_selectedId ?? ''] = v;
@@ -212,7 +231,7 @@ class _ShellAppState extends State<ShellApp> {
         {
           'type': 'code',
           'data': {
-            'delta': [{'insert': 'select * from pages where cover_key is not null;'}],
+            'delta': [{'insert': '// 代码块：等宽 14/21，左缘缩进 25'}],
           },
         },
         {'type': 'paragraph', 'data': {'delta': [{'insert': '在这一行打 / 可以唤起斜杠菜单，选中文字按 Ctrl+B 加粗。'}]}},
@@ -222,6 +241,8 @@ class _ShellAppState extends State<ShellApp> {
 
   void _onContentChanged(String json) {
     setState(() => _content = json);
+    // ⚠️ 同标题：只有演示页接保存链，别把演示页正文写进别的页。
+    if (!_isDemoPage) return;
     _pipe?.editContent(json); // 防抖 + 即时草稿（M2-T14）
   }
 

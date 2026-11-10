@@ -32,7 +32,7 @@ const List<List<Color>> kBlockBackgroundSwatches = [
 Future<bool> applyBlockBackground(EditorState editorState, Node node, Color? color) async {
   final value = color == null
       ? ''
-      : '#' + color.toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase();
+      : '#${color.toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
   final transaction = editorState.transaction
     ..updateNode(node, {blockComponentBackgroundColor: value.isEmpty ? null : value});
   await editorState.apply(transaction);

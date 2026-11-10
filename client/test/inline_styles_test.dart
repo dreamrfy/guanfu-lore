@@ -73,6 +73,7 @@ String _encode(Object? v) {
 }
 
 /// 收集所有富文本 span 的样式
+// ignore: unused_element —— 调试用工具函数，平时不调用
 List<TextStyle?> _spanStyles(WidgetTester tester) {
   final out = <TextStyle?>[];
   for (final rich in tester.widgetList<RichText>(find.byType(RichText))) {

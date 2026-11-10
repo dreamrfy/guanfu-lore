@@ -145,13 +145,12 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.text('背景颜色'), findsNothing);
+expect(find.text('背景颜色'), findsNothing);
       await tester.tap(find.text('颜色'));
       await tester.pumpAndSettle();
       expect(find.text('背景颜色'), findsOneWidget, reason: '颜色面板应弹出');
       expect(tester.getRect(find.byType(BlockActionMenu)).width, greaterThan(kBlockMenuWidth));
 
-      await tester.tap(find.text('无颜色') == null ? find.text('背景颜色') : find.text('背景颜色'));
       // 选最后一行最后一个色块
       final swatch = find.byWidgetPredicate((w) =>
           w is Container && (w.decoration as BoxDecoration?)?.color == const Color(0xFFFFD3D3));
@@ -159,6 +158,44 @@ void main() {
       await tester.pumpAndSettle();
       expect(picked, const Color(0xFFFFD3D3));
       expect(find.text('背景颜色'), findsNothing, reason: '选完收起子面板');
+    });
+
+    testWidgets('点「无颜色」格 → 回调 null（清除底色）', (tester) async {
+      tester.view.physicalSize = const Size(900, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      Color? picked;
+      var called = false;
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: Align(
+            alignment: Alignment.topLeft,
+            child: BlockActionMenu(
+              blockCount: 3,
+              onAction: (_) {},
+              onPickBackground: (c) {
+                called = true;
+                picked = c;
+              },
+            ),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('颜色'));
+      await tester.pumpAndSettle();
+
+      // 「无颜色」格是 22×22 的深色小方块（Color(0x0F000000)），不是文字
+      final none = find.byWidgetPredicate((w) =>
+          w is Container && (w.decoration as BoxDecoration?)?.color == const Color(0x0F000000));
+      expect(none, findsNWidgets(2), reason: '文字段与背景段各有一个「无颜色」格');
+      await tester.tap(none.last);
+      await tester.pumpAndSettle();
+
+      expect(called, isTrue, reason: '点「无颜色」应触发回调');
+      expect(picked, isNull, reason: '「无颜色」= null（清除底色）');
     });
   });
 }

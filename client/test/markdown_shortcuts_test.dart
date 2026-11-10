@@ -108,7 +108,7 @@ void main() {
   test('破折号被替换成 em dash 后仍能出分割线（—- / ——）', () async {
     for (final t in ['—-', '——']) {
       final st = _state(t);
-      expect(await formatTripleMinusesToDivider.handler(st), isTrue, reason: '\ 应转分割线');
+      expect(await formatTripleMinusesToDivider.handler(st), isTrue, reason: '应转分割线');
       expect(_first(st).type, DividerBlockKeys.type);
     }
   });

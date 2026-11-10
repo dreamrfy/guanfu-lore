@@ -1,5 +1,5 @@
 {
- "count": 104,
+ "count": 105,
  "icons": [
   {
    "name": "IcAdd",
@@ -193,6 +193,15 @@
     "字段类型菜单"
    ],
    "renderedSize": "20x20"
+  },
+  {
+   "name": "IcCheckboxCheck",
+   "file": "IcCheckboxCheck.svg",
+   "surfaces": [
+    "待办块已勾选态"
+   ],
+   "renderedSize": "24x24",
+   "note": "2026-11-10 审阅补登记：M0-T20 采到但漏登记，导致取不到就是空白圈"
   },
   {
    "name": "IcClockCheck",

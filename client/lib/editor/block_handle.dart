@@ -400,11 +400,27 @@ class _FlowUsBlockHandlesState extends State<FlowUsBlockHandles> {
 
   @override
   Widget build(BuildContext context) {
+    // 图标位置是按块矩形的**全局坐标**算的。窗口尺寸变化（缩放/改窗口大小）会让内容列重新居中，
+    // 块的全局坐标跟着变 —— 但滚动和 hover 都不一定触发，图标就会停在旧坐标上。
+    // 所以这里监听可用尺寸变化，变了就重算一次（2026-11-10 审阅时实测抓到）。
     return AnimatedBuilder(
       animation: widget.controller,
-      builder: (context, _) => _buildPortal(context),
+      builder: (context, _) => LayoutBuilder(
+        builder: (context, constraints) {
+          // 尺寸变了 → 重算图标坐标（postFrame：此时新布局已生效）
+          if (_lastSize != constraints.biggest) {
+            _lastSize = constraints.biggest;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) widget.controller.refresh();
+            });
+          }
+          return _buildPortal(context);
+        },
+      ),
     );
   }
+
+  Size? _lastSize;
 
   /// 关键：图标必须画在**内容列左外 20/22px**，而那里已经在编辑器盒子之外 ——
   /// Flutter 的 hit test 出不了父边界（画得出、点不到），所以不能做成块内 Stack。

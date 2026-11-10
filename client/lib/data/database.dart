@@ -21,6 +21,10 @@ class AppDatabase extends _$AppDatabase {
   /// 测试/演示用：显式注入执行器（内存库或指定文件）。
   AppDatabase.forTesting(super.e);
 
+  /// **演示壳专用库**（与真实笔记库 `bijiapp.sqlite` 分开）。
+  /// 见 [openDemoExecutor] 的说明：演示壳不再往用户真实库里写演示数据。
+  AppDatabase.demo() : super(openDemoExecutor());
+
   @override
   int get schemaVersion => 9;
 
@@ -94,6 +98,27 @@ class AppDatabase extends _$AppDatabase {
   static QueryExecutor _open() => driftDatabase(
         name: 'bijiapp',
         // 网页端：wasm 引擎与 worker 均为本地文件（web/ 目录，构建自动携带）
+        web: DriftWebOptions(
+          sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+          driftWorker: Uri.parse('drift_worker.js'),
+        ),
+      );
+
+  /// **演示壳专用**的数据库执行器：文件独立于真实笔记库。
+  ///
+  /// 为什么要单独一个库（2026-11-10 审阅时发现）：
+  /// 演示壳会往库里写「学习进度」演示文档。早期它直接用真实库（`bijiapp.sqlite`，
+  /// 里面装着用户自己从 FlowUs 迁进来的 8 篇笔记），于是：
+  ///   ① 演示壳曾经把用户的页当演示页打开并覆盖（出过事故，见 M2-T35）；
+  ///   ② 即使加了「只认学习进度」的防线，演示壳仍在**用户的真实库里**建演示页、
+  ///      写演示正文 —— 用户的库被演示数据污染。
+  ///
+  /// 现在演示壳走 `bijiapp-demo.sqlite`，与真实库彻底分开：
+  ///   · 真实库 `bijiapp.sqlite` 只放用户自己的笔记；
+  ///   · 演示库 `bijiapp-demo.sqlite` 只放演示文档；
+  ///   · 备份也各备各的（[appDbFile] 按名取路径）。
+  static QueryExecutor openDemoExecutor() => driftDatabase(
+        name: 'bijiapp-demo',
         web: DriftWebOptions(
           sqlite3Wasm: Uri.parse('sqlite3.wasm'),
           driftWorker: Uri.parse('drift_worker.js'),
@@ -406,6 +431,16 @@ class AppDatabase extends _$AppDatabase {
     ));
   }
 }
+
+/// **演示壳专用库**的文件名（不含扩展名）。
+///
+/// ⚠️ 必须与真实笔记库 `bijiapp` 分开（2026-11-10 审阅发现）：
+/// 演示壳会往库里写「学习进度」演示文档。早期它直接用真实库（`bijiapp.sqlite`，
+/// 里面装着用户自己从 FlowUs 迁进来的笔记），于是用户的库被演示数据污染，
+/// 早期还出过"把用户页当演示页覆盖"的事故（见 M2-T35）。
+///
+/// 现在：真实库只放用户数据，演示壳只碰这个演示库。
+const String kDemoDbName = 'bijiapp-demo';
 
 /// 数据库文件位置：**必须和 drift_flutter 的默认一致** —— 它用 。
 /// （2026-11-10 事故教训：这里以前写成 support 目录，排查时一度以为库没落盘；本机 Documents 还被重定向到 D 盘。）

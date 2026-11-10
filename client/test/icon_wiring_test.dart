@@ -10,9 +10,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:bijiapp/design/flowus_icons.dart';
 
 void main() {
-  test('FlowUsIc.all 有 104 个且没有重复（M2-T07 又补了 IcMenu）', () {
-    expect(FlowUsIc.all.length, 104);
-    expect(FlowUsIc.all.toSet().length, 104);
+  test('FlowUsIc.all 有 105 个且没有重复（M2-T31 补登记 IcCheckboxCheck）', () {
+    expect(FlowUsIc.all.length, 105);
+    expect(FlowUsIc.all.toSet().length, 105);
   });
 
   test('每个图标名都有对应的 assets/icons/<名字>.svg', () {
@@ -24,16 +24,17 @@ void main() {
     expect(missing, isEmpty, reason: '这些图标名在 assets/icons/ 下没有文件：$missing');
   });
 
-  test('资产目录里的 svg 数量与清单一致（105 = 104 个清单项 + 1 个未登记）', () {
+  test('资产目录里的 svg 与清单一一对应（不多不少）', () {
     final files = Directory('assets/icons').listSync().whereType<File>().where((f) => f.path.endsWith('.svg')).toList();
     expect(files.length, 105, reason: '目录里实际有 ${files.length} 个 svg');
-    // 反向也查一遍：目录里有、但清单没登记的（多出来的那个），确保只是漏登记而不是名字不一致
+    // 反向也查一遍：目录里有、但清单没登记的 —— 那就是"取不到的图标 = 空白圈"
+    // （2026-11-10 审阅发现：IcCheckboxCheck 采到了却漏登记，manifest 与常量表因此对不上）
     final names = FlowUsIc.all.toSet();
     final unlisted = files
         .map((f) => f.uri.pathSegments.last.replaceAll('.svg', ''))
         .where((n) => !names.contains(n))
         .toList();
-    expect(unlisted.length, lessThanOrEqualTo(1), reason: '未登记图标：$unlisted');
+    expect(unlisted, isEmpty, reason: '资产目录里有、清单没登记的图标（生成器会拒绝生成）：$unlisted');
   });
 
   test('关键槽位的图标名与实测一致（防止把 IcMore 换成别的）', () {

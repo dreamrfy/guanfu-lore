@@ -3,7 +3,6 @@
 // 实测规格：等宽 **14 / 21**、缩进 **25**、单行块高 26（基准-正文行高与块结构 §2）
 // 跑法：cd client && flutter test test/code_block_test.dart
 
-import 'package:appflowy_editor_ce/appflowy_editor_ce.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

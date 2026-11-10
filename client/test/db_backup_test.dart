@@ -26,8 +26,8 @@ void main() {
   File makeDb(Directory dir) {
     final db = File(p.join(dir.path, 'bijiapp.sqlite'));
     db.writeAsStringSync('MAIN');
-    File(db.path + '-wal').writeAsStringSync('WAL');
-    File(db.path + '-shm').writeAsStringSync('SHM');
+    File('${db.path}-wal').writeAsStringSync('WAL');
+    File('${db.path}-shm').writeAsStringSync('SHM');
     return db;
   }
 
@@ -37,13 +37,23 @@ void main() {
     expect(Directory(p.join(tmp.path, 'backups')).existsSync(), isFalse);
   });
 
+  test('演示库与真实库是两个不同文件（防止演示壳写进用户笔记库）', () {
+    // 2026-11-10 审阅发现：演示壳此前直接用真实库 `bijiapp.sqlite`，
+    // 于是用户的笔记库里被塞进演示页。这里锁死"两个库必须分开"这条底线。
+    //
+    // 只比**库名**（不解析路径）—— 路径要走 path_provider 平台通道，
+    // 纯 dart 测试里没有 binding，会炸。
+    expect(kDemoDbName, isNot('bijiapp'));
+    expect(kDemoDbName, 'bijiapp-demo');
+  });
+
   test('一次备份会带上 -wal 与 -shm（只拷主库会丢最新数据）', () async {
     final db = makeDb(tmp);
     final made = await backupDbWithRotation(db);
     expect(made, isNotNull);
     expect(made!.existsSync(), isTrue);
-    expect(File(made.path + '-wal').readAsStringSync(), 'WAL');
-    expect(File(made.path + '-shm').readAsStringSync(), 'SHM');
+    expect(File('${made.path}-wal').readAsStringSync(), 'WAL');
+    expect(File('${made.path}-shm').readAsStringSync(), 'SHM');
   });
 
   test('轮转：keep=3 时只保留最新 3 组（每组 3 个文件）', () async {

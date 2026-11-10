@@ -1,13 +1,15 @@
 // 真 FlowUs 的图标（M1-T12）——**由 docs/基准/图标/icons-manifest.json 自动生成，不要手改名字**。
 //
-// 来源：M0-T15 从真 FlowUs 的 [data-icon] 属性收割 57 个 + M0-T18 从数据库界面补 35 个 = 92 个，
-// SVG 原文已随仓库放在 `client/assets/icons/`（pubspec 已登记），统一用 flutter_svg 渲染。
+// 来源：M0-T15 从真 FlowUs 的 [data-icon] 属性收割 57 个 + M0-T18 从数据库界面补 35 个，
+// 共 105 个；SVG 原文已随仓库放在 `client/assets/icons/`（pubspec 已登记），统一用 flutter_svg 渲染。
+//
+// 重新生成：`node tools/gen-flowus-icons.cjs`（脚本会核对清单与资产目录一一对应，对不上就报错）
 //
 // 两个坑：
 //   1. 这套图标**混了两家**：FlowUs 自研 Ic* 是**填充式**（viewBox 20×20，靠 fill-current 上色）；
 //      Lucide 那 9 个是**描边式**（viewBox 24×24，stroke=currentColor）。
 //      两家用同一个 ColorFilter(srcIn) 上色都能对，但**不要**把描边图标当填充图标改 viewBox。
-//   2. 渲染尺寸是**按位置定的**（16 与 20 是主力：16×16 共 29 个、20×20 共 25 个），
+//   2. 渲染尺寸是**按位置定的**（16 与 20 是主力），
 //      所以这里不把尺寸写死，由调用方传（默认 16）。
 
 import 'package:flutter/material.dart';
@@ -40,6 +42,7 @@ abstract final class FlowUsIc {
   static const String check = 'IcCheck';
   static const String check02 = 'IcCheck02';
   static const String checkbox = 'IcCheckbox';
+  static const String checkboxCheck = 'IcCheckboxCheck';
   static const String clockCheck = 'IcClockCheck';
   static const String clockPlus = 'IcClockPlus';
   static const String close = 'IcClose';
@@ -120,7 +123,7 @@ abstract final class FlowUsIc {
   static const String luStore = 'Store';
   static const String luUndo2 = 'Undo2';
 
-  /// 全部图标名（92 个，按名字排序）
+  /// 全部图标名（105 个，按名字排序）
   static const List<String> all = [
     'Bell',
     'IcAdd',
@@ -147,6 +150,7 @@ abstract final class FlowUsIc {
     'IcCheck',
     'IcCheck02',
     'IcCheckbox',
+    'IcCheckboxCheck',
     'IcClockCheck',
     'IcClockPlus',
     'IcClose',
