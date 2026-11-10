@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import 'block_action_menu.dart';
 import 'block_handle.dart';
+import 'block_submenus.dart';
 import 'code_block_component.dart';
 import 'inline_shortcuts.dart';
 import 'markdown_shortcuts.dart';
@@ -162,6 +163,18 @@ class _FlowUsEditorState extends State<FlowUsEditor> {
     _closeBlockMenu();
   }
 
+  /// M2-T27：转换为（面板里点了某个目标块类型）
+  Future<void> _onBlockConvert(Node node, String target) async {
+    await applyConvert(_editorState, node, target);
+    _closeBlockMenu();
+  }
+
+  /// M2-T27：对齐方式
+  Future<void> _onBlockAlign(Node node, String label) async {
+    await applyAlign(_editorState, node, label);
+    _closeBlockMenu();
+  }
+
   /// 底部「块数统计」= 块数（不含页面根节点本身）
   int _countNodes(Node node) {
     var n = -1; // 根节点是页面，不算块
@@ -243,6 +256,8 @@ class _FlowUsEditorState extends State<FlowUsEditor> {
                           child: BlockActionMenu(
                             blockCount: _countNodes(_editorState.document.root),
                             onAction: (a) => _onBlockAction(a, anchor.node),
+                            onConvert: (t) => _onBlockConvert(anchor.node, t),
+                            onAlign: (l) => _onBlockAlign(anchor.node, l),
                           ),
                         ),
                       ),

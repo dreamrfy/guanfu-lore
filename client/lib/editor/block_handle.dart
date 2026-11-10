@@ -47,6 +47,12 @@ const double kPlusHotZone = 12;
 /// 图标相对块上缘的 y（实测手柄 top≈4）
 const double kHandleTopInset = 4;
 
+/// 手柄悬停提示（M2-T27 实测）：黑底 **90×46**、圆角 8、字 12/18 白、两行
+const double kHandleTooltipWidth = 90;
+const double kHandleTooltipHeight = 46;
+const double kHandleTooltipRadius = 8;
+const List<String> kHandleTooltipLines = ['长按拖拽', '点击打开菜单'];
+
 /// 鼠标离开块后保持手柄的时长：够把指针挪到左侧图标上（否则一离开块就闪掉）
 const Duration kHandleFadeDelay = Duration(milliseconds: 120);
 
@@ -292,6 +298,32 @@ class _FlowUsBlockHandlesState extends State<FlowUsBlockHandles> {
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
+                  // 悬停提示：贴在图标右侧对齐（实测提示右缘 = 手柄左缘）
+                  if (c.pointerOnLayer)
+                    Positioned(
+                      left: -kHandleTooltipWidth - 4,
+                      top: -3,
+                      width: kHandleTooltipWidth,
+                      height: kHandleTooltipHeight,
+                      child: IgnorePointer(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(kHandleTooltipRadius),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              for (final line in kHandleTooltipLines)
+                                Text(line,
+                                    style: const TextStyle(fontSize: 12, height: 18 / 12, color: Colors.white)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   // 手柄 16×16 @ 左外 20（簇内 x=4）
                   Positioned(
                     left: 4,

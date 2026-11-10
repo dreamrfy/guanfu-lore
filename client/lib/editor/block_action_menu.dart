@@ -17,6 +17,8 @@ import 'package:appflowy_editor_ce/appflowy_editor_ce.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'block_submenus.dart';
+
 
 
 /// 面板宽（实测 260）
@@ -113,11 +115,13 @@ const List<List<BlockActionItem>> kBlockActionGroups = [
 /// 平铺条目（测试与计数用）
 List<BlockActionItem> get kBlockActionItems => [for (final g in kBlockActionGroups) ...g];
 
-class BlockActionMenu extends StatelessWidget {
+class BlockActionMenu extends StatefulWidget {
   const BlockActionMenu({
     super.key,
     required this.blockCount,
     required this.onAction,
+    this.onConvert,
+    this.onAlign,
   });
 
   /// 底部「块数统计: N」
@@ -125,9 +129,35 @@ class BlockActionMenu extends StatelessWidget {
 
   final ValueChanged<BlockAction> onAction;
 
+  /// 转换为（M2-T27）：选中某个目标块类型
+  final ValueChanged<String>? onConvert;
+
+  /// 对齐方式（M2-T27）：左对齐 / 居中对齐 / 右对齐
+  final ValueChanged<String>? onAlign;
+
+  @override
+  State<BlockActionMenu> createState() => _BlockActionMenuState();
+}
+
+class _BlockActionMenuState extends State<BlockActionMenu> {
+  /// 当前打开的子面板（null = 只显示主面板）
+  BlockAction? _submenu;
+
+  void _onItem(BlockAction kind) {
+    if (kind == BlockAction.convertTo && widget.onConvert != null) {
+      setState(() => _submenu = _submenu == kind ? null : kind);
+      return;
+    }
+    if (kind == BlockAction.align && widget.onAlign != null) {
+      setState(() => _submenu = _submenu == kind ? null : kind);
+      return;
+    }
+    widget.onAction(kind);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final panel = Container(
       width: kBlockMenuWidth,
       decoration: BoxDecoration(
         color: Colors.white,
@@ -145,7 +175,7 @@ class BlockActionMenu extends StatelessWidget {
           const SizedBox(height: 8), // 内边距 8 0
           for (var g = 0; g < kBlockActionGroups.length; g++) ...[
             if (g > 0) const _MenuSeparator(),
-            for (final item in kBlockActionGroups[g]) _MenuItem(item: item, onTap: () => onAction(item.kind)),
+            for (final item in kBlockActionGroups[g]) _MenuItem(item: item, onTap: () => _onItem(item.kind)),
           ],
           // 底部信息：实测「分隔线（距上 4）+ 8 + 行 + 底 9」；第 2/3 行要账号数据源（M7）
           const SizedBox(height: 4),
@@ -154,13 +184,42 @@ class BlockActionMenu extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: kBlockMenuSeparatorInset, right: 17),
             child: Text(
-              '块数统计: $blockCount',
+              '块数统计: ${widget.blockCount}',
               style: const TextStyle(fontSize: 12, height: 18 / 12, color: Color(0xFF91918E)),
             ),
           ),
           const SizedBox(height: 9),
         ],
       ),
+    );
+
+    // M2-T27：子面板在**右侧**弹出，与主面板重叠 9px（实测）
+    final sub = switch (_submenu) {
+      BlockAction.convertTo when widget.onConvert != null => FlowUsConvertPanel(
+          onPick: (t) {
+            setState(() => _submenu = null);
+            widget.onConvert!(t);
+          },
+        ),
+      BlockAction.align when widget.onAlign != null => FlowUsAlignPanel(
+          onPick: (t) {
+            setState(() => _submenu = null);
+            widget.onAlign!(t);
+          },
+        ),
+      _ => null,
+    };
+    if (sub == null) return panel;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        panel,
+        Transform.translate(
+          offset: const Offset(-kSubmenuOverlap, 0),
+          child: sub,
+        ),
+      ],
     );
   }
 }

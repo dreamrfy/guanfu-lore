@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T08:30:18.000Z",
+  "updatedAt": "2026-11-10T08:51:31.000Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -578,6 +578,20 @@
       "startedAt": "2026-11-10T08:17:07.000Z",
       "finishedAt": "2026-11-10T08:30:18.000Z",
       "note": "页面菜单重测:行32/开关30x18/两段内联展开区(66x60卡片,Plus徽标)/导出飞板176宽;9组重排;11测试+363全绿"
+    },
+    {
+      "taskId": "M2-T25",
+      "status": "blocked",
+      "startedAt": "2026-11-10T08:37:48.000Z",
+      "finishedAt": "2026-11-10T08:39:01.000Z",
+      "note": "callout规格缺:打开页无callout,侧栏建页钩子不可见;拆M2-T30"
+    },
+    {
+      "taskId": "M2-T27",
+      "status": "done-partial",
+      "startedAt": "2026-11-10T08:39:01.000Z",
+      "finishedAt": "2026-11-10T08:51:31.000Z",
+      "note": "转换/对齐子面板+手柄提示;9类转换可落地;release三连击验证(转标题再转回);颜色面板拆M2-T31"
     }
   ],
   "blocked": [],
