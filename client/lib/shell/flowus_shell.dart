@@ -18,6 +18,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../design/flowus_icons.dart';
 import '../design/tokens.dart';
 import 'flowus_banner.dart';
 import 'flowus_floating.dart';
@@ -161,11 +162,11 @@ class FlowUsSidebar extends StatelessWidget {
             selectedPageId: data.selectedPageId,
             callbacks: callbacks,
           ),
-          _PlainRow(icon: Icons.unfold_more, label: '查看更多'),
+          _PlainRow(icon: FlowUsIc.more, label: '查看更多'),
           const Spacer(),
-          _PlainRow(icon: Icons.bookmark_outline, label: '我的订阅'),
-          _PlainRow(icon: Icons.storefront_outlined, label: '市集'),
-          _PlainRow(icon: Icons.delete_outline, label: '回收站'),
+          _PlainRow(icon: FlowUsIc.subscribe, label: '我的订阅'),
+          _PlainRow(icon: FlowUsIc.luStore, label: '市集'),
+          _PlainRow(icon: FlowUsIc.trash, label: '回收站'),
           if (data.showCapacityCard) const _CapacityCard(),
           const SizedBox(height: 8),
         ],
@@ -205,7 +206,7 @@ class _SpaceNameRow extends StatelessWidget {
                   maxLines: 1, overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 16, height: 24 / 16, fontWeight: FontWeight.w500, color: c.textMain)),
             ),
-            Icon(Icons.chevron_left, size: 20, color: c.textTertiary),
+            FlowUsSvgIcon(FlowUsIc.arrowHide, size: 20, color: c.textTertiary),
           ],
         ),
       ),
@@ -220,7 +221,16 @@ class _IconRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = flowUsColors(context);
-    const icons = [Icons.home_outlined, Icons.face_outlined, Icons.search, Icons.notifications_none, Icons.more_horiz];
+    // 实测（M1-T07 证据）：5 个图标依次是「首页 / 头像 / 搜索 / 通知 / 更多」。
+    // ⚠️ 其中**首页、头像、通知这 3 个没有采到 SVG**（M0-T15 收割时它们没有 `data-icon` 属性），
+    //    所以仍用 Material 占位 —— 已拆 **M1-T14** 补采这 3 个图标，补齐后这里换成 FlowUsSvgIcon。
+    const icons = <Widget>[
+      Icon(Icons.home_outlined, size: FlowUsComponents.toolButtonIconSize),
+      Icon(Icons.face_outlined, size: FlowUsComponents.toolButtonIconSize),
+      FlowUsSvgIcon(FlowUsIc.luSearch, size: FlowUsComponents.toolButtonIconSize),
+      Icon(Icons.notifications_none, size: FlowUsComponents.toolButtonIconSize),
+      FlowUsSvgIcon(FlowUsIc.more, size: FlowUsComponents.toolButtonIconSize),
+    ];
     return SizedBox(
       height: FlowUsLayout.sidebarIconRowHeight,
       child: Padding(
@@ -232,7 +242,7 @@ class _IconRow extends StatelessWidget {
                 padding: EdgeInsets.only(right: i == icons.length - 1 ? 0 : 13), // 32 + 13 = 45
                 child: SizedBox(
                   width: 32, height: 32,
-                  child: Icon(icons[i], size: FlowUsComponents.toolButtonIconSize, color: c.textSub),
+                  child: IconTheme(data: IconThemeData(color: c.textSub), child: icons[i]),
                 ),
               ),
           ],
@@ -255,11 +265,11 @@ class _AiRow extends StatelessWidget {
         height: FlowUsLayout.sidebarIconRowHeight,
         child: Row(
           children: [
-            Icon(Icons.auto_awesome, size: FlowUsComponents.inlineIconButton, color: c.primary),
+            FlowUsSvgIcon(FlowUsIc.aiFill, size: FlowUsComponents.inlineIconButton, color: c.primary),
             const SizedBox(width: 8),
             Expanded(child: Text('FlowUs AI',
                 style: TextStyle(fontSize: 14, height: 24 / 14, color: c.textMain))),
-            Icon(Icons.info_outline, size: 16, color: c.textTertiary),
+            FlowUsSvgIcon(FlowUsIc.history, size: 16, color: c.textTertiary),
           ],
         ),
       ),
@@ -355,7 +365,7 @@ class _HeaderCreateButtonState extends State<_HeaderCreateButton> {
         child: GestureDetector(
           onTap: widget.onTap,
           behavior: HitTestBehavior.opaque,
-          child: Icon(Icons.add, size: 16,
+          child: FlowUsSvgIcon(FlowUsIc.add, size: 16,
               color: sectionHovered ? c.textTertiary : Colors.transparent),
         ),
       ),
@@ -394,10 +404,10 @@ class _PageItem extends StatefulWidget {
 class _PageItemState extends State<_PageItem> {
   bool _hovered = false;
 
-  IconData get _icon => switch (widget.node.kind) {
-        PageKind.database => Icons.table_chart_outlined,
-        PageKind.folder => Icons.folder_outlined,
-        PageKind.page => Icons.description_outlined,
+  String get _iconName => switch (widget.node.kind) {
+        PageKind.database => FlowUsIc.table, // 实测「多维表页」= IcTable 20×20
+        PageKind.folder => FlowUsIc.folderContent, // 实测「文件夹页」= IcFolderContent
+        PageKind.page => FlowUsIc.pages, // 实测「普通页」= IcPages 20×20
       };
 
   SidebarCallbacks? get _cb => widget.callbacks;
@@ -407,7 +417,7 @@ class _PageItemState extends State<_PageItem> {
   Widget _buildIconSlot(FlowUsColors c) {
     const s = FlowUsLayout.sidebarPageIconSlot;
     if (!_hovered) {
-      return SizedBox(width: s, height: s, child: Icon(_icon, size: 16, color: c.textTertiary));
+      return SizedBox(width: s, height: s, child: FlowUsSvgIcon(_iconName, size: 16, color: c.textTertiary));
     }
     return SizedBox(
       width: s,
@@ -424,7 +434,7 @@ class _PageItemState extends State<_PageItem> {
                     // 实测：折叠朝右、展开 rotate-90 朝下，transition-all 0.1s
                     turns: widget.node.expanded ? 0.25 : 0,
                     duration: const Duration(milliseconds: 100),
-                    child: Icon(Icons.chevron_right,
+                    child: FlowUsSvgIcon(FlowUsIc.arrowRight01,
                         size: FlowUsLayout.sidebarHoverChevronSize, color: c.textTertiary),
                   ),
               )
@@ -443,6 +453,7 @@ class _PageItemState extends State<_PageItem> {
     return [
       const SizedBox(width: FlowUsLayout.sidebarHoverButtonGap),
       SizedBox(
+        key: ValueKey('row-more-${widget.node.id}'),
         width: FlowUsLayout.sidebarHoverButtonSize,
         height: FlowUsLayout.sidebarHoverButtonSize,
         child: GestureDetector(
@@ -450,11 +461,12 @@ class _PageItemState extends State<_PageItem> {
           onTap: cb?.onItemMenu == null
               ? null
               : () => _showItemMenu(context, widget.node.id),
-          child: Icon(Icons.more_horiz, size: 16, color: c.textTertiary),
+          child: FlowUsSvgIcon(FlowUsIc.more, size: 16, color: c.textTertiary),
         ),
       ),
       const SizedBox(width: FlowUsLayout.sidebarHoverButtonGap),
       SizedBox(
+        key: ValueKey('row-add-${widget.node.id}'),
         width: FlowUsLayout.sidebarHoverButtonSize,
         height: FlowUsLayout.sidebarHoverButtonSize,
         child: GestureDetector(
@@ -462,7 +474,7 @@ class _PageItemState extends State<_PageItem> {
           onTap: cb?.onCreateChildPage == null
               ? null
               : () => cb?.onCreateChildPage?.call(widget.node.id),
-          child: Icon(Icons.add, size: 16, color: c.textTertiary),
+          child: FlowUsSvgIcon(FlowUsIc.add, size: 16, color: c.textTertiary),
         ),
       ),
     ];
@@ -643,7 +655,9 @@ class _MenuItemState extends State<_MenuItem> {
 /// 底部普通行（查看更多 / 我的订阅 / 市集 / 回收站）
 class _PlainRow extends StatelessWidget {
   const _PlainRow({required this.icon, required this.label});
-  final IconData icon;
+
+  /// 真图标名（FlowUsIc.*）。底部三项实测都是 16×16 的自研/Lucide 图标
+  final String icon;
   final String label;
 
   @override
@@ -659,7 +673,7 @@ class _PlainRow extends StatelessWidget {
             children: [
               SizedBox(
                 width: FlowUsComponents.inlineIconButton, height: FlowUsComponents.inlineIconButton,
-                child: Icon(icon, size: 16, color: c.textTertiary),
+                child: FlowUsSvgIcon(icon, size: 16, color: c.textTertiary),
               ),
               const SizedBox(width: 8),
               Expanded(child: Text(label,
@@ -693,7 +707,7 @@ class _CapacityCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Row(children: [
-              Icon(Icons.info_outline, size: 16, color: c.textTertiary),
+              FlowUsSvgIcon(FlowUsIc.info, size: 16, color: c.textTertiary),
               const SizedBox(width: 6),
               Text('空间容量已用完',
                   style: TextStyle(fontSize: 14, height: 20 / 14, fontWeight: FontWeight.w600, color: c.textMain)),
