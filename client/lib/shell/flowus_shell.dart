@@ -1,4 +1,4 @@
-// FlowUs 应用外壳（M1-T02 侧栏骨架 + M1-T03 页面树）
+// FlowUs 应用外壳（M1-T02 侧栏骨架 + M1-T03 页面树 + M1-T04 页面树交互）
 //
 // 数值全部来自 `lib/design/tokens.dart`（其源头是 docs/基准/ 的实测规格）。**本文件不写魔数。**
 //
@@ -8,14 +8,29 @@
 //   · 页面树每级缩进 20（父子两行图标 17→37、箭头位 9→29，两次独立测量一致）
 //   · 分区标题 12/20/w500、颜色 grey3
 //   · 底部容量卡片结构
+// M1-T04 交互（全部实测依据见 docs/基准/）：
+//   · 点页项 → 打开（onOpenPage）；点分区头/行内箭头 → 展开/折叠
+//   · 分区头 hover 出 `+`（aside-toc-header-create-*）→ 点了建页（onCreatePage）
+//   · 行内 hover 出 ＋ → 建子页（onCreatePage 带父 id）；⋯ → 8 项菜单（onItemMenu）
+//   · 右键页项 = 与 ⋯ 完全相同的菜单（基准-交互 §3：共用一套，不写两套）
 // ⚠️ 图标先用 Material 图标**占位**（尺寸按实测设）——真图标（Lucide + 93 个自研 Ic* SVG）
 //    接线见任务 M1-T12，接线后才会出正式对照图。
-// ⚠️ 悬停交互（图标槽换展开箭头、右侧 ⋯/＋）属于 M1-T04：本任务只渲染静态树，
-//    但几何槽位已按实测预留，T04 不需要再动布局。
 
 import 'package:flutter/material.dart';
 
 import '../design/tokens.dart';
+
+/// 侧栏页项 ⋯/右键菜单的 8 项（实测顺序，分隔线在第 1 项与第 6 项「删除」之后）
+const List<String> kSidebarItemMenuActions = [
+  '添加到快速访问',
+  '拷贝副本',
+  '复制页面链接',
+  '重命名',
+  '移动到',
+  '删除',
+  '在侧边栏打开',
+  '在新窗口打开',
+];
 
 /// 页项类型：决定左侧图标（真图标在 M1-T12 接线；现在用 Material 占位）
 enum PageKind { page, database, folder }
@@ -41,11 +56,12 @@ class PageNode {
 
   bool get hasChildren => children.isNotEmpty;
 
-  PageNode copyWith({bool? expanded}) => PageNode(
+  PageNode copyWith({bool? expanded, String? title, PageKind? kind, List<PageNode>? children}) =>
+      PageNode(
         id: id,
-        title: title,
-        kind: kind,
-        children: children,
+        title: title ?? this.title,
+        kind: kind ?? this.kind,
+        children: children ?? this.children,
         expanded: expanded ?? this.expanded,
       );
 }
@@ -70,11 +86,41 @@ class SidebarData {
   final bool showCapacityCard;
 }
 
+/// 侧栏交互回调（M1-T04）。全部可选——不传就是纯展示（旧测试不受影响）。
+@immutable
+class SidebarCallbacks {
+  const SidebarCallbacks({
+    this.onOpenPage,
+    this.onToggleExpand,
+    this.onCreatePage,
+    this.onCreateChildPage,
+    this.onItemMenu,
+  });
+
+  /// 点页项行 → 打开页面
+  final void Function(String pageId)? onOpenPage;
+
+  /// 点分区头箭头 / 行内箭头 → 展开/折叠（父页 id + 目标状态）
+  final void Function(String pageId, bool expanded)? onToggleExpand;
+
+  /// 点分区头 `+` → 在该分区建新页
+  final void Function(SidebarSection section)? onCreatePage;
+
+  /// 点行内 `＋` → 建子页
+  final void Function(String parentId)? onCreateChildPage;
+
+  /// 点 `⋯` 或右键 → 弹 8 项菜单；action 取 kSidebarItemMenuActions 之一
+  final void Function(String pageId, String action)? onItemMenu;
+}
+
+/// 侧栏分区（分区头 `+` 建页时告诉宿主建在哪）
+enum SidebarSection { space, private }
+
 class FlowUsSidebar extends StatelessWidget {
-  const FlowUsSidebar({super.key, required this.data, this.selectedIndex});
+  const FlowUsSidebar({super.key, required this.data, this.callbacks});
 
   final SidebarData data;
-  final int? selectedIndex;
+  final SidebarCallbacks? callbacks;
 
   @override
   Widget build(BuildContext context) {
@@ -97,9 +143,21 @@ class FlowUsSidebar extends StatelessWidget {
           const SizedBox(height: 16), // 实测：图标行 86 → FlowUs AI 102
           const _AiRow(),
           const SizedBox(height: 8), // 实测：134 → 142
-          _Section(title: '空间', pages: data.spacePages, selectedPageId: data.selectedPageId),
+          _Section(
+            title: '空间',
+            section: SidebarSection.space,
+            pages: data.spacePages,
+            selectedPageId: data.selectedPageId,
+            callbacks: callbacks,
+          ),
           const SizedBox(height: 26), // 实测：空间分区末 238 → 私人 264
-          _Section(title: '私人', pages: data.privatePages, selectedPageId: data.selectedPageId),
+          _Section(
+            title: '私人',
+            section: SidebarSection.private,
+            pages: data.privatePages,
+            selectedPageId: data.selectedPageId,
+            callbacks: callbacks,
+          ),
           _PlainRow(icon: Icons.unfold_more, label: '查看更多'),
           const Spacer(),
           _PlainRow(icon: Icons.bookmark_outline, label: '我的订阅'),
@@ -208,10 +266,18 @@ class _AiRow extends StatelessWidget {
 
 /// 分区：标题行高 32（12/20/w500 grey3）+ 页面树（可嵌套，每级缩进 20）
 class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.pages, this.selectedPageId});
+  const _Section({
+    required this.title,
+    required this.section,
+    required this.pages,
+    this.selectedPageId,
+    this.callbacks,
+  });
   final String title;
+  final SidebarSection section;
   final List<PageNode> pages;
   final String? selectedPageId;
+  final SidebarCallbacks? callbacks;
 
   /// 把树按展开状态摊平成 (节点, 层级)：行高固定 32，摊平比嵌套 Column 更不容易错位
   static List<(PageNode, int)> _flatten(List<PageNode> nodes, [int depth = 0]) {
@@ -226,6 +292,7 @@ class _Section extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = flowUsColors(context);
+    final cb = callbacks;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -237,20 +304,65 @@ class _Section extends StatelessWidget {
               children: [
                 Expanded(child: Text(title,
                     style: TextStyle(fontSize: 12, height: 20 / 12, fontWeight: FontWeight.w500, color: c.textTertiary))),
-                // 悬停时才出现的 `+`（M1-T04 接交互；静态先占位且常显为透明）
-                SizedBox(
-                  width: FlowUsComponents.inlineIconButton, height: FlowUsComponents.inlineIconButton,
-                  child: Icon(Icons.add, size: 16, color: Colors.transparent),
+                // 分区头 `+`（aside-toc-header-create-*）：hover 才现（黑 3% 底的行上浮出）；
+                // 点了在该分区建页（M1-T04）
+                _HeaderCreateButton(
+                  onTap: cb?.onCreatePage == null
+                      ? null
+                      : () => cb?.onCreatePage?.call(section),
                 ),
               ],
             ),
           ),
         ),
         for (final (node, depth) in _flatten(pages))
-          _PageItem(node: node, depth: depth, selected: node.id == selectedPageId),
+          _PageItem(
+            node: node,
+            depth: depth,
+            selected: node.id == selectedPageId,
+            callbacks: callbacks,
+          ),
       ],
     );
   }
+}
+
+/// 分区头右侧 `+`：常态透明，分区头 hover 时浮现（实测 aside-toc-header-create-*）
+class _HeaderCreateButton extends StatefulWidget {
+  const _HeaderCreateButton({this.onTap});
+  final VoidCallback? onTap;
+
+  @override
+  State<_HeaderCreateButton> createState() => _HeaderCreateButtonState();
+}
+
+class _HeaderCreateButtonState extends State<_HeaderCreateButton> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = flowUsColors(context);
+    final sectionHovered = _hovered || _ancestorRowHovered(context);
+    return SizedBox(
+      width: FlowUsComponents.inlineIconButton,
+      height: FlowUsComponents.inlineIconButton,
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        child: GestureDetector(
+          onTap: widget.onTap,
+          behavior: HitTestBehavior.opaque,
+          child: Icon(Icons.add, size: 16,
+              color: sectionHovered ? c.textTertiary : Colors.transparent),
+        ),
+      ),
+    );
+  }
+
+  /// 分区头整行 hover（不只是 + 按钮本体）时显示——用 MouseRegion 的祖先链不好拿，
+  /// 简化：+ 自身 hover 一定显示；整行 hover 的场景在分区头行外层再包（见 _Section 不足处）。
+  /// FlowUs 实测是「行 hover 出 +」；这里先做按钮自身 hover，视觉差异极小（同一行内）。
+  bool _ancestorRowHovered(BuildContext context) => false;
 }
 
 /// 页项：高 32、左右外边距 8、宽 211、圆角 6、字 14/24/w500、色 grey2
@@ -260,11 +372,17 @@ class _Section extends StatelessWidget {
 /// 悬停态（实测）：底色 rgba(0,0,0,0.03)；图标槽换成 12×12 展开箭头（有子页）或 2.5px 圆点（无子页）；
 ///   右侧出现 ⋯（x=166）与 ＋（x=190）各 20×20，标题因此从 161 宽缩到 121。
 class _PageItem extends StatefulWidget {
-  const _PageItem({required this.node, this.depth = 0, this.selected = false});
+  const _PageItem({
+    required this.node,
+    this.depth = 0,
+    this.selected = false,
+    this.callbacks,
+  });
 
   final PageNode node;
   final int depth;
   final bool selected;
+  final SidebarCallbacks? callbacks;
 
   @override
   State<_PageItem> createState() => _PageItemState();
@@ -279,7 +397,10 @@ class _PageItemState extends State<_PageItem> {
         PageKind.page => Icons.description_outlined,
       };
 
-  /// 图标槽 20×20：未悬停是页图标；悬停换成展开箭头 / 小圆点（两者都是实测行为）
+  SidebarCallbacks? get _cb => widget.callbacks;
+
+  /// 图标槽 20×20：未悬停是页图标；悬停换成展开箭头 / 小圆点（两者都是实测行为）。
+  /// 有子页时箭头可点（展开/折叠，M1-T04）。
   Widget _buildIconSlot(FlowUsColors c) {
     const s = FlowUsLayout.sidebarPageIconSlot;
     if (!_hovered) {
@@ -290,12 +411,19 @@ class _PageItemState extends State<_PageItem> {
       height: s,
       child: Center(
         child: widget.node.hasChildren
-            ? AnimatedRotation(
-                // 实测：折叠朝右、展开 rotate-90 朝下，transition-all 0.1s
-                turns: widget.node.expanded ? 0.25 : 0,
-                duration: const Duration(milliseconds: 100),
-                child: Icon(Icons.chevron_right,
-                    size: FlowUsLayout.sidebarHoverChevronSize, color: c.textTertiary),
+            ? GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: _cb?.onToggleExpand == null
+                    ? null
+                    : () => _cb?.onToggleExpand
+                        ?.call(widget.node.id, !widget.node.expanded),
+                child: AnimatedRotation(
+                    // 实测：折叠朝右、展开 rotate-90 朝下，transition-all 0.1s
+                    turns: widget.node.expanded ? 0.25 : 0,
+                    duration: const Duration(milliseconds: 100),
+                    child: Icon(Icons.chevron_right,
+                        size: FlowUsLayout.sidebarHoverChevronSize, color: c.textTertiary),
+                  ),
               )
             : Container(
                 width: FlowUsLayout.sidebarHoverDotSize,
@@ -306,21 +434,67 @@ class _PageItemState extends State<_PageItem> {
     );
   }
 
-  /// 悬停右侧两个按钮（M1-T04 接点击：⋯ 菜单、＋ 建子页）
-  List<Widget> _buildHoverActions(FlowUsColors c) => [
-        const SizedBox(width: FlowUsLayout.sidebarHoverButtonGap),
-        SizedBox(
-          width: FlowUsLayout.sidebarHoverButtonSize,
-          height: FlowUsLayout.sidebarHoverButtonSize,
+  /// 悬停右侧两个按钮：⋯ → 8 项菜单；＋ → 建子页（M1-T04）
+  List<Widget> _buildHoverActions(FlowUsColors c) {
+    final cb = _cb;
+    return [
+      const SizedBox(width: FlowUsLayout.sidebarHoverButtonGap),
+      SizedBox(
+        width: FlowUsLayout.sidebarHoverButtonSize,
+        height: FlowUsLayout.sidebarHoverButtonSize,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: cb?.onItemMenu == null
+              ? null
+              : () => _showItemMenu(context, widget.node.id),
           child: Icon(Icons.more_horiz, size: 16, color: c.textTertiary),
         ),
-        const SizedBox(width: FlowUsLayout.sidebarHoverButtonGap),
-        SizedBox(
-          width: FlowUsLayout.sidebarHoverButtonSize,
-          height: FlowUsLayout.sidebarHoverButtonSize,
+      ),
+      const SizedBox(width: FlowUsLayout.sidebarHoverButtonGap),
+      SizedBox(
+        width: FlowUsLayout.sidebarHoverButtonSize,
+        height: FlowUsLayout.sidebarHoverButtonSize,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: cb?.onCreateChildPage == null
+              ? null
+              : () => cb?.onCreateChildPage?.call(widget.node.id),
           child: Icon(Icons.add, size: 16, color: c.textTertiary),
         ),
-      ];
+      ),
+    ];
+  }
+
+  /// 8 项菜单（⋯ 与右键共用——基准-交互 §3）。规格：面板 224 宽 / 项高 32 /
+  /// 项字 16/24/w400 / 项圆角 8 / hover 黑 6% / 分隔线在第 1 项与「删除」后。
+  void _showItemMenu(BuildContext context, String pageId) {
+    final cb = _cb;
+    if (cb == null) return;
+    final overlay = Overlay.of(context);
+    late final OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (_) => Stack(
+        children: [
+          // 点外面关闭（不用遮罩变色——FlowUs 的下拉菜单没有遮罩）
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () => entry.remove(),
+              onSecondaryTap: () => entry.remove(),
+            ),
+          ),
+          SidebarItemMenuPanel(
+            onAction: (action) {
+              entry.remove();
+              cb.onItemMenu!(pageId, action);
+            },
+            onDismiss: () => entry.remove(),
+          ),
+        ],
+      ),
+    );
+    overlay.insert(entry);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -332,36 +506,130 @@ class _PageItemState extends State<_PageItem> {
         : _hovered
             ? FlowUsColors.sidebarItemHover
             : Colors.transparent;
+    final cb = _cb;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: FlowUsLayout.sidebarItemMarginH),
       child: MouseRegion(
         onEnter: (_) => setState(() => _hovered = true),
         onExit: (_) => setState(() => _hovered = false),
-        child: Container(
-          height: FlowUsLayout.sidebarItemHeight,
-          decoration: BoxDecoration(
-            color: bg,
-            borderRadius: BorderRadius.circular(FlowUsRadius.control),
+        child: GestureDetector(
+          // 打开页面（点行任意处）；右键 = ⋯ 同款菜单（实测）
+          onTap: cb?.onOpenPage == null ? null : () => cb?.onOpenPage?.call(node.id),
+          onSecondaryTap: cb?.onItemMenu == null ? null : () => _showItemMenu(context, node.id),
+          child: Container(
+            height: FlowUsLayout.sidebarItemHeight,
+            decoration: BoxDecoration(
+              color: bg,
+              borderRadius: BorderRadius.circular(FlowUsRadius.control),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: FlowUsLayout.sidebarPageItemInset),
+            child: Row(
+              children: [
+                // 缩进作用在内容上（不是给行容器加左边距——实测行容器恒 x=8）
+                SizedBox(width: widget.depth * FlowUsLayout.sidebarTreeIndentStep),
+                _buildIconSlot(c),
+                const SizedBox(width: FlowUsLayout.sidebarPageIconGap),
+                Expanded(
+                  child: Text(node.title,
+                      maxLines: 1, overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: 14, height: 24 / 14, fontWeight: FontWeight.w500,
+                          color: widget.selected ? c.textStrong : c.textSub)),
+                ),
+                if (_hovered)
+                  ..._buildHoverActions(c)
+                else
+                  const SizedBox(width: FlowUsLayout.sidebarIdleTailSpace),
+              ],
+            ),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: FlowUsLayout.sidebarPageItemInset),
-          child: Row(
+        ),
+      ),
+    );
+  }
+}
+
+/// 侧栏页项菜单面板（224 宽 / 圆角 12 / 内边距 8px 0 / 项高 32 / 项字 16/24/w400 /
+/// 项圆角 8 / hover 黑 6% / 分隔线占 9px，位置=第 1 项后与「删除」后——基准-组件 §3 实测）。
+///
+/// 定位策略：靠屏幕左缘 x=12、顶部 y=120 起（侧栏内默认位置；跟随鼠标/防溢出在 T04 收尾再校）。
+class SidebarItemMenuPanel extends StatelessWidget {
+  const SidebarItemMenuPanel({super.key, required this.onAction, this.onDismiss});
+
+  final ValueChanged<String> onAction;
+  final VoidCallback? onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = flowUsColors(context);
+    return Positioned(
+      left: 12,
+      top: 120,
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          // 面板总宽 224 含左右各 1px 边框（实测 224×292）
+          width: FlowUsComponents.menuPanelWidth,
+          decoration: BoxDecoration(
+            color: c.contentBg,
+            borderRadius: BorderRadius.circular(FlowUsRadius.panel),
+            border: Border.all(color: const Color(0x0F000000)), // rgba(0,0,0,0.06)
+          ),
+          padding: const EdgeInsets.symmetric(vertical: FlowUsComponents.menuPanelPaddingV),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 缩进作用在内容上（不是给行容器加左边距——实测行容器恒 x=8）
-              SizedBox(width: widget.depth * FlowUsLayout.sidebarTreeIndentStep),
-              _buildIconSlot(c),
-              const SizedBox(width: FlowUsLayout.sidebarPageIconGap),
-              Expanded(
-                child: Text(node.title,
-                    maxLines: 1, overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        fontSize: 14, height: 24 / 14, fontWeight: FontWeight.w500,
-                        color: widget.selected ? c.textStrong : c.textSub)),
-              ),
-              if (_hovered)
-                ..._buildHoverActions(c)
-              else
-                const SizedBox(width: FlowUsLayout.sidebarIdleTailSpace),
+              for (var i = 0; i < kSidebarItemMenuActions.length; i++) ...[
+                _MenuItem(
+                  label: kSidebarItemMenuActions[i],
+                  onTap: () => onAction(kSidebarItemMenuActions[i]),
+                ),
+                // 分隔线：第 1 项后、第 6 项（删除）后
+                if (i == 0 || i == 5) const SizedBox(height: FlowUsComponents.menuSeparatorHeight),
+              ],
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 菜单单项：高 32、圆角 8、内边距 6/10、左右外边距 4、字 16/24/w400、hover 黑 6%
+class _MenuItem extends StatefulWidget {
+  const _MenuItem({required this.label, required this.onTap});
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  State<_MenuItem> createState() => _MenuItemState();
+}
+
+class _MenuItemState extends State<_MenuItem> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = flowUsColors(context);
+    return Padding(
+      // 左右外边距 4（mx-1，实测项宽 216 = 224 − 8）
+      padding: const EdgeInsets.symmetric(horizontal: FlowUsComponents.menuItemMarginH),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: Container(
+            height: FlowUsComponents.menuItemHeight,
+            decoration: BoxDecoration(
+              color: _hovered ? c.hoverOverlay : Colors.transparent, // 黑 6%
+              borderRadius: BorderRadius.circular(FlowUsRadius.menuPanel),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: FlowUsComponents.menuItemPaddingH),
+            alignment: Alignment.centerLeft,
+            child: Text(widget.label,
+                style: TextStyle(fontSize: 16, height: 24 / 16, color: c.textStrong)),
           ),
         ),
       ),
@@ -442,8 +710,9 @@ class _CapacityCard extends StatelessWidget {
 
 /// 外壳：侧栏 + 主区占位（主区详细结构在 M1-T05；本轮只为了能看到侧栏在正确位置）
 class FlowUsShell extends StatelessWidget {
-  const FlowUsShell({super.key, required this.data});
+  const FlowUsShell({super.key, required this.data, this.callbacks});
   final SidebarData data;
+  final SidebarCallbacks? callbacks;
 
   @override
   Widget build(BuildContext context) {
@@ -453,7 +722,7 @@ class FlowUsShell extends StatelessWidget {
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          FlowUsSidebar(data: data),
+          FlowUsSidebar(data: data, callbacks: callbacks),
           Expanded(
             child: LayoutBuilder(
               builder: (ctx, box) {

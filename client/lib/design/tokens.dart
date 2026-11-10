@@ -277,8 +277,9 @@ abstract final class FlowUsComponents {
   static const double menuPanelHeight8Items = 292;
   static const double menuItemHeight = 32;
   static const double menuPanelPaddingV = 8;
-  static const double menuItemPaddingV = 6;
-  static const double menuItemPaddingH = 10;
+  static const double menuItemPaddingV = 6; // 项内上下边距（py-1.5）
+  static const double menuItemPaddingH = 10; // 项内左右边距（px-2.5）
+  static const double menuItemMarginH = 4; // 项左右外边距（mx-1；项宽 216 = 224 − 8）
   static const double menuSeparatorHeight = 9; // 让行距从 32 变 41
 
   static const double modalMaxWidth = 1200;

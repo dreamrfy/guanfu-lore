@@ -39,13 +39,23 @@ Future<void> _pumpShell(
   double width = 1920,
   double height = 945,
   SidebarData data = _data,
+  SidebarCallbacks? callbacks,
 }) async {
   tester.view.physicalSize = Size(width, height);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
-  await tester.pumpWidget(MaterialApp(home: FlowUsShell(data: data)));
+  await tester.pumpWidget(MaterialApp(home: FlowUsShell(data: data, callbacks: callbacks)));
   await tester.pumpAndSettle();
+}
+
+Future<TestGesture> hoverRow(WidgetTester tester, String title) async {
+  final g = await tester.createGesture(kind: PointerDeviceKind.mouse);
+  await g.addPointer(location: Offset.zero);
+  addTearDown(g.removePointer);
+  await g.moveTo(tester.getCenter(find.text(title)));
+  await tester.pumpAndSettle();
+  return g;
 }
 
 void main() {
@@ -208,15 +218,6 @@ void main() {
   });
 
   group('页项悬停态（M1-T03 实测：底色 3% / 图标槽替换 / ⋯＋ 出现）', () {
-    Future<TestGesture> hoverRow(WidgetTester tester, String title) async {
-      final g = await tester.createGesture(kind: PointerDeviceKind.mouse);
-      await g.addPointer(location: Offset.zero);
-      addTearDown(g.removePointer);
-      await g.moveTo(tester.getCenter(find.text(title)));
-      await tester.pumpAndSettle();
-      return g;
-    }
-
     testWidgets('悬停叶子行：底色 = 黑 3%，页图标被小圆点替换', (tester) async {
       await _pumpShell(tester); // 7 个 page 图标
       expect(find.byIcon(Icons.description_outlined), findsNWidgets(7));
@@ -250,4 +251,133 @@ void main() {
       expect(find.byIcon(Icons.add), findsNWidgets(2));
     });
   });
+
+  group('页面树交互（M1-T04：点击/展开/建页/菜单/右键）', () {
+    testWidgets('点页项行 → onOpenPage 收到该页 id', (tester) async {
+      String? opened;
+      await _pumpShell(
+        tester,
+        callbacks: SidebarCallbacks(onOpenPage: (id) => opened = id),
+      );
+      await tester.tap(find.text('学习进度'));
+      await tester.pumpAndSettle();
+      expect(opened, 'study');
+    });
+
+    testWidgets('悬停有子页的行点箭头 → onToggleExpand(父id, 目标态)', (tester) async {
+      final calls = <(String, bool)>[];
+      await _pumpShell(
+        tester,
+        callbacks: SidebarCallbacks(onToggleExpand: (id, ex) => calls.add((id, ex))),
+      );
+      await hoverRow(tester, '磷化工知识库');
+      await tester.tap(find.byIcon(Icons.chevron_right));
+      await tester.pumpAndSettle();
+      expect(calls, hasLength(1));
+      expect(calls.single.$1, 'pchem');
+      expect(calls.single.$2, false); // 测试数据里默认展开 → 点了变折叠
+    });
+
+    testWidgets('点分区头 + → onCreatePage(该分区)', (tester) async {
+      final sections = <SidebarSection>[];
+      await _pumpShell(
+        tester,
+        callbacks: SidebarCallbacks(onCreatePage: (s) => sections.add(s)),
+      );
+      // 两个分区头 + 都在（透明占位也可点）
+      final adds = find.byWidgetPredicate(
+        (w) => w is Icon && w.icon == Icons.add,
+      );
+      expect(tester.widgetList<Icon>(adds).length, 2);
+      await tester.tap(adds.first); // 第一个 = 「空间」分区
+      await tester.pumpAndSettle();
+      expect(sections, [SidebarSection.space]);
+    });
+
+    testWidgets('行内 ＋ → onCreateChildPage(父id)', (tester) async {
+      String? parent;
+      await _pumpShell(
+        tester,
+        callbacks: SidebarCallbacks(onCreateChildPage: (pid) => parent = pid),
+      );
+      await hoverRow(tester, '学习进度');
+      // 行内 hover 出两个钮：⋯ 在前、＋ 在后
+      final rowAdd = find.descendant(
+        of: find.ancestor(of: find.text('学习进度'), matching: find.byType(Row)).first,
+        matching: find.byIcon(Icons.add),
+      );
+      await tester.tap(rowAdd.last);
+      await tester.pumpAndSettle();
+      expect(parent, 'study');
+    });
+
+    testWidgets('行内 ⋯ → 弹 8 项菜单（顺序与分隔线按基准）', (tester) async {
+      await _pumpShell(
+        tester,
+        callbacks: const SidebarCallbacks(onItemMenu: _noopItemMenu),
+      );
+      await hoverRow(tester, '学习进度');
+      await tester.tap(find.byIcon(Icons.more_horiz).last);
+      await tester.pumpAndSettle();
+      // 8 项全出、顺序正确
+      for (final label in kSidebarItemMenuActions) {
+        expect(find.text(label), findsOneWidget, reason: '菜单缺项：$label');
+      }
+      // 项宽 = 面板内容宽 222（224 − 边框 2）− 项左右外边距 8 = 214
+      final size = tester.getSize(find.ancestor(of: find.text('重命名'), matching: find.byType(Container)).first);
+      expect(size.width, closeTo(FlowUsComponents.menuPanelWidth - 2 - FlowUsComponents.menuItemMarginH * 2, 0.5));
+    });
+
+    testWidgets('菜单点「重命名」→ onItemMenu(pageId, 重命名)', (tester) async {
+      final calls = <(String, String)>[];
+      await _pumpShell(
+        tester,
+        callbacks: SidebarCallbacks(onItemMenu: (id, a) => calls.add((id, a))),
+      );
+      await hoverRow(tester, '学习进度');
+      await tester.tap(find.byIcon(Icons.more_horiz).last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('重命名'));
+      await tester.pumpAndSettle();
+      expect(calls, hasLength(1));
+      expect(calls.single.$1, 'study');
+      expect(calls.single.$2, '重命名');
+      // 菜单选完自动关
+      expect(find.text('拷贝副本'), findsNothing);
+    });
+
+    testWidgets('右键页项 = ⋯ 同款菜单（8 项）', (tester) async {
+      await _pumpShell(
+        tester,
+        callbacks: const SidebarCallbacks(onItemMenu: _noopItemMenu),
+      );
+      await tester.tap(find.text('学习进度'), buttons: kSecondaryButton);
+      await tester.pumpAndSettle();
+      expect(find.text('添加到快速访问'), findsOneWidget);
+      expect(find.text('在新窗口打开'), findsOneWidget);
+    });
+
+    testWidgets('点菜单外关闭菜单', (tester) async {
+      await _pumpShell(
+        tester,
+        callbacks: const SidebarCallbacks(onItemMenu: _noopItemMenu),
+      );
+      await hoverRow(tester, '学习进度');
+      await tester.tap(find.byIcon(Icons.more_horiz).last);
+      await tester.pumpAndSettle();
+      expect(find.text('重命名'), findsOneWidget);
+      await tester.tapAt(const Offset(1200, 500)); // 主区空白
+      await tester.pumpAndSettle();
+      expect(find.text('重命名'), findsNothing);
+    });
+
+    testWidgets('无回调时点行不崩（纯展示模式）', (tester) async {
+      await _pumpShell(tester); // 不传 callbacks
+      await tester.tap(find.text('学习进度'));
+      await tester.pumpAndSettle();
+      expect(find.text('学习进度'), findsOneWidget);
+    });
+  });
 }
+
+void _noopItemMenu(String pageId, String action) {}
