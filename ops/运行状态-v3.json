@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T09:53:08.852Z",
+  "updatedAt": "2026-11-10T10:04:07.000Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -634,6 +634,13 @@
       "startedAt": "2026-11-10T09:53:08.852Z",
       "finishedAt": "2026-11-10T09:53:08.852Z",
       "note": "事故:早期pages.first覆盖用户页「今天很烦…」为Q;已加防线;WAL副本被py checkpoint删除无法恢复;待加自动备份"
+    },
+    {
+      "taskId": "M2-T35",
+      "status": "done",
+      "startedAt": "2026-11-10T09:57:20.000Z",
+      "finishedAt": "2026-11-10T10:04:07.000Z",
+      "note": "appDbFile改documents目录;启动自动备份db+wal+shm到backups保留10组;3测试+380全绿;release连开两次两组备份"
     }
   ],
   "blocked": [],

@@ -1,0 +1,1 @@
+DB OK path=D:\win\文档\bijiapp.sqlite exists=true backup=D:\win\文档\backups\bijiapp.sqlite.1794304976729.bak

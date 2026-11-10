@@ -407,10 +407,50 @@ class AppDatabase extends _$AppDatabase {
   }
 }
 
-/// 数据库文件位置（与 drift_flutter 的 driftDatabase(name:) 默认目录一致）。
+/// 数据库文件位置：**必须和 drift_flutter 的默认一致** —— 它用 。
+/// （2026-11-10 事故教训：这里以前写成 support 目录，排查时一度以为库没落盘；本机 Documents 还被重定向到 D 盘。）
 Future<File> appDbFile(String name) async {
-  final dir = await getApplicationSupportDirectory();
+  final dir = await getApplicationDocumentsDirectory();
   return File(p.join(dir.path, '$name.sqlite'));
+}
+
+/// 启动自动备份（M2-T35）：复制 db + -wal + -shm 到同目录 backups 子目录，只保留最新 [keep] 组。
+///
+/// 为什么连 wal 一起复制：drift 的写入先落 WAL（主库经常不 checkpoint），只拷主文件会丢最新数据。
+/// 文件名形如 bijiapp.sqlite.1699999999999.bak，轮转按时间戳排序（时间戳定长，字典序即时间序）。
+Future<File?> backupDbWithRotation(File dbFile, {int keep = 10}) async {
+  if (!dbFile.existsSync()) return null;
+  final backupDir = Directory(p.join(dbFile.parent.path, 'backups'));
+  if (!backupDir.existsSync()) backupDir.createSync(recursive: true);
+  final stamp = DateTime.now().millisecondsSinceEpoch.toString();
+  final target = File(p.join(backupDir.path, '${p.basename(dbFile.path)}.$stamp.bak'));
+  await dbFile.copy(target.path);
+  for (final side in ['-wal', '-shm']) {
+    final f = File(dbFile.path + side);
+    if (f.existsSync()) await f.copy(File(target.path + side).path);
+  }
+  // 轮转：同前缀的备份按时间戳留最新 keep 组
+  final prefix = '${p.basename(dbFile.path)}.';
+  final groups = <String, List<FileSystemEntity>>{};
+  for (final ent in backupDir.listSync()) {
+    final name = p.basename(ent.path);
+    if (!name.startsWith(prefix)) continue;
+    final rest = name.substring(prefix.length);
+    final dot = rest.indexOf('.bak');
+    if (dot < 0) continue;
+    final id = rest.substring(0, dot);
+    (groups[id] ??= []).add(ent);
+  }
+  final ids = groups.keys.toList()..sort();
+  final stale = ids.length > keep ? ids.sublist(0, ids.length - keep) : const <String>[];
+  for (final id in stale) {
+    for (final ent in groups[id]!) {
+      try {
+        ent.deleteSync();
+      } catch (_) {}
+    }
+  }
+  return target;
 }
 
 /// 迁移/升级前的安全备份：复制 db 与 -wal/-shm 到同目录 backups/ 子目录。

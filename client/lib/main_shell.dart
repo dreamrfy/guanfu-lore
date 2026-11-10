@@ -84,13 +84,22 @@ class _ShellAppState extends State<ShellApp> {
   }
 
   Future<void> _bootstrapReal() async {
+    // M2-T35：启动先做一次自动备份（db + wal + shm，保留最新 10 组），再做任何读写
+    String backupNote = 'backup=skipped';
+    try {
+      final f = await appDbFile('bijiapp');
+      final made = await backupDbWithRotation(f, keep: 10);
+      backupNote = 'backup=${made?.path ?? 'none'}';
+    } catch (e) {
+      backupNote = 'backup error $e';
+    }
     final db = AppDatabase();
     await _bootstrapWith(db);
     // 诊断：把真正落盘的库路径写进 boot 日志（release 没有控制台）
     try {
       final f = await appDbFile('bijiapp');
       final log = File('${Directory.systemTemp.path}${Platform.pathSeparator}bijiapp-boot.log');
-      await log.writeAsString('DB OK path=${f.path} exists=${await f.exists()}\n');
+      await log.writeAsString('DB OK path=${f.path} exists=${await f.exists()} $backupNote\n');
     } catch (e) {
       try {
         final log = File('${Directory.systemTemp.path}${Platform.pathSeparator}bijiapp-boot.log');
