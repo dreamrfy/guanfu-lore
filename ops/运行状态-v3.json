@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T06:05:06.598Z",
+  "updatedAt": "2026-11-10T06:17:01.879Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -508,6 +508,13 @@
       "startedAt": "2026-11-10T13:05:00.000Z",
       "finishedAt": "2026-11-10T06:05:06.598Z",
       "note": "coverKey列(v9)+setPageCover+PageNode.icon/coverKey+侧栏emoji+入口数据驱动+有封面只剩添加评论；7断言，315测试过"
+    },
+    {
+      "taskId": "M2-T15",
+      "status": "done",
+      "startedAt": "2026-11-10T13:50:00.000Z",
+      "finishedAt": "2026-11-10T06:17:01.879Z",
+      "note": "装配：演示壳接库+保存链+草稿恢复横幅，修 ScaffoldMessenger bug；交付exe+3张对照图；318测试；不宣布M2完成(6项未收口)"
     }
   ],
   "blocked": [],

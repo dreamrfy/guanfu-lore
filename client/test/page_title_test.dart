@@ -6,6 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:bijiapp/design/tokens.dart';
+import 'dart:ffi' as ffi;
+import 'dart:io';
+
+import 'package:drift/native.dart';
+import 'package:sqlite3/open.dart';
+
+import 'package:bijiapp/data/database.dart';
 import 'package:bijiapp/main_shell.dart';
 import 'package:bijiapp/page/page_title.dart';
 import 'package:bijiapp/shell/flowus_shell.dart';
@@ -38,7 +45,15 @@ Future<void> _pumpTitle(
   await tester.pumpAndSettle();
 }
 
+/// 测试宿主机的 sqlite3：用系统自带的 winsqlite3.dll
+void _setupSqlite() {
+  if (Platform.isWindows) {
+    open.overrideFor(OperatingSystem.windows, () => ffi.DynamicLibrary.open('winsqlite3.dll'));
+  }
+}
+
 void main() {
+  _setupSqlite();
   group('规格（tokens 的 pageTitle）', () {
     testWidgets('输入文字用 40 / 64 / w600', (tester) async {
       await _pumpTitle(tester, title: '我的页面');
@@ -107,7 +122,9 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      await tester.pumpWidget(const ShellApp());
+      final db = AppDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(db.close);
+      await tester.pumpWidget(ShellApp(database: db));
       await tester.pumpAndSettle();
 
       // 初始：主区标题 = 学习进度（演示壳默认），侧栏与标签条也有「学习进度」

@@ -12,7 +12,9 @@ import 'package:flutter/services.dart';
 
 import 'design/tokens.dart';
 
+import 'data/database.dart';
 import 'page/page_menu.dart';
+import 'page/page_save_pipeline.dart';
 import 'shell/flowus_shell.dart';
 import 'shell/flowus_tabbar.dart';
 import 'shell/flowus_trash_panel.dart';
@@ -20,7 +22,10 @@ import 'shell/flowus_trash_panel.dart';
 void main() => runApp(const ShellApp());
 
 class ShellApp extends StatefulWidget {
-  const ShellApp({super.key});
+  const ShellApp({super.key, this.database});
+
+  /// 测试注入内存库；为 null 时用真实本地库
+  final AppDatabase? database;
 
   @override
   State<ShellApp> createState() => _ShellAppState();
@@ -40,6 +45,61 @@ class _ShellAppState extends State<ShellApp> {
 
   /// 页面右上「⋯」长面板（M2-T13）
   bool _pageMenuOpen = false;
+
+  // ---- M2-T15 装配：真实本地库 + 保存链 + 崩溃恢复 ----
+  AppDatabase? _db;
+  PageSavePipeline? _pipe;
+  bool _hasRecoverableDraft = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _bootstrap();
+  }
+
+  /// 打开库 → 取（或建）一页 → 接保存链 → 检查草稿
+  Future<void> _bootstrap() async {
+    final db = widget.database ?? AppDatabase();
+    final pages = await db.listAllActive();
+    final page = pages.isEmpty ? await db.createPage(title: '学习进度', content: _content) : pages.first;
+    final pipe = PageSavePipeline(db: db, pageId: page.id);
+    final open = await pipe.open();
+    if (!mounted) return;
+    setState(() {
+      _db = db;
+      _pipe = pipe;
+      _content = open.content.isEmpty ? _content : open.content;
+      _currentTitle = open.title.isEmpty ? _currentTitle : open.title;
+      _hasRecoverableDraft = open.hasRecoverableDraft;
+    });
+  }
+
+  Future<void> _restoreDraft() async {
+    final pipe = _pipe;
+    if (pipe == null) return;
+    final json = await pipe.acceptDraft();
+    if (!mounted) return;
+    setState(() {
+      _content = json;
+      _hasRecoverableDraft = false;
+    });
+    _snack('已恢复草稿');
+  }
+
+  Future<void> _discardDraft() async {
+    await _pipe?.discardDraft();
+    if (!mounted) return;
+    setState(() => _hasRecoverableDraft = false);
+    _snack('已忽略草稿');
+  }
+
+  @override
+  void dispose() {
+    _pipe?.flush();
+    _pipe?.dispose();
+    if (widget.database == null) _db?.close();
+    super.dispose();
+  }
 
   /// 当前页标题（M2-T02）：主区输入框、侧栏页项、标签条三处同步
   String _currentTitle = '学习进度';
@@ -69,6 +129,7 @@ class _ShellAppState extends State<ShellApp> {
 
   /// 防抖后的落库（演示壳：这里只落内存；真库在 M2-T14 保存链接入 pages 表）
   Future<void> _onTitleSave(String v) async {
+    _pipe?.editTitle(v);
     await Future<void>.delayed(const Duration(milliseconds: 30));
     _savedTitles[_selectedId ?? ''] = v;
   }
@@ -98,7 +159,10 @@ class _ShellAppState extends State<ShellApp> {
     },
   };
 
-  void _onContentChanged(String json) => setState(() => _content = json);
+  void _onContentChanged(String json) {
+    setState(() => _content = json);
+    _pipe?.editContent(json); // 防抖 + 即时草稿（M2-T14）
+  }
 
   /// 截图/演示用快捷键：T 开关回收站浮层、P 开关页面「⋯」长面板
   /// （真实入口分别是侧栏「回收站」与右上工具栏的 ⋯）
@@ -166,9 +230,13 @@ class _ShellAppState extends State<ShellApp> {
     return null;
   }
 
-  void _snack(BuildContext context, String msg) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
+  /// MaterialApp 也在本 widget 的子树里 → 用 key 拿 messenger（直接 `ScaffoldMessenger.of(context)`
+  /// 会抛 "No ScaffoldMessenger widget found"，因为本 context 在 MaterialApp 之上）
+  final GlobalKey<ScaffoldMessengerState> _messengerKey = GlobalKey<ScaffoldMessengerState>();
+
+  void _snack(String msg) {
+    _messengerKey.currentState
+      ?..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(msg), duration: const Duration(seconds: 2)));
   }
 
@@ -181,6 +249,7 @@ class _ShellAppState extends State<ShellApp> {
       selectedPageId: _selectedId,
     );
     return MaterialApp(
+      scaffoldMessengerKey: _messengerKey,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
@@ -200,6 +269,14 @@ class _ShellAppState extends State<ShellApp> {
         child: Stack(
           children: [
             Positioned.fill(child: _buildShell(data)),
+            // 崩溃恢复横幅（M2-T15 装配演示）：文案是占位，真 FlowUs 的提示形态未采（见任务表）
+            if (_hasRecoverableDraft)
+              Positioned(
+                left: 0,
+                right: 0,
+                top: FlowUsLayout.tabBarHeight,
+                child: _DraftBanner(onRestore: _restoreDraft, onDiscard: _discardDraft),
+              ),
             if (_pageMenuOpen)
               Positioned(
                 right: 8,
@@ -207,7 +284,7 @@ class _ShellAppState extends State<ShellApp> {
                 child: FlowUsPageMenu(
                   onItem: (item) {
                     setState(() => _pageMenuOpen = false);
-                    _snack(context, '${item.label}（演示壳，未接动作）');
+                    _snack('${item.label}（演示壳，未接动作）');
                   },
                 ),
               ),
@@ -284,9 +361,9 @@ class _ShellAppState extends State<ShellApp> {
               });
             } else if (action == '删除') {
               // 演示入口不真删（树节点删除链在数据层任务里接）；仅提示
-              _snack(context, '删除 $pageId（演示壳不接数据层）');
+              _snack('删除 $pageId（演示壳不接数据层）');
             } else {
-              _snack(context, '$action → $pageId（演示壳）');
+              _snack('$action → $pageId（演示壳）');
             }
           },
         ),
@@ -304,13 +381,13 @@ class _ShellAppState extends State<ShellApp> {
           _tabs = [..._tabs, FlowUsTab(id: id, title: '无标题')];
           _activeTab = id;
         }),
-        onShare: () => _snack(context, '分享（演示壳）'),
+        onShare: () => _snack('分享（演示壳）'),
         onToolbarAction: (a) {
           if (a == '页面菜单') {
             setState(() => _pageMenuOpen = !_pageMenuOpen);
             return;
           }
-          _snack(context, '$a（演示壳）');
+          _snack('$a（演示壳）');
         },
       ),
       activeQuickIconIndex: 0, // 演示态对齐真 FlowUs：首页高亮
@@ -322,8 +399,8 @@ class _ShellAppState extends State<ShellApp> {
       onPageContentChanged: _onContentChanged,
       autoFocusPageBody: true, // 演示/截图：正文默认聚焦，可直接敲 "/" 看斜杠菜单
       showFloatingButtons: true,
-      onFloatingAiTap: () => _snack(context, 'FlowUs AI 面板属 M9'),
-      onFloatingHelpTap: () => _snack(context, '帮助菜单（点右下帮助钮可开）'),
+      onFloatingAiTap: () => _snack('FlowUs AI 面板属 M9'),
+      onFloatingHelpTap: () => _snack('帮助菜单（点右下帮助钮可开）'),
     );
 }
 
@@ -337,5 +414,38 @@ class JsonEncoderShim {
     if (v is List) return '[${v.map(_encode).join(',')}]';
     if (v is Map) return '{${v.entries.map((e) => '"${e.key}":${_encode(e.value)}').join(',')}}';
     return 'null';
+  }
+}
+
+/// 草稿恢复横幅（演示装配用）：ⓘ 文案形态未按真 FlowUs 采，先照系统横幅的样式做一条
+class _DraftBanner extends StatelessWidget {
+  const _DraftBanner({this.onRestore, this.onDiscard});
+
+  final VoidCallback? onRestore;
+  final VoidCallback? onDiscard;
+
+  @override
+  Widget build(BuildContext context) {
+    const accent = Color(0xFF0285FF);
+    return Container(
+      height: FlowUsLayout.bannerHeight,
+      decoration: const BoxDecoration(
+        color: Color(0x0D0285FF), // rgba(2,133,255,0.05)
+        border: Border(bottom: BorderSide(color: Color(0x1A0285FF))),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          const Icon(Icons.info_outline, size: 16, color: accent),
+          const SizedBox(width: 8),
+          const Expanded(
+            child: Text('发现未保存的草稿（上次编辑没来得及保存）',
+                style: TextStyle(fontSize: 14, height: 24 / 14, color: Color(0xFF37352F))),
+          ),
+          TextButton(onPressed: onRestore, child: const Text('恢复', style: TextStyle(color: accent))),
+          TextButton(onPressed: onDiscard, child: const Text('忽略', style: TextStyle(color: Color(0xFF5F5E5B)))),
+        ],
+      ),
+    );
   }
 }
