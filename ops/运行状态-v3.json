@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T01:17:08.597Z",
+  "updatedAt": "2026-11-10T01:33:56.541Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -17,16 +17,7 @@
     "probeCount": 36,
     "lastProbeAt": "2026-11-10T00:00:44.504Z"
   },
-  "running": [
-    {
-      "taskId": "M6-T01",
-      "sessionId": "run-1794273428",
-      "module": "M6",
-      "startedAt": "2026-11-10T01:17:08.597Z",
-      "estimateMin": 50,
-      "probes": 0
-    }
-  ],
+  "running": [],
   "history": [
     {
       "taskId": "M0-T01",
@@ -328,6 +319,13 @@
       "startedAt": "2026-11-10T04:25:00.000Z",
       "finishedAt": "2026-11-10T05:20:00.000Z",
       "note": "标签条+工具条；现场复测 gap 36→8；10断言全绿160无回归"
+    },
+    {
+      "taskId": "M6-T01",
+      "status": "partial",
+      "startedAt": "2026-11-10T01:17:00.000Z",
+      "finishedAt": "2026-11-10T01:33:56.541Z",
+      "note": "真实导出补采(193MB/131篇/886图)+markdown_export.dart 块→md 映射，14 断言绿；落盘打包拆 M6-T08"
     }
   ],
   "blocked": [],
