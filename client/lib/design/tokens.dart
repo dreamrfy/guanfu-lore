@@ -367,6 +367,34 @@ abstract final class FlowUsFloating {
 }
 
 // ---------------------------------------------------------------------------
+// 多维表「表格视图」骨架（M4-T02 实测，2026-11-10）
+//
+// 实测来源：页面「微信公众号剪藏」的表格视图（live DOM 计算样式 + 横向滚动复测）。
+//   · 列头高 37、行高 36（元素是 Tailwind `h-9`）、默认列宽 180、序号列 66
+//   · 网格线：1px rgba(55,53,47,0.1)（列间在右缘，行间在下缘）
+//   · 列头文字 14/24、#37352F、左右内边距 8
+//   · 冻结：横向滚动 +320 后「序号」x=34、「标题」x=100 都没动 → **前两列冻结**
+//   · 列宽拖拽手柄 4×37，贴在列右缘（`-right-0.5`），cursor: col-resize
+// ---------------------------------------------------------------------------
+
+abstract final class FlowUsTable {
+  static const double columnWidth = 180;
+  static const double indexColumnWidth = 66; // 序号列（No.）
+  static const double headerHeight = 37;
+  static const double rowHeight = 36;
+  static const double gridWidth = 1;
+  static const Color gridColor = Color(0x1A37352F); // rgba(55,53,47,0.1) = 26/255
+  static const double cellPaddingH = 8;
+  static const double headerFontSize = 14;
+  static const double headerLineHeight = 24;
+  static const Color headerTextColor = Color(0xFF37352F);
+  static const double resizeHandleWidth = 4;
+  /// 拖拽最小/最大列宽：**未实测**（只量了当前 180），先按常识给一档，等拖拽样本再收紧
+  static const double minColumnWidth = 80;
+  static const double maxColumnWidth = 600;
+}
+
+// ---------------------------------------------------------------------------
 // 便捷入口
 // ---------------------------------------------------------------------------
 

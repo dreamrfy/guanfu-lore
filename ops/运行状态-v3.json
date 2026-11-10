@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T01:48:14.263Z",
+  "updatedAt": "2026-11-10T02:01:35.974Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -354,6 +354,13 @@
       "startedAt": "2026-11-10T06:35:00.000Z",
       "finishedAt": "2026-11-10T07:10:00.000Z",
       "note": "空页类型选择器 6+7 项；骨架屏留待样本；5断言全绿196无回归"
+    },
+    {
+      "taskId": "M4-T02",
+      "status": "done",
+      "startedAt": "2026-11-10T01:57:00.000Z",
+      "finishedAt": "2026-11-10T02:01:35.974Z",
+      "note": "补采行高36/序号列66/网格线1px #1A37352F/冻结两列/手柄4×37；table_skeleton.dart 冻结+横滚+拖拽；7 断言，全量203绿"
     }
   ],
   "blocked": [],
