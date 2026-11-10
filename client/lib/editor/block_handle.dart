@@ -24,6 +24,7 @@
 import 'dart:async';
 
 import 'package:appflowy_editor_ce/appflowy_editor_ce.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/material.dart';
 
 import '../design/flowus_icons.dart';
@@ -95,6 +96,127 @@ class BlockHandleController extends ChangeNotifier {
 
   /// 「＋」显示条件：靠近块左缘，或已经在图标层上
   bool get showPlus => hoveredNode != null && (_pointerNearEdge || _pointerOnLayer);
+
+  // ---------- 拖拽排序（M2-T26） ----------
+
+  /// 所有块的锚点（nodeId → GlobalKey）：拖拽时据此算每块矩形与落点
+  final Map<String, GlobalKey> _anchors = {};
+
+  void registerAnchor(String nodeId, GlobalKey key) => _anchors[nodeId] = key;
+
+  /// 取某块的锚点（拖拽指示线要用）
+  GlobalKey? anchorsOf(String nodeId) => _anchors[nodeId];
+
+  void unregisterAnchor(String nodeId) => _anchors.remove(nodeId);
+
+  /// 长按多久算开始拖拽（真机提示语写的是「长按拖拽」；具体时长未实测，先 300ms）
+  static const Duration kDragLongPress = Duration(milliseconds: 300);
+
+  Node? _dragNode;
+  int? _dropIndex;
+  double? _indicatorY;
+
+  Node? get dragNode => _dragNode;
+  int? get dropIndex => _dropIndex;
+
+  /// 指示线的屏幕 y（null = 不显示）
+  double? get indicatorY => _indicatorY;
+
+  /// 长按手柄 → 进入拖拽
+  /// 拖拽过程中可能正处在帧锁定状态（手势回调里），统一延后到帧末再通知
+  void _notifySafely() {
+    if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.persistentCallbacks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
+      return;
+    }
+    notifyListeners();
+  }
+
+  void startDrag(Node node) {
+    _fadeTimer?.cancel();
+    _dragNode = node;
+    _dropIndex = null;
+    _indicatorY = null;
+    _pointerOnLayer = false;
+    _pointerNearEdge = false;
+    _notifySafely();
+  }
+
+  /// 拖动中：按鼠标全局 y 找落点（同一父级内重排）
+  void updateDrag(double globalY) {
+    final node = _dragNode;
+    if (node == null) return;
+    final parent = node.parent;
+    if (parent == null) return;
+    final siblings = parent.children;
+    int? index;
+    double? indicator;
+    for (var i = 0; i < siblings.length; i++) {
+      final sib = siblings[i];
+      if (sib.id == node.id) continue;
+      final key = _anchors[sib.id];
+      final box = key?.currentContext?.findRenderObject() as RenderBox?;
+      if (box == null || !box.attached) continue;
+      final topLeft = box.localToGlobal(Offset.zero);
+      final mid = topLeft.dy + box.size.height / 2;
+      if (globalY < mid) {
+        index = i;
+        indicator = topLeft.dy;
+        break;
+      }
+    }
+    if (index == null) {
+      // 落到最后一块之后
+      Node? last;
+      for (final sib in siblings.reversed) {
+        if (sib.id == node.id) continue;
+        final box = _anchors[sib.id]?.currentContext?.findRenderObject() as RenderBox?;
+        if (box != null && box.attached) {
+          last = sib;
+          index = siblings.indexOf(sib);
+          indicator = box.localToGlobal(Offset.zero).dy + box.size.height;
+          break;
+        }
+      }
+      if (last == null) return;
+      index = index! + 1;
+    }
+    if (index == _dropIndex && indicator == _indicatorY) return;
+    _dropIndex = index;
+    _indicatorY = indicator;
+    _notifySafely();
+  }
+
+  /// 松手：把块移动到落点（同父级内）；返回是否真的动了
+  Future<bool> endDrag() async {
+    final node = _dragNode;
+    final target = _dropIndex;
+    _dragNode = null;
+    _dropIndex = null;
+    _indicatorY = null;
+    notifyListeners();
+    if (node == null || target == null || node.parent == null) return false;
+    final parent = node.parent!;
+    final siblings = parent.children;
+    final from = siblings.indexWhere((s) => s.id == node.id);
+    if (from < 0) return false;
+    if (target == from) return false;
+    // 目标位置的锚块：删除自身后它的 path 即为插入点（target 在自身之后时下标整体前移 1，仍指到它）
+    final anchorSibling = target < siblings.length ? siblings[target] : null;
+    final insertPath = anchorSibling != null ? anchorSibling.path : siblings.last.path.next;
+    final txn = editorState.transaction
+      ..deleteNode(node)
+      ..insertNode(insertPath, node);
+    await editorState.apply(txn);
+    return true;
+  }
+
+  void cancelDrag() {
+    _dragNode = null;
+    _dropIndex = null;
+    _indicatorY = null;
+    _notifySafely();
+  }
 
   /// 块的外壳调用：鼠标进入块
   void hoverBlock(Node node, GlobalKey anchorKey) {
@@ -196,6 +318,27 @@ class _BlockHoverAnchorState extends State<_BlockHoverAnchor> {
   final GlobalKey _anchorKey = GlobalKey(debugLabel: 'block-anchor');
 
   @override
+  void initState() {
+    super.initState();
+    widget.controller.registerAnchor(widget.node.id, _anchorKey);
+  }
+
+  @override
+  void didUpdateWidget(covariant _BlockHoverAnchor old) {
+    super.didUpdateWidget(old);
+    if (old.node.id != widget.node.id) {
+      widget.controller.unregisterAnchor(old.node.id);
+      widget.controller.registerAnchor(widget.node.id, _anchorKey);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.controller.unregisterAnchor(widget.node.id);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     // 页面块本身不显示手柄（真 FlowUs 也没有）
     if (widget.node.type == PageBlockKeys.type) {
@@ -261,6 +404,23 @@ class _FlowUsBlockHandlesState extends State<FlowUsBlockHandles> {
     return OverlayPortal(
       controller: _portal,
       overlayChildBuilder: (overlayContext) {
+        // 拖拽中：只画落点指示线（不再依赖 hover，鼠标可能已离开块）
+        final dragNode = c.dragNode;
+        if (dragNode != null) {
+          if (c.indicatorY == null) return const SizedBox.shrink();
+          final dragBox = c.anchorsOf(dragNode.id)?.currentContext?.findRenderObject() as RenderBox?;
+          final left = dragBox != null && dragBox.attached
+              ? dragBox.localToGlobal(Offset.zero).dx
+              : 0.0;
+          final width = dragBox != null && dragBox.attached ? dragBox.size.width : 708.0;
+          return Positioned(
+            left: left,
+            top: c.indicatorY!,
+            width: width,
+            height: 2,
+            child: const ColoredBox(color: Color(0xFF0285FF)),
+          );
+        }
         final anchorKey = c.anchorKey;
         final anchorBox = anchorKey?.currentContext?.findRenderObject() as RenderBox?;
         if (c.hoveredNode == null || anchorBox == null || !anchorBox.attached) {
@@ -324,7 +484,7 @@ class _FlowUsBlockHandlesState extends State<FlowUsBlockHandles> {
                         ),
                       ),
                     ),
-                  // 手柄 16×16 @ 左外 20（簇内 x=4）
+                  // 手柄 16×16 @ 左外 20（簇内 x=4）：长按 → 拖拽排序（M2-T26）
                   Positioned(
                     left: 4,
                     top: 0,
@@ -332,9 +492,28 @@ class _FlowUsBlockHandlesState extends State<FlowUsBlockHandles> {
                     height: 16,
                     child: MouseRegion(
                       cursor: SystemMouseCursors.grab,
-                      child: FlowUsSvgIcon(FlowUsIc.menu, size: 16, color: colors.textTertiary),
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onPanStart: (_) {
+                          final node = c.hoveredNode;
+                          if (node != null) c.startDrag(node);
+                        },
+                        onPanUpdate: (d) => c.updateDrag(d.globalPosition.dy),
+                        onPanEnd: (_) => c.endDrag(),
+                        onPanCancel: c.cancelDrag,
+                        child: FlowUsSvgIcon(FlowUsIc.menu, size: 16, color: colors.textTertiary),
+                      ),
                     ),
                   ),
+                  // 拖拽指示线（M2-T26）：横线画在落点，宽度取块宽
+                  if (c.indicatorY != null)
+                    Positioned(
+                      left: 24, // 簇内 x=24 即块左缘
+                      top: c.indicatorY! - anchorTopLeft.dy - kHandleTopInset,
+                      width: anchorBox.size.width,
+                      height: 2,
+                      child: const ColoredBox(color: Color(0xFF0285FF)),
+                    ),
                   // 「＋」20×20 @ 左外 22（簇内 x=2）、手柄下方 14
                   if (c.showPlus)
                     Positioned(

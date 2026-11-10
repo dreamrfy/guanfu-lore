@@ -36,7 +36,7 @@ class _Bench {
       );
 }
 
-Future<_Bench> _pump(WidgetTester tester) async {
+Future<_Bench> _pump(WidgetTester tester, {String content = _doc}) async {
   tester.view.physicalSize = const Size(1200, 800);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);
@@ -56,7 +56,7 @@ Future<_Bench> _pump(WidgetTester tester) async {
         child: SizedBox(
           width: 708,
           child: FlowUsEditor(
-            initialContent: _doc,
+            initialContent: content,
             onChanged: (_) {},
             onReady: (s) => captured = s,
             onHandlesReady: (h) => capturedHandles = h,
@@ -137,5 +137,34 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('AI 助手'), findsNothing);
     expect(b.state.document.root.children.length, 2);
+  });
+
+  testWidgets('拖拽排序：拖到末尾后顺序改变，拖拽中出现 2px 蓝指示线（M2-T26）', (tester) async {
+    const three = '{"document":{"type":"page","children":['
+        '{"type":"paragraph","data":{"delta":[{"insert":"AAA"}]}},'
+        '{"type":"paragraph","data":{"delta":[{"insert":"BBB"}]}},'
+        '{"type":"paragraph","data":{"delta":[{"insert":"CCC"}]}}'
+        ']}}';
+    final b = await _pump(tester, content: three);
+    List<String> order() => [
+      for (final n in b.state.document.root.children)
+        if (n.delta!.toPlainText().isNotEmpty) n.delta!.toPlainText(),
+    ];
+    expect(order(), ['AAA', 'BBB', 'CCC']);
+
+    final first = b.state.document.root.children.first;
+    final lastRect = tester.getRect(find.text('CCC', findRichText: true));
+
+    // 直接驱动控制器（手势接线在 release 里人工验；这里验排序与指示线的逻辑）
+    b.handles.startDrag(first);
+    b.handles.updateDrag(lastRect.bottom + 24);
+    await tester.pump();
+    final indicator = find.byWidgetPredicate((w) => w is ColoredBox && w.color == const Color(0xFF0285FF));
+    expect(indicator, findsWidgets, reason: '拖拽中应出现落点指示线');
+    expect(b.handles.dropIndex, isNotNull);
+
+    await b.handles.endDrag();
+    await tester.pumpAndSettle();
+    expect(order(), ['BBB', 'CCC', 'AAA'], reason: '第一块应被移到末尾');
   });
 }
