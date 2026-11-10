@@ -102,4 +102,40 @@ void main() {
     expect(b.state.document.root.children.length, 3);
     expect(b.state.document.root.children[1].delta?.toPlainText(), '');
   });
+
+  testWidgets('点手柄 → 块菜单打开；选「在上方插入」→ 块 +1 且菜单关闭', (tester) async {
+    final b = await _pump(tester);
+    expect(b.state.document.root.children.length, 2);
+
+    await b.mouse.moveTo(tester.getCenter(find.text('悬停我', findRichText: true)));
+    await tester.pumpAndSettle();
+    await tester.tap(_icon(FlowUsIc.menu));
+    await tester.pumpAndSettle();
+
+    // 15 项都摆出来了
+    expect(find.text('AI 助手'), findsOneWidget);
+    expect(find.text('在上方插入'), findsOneWidget);
+    expect(find.text('在右侧添加分栏'), findsOneWidget);
+
+    await tester.tap(find.text('在上方插入'));
+    await tester.pumpAndSettle();
+
+    expect(b.state.document.root.children.length, 3);
+    expect(b.state.document.root.children[1].delta?.toPlainText(), '悬停我');
+    expect(find.text('AI 助手'), findsNothing, reason: '动作执行后菜单应关闭');
+  });
+
+  testWidgets('点菜单外的空白 → 菜单关闭、文档不变', (tester) async {
+    final b = await _pump(tester);
+    await b.mouse.moveTo(tester.getCenter(find.text('悬停我', findRichText: true)));
+    await tester.pumpAndSettle();
+    await tester.tap(_icon(FlowUsIc.menu));
+    await tester.pumpAndSettle();
+    expect(find.text('AI 助手'), findsOneWidget);
+
+    await tester.tapAt(const Offset(1150, 760));
+    await tester.pumpAndSettle();
+    expect(find.text('AI 助手'), findsNothing);
+    expect(b.state.document.root.children.length, 2);
+  });
 }

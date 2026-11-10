@@ -50,6 +50,19 @@ const double kHandleTopInset = 4;
 /// 鼠标离开块后保持手柄的时长：够把指针挪到左侧图标上（否则一离开块就闪掉）
 const Duration kHandleFadeDelay = Duration(milliseconds: 120);
 
+/// 点手柄时给宿主的信息（块菜单的锚点）
+class BlockHandleTap {
+  const BlockHandleTap({required this.node, required this.blockRect, required this.handleTopLeft});
+
+  final Node node;
+
+  /// 块在屏幕上的矩形
+  final Rect blockRect;
+
+  /// 手柄命中盒左上角的屏幕坐标
+  final Offset handleTopLeft;
+}
+
 /// 手柄/「＋」的状态中枢：块负责"报到"，overlay 负责"算位置与画"。
 class BlockHandleController extends ChangeNotifier {
   BlockHandleController({required this.editorState});
@@ -203,8 +216,8 @@ class FlowUsBlockHandles extends StatefulWidget {
 
   final BlockHandleController controller;
 
-  /// 点手柄（M2-T08 的块菜单入口；未接时先不响应）
-  final VoidCallback? onHandleTap;
+  /// 点手柄 → 打开块菜单（M2-T08）；不接则点了不响应
+  final ValueChanged<BlockHandleTap>? onHandleTap;
 
   /// 点「＋」后的附加回调（插入已由 controller 完成）
   final VoidCallback? onPlusTap;
@@ -263,7 +276,14 @@ class _FlowUsBlockHandlesState extends State<FlowUsBlockHandles> {
               behavior: HitTestBehavior.opaque,
               onTapUp: (details) async {
                 if (details.localPosition.dy <= 16) {
-                  widget.onHandleTap?.call();
+                  final node = c.hoveredNode;
+                  if (node != null) {
+                    widget.onHandleTap?.call(BlockHandleTap(
+                      node: node,
+                      blockRect: anchorTopLeft & anchorBox.size,
+                      handleTopLeft: Offset(anchorTopLeft.dx - kHandleLeftOutside, anchorTopLeft.dy + kHandleTopInset),
+                    ));
+                  }
                   return;
                 }
                 await c.insertParagraphAfterHovered();

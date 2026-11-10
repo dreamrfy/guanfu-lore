@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:appflowy_editor_ce/appflowy_editor_ce.dart';
 import 'package:flutter/material.dart';
 
+import 'block_action_menu.dart';
 import 'block_handle.dart';
 import 'code_block_component.dart';
 import 'inline_shortcuts.dart';
@@ -87,6 +88,10 @@ class _FlowUsEditorState extends State<FlowUsEditor> {
   StreamSubscription? _sub;
   bool _ready = false;
 
+  // M2-T08：块操作菜单（挂根 Overlay，锚点是手柄点击位置）
+  final OverlayPortalController _menuPortal = OverlayPortalController(debugLabel: 'block-action-menu');
+  BlockHandleTap? _menuAnchor;
+
   @override
   void initState() {
     super.initState();
@@ -97,6 +102,9 @@ class _FlowUsEditorState extends State<FlowUsEditor> {
     _ready = true;
     widget.onReady?.call(_editorState);
     widget.onHandlesReady?.call(_handles);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _menuPortal.show();
+    });
   }
 
   @override
@@ -127,6 +135,35 @@ class _FlowUsEditorState extends State<FlowUsEditor> {
     if (json == _lastEmitted) return;
     _lastEmitted = json;
     widget.onChanged(json);
+  }
+
+  void _openBlockMenu(BlockHandleTap tap) {
+    setState(() => _menuAnchor = tap);
+  }
+
+  void _closeBlockMenu() {
+    if (_menuAnchor == null) return;
+    setState(() => _menuAnchor = null);
+  }
+
+  Future<void> _onBlockAction(BlockAction action, Node node) async {
+    final runner = BlockActionRunner(_editorState);
+    await runner.run(action, node);
+    _closeBlockMenu();
+  }
+
+  /// 底部「块数统计」= 块数（不含页面根节点本身）
+  int _countNodes(Node node) {
+    var n = -1; // 根节点是页面，不算块
+    void walk(Node cur) {
+      n += 1;
+      for (final child in cur.children) {
+        walk(child);
+      }
+    }
+
+    walk(node);
+    return n;
   }
 
   @override
@@ -172,7 +209,44 @@ class _FlowUsEditorState extends State<FlowUsEditor> {
               ...standardCommandShortcutEvents,
             ],
           ),
-          FlowUsBlockHandles(controller: _handles),
+          FlowUsBlockHandles(controller: _handles, onHandleTap: _openBlockMenu),
+          // M2-T08：块菜单画在根 Overlay（面板在内容列左外，同样出不了编辑器盒子）
+          OverlayPortal(
+            controller: _menuPortal,
+            overlayChildBuilder: (overlayContext) {
+              final anchor = _menuAnchor;
+              if (anchor == null) return const SizedBox.shrink();
+              return Positioned.fill(
+                child: Stack(
+                  children: [
+                    // 点空白关闭（真 FlowUs 同款行为）
+                    Positioned.fill(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: _closeBlockMenu,
+                        child: const SizedBox.expand(),
+                      ),
+                    ),
+                    Positioned(
+                      left: anchor.handleTopLeft.dx - kBlockMenuHandleGap - kBlockMenuWidth,
+                      top: anchor.blockRect.center.dy,
+                      child: FractionalTranslation(
+                        translation: const Offset(0, -0.5),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: BlockActionMenu(
+                            blockCount: _countNodes(_editorState.document.root),
+                            onAction: (a) => _onBlockAction(a, anchor.node),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+            child: const SizedBox.shrink(),
+          ),
         ],
       ),
     );
