@@ -1,0 +1,84 @@
+{
+  "task": "M1-T03 页面树渲染 · 补采（侧栏树嵌套/缩进/展开箭头）",
+  "capturedAt": "2026-11-10T02:35:00+08:00",
+  "viewport": "1920×945",
+  "method": "CDP 9222 + playwright-core；用既有「磷化工知识库」(type=15 文件夹, id=05db2d4f) 的 7 个子页现场展开实测；建测试页量完已彻底删除（status gone），零遗留",
+  "findings": {
+    "页项结构（a[data-test-id=aside-item-toc] 内部）": [
+      "div.w-1 = 4px 占位（树缩进弹簧）",
+      "span/button.w-5.h-5 = 箭头 caret 位 20×20（无子页 display:none；有子页 hover 才现）",
+      "span.emoji-container = 页面图标 20×20",
+      "div.block.flex-1.pl-1 = 文字区（pl-1=4px）"
+    ],
+    "顶层页项": {
+      "rowX": 8,
+      "rowW": 211,
+      "rowH": 32,
+      "emojiX": 17,
+      "textX": 41
+    },
+    "子页项（展开后）": {
+      "emojiX": 37,
+      "textX": 61,
+      "行x/宽/高不变": "8/211/32",
+      "缩进台阶": "20px/级（emoji 17→37，文字 41→61）"
+    },
+    "展开箭头 caret": {
+      "按钮": "20×20，行首 emoji 左侧（x=17 处，hover 父行时显示）",
+      "svg": "12×12 (w-3 h-3)，色 text-grey3，fill-opacity 0.85",
+      "折叠态": "朝右（IcArrowRight01），默认 opacity-0，行 hover 时 opacity-100",
+      "展开态": "rotate-90 朝下（computed transform matrix(0,1,-1,0,0,0)），transition-all",
+      "hover 行内钮": "⋯ 在 x=158、＋ 在 x=182（各 20×20，hover 显示，M1-T04 接交互）"
+    },
+    "展开后布局": "子页行紧随父行（32/行）；父行下方其余分区整体下推；「空间」「私人」分区头各自有 12×12 旋转箭头（matrix(0,1,-1,0,0,0) 已展开态），位于标题文字后 x=42",
+    "分区头箭头": {
+      "x": 42,
+      "size": 12,
+      "展开态": "rotate-90（matrix(0,1,-1,0,0,0)）",
+      "常态": "opacity-0，行 hover 显示"
+    }
+  },
+  "implementationRules": [
+    "树缩进 = 每级 20px（不是块级排版的 26px）",
+    "页项行几何不随层级变（8/211/32 恒定），变的只是行内容起点",
+    "展开箭头 = 12×12，折叠朝右/展开朝下（旋转 90°，transition-all 0.1s）",
+    "无子页的行不显示箭头位（display none），有子页未 hover 也隐藏（opacity 0）",
+    "分区头箭头与页项箭头同规格（12×12 grey3 rotate-90）"
+  ],
+  "screenshots": [
+    "t03-expanded.png（树展开态）",
+    "t03-state3.png（子页行缩进）"
+  ],
+  "cleanup": "测试页 17c5b764 与子页 907a53b6 已彻底删除（API status gone）；磷化工知识库未动",
+  "iconsVerified": {
+    "图标行5个": {
+      "1首页": "自研svg(无data-icon,20x20)",
+      "2头像": "自研svg(无data-icon,20x20)",
+      "3搜索": "lucide-search",
+      "4通知": "lucide-bell",
+      "5更多": "lucide-ellipsis"
+    },
+    "空间名折叠钮": "lucide-chevrons-left 20x20 text-grey3 (x=197)",
+    "AI行": {
+      "左": "自研svg 20x20 (x=16)",
+      "右": "IcHistory 16x16 (x=191)"
+    },
+    "查看更多": "IcMore 20x20 (x=16)",
+    "底部三项": {
+      "我的订阅": "IcSubscribe 16x16",
+      "市集": "Store(Lucide) 16x16",
+      "回收站": "IcTrash 16x16"
+    },
+    "页项真实图标(非emoji占位)": {
+      "多维表页": "IcTable 20x20",
+      "普通页": "IcPages 20x20",
+      "文件夹页": "IcFolderContent(推断)",
+      "AI行右侧": "IcHistory"
+    },
+    "分区头+": "IcAdd 16x16 (x=197)",
+    "页项hover钮": {
+      "more": "IcMore 16x16 (x=168/177)",
+      "add": "IcAdd 16x16 (x=192/197)"
+    }
+  }
+}

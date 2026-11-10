@@ -52,6 +52,21 @@ abstract final class FlowUsLayout {
   static const double sidebarItemPaddingRight = 8; // pr-2
   static const double sidebarItemInsetLeft = 8; // x=8
 
+  // ---- 页项内部（M1-T03 实测，2026-11-10；行容器 x=8 / w=211 / h=32）----
+  //
+  // 注意：类名写的是 mx-2 / pr-2（暗示 8），但**实测内边距是 9**——
+  // 图标槽左缘在 x=17 = 行左 8 + 9，右侧 ⋯/＋ 右缘 210 = 行右 219 − 9。
+  // 以实测为准（class 名不是可信来源）。
+  static const double sidebarPageItemInset = 9;
+  static const double sidebarPageIconSlot = 20; // 图标槽 20×20（SPAN@17 / 悬停换成 BUTTON@17）
+  static const double sidebarPageIconGap = 4; // 图标右缘 37 → 标题左缘 41
+  static const double sidebarTreeIndentStep = 20; // 每级缩进 20（父子两行：图标 17→37、箭头位 9→29）
+  static const double sidebarHoverChevronSize = 12; // 悬停时图标槽里换成 12×12 展开箭头
+  static const double sidebarHoverDotSize = 2.5; // 无子页的行悬停时槽里是一个 2.5×2.5 实心小圆点
+  static const double sidebarHoverButtonSize = 20; // 悬停右侧 ⋯@166、＋@190，各 20×20
+  static const double sidebarHoverButtonGap = 4; // 标题右缘 162 → ⋯ 166 → ＋ 190 → 右缘 210
+  static const double sidebarIdleTailSpace = 8; // 未悬停时标题右侧留 8（实测标题宽 161，不是 169）
+
   /// 滚动条：**overlay 型，不占布局宽度**（实测 offsetWidth - clientWidth = 0）
   static const bool scrollbarIsOverlay = true;
 }
