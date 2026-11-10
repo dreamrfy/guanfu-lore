@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T03:53:26.525Z",
+  "updatedAt": "2026-11-10T04:01:38.891Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -417,6 +417,13 @@
       "startedAt": "2026-11-10T04:25:00.000Z",
       "finishedAt": "2026-11-10T03:53:26.525Z",
       "note": "测量推翻字体假设：字宽一致(83/97/96)、差在w500假粗；做首页激活tile+修截图黑边；客服气泡判定不存在"
+    },
+    {
+      "taskId": "M2-T02",
+      "status": "done",
+      "startedAt": "2026-11-10T05:05:00.000Z",
+      "finishedAt": "2026-11-10T04:01:38.891Z",
+      "note": "page_title.dart 40/64/w600+占位grey3+防抖800ms；三处同步（主区/侧栏/标签）集成断言；248 测试全绿"
     }
   ],
   "blocked": [],

@@ -36,6 +36,40 @@ class _ShellAppState extends State<ShellApp> {
   String? _activeTab = 't1';
   bool _trashOpen = false;
 
+  /// 当前页标题（M2-T02）：主区输入框、侧栏页项、标签条三处同步
+  String _currentTitle = '学习进度';
+
+  void _onTitleChanged(String v) {
+    final id = _selectedId;
+    setState(() {
+      _currentTitle = v;
+      // ① 侧栏页项
+      if (id != null) {
+        if (_find(_spacePages, id) != null) {
+          _spacePages = _update(_spacePages, id, (n) => n.copyWith(title: v));
+        } else if (_find(_privatePages, id) != null) {
+          _privatePages = _update(_privatePages, id, (n) => n.copyWith(title: v));
+        }
+      }
+      // ② 标签条里当前页那条
+      final tabId = _activeTab;
+      if (tabId != null) {
+        _tabs = [
+          for (final t in _tabs)
+            t.id == tabId ? FlowUsTab(id: t.id, title: v.isEmpty ? '无标题' : v) : t,
+        ];
+      }
+    });
+  }
+
+  /// 防抖后的落库（演示壳：这里只落内存；真库在 M2-T14 保存链接入 pages 表）
+  Future<void> _onTitleSave(String v) async {
+    await Future<void>.delayed(const Duration(milliseconds: 30));
+    _savedTitles[_selectedId ?? ''] = v;
+  }
+
+  final Map<String, String> _savedTitles = {};
+
   /// 按 T 开关回收站浮层（只为截图用；真实入口在侧栏「回收站」）
   KeyEventResult _onKey(FocusNode node, KeyEvent event) {
     if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.keyT) {
@@ -164,7 +198,10 @@ class _ShellAppState extends State<ShellApp> {
   Widget _buildShell(SidebarData data) => FlowUsShell(
         data: data,
         callbacks: SidebarCallbacks(
-          onOpenPage: (id) => setState(() => _selectedId = id),
+          onOpenPage: (id) => setState(() {
+            _selectedId = id;
+            _currentTitle = _find(_spacePages, id)?.title ?? _find(_privatePages, id)?.title ?? '';
+          }),
           onToggleExpand: (id, expanded) => setState(() {
             final hit = _find(_spacePages, id) ?? _find(_privatePages, id);
             if (hit != null) {
@@ -225,6 +262,9 @@ class _ShellAppState extends State<ShellApp> {
         onToolbarAction: (a) => _snack(context, '$a（演示壳）'),
       ),
       activeQuickIconIndex: 0, // 演示态对齐真 FlowUs：首页高亮
+      pageTitle: _currentTitle,
+      onPageTitleChanged: _onTitleChanged,
+      onPageTitleSave: _onTitleSave,
       showFloatingButtons: true,
       onFloatingAiTap: () => _snack(context, 'FlowUs AI 面板属 M9'),
       onFloatingHelpTap: () => _snack(context, '帮助菜单（点右下帮助钮可开）'),

@@ -19,6 +19,7 @@
 import 'package:flutter/material.dart';
 
 import '../design/flowus_icons.dart';
+import '../page/page_title.dart';
 import '../design/tokens.dart';
 import 'flowus_banner.dart';
 import 'flowus_floating.dart';
@@ -767,6 +768,9 @@ class FlowUsShell extends StatelessWidget {
     this.onDeleteRestore,
     this.onDeleteConfirm,
     this.activeQuickIconIndex,
+    this.pageTitle,
+    this.onPageTitleChanged,
+    this.onPageTitleSave,
     this.showFloatingButtons = false,
     this.onFloatingAiTap,
     this.onFloatingHelpTap,
@@ -788,6 +792,13 @@ class FlowUsShell extends StatelessWidget {
   final bool showDeleteBanner;
   final VoidCallback? onDeleteRestore;
   final VoidCallback? onDeleteConfirm;
+
+  /// 当前页标题（M2-T02）：null/空 → 显示占位「无标题」
+  final String? pageTitle;
+  final ValueChanged<String>? onPageTitleChanged;
+
+  /// 防抖落库（null = 演示态不落库）
+  final Future<void> Function(String title)? onPageTitleSave;
 
   /// 侧栏图标行的激活态（M1-T16）：下标 0..4 表示当前所在路由，null = 无激活。
   /// 实测：在首页时第一格（首页）有浅灰圆角底块，其余格没有。
@@ -839,12 +850,12 @@ class FlowUsShell extends StatelessWidget {
                             // 实测：真 FlowUs 内容滚动容器 y=48（无横幅），见 docs/基准/证据/M1-T10/title-top.json
                             top: 0,
                             width: FlowUsLayout.contentColumnWidth,
-                            child: Text('无标题',
-                                style: TextStyle(
-                                    fontSize: FlowUsTypography.pageTitle.fontSize,
-                                    height: FlowUsTypography.pageTitle.height,
-                                    fontWeight: FlowUsTypography.pageTitle.fontWeight,
-                                    color: c.textTertiary)),
+                            // M2-T02：真标题块（40/64/w600，空值显示灰色「无标题」占位）
+                            child: FlowUsPageTitle(
+                              title: pageTitle ?? '',
+                              onChanged: onPageTitleChanged ?? (_) {},
+                              onSave: onPageTitleSave,
+                            ),
                           ),
                           // 右下角浮动圆钮（M1-T07）：浮层自己定位（钮距右 20 / 距底 86 与 40；菜单距底 84），
                           // 所以这里铺满整个主区，不在这里给 right/bottom —— 实测渲染距右缘是 **20** 而不是 CSS 里的 right:40
