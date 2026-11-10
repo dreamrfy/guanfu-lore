@@ -378,6 +378,17 @@ class FlowUsBlockHandles extends StatefulWidget {
 class _FlowUsBlockHandlesState extends State<FlowUsBlockHandles> {
   final OverlayPortalController _portal = OverlayPortalController(debugLabel: 'block-handles');
 
+  /// 拖拽起点与是否处于"已按下"状态（Listener 方案，绕开手势竞技场）
+  Offset _dragOrigin = Offset.zero;
+  bool _dragArmed = false;
+  Timer? _armTimer;
+
+  @override
+  void dispose() {
+    _armTimer?.cancel();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -492,15 +503,37 @@ class _FlowUsBlockHandlesState extends State<FlowUsBlockHandles> {
                     height: 16,
                     child: MouseRegion(
                       cursor: SystemMouseCursors.grab,
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onPanStart: (_) {
-                          final node = c.hoveredNode;
-                          if (node != null) c.startDrag(node);
+                      // 用 Listener 直接吃原始指针事件：手势竞技场里编辑器的拖选会把 pan 抢走
+                      // （2026-11-10 release 复验发现 panStart 一直不触发），移动超过 4px 才算开始拖
+                      child: Listener(
+                        onPointerDown: (e) {
+                          _dragOrigin = e.position;
+                          _dragArmed = false; // 真机是「长按拖拽」：按住满 300ms 才允许拖
+                          _armTimer?.cancel();
+                          _armTimer = Timer(BlockHandleController.kDragLongPress, () {
+                            _dragArmed = true;
+                          });
                         },
-                        onPanUpdate: (d) => c.updateDrag(d.globalPosition.dy),
-                        onPanEnd: (_) => c.endDrag(),
-                        onPanCancel: c.cancelDrag,
+                        onPointerMove: (e) {
+                          if (!_dragArmed) return;
+                          final node = c.hoveredNode;
+                          if (node == null) return;
+                          if (c.dragNode == null) {
+                            if ((e.position - _dragOrigin).distance < 4) return;
+                            c.startDrag(node);
+                          }
+                          c.updateDrag(e.position.dy);
+                        },
+                        onPointerUp: (_) {
+                          _armTimer?.cancel();
+                          if (c.dragNode != null) c.endDrag();
+                          _dragArmed = false;
+                        },
+                        onPointerCancel: (_) {
+                          _armTimer?.cancel();
+                          c.cancelDrag();
+                          _dragArmed = false;
+                        },
                         child: FlowUsSvgIcon(FlowUsIc.menu, size: 16, color: colors.textTertiary),
                       ),
                     ),

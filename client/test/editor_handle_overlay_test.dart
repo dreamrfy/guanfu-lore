@@ -167,4 +167,37 @@ void main() {
     await tester.pumpAndSettle();
     expect(order(), ['BBB', 'CCC', 'AAA'], reason: '第一块应被移到末尾');
   });
+
+  testWidgets('屏幕上真拖手柄（Listener 方案）：出指示线并完成换位', (tester) async {
+    const three = '{"document":{"type":"page","children":['
+        '{"type":"paragraph","data":{"delta":[{"insert":"AAA"}]}},'
+        '{"type":"paragraph","data":{"delta":[{"insert":"BBB"}]}},'
+        '{"type":"paragraph","data":{"delta":[{"insert":"CCC"}]}}'
+        ']}}';
+    final b = await _pump(tester, content: three);
+    List<String> order() => [
+      for (final n in b.state.document.root.children)
+        if (n.delta!.toPlainText().isNotEmpty) n.delta!.toPlainText(),
+    ];
+
+    await b.mouse.moveTo(tester.getCenter(find.text('AAA', findRichText: true)));
+    await tester.pumpAndSettle();
+    final handleRect = tester.getRect(_icon(FlowUsIc.menu));
+    final lastRect = tester.getRect(find.text('CCC', findRichText: true));
+
+    final g = await tester.startGesture(handleRect.center, kind: PointerDeviceKind.mouse);
+    await tester.pump(const Duration(milliseconds: 350)); // 长按 300ms 才能拖
+    await tester.pump();
+    await g.moveBy(const Offset(0, 20));
+    await tester.pump();
+    await g.moveTo(Offset(handleRect.center.dx, lastRect.bottom + 20));
+    await tester.pump();
+
+    final indicator = find.byWidgetPredicate((w) => w is ColoredBox && w.color == const Color(0xFF0285FF));
+    expect(indicator, findsWidgets, reason: '拖动中应有落点指示线');
+
+    await g.up();
+    await tester.pumpAndSettle();
+    expect(order(), ['BBB', 'CCC', 'AAA']);
+  });
 }
