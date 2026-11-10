@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T01:09:33.915Z",
+  "updatedAt": "2026-11-10T01:17:08.597Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -17,7 +17,16 @@
     "probeCount": 36,
     "lastProbeAt": "2026-11-10T00:00:44.504Z"
   },
-  "running": [],
+  "running": [
+    {
+      "taskId": "M6-T01",
+      "sessionId": "run-1794273428",
+      "module": "M6",
+      "startedAt": "2026-11-10T01:17:08.597Z",
+      "estimateMin": 50,
+      "probes": 0
+    }
+  ],
   "history": [
     {
       "taskId": "M0-T01",
@@ -312,6 +321,13 @@
       "startedAt": "2026-11-10T01:12:00.000Z",
       "finishedAt": "2026-11-10T01:09:33.915Z",
       "note": "flowus_table.dart：字段19码/视图7种/记录=页面块/schema顺序/幂等序列化；16 断言，全量150绿，analyze 0；证据 docs/基准/证据/M4-T01"
+    },
+    {
+      "taskId": "M1-T05",
+      "status": "done",
+      "startedAt": "2026-11-10T04:25:00.000Z",
+      "finishedAt": "2026-11-10T05:20:00.000Z",
+      "note": "标签条+工具条；现场复测 gap 36→8；10断言全绿160无回归"
     }
   ],
   "blocked": [],
