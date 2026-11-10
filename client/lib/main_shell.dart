@@ -21,6 +21,9 @@ import 'shell/flowus_shell.dart';
 import 'shell/flowus_tabbar.dart';
 import 'shell/flowus_trash_panel.dart';
 
+/// 演示页标题：只认这一篇，避免动到用户自己的页面
+const String kDemoPageTitle = '学习进度';
+
 void main() => runApp(const ShellApp());
 
 class ShellApp extends StatefulWidget {
@@ -98,7 +101,12 @@ class _ShellAppState extends State<ShellApp> {
 
   Future<void> _bootstrapWith(AppDatabase db) async {
     final pages = await db.listAllActive();
-    final page = pages.isEmpty ? await db.createPage(title: '学习进度', content: _content) : pages.first;
+    // ⚠️ 只能开这一篇「学习进度」演示页：以前这里取 `pages.first`，
+    // 会把用户自己的页当成演示页打开并覆盖掉（2026-11-10 出过一次事故）。
+    final demoPages = pages.where((p) => p.title == kDemoPageTitle).toList();
+    final page = demoPages.isNotEmpty
+        ? demoPages.first
+        : await db.createPage(title: kDemoPageTitle, content: _content);
     final pipe = PageSavePipeline(db: db, pageId: page.id);
     final open = await pipe.open();
     if (!mounted) return;

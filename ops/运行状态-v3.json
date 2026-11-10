@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T09:44:59.000Z",
+  "updatedAt": "2026-11-10T09:53:08.852Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -620,6 +620,20 @@
       "startedAt": "2026-11-10T09:37:14.000Z",
       "finishedAt": "2026-11-10T09:44:59.000Z",
       "note": "迁移异常已修(无红条无日志),但库路径exists=false→drift在用内存库,落盘未解决;拆M2-T34"
+    },
+    {
+      "taskId": "M2-T34",
+      "status": "done",
+      "startedAt": "2026-11-10T09:53:08.852Z",
+      "finishedAt": "2026-11-10T09:53:08.852Z",
+      "note": "演示壳只认学习进度页(防覆盖用户页);严格回归:敲Q→杀进程(确认0个)→重启右缘仍1149;WAL mtime变化;库在D:\\win\\文档"
+    },
+    {
+      "taskId": "M2-T35",
+      "status": "todo",
+      "startedAt": "2026-11-10T09:53:08.852Z",
+      "finishedAt": "2026-11-10T09:53:08.852Z",
+      "note": "事故:早期pages.first覆盖用户页「今天很烦…」为Q;已加防线;WAL副本被py checkpoint删除无法恢复;待加自动备份"
     }
   ],
   "blocked": [],
