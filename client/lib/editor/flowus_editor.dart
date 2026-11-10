@@ -5,6 +5,7 @@ import 'package:appflowy_editor_ce/appflowy_editor_ce.dart';
 import 'package:flutter/material.dart';
 
 import 'inline_shortcuts.dart';
+import 'slash_menu.dart';
 
 /// 路线 A：新块编辑器（appflowy_editor 内核 + FlowUs 风格外观与中文菜单）。
 ///
@@ -101,7 +102,7 @@ class _FlowUsEditorState extends State<FlowUsEditor> {
 
   EditorState _buildState(String content) {
     final state = EditorState(document: documentFromContent(content));
-    state.selectionMenuItems = _buildSelectionMenuItems();
+    state.selectionMenuItems = buildFlowUsSlashItems();
     return state;
   }
 
@@ -131,7 +132,7 @@ class _FlowUsEditorState extends State<FlowUsEditor> {
       blockComponentBuilders: _buildBlockComponents(style),
       // 默认斜杠命令挂的是它自己的英文菜单；必须显式替换成我们的中文菜单项
       characterShortcutEvents: [
-        customSlashCommand(_buildSelectionMenuItems()),
+        customSlashCommand(buildFlowUsSlashItems()),
         ...standardCharacterShortcutEvents
             .where((e) => e.key != 'show the slash menu'),
       ],
@@ -205,81 +206,3 @@ Map<String, BlockComponentBuilder> _buildBlockComponents(EditorStyle style) {
 }
 
 /// 斜杠菜单（中文 + 拼音快捷词，抄 FlowUs 的分组顺序：基础块优先）。
-List<SelectionMenuItem> _buildSelectionMenuItems() {
-  SelectionMenuItem item({
-    required String name,
-    required List<String> keywords,
-    required IconData icon,
-    required Node Function() node,
-    bool onlyEmptyParagraph = false,
-  }) {
-    return SelectionMenuItem.node(
-      getName: () => name,
-      keywords: keywords,
-      iconData: icon,
-      nodeBuilder: (editorState, context) => node(),
-      replace: onlyEmptyParagraph
-          ? (editorState, node) =>
-              node.type == ParagraphBlockKeys.type && node.delta?.isEmpty == true
-          : null,
-    );
-  }
-
-  return [
-    item(
-      name: '正文',
-      keywords: ['zhengwen', 'zw', 'text', 'paragraph', 'wenben'],
-      icon: Icons.notes,
-      node: () => paragraphNode(),
-      onlyEmptyParagraph: true,
-    ),
-    item(
-      name: '标题1',
-      keywords: ['biaoti', 'bt', 'h1', 'heading1', 'yiji'],
-      icon: Icons.looks_one_outlined,
-      node: () => headingNode(level: 1),
-    ),
-    item(
-      name: '标题2',
-      keywords: ['biaoti', 'bt', 'h2', 'heading2', 'erji'],
-      icon: Icons.looks_two_outlined,
-      node: () => headingNode(level: 2),
-    ),
-    item(
-      name: '标题3',
-      keywords: ['biaoti', 'bt', 'h3', 'heading3', 'sanji'],
-      icon: Icons.looks_3_outlined,
-      node: () => headingNode(level: 3),
-    ),
-    item(
-      name: '待办列表',
-      keywords: ['daiban', 'dblb', 'todo', 'task', 'renwu'],
-      icon: Icons.check_box_outlined,
-      node: () => todoListNode(checked: false),
-    ),
-    item(
-      name: '项目列表',
-      keywords: ['xiangmu', 'xmlb', 'bullet', 'list', 'wuxu'],
-      icon: Icons.format_list_bulleted,
-      node: () => bulletedListNode(),
-    ),
-    item(
-      name: '编号列表',
-      keywords: ['bianhao', 'bhlb', 'number', 'ordered'],
-      icon: Icons.format_list_numbered,
-      node: () => numberedListNode(),
-    ),
-    item(
-      name: '引用文字',
-      keywords: ['yinyong', 'yywz', 'quote', 'qoute'],
-      icon: Icons.format_quote,
-      node: () => quoteNode(),
-    ),
-    item(
-      name: '分割线',
-      keywords: ['fengexian', 'fgx', 'divider', 'hr'],
-      icon: Icons.horizontal_rule,
-      node: () => dividerNode(),
-    ),
-  ];
-}
