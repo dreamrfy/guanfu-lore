@@ -19,7 +19,7 @@ function read(relFromProject: string): string {
 }
 
 const files: Array<[string, string]> = [
-  ["夜间执行报告", "ops/夜间执行报告.md"],
+  ["夜间执行报告", "docs/归档/ops-v2/夜间执行报告.md"],
   ["服务端 README", "server/README.md"],
   ["接云清单", "docs/接云清单-v1.md"],
   ["开发状态", "开发状态.md"],
@@ -54,15 +54,15 @@ for (const [label, rel] of files) {
   for (const [re, why] of forbidden) {
     // 夜间执行报告是历史记录：其中引用的旧帮助输出允许保留“零依赖”，
     // 但结论性表述仍受其它规则约束。
-    if (rel === "ops/夜间执行报告.md" && why.includes("零依赖")) continue;
+    if (rel === "docs/归档/ops-v2/夜间执行报告.md" && why.includes("零依赖")) continue;
     check(`${label} 不含「${why}」`, !re.test(text), "命中：" + (text.match(re) ?? [""])[0]);
   }
 }
 
 // 必须存在的“诚实口径”
 const required: Array<[string, string, RegExp, string]> = [
-  ["夜间执行报告", "ops/夜间执行报告.md", /整改后口径/, "缺少【整改后口径】标注"],
-  ["夜间执行报告", "ops/夜间执行报告.md", /当时未接通|链路当时未接通|当时未/, "未说明当时链路状态"],
+  ["夜间执行报告", "docs/归档/ops-v2/夜间执行报告.md", /整改后口径/, "缺少【整改后口径】标注"],
+  ["夜间执行报告", "docs/归档/ops-v2/夜间执行报告.md", /当时未接通|链路当时未接通|当时未/, "未说明当时链路状态"],
   ["服务端 README", "server/README.md", /pipeline-test/, "未列出离线全链命令"],
   ["服务端 README", "server/README.md", /真实凭证冒烟通过|已冒烟/, "未声明 poll 真实凭证冒烟结果"],
   ["接云清单", "docs/接云清单-v1.md", /约 20 行|≈20 行|需要改代码/, "未说明凭证注入需要改代码"],

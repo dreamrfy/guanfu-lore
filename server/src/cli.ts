@@ -17,6 +17,7 @@ import { OUT_DIR, ASSETS_DIR, SAMPLES_DIR, loadSecrets } from "./config.ts";
 import { listClips } from "./store/localStore.ts";
 import { FAIL_REASON_LABELS } from "./pipeline/status.ts";
 import { WecomClient, loadCursor, saveCursor, shouldStopPaging } from "./sources/wecomClient.ts";
+import { issueAssetTickets } from "./cloud/assetTicket.ts";
 import type { Clip } from "./store/types.ts";
 
 /** 清单页里指向资源目录的相对前缀（运行时算出，不写死路径） */
@@ -38,6 +39,8 @@ function printHelp(): void {
   pipeline-test        用 mock 依赖离线跑完整链（消息→抓取→图片→状态→落库，不联网）
   ingest-messages      用 samples/messages.json 跑完整链（真实抓取，需要联网）
   poll [--limit N]     拉取微信客服增量消息并入库（需要 KF_SECRETS_FILE）
+  ticket --keys a,b    签发临时取件码（R2 私有桶的 presigned URL，需要 R2_* 环境变量）
+                       [--ttl 300]  有效期秒数（默认 300，上限 3600）
 
 说明:
   - Node >= 24 原生直跑 .ts（type stripping），无需构建
@@ -215,6 +218,33 @@ async function main(): Promise<void> {
     const idx = args.indexOf("--limit");
     const limit = idx >= 0 ? Number(args[idx + 1]) : 100;
     await cmdPoll(Number.isFinite(limit) ? limit : 100);
+    return;
+  }
+  if (cmd === "ticket") {
+    // 临时取件码（方案 C）：把对象 key 换成到点失效的 URL。
+    // 只接受 --keys（逗号分隔）与 --ttl；不读任何路径参数，避免变成"任意文件读取"的入口。
+    const keysIdx = args.indexOf("--keys");
+    const ttlIdx = args.indexOf("--ttl");
+    const keys = keysIdx >= 0 ? (args[keysIdx + 1] ?? "").split(",").filter((k) => k.length > 0) : [];
+    if (keys.length === 0) {
+      console.error("用法: node src/cli.ts ticket --keys assets/a1.png[,assets/a2.png] [--ttl 300]");
+      process.exitCode = 2;
+      return;
+    }
+    const ttlSec = ttlIdx >= 0 ? Number(args[ttlIdx + 1]) : undefined;
+    const tickets = issueAssetTickets(keys, { ttlSec });
+    console.log(
+      JSON.stringify(
+        {
+          条数: tickets.length,
+          过期时间: new Date(tickets[0].expiresAtMs).toISOString(),
+          有效期秒: tickets[0].ttlSec,
+          取件码: tickets.map((t) => ({ key: t.key, url: t.url })),
+        },
+        null,
+        2
+      )
+    );
     return;
   }
 
