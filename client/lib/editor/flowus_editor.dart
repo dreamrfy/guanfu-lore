@@ -8,6 +8,7 @@ import 'block_action_menu.dart';
 import 'block_handle.dart';
 import 'code_block_component.dart';
 import 'inline_shortcuts.dart';
+import 'markdown_shortcuts.dart';
 import 'slash_menu.dart';
 
 /// 路线 A：新块编辑器（appflowy_editor 内核 + FlowUs 风格外观与中文菜单）。
@@ -49,6 +50,15 @@ String contentFromDocument(Document doc) => jsonEncode(doc.toJson());
 
 /// 保存基准用的规范化内容：新格式取文档序列化；旧块格式按 A3 视为空文档。
 String normalizedContent(String raw) => contentFromDocument(documentFromContent(raw));
+
+/// 字符快捷事件注册表（M2-T09）：我们的 Markdown 口径在前，内核冲突项剔除，其余照用。
+List<CharacterShortcutEvent> flowUsCharacterShortcuts() => [
+      ...flowUsMarkdownShortcuts,
+      customSlashCommand(buildFlowUsSlashItems()),
+      ...standardCharacterShortcutEvents.where(
+        (e) => e.key != 'show the slash menu' && !kKernelShortcutsShadowedByFlowUs.contains(e.key),
+      ),
+    ];
 
 /// 正文编辑器。变更通过 [onChanged] 回传序列化 JSON（上层走既有防抖保存链）。
 class FlowUsEditor extends StatefulWidget {
@@ -198,11 +208,7 @@ class _FlowUsEditorState extends State<FlowUsEditor> {
             blockWrapper: (context, {required node, required child}) =>
                 flowUsBlockWrapper(context, node: node, child: child, controller: _handles),
             // 默认斜杠命令挂的是它自己的英文菜单；必须显式替换成我们的中文菜单项
-            characterShortcutEvents: [
-              customSlashCommand(buildFlowUsSlashItems()),
-              ...standardCharacterShortcutEvents
-                  .where((e) => e.key != 'show the slash menu'),
-            ],
+            characterShortcutEvents: flowUsCharacterShortcuts(),
             // M2-T18：内核没有行内样式快捷键，这里注册我们自己的（加粗键位已实测）
             commandShortcutEvents: [
               ...flowUsInlineShortcuts,

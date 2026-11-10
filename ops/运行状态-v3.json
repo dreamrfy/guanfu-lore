@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T07:44:31.000Z",
+  "updatedAt": "2026-11-10T08:03:56.000Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -550,6 +550,13 @@
       "startedAt": "2026-11-10T07:26:57.000Z",
       "finishedAt": "2026-11-10T07:44:31.000Z",
       "note": "块菜单:先补采规格(260x601/行250x32),15项+分隔线+块数统计;6个动作可用;子菜单等另开M2-T27"
+    },
+    {
+      "taskId": "M2-T09",
+      "status": "done-partial",
+      "startedAt": "2026-11-10T07:48:27.000Z",
+      "finishedAt": "2026-11-10T08:03:56.000Z",
+      "note": "Markdown转换:补引述 >、三字符分割线、行首三反引号代码块,并剔除内核冲突4条;13测试+353全绿;release敲键 # / --- 通过;代码块端到端待M2-T28"
     }
   ],
   "blocked": [],
