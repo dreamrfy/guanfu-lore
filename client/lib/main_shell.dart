@@ -8,8 +8,12 @@
 
 import 'package:flutter/material.dart';
 
+import 'package:flutter/services.dart';
+
 import 'design/tokens.dart';
 import 'shell/flowus_shell.dart';
+import 'shell/flowus_tabbar.dart';
+import 'shell/flowus_trash_panel.dart';
 
 void main() => runApp(const ShellApp());
 
@@ -21,11 +25,28 @@ class ShellApp extends StatefulWidget {
 }
 
 class _ShellAppState extends State<ShellApp> {
-  String? _selectedId;
+  String? _selectedId = 'study'; // 默认选中「学习进度」，与真 FlowUs 截图状态一致
   var _seq = 0;
 
+  // M1-T13 交付演示：把 M1 做出来的东西都摆出来（标签条 / 浮动钮 / 回收站浮层）
+  List<FlowUsTab> _tabs = const [
+    FlowUsTab(id: 't1', title: '学习进度'),
+    FlowUsTab(id: 't2', title: '磷化工知识库'),
+  ];
+  String? _activeTab = 't1';
+  bool _trashOpen = false;
+
+  /// 按 T 开关回收站浮层（只为截图用；真实入口在侧栏「回收站」）
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.keyT) {
+      setState(() => _trashOpen = !_trashOpen);
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
+
   List<PageNode> _spacePages = const [
-    PageNode(id: 'study', title: '学习进度'),
+    PageNode(id: 'study', title: '学习进度', kind: PageKind.database), // 真 FlowUs 里它是多维表页（网格图标）
     PageNode(
       id: 'pchem',
       title: '磷化工知识库',
@@ -104,7 +125,43 @@ class _ShellAppState extends State<ShellApp> {
         brightness: Brightness.dark,
         scaffoldBackgroundColor: FlowUsColors.dark.contentBg,
       ),
-      home: FlowUsShell(
+      home: Focus(
+        autofocus: true,
+        onKeyEvent: _onKey,
+        child: Stack(
+          children: [
+            Positioned.fill(child: _buildShell(data)),
+            if (_trashOpen)
+              // 回收站浮层（M1-T09）：实测是浮层不是页面
+              Positioned.fill(
+                child: ColoredBox(
+                  color: const Color(0x33000000),
+                  child: Center(
+                    child: FlowUsTrashPanel(
+                      entries: _demoTrash,
+                      onClearAll: () => setState(() => _trashOpen = false),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static const _demoTrash = <TrashEntry>[
+    TrashEntry(id: 'x1', title: '无标题', deletedAtLabel: '2026 年 11 月 10 日 09:46'),
+    TrashEntry(
+      id: 'x2',
+      title: '夏天的女装，为什么一件比一件贵？',
+      subtitle: '微信公众号剪藏',
+      deletedAtLabel: '2026 年 10 月 31 日 09:32',
+    ),
+    TrashEntry(id: 'x3', title: '研究用-可删', deletedAtLabel: '2026 年 11 月 9 日 00:06'),
+  ];
+
+  Widget _buildShell(SidebarData data) => FlowUsShell(
         data: data,
         callbacks: SidebarCallbacks(
           onOpenPage: (id) => setState(() => _selectedId = id),
@@ -150,7 +207,25 @@ class _ShellAppState extends State<ShellApp> {
             }
           },
         ),
+      tabs: _tabs,
+      activeTabId: _activeTab,
+      tabBarCallbacks: TabBarCallbacks(
+        onSelectTab: (id) => setState(() => _activeTab = id),
+        onCloseTab: (id) => setState(() {
+          _tabs = [for (final t in _tabs) if (t.id != id) t];
+          if (_activeTab == id) _activeTab = _tabs.isEmpty ? null : _tabs.first.id;
+        }),
+        onCreateTab: () => setState(() {
+          _seq++;
+          final id = 't${_tabs.length + 1}-$_seq';
+          _tabs = [..._tabs, FlowUsTab(id: id, title: '无标题')];
+          _activeTab = id;
+        }),
+        onShare: () => _snack(context, '分享（演示壳）'),
+        onToolbarAction: (a) => _snack(context, '$a（演示壳）'),
       ),
+      showFloatingButtons: true,
+      onFloatingAiTap: () => _snack(context, 'FlowUs AI 面板属 M9'),
+      onFloatingHelpTap: () => _snack(context, '帮助菜单（点右下帮助钮可开）'),
     );
-  }
 }

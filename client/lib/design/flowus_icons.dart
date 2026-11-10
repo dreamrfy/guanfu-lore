@@ -237,11 +237,14 @@ class FlowUsSvgIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 不给 color 时**跟随外层 IconTheme**（和 Material Icon 的行为一致）——
+    // 否则 SVG 会用自身的 currentColor/黑色，在浅色侧栏里显得又黑又粗（M1-T13 并排对照时发现的）
+    final effective = color ?? IconTheme.of(context).color;
     return SvgPicture.asset(
       'assets/icons/$name.svg',
       width: size,
       height: size,
-      colorFilter: color == null ? null : ColorFilter.mode(color!, BlendMode.srcIn),
+      colorFilter: effective == null ? null : ColorFilter.mode(effective, BlendMode.srcIn),
       // 图标就是图标：不让它跟随系统字体缩放变形
       allowDrawingOutsideViewBox: true,
     );

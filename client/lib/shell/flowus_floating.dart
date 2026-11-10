@@ -121,6 +121,10 @@ class _FloatingButton extends StatelessWidget {
             shape: BoxShape.circle,
             color: c.contentBg,
             border: Border.all(color: FlowUsFloating.borderColor, width: FlowUsFloating.borderWidth),
+            // 实测 class 带 `shadow-light-sm`，对照图里能明显看到柔和投影（M1-T13 并排比对时发现的）
+            boxShadow: const [
+              BoxShadow(color: Color(0x14000000), offset: Offset(0, 1), blurRadius: 4),
+            ],
           ),
           alignment: Alignment.center,
           child: child,
