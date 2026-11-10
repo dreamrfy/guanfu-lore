@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T08:15:01.000Z",
+  "updatedAt": "2026-11-10T08:30:18.000Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -571,6 +571,13 @@
       "startedAt": "2026-11-10T08:07:19.000Z",
       "finishedAt": "2026-11-10T08:15:01.000Z",
       "note": "缺规格:空间已满不能上传测试图,剪藏页图片懒加载只取到封面;拆M2-T29补采"
+    },
+    {
+      "taskId": "M2-T22",
+      "status": "done",
+      "startedAt": "2026-11-10T08:17:07.000Z",
+      "finishedAt": "2026-11-10T08:30:18.000Z",
+      "note": "页面菜单重测:行32/开关30x18/两段内联展开区(66x60卡片,Plus徽标)/导出飞板176宽;9组重排;11测试+363全绿"
     }
   ],
   "blocked": [],
