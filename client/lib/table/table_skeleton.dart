@@ -12,6 +12,7 @@
 
 import 'package:flutter/material.dart';
 
+import 'cell_renderers.dart';
 import 'flowus_table.dart';
 import '../design/tokens.dart';
 
@@ -275,12 +276,8 @@ class _BodyCell extends StatelessWidget {
       ),
       padding: const EdgeInsets.symmetric(horizontal: FlowUsTable.cellPaddingH),
       alignment: Alignment.centerLeft,
-      child: Text(
-        raw == null ? '' : '$raw',
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: const TextStyle(fontSize: 14, height: 24 / 14, color: FlowUsTable.headerTextColor),
-      ),
+      // 值渲染按字段类型走（M4-T03）：文本/数字/单选/多选/日期/勾选框
+      child: FlowUsCellValue(field: field, raw: raw),
     );
   }
 }

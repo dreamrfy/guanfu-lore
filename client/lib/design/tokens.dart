@@ -392,6 +392,36 @@ abstract final class FlowUsTable {
   /// 拖拽最小/最大列宽：**未实测**（只量了当前 180），先按常识给一档，等拖拽样本再收紧
   static const double minColumnWidth = 80;
   static const double maxColumnWidth = 600;
+
+  // ---- 单元格「值渲染」（M4-T03 实测，2026-11-10）----
+  /// 单选/多选胶囊：高 20、圆角 4、左右内边距 6、文字 14/20；多选之间间距 4（行容器 `space-x-1`）
+  static const double pillHeight = 20;
+  static const double pillRadius = 4;
+  static const double pillPaddingH = 6;
+  static const double pillGap = 4;
+  static const double cellTextSize = 14;
+  static const double cellLineHeight = 24;
+  /// 日期显示形如 `2026/10/21 11:35`（实测 9999/99/99 99:99）
+  static const String datePattern = 'YYYY/MM/DD HH:mm';
+  /// 勾选框尺寸：**未实测**（该表没有勾选框列），暂用 16，等真样本再定
+  static const double checkboxSize = 16;
+}
+
+/// 选项颜色（单选/多选的胶囊配色）。实测 4 组；其余色相未采到，先不编。
+abstract final class FlowUsOptionColors {
+  static const _green = (bg: Color(0xFFD2ECD5), fg: Color(0xFF3B5B46));
+  static const _gray = (bg: Color(0xFFECEDED), fg: Color(0xFF474D58));
+  static const _pink = (bg: Color(0xFFF8DAE6), fg: Color(0xFF8B2B69));
+  static const _orange = (bg: Color(0xFFF8DEC5), fg: Color(0xFF683D26));
+
+  /// 按 FlowUs 的选项色名取配色；不认识的色名退回灰（实测存在灰）
+  static ({Color bg, Color fg}) of(String? name) => switch (name) {
+        'green' => _green,
+        'gray' || 'grey' || 'default' => _gray,
+        'pink' => _pink,
+        'orange' => _orange,
+        _ => _gray,
+      };
 }
 
 // ---------------------------------------------------------------------------
