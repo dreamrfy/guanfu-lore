@@ -59,6 +59,7 @@ class FlowUsEditor extends StatefulWidget {
     this.readOnly = false,
     this.shrinkWrap = false,
     this.onReady,
+    this.onHandlesReady,
   });
 
   final String initialContent;
@@ -72,6 +73,9 @@ class FlowUsEditor extends StatefulWidget {
   /// 测试/诊断用：编辑器状态就绪后回调（可用来驱动文档操作）。
   final void Function(EditorState state)? onReady;
 
+  /// 测试/诊断用：手柄控制器就绪后回调（可断言 hover 状态）。
+  final void Function(BlockHandleController handles)? onHandlesReady;
+
   @override
   State<FlowUsEditor> createState() => _FlowUsEditorState();
 }
@@ -79,6 +83,7 @@ class FlowUsEditor extends StatefulWidget {
 class _FlowUsEditorState extends State<FlowUsEditor> {
   late EditorState _editorState;
   late String _lastEmitted;
+  late BlockHandleController _handles;
   StreamSubscription? _sub;
   bool _ready = false;
 
@@ -86,10 +91,12 @@ class _FlowUsEditorState extends State<FlowUsEditor> {
   void initState() {
     super.initState();
     _editorState = _buildState(widget.initialContent);
+    _handles = BlockHandleController(editorState: _editorState);
     _lastEmitted = contentFromDocument(_editorState.document);
     _sub = _editorState.transactionStream.listen((_) => _onEditorChanged());
     _ready = true;
     widget.onReady?.call(_editorState);
+    widget.onHandlesReady?.call(_handles);
   }
 
   @override
@@ -99,7 +106,9 @@ class _FlowUsEditorState extends State<FlowUsEditor> {
     if (widget.initialContent != old.initialContent &&
         widget.initialContent != contentFromDocument(_editorState.document)) {
       _sub?.cancel();
+      _handles.dispose();
       _editorState = _buildState(widget.initialContent);
+      _handles = BlockHandleController(editorState: _editorState);
       _lastEmitted = contentFromDocument(_editorState.document);
       _sub = _editorState.transactionStream.listen((_) => _onEditorChanged());
       setState(() {});
@@ -123,6 +132,7 @@ class _FlowUsEditorState extends State<FlowUsEditor> {
   @override
   void dispose() {
     _sub?.cancel();
+    _handles.dispose();
     _editorState.dispose();
     super.dispose();
   }
@@ -130,26 +140,41 @@ class _FlowUsEditorState extends State<FlowUsEditor> {
   @override
   Widget build(BuildContext context) {
     final style = _flowUsEditorStyle(context);
-    return AppFlowyEditor(
-      editorState: _editorState,
-      editorStyle: style,
-      editable: !widget.readOnly,
-      autoFocus: widget.autoFocus,
-      shrinkWrap: widget.shrinkWrap,
-      blockComponentBuilders: _buildBlockComponents(style),
-      // M2-T07：每个块套一层 hover 外壳（块手柄 + 「＋」）
-      blockWrapper: flowUsBlockWrapper,
-      // 默认斜杠命令挂的是它自己的英文菜单；必须显式替换成我们的中文菜单项
-      characterShortcutEvents: [
-        customSlashCommand(buildFlowUsSlashItems()),
-        ...standardCharacterShortcutEvents
-            .where((e) => e.key != 'show the slash menu'),
-      ],
-      // M2-T18：内核没有行内样式快捷键，这里注册我们自己的（加粗键位已实测）
-      commandShortcutEvents: [
-        ...flowUsInlineShortcuts,
-        ...standardCommandShortcutEvents,
-      ],
+    // M2-T21：手柄/「＋」盖在编辑器上方（块外 20/22px 才画得出来、也才点得到）
+    return NotificationListener<ScrollNotification>(
+      onNotification: (_) {
+        _handles.refresh(); // 滚动后图标要跟着块走
+        return false;
+      },
+      child: Stack(
+        clipBehavior: Clip.none,
+        fit: StackFit.expand,
+        children: [
+          AppFlowyEditor(
+            editorState: _editorState,
+            editorStyle: style,
+            editable: !widget.readOnly,
+            autoFocus: widget.autoFocus,
+            shrinkWrap: widget.shrinkWrap,
+            blockComponentBuilders: _buildBlockComponents(style),
+            // M2-T07/T21：每个块只做 hover 报到；图标由 overlay 层画
+            blockWrapper: (context, {required node, required child}) =>
+                flowUsBlockWrapper(context, node: node, child: child, controller: _handles),
+            // 默认斜杠命令挂的是它自己的英文菜单；必须显式替换成我们的中文菜单项
+            characterShortcutEvents: [
+              customSlashCommand(buildFlowUsSlashItems()),
+              ...standardCharacterShortcutEvents
+                  .where((e) => e.key != 'show the slash menu'),
+            ],
+            // M2-T18：内核没有行内样式快捷键，这里注册我们自己的（加粗键位已实测）
+            commandShortcutEvents: [
+              ...flowUsInlineShortcuts,
+              ...standardCommandShortcutEvents,
+            ],
+          ),
+          FlowUsBlockHandles(controller: _handles),
+        ],
+      ),
     );
   }
 }
