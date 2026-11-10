@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T10:04:07.000Z",
+  "updatedAt": "2026-11-10T10:06:24.000Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -641,6 +641,13 @@
       "startedAt": "2026-11-10T09:57:20.000Z",
       "finishedAt": "2026-11-10T10:04:07.000Z",
       "note": "appDbFile改documents目录;启动自动备份db+wal+shm到backups保留10组;3测试+380全绿;release连开两次两组备份"
+    },
+    {
+      "taskId": "M2-T28",
+      "status": "done-partial",
+      "startedAt": "2026-11-10T10:05:01.000Z",
+      "finishedAt": "2026-11-10T10:06:24.000Z",
+      "note": "存储已可用;SendKeys敲3个反引号只中1个(像素证据);单元级转换已通过;合成键盘不可靠→拆M2-T36"
     }
   ],
   "blocked": [],
