@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:bijiapp/design/flowus_icons.dart';
 import 'package:bijiapp/design/tokens.dart';
 import 'package:bijiapp/shell/flowus_banner.dart';
 import 'package:bijiapp/shell/flowus_shell.dart';
@@ -31,6 +32,11 @@ Future<void> _pumpShell(
   ));
   await tester.pumpAndSettle();
 }
+
+
+/// 真图标现在是 SVG（M1-T12）：按名字找，而不是按 Material IconData
+Finder svgIcon(String name) =>
+    find.byWidgetPredicate((w) => w is FlowUsSvgIcon && w.name == name);
 
 void main() {
   group('系统横幅（容量条）', () {
@@ -70,9 +76,9 @@ void main() {
       expect(text.style?.fontSize, 14);
       expect(text.style?.height, closeTo(24 / 14, 0.0001));
       // 关闭钮中心 x ≈ 1920 − 16 − 10 = 1894
-      final closeCenter = tester.getCenter(find.byIcon(Icons.close));
+      final closeCenter = tester.getCenter(svgIcon(FlowUsIc.close));
       expect(closeCenter.dx, closeTo(1920 - FlowUsLayout.tabBarPaddingH - 10, 1.5));
-      await tester.tap(find.byIcon(Icons.close));
+      await tester.tap(svgIcon(FlowUsIc.close));
       expect(closed, isTrue);
     });
 

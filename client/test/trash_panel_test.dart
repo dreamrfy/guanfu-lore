@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:bijiapp/design/flowus_icons.dart';
 import 'package:bijiapp/design/tokens.dart';
 import 'package:bijiapp/shell/flowus_trash_panel.dart';
 
@@ -44,6 +45,11 @@ Future<void> _pump(
   ));
   await tester.pumpAndSettle();
 }
+
+
+/// 真图标现在是 SVG（M1-T12）：按名字找，而不是按 Material IconData
+Finder svgIcon(String name) =>
+    find.byWidgetPredicate((w) => w is FlowUsSvgIcon && w.name == name);
 
 void main() {
   testWidgets('面板 638×608、圆角 12、白底、1px rgba(0,0,0,0.06)', (tester) async {
@@ -141,8 +147,8 @@ void main() {
       onDelete: (e) => deleted.add(e.id),
     );
 
-    final undo = find.byIcon(Icons.undo).first;
-    final del = find.byIcon(Icons.delete_outline).first;
+    final undo = svgIcon(FlowUsIc.luUndo2).first;
+    final del = svgIcon(FlowUsIc.trash).first;
     expect(tester.getRect(find.ancestor(of: undo, matching: find.byType(Container)).first).width,
         FlowUsTrash.rowActionSize);
     expect(tester.getRect(find.ancestor(of: del, matching: find.byType(Container)).first).width,

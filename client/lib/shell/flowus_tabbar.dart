@@ -13,6 +13,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../design/flowus_icons.dart';
 import '../design/tokens.dart';
 
 /// 一个标签页
@@ -181,7 +182,7 @@ class _TabState extends State<_Tab> {
                     child: SizedBox(
                       width: FlowUsComponents.inlineIconButton,
                       height: FlowUsComponents.inlineIconButton,
-                      child: Icon(Icons.close, size: 14, color: c.textTertiary),
+                      child: FlowUsSvgIcon(FlowUsIc.close, size: 14, color: c.textTertiary),
                     ),
                   ),
                 ],
@@ -208,7 +209,7 @@ class _TabCreateButton extends StatelessWidget {
       child: SizedBox(
         width: FlowUsComponents.inlineIconButton,
         height: FlowUsComponents.inlineIconButton,
-        child: Icon(Icons.add, size: 16, color: c.textTertiary),
+        child: FlowUsSvgIcon(FlowUsIc.add, size: 16, color: c.textTertiary),
       ),
     );
   }
@@ -230,19 +231,19 @@ class _Toolbar extends StatelessWidget {
         _ShareButton(onTap: cb?.onShare),
         const SizedBox(width: FlowUsLayout.toolbarGap),
         _ToolbarIcon(
-          icon: Icons.comment_outlined, // IcComment
+          icon: FlowUsIc.comment, // 实测 IcComment
           tooltip: '评论',
           onTap: cb?.onToolbarAction == null ? null : () => cb!.onToolbarAction!('评论'),
         ),
         const SizedBox(width: FlowUsLayout.toolbarGap),
         _ToolbarIcon(
-          icon: Icons.star_outline, // IcQuickAccess
+          icon: FlowUsIc.quickAccess, // 实测 IcQuickAccess
           tooltip: '添加到快速访问',
           onTap: cb?.onToolbarAction == null ? null : () => cb!.onToolbarAction!('快速访问'),
         ),
         const SizedBox(width: FlowUsLayout.toolbarGap),
         _ToolbarIcon(
-          icon: Icons.more_horiz, // IcMore (page-header-more)
+          icon: FlowUsIc.more, // 实测 IcMore（page-header-more）
           tooltip: '更多',
           onTap: cb?.onToolbarAction == null ? null : () => cb!.onToolbarAction!('页面菜单'),
         ),
@@ -255,7 +256,7 @@ class _Toolbar extends StatelessWidget {
         ),
         const SizedBox(width: FlowUsLayout.toolbarGap),
         _ToolbarIcon(
-          icon: Icons.search, // IcSearch
+          icon: FlowUsIc.search, // 实测 IcSearch
           tooltip: '搜索',
           onTap: cb?.onToolbarAction == null ? null : () => cb!.onToolbarAction!('搜索'),
         ),
@@ -294,7 +295,8 @@ class _ShareButton extends StatelessWidget {
 class _ToolbarIcon extends StatelessWidget {
   const _ToolbarIcon({required this.icon, required this.tooltip, this.onTap});
 
-  final IconData icon;
+  /// 真图标名（FlowUsIc.*）
+  final String icon;
   final String tooltip;
   final VoidCallback? onTap;
 
@@ -308,7 +310,7 @@ class _ToolbarIcon extends StatelessWidget {
         child: SizedBox(
           width: FlowUsLayout.toolbarButtonSize,
           height: FlowUsLayout.toolbarButtonSize,
-          child: Icon(icon, size: FlowUsComponents.toolButtonIconSize, color: c.textSub),
+          child: FlowUsSvgIcon(icon, size: FlowUsComponents.toolButtonIconSize, color: c.textSub),
         ),
       ),
     );

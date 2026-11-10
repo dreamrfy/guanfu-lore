@@ -7,6 +7,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:bijiapp/design/flowus_icons.dart';
 import 'package:bijiapp/design/tokens.dart';
 import 'package:bijiapp/shell/flowus_shell.dart';
 import 'package:bijiapp/shell/flowus_tabbar.dart';
@@ -44,6 +45,11 @@ Finder toolbar(Finder child) => find.descendant(
       of: find.ancestor(of: find.text('分享'), matching: find.byType(Row)),
       matching: child,
     );
+
+
+/// 真图标现在是 SVG（M1-T12）：按名字找，而不是按 Material IconData
+Finder svgIcon(String name) =>
+    find.byWidgetPredicate((w) => w is FlowUsSvgIcon && w.name == name);
 
 void main() {
   group('标签条几何（toolbar.json 实测）', () {
@@ -92,12 +98,12 @@ void main() {
       final shareText = tester.widget<Text>(find.text('分享'));
       expect(shareText.style?.fontSize, 14);
       expect(shareText.style?.fontWeight, FontWeight.w500);
-      // 4 个工具图标（评论/快速访问/⋯/搜索）
+      // 4 个工具图标（评论/快速访问/⋯/搜索）——M1-T12 起是真 SVG
       final icons = find.descendant(
         of: find.byType(Tooltip),
-        matching: find.byType(Icon),
+        matching: find.byWidgetPredicate((w) => w is FlowUsSvgIcon),
       );
-      final iconWidgets = tester.widgetList<Icon>(icons).toList();
+      final iconWidgets = tester.widgetList<FlowUsSvgIcon>(icons).toList();
       expect(iconWidgets.length, 4);
       for (final ic in iconWidgets) {
         expect(ic.size, FlowUsComponents.toolButtonIconSize);
@@ -107,10 +113,10 @@ void main() {
     testWidgets('六元素间距全 8：分享→评论→快速访问→⋯→分隔线→搜索', (tester) async {
       await _pumpBar(tester);
       final share = tester.getRect(find.ancestor(of: find.text('分享'), matching: find.byType(Container)).first);
-      final comment = tester.getRect(toolbar(find.byIcon(Icons.comment_outlined)).first);
-      final quick = tester.getRect(toolbar(find.byIcon(Icons.star_outline)).first);
-      final more = tester.getRect(toolbar(find.byIcon(Icons.more_horiz)).first);
-      final search = tester.getRect(toolbar(find.byIcon(Icons.search)).first);
+      final comment = tester.getRect(toolbar(svgIcon(FlowUsIc.comment)).first);
+      final quick = tester.getRect(toolbar(svgIcon(FlowUsIc.quickAccess)).first);
+      final more = tester.getRect(toolbar(svgIcon(FlowUsIc.more)).first);
+      final search = tester.getRect(toolbar(svgIcon(FlowUsIc.search)).first);
       expect(comment.left - share.right, closeTo(FlowUsLayout.toolbarGap, 0.5));
       expect(quick.left - comment.right, closeTo(FlowUsLayout.toolbarGap, 0.5));
       expect(more.left - quick.right, closeTo(FlowUsLayout.toolbarGap, 0.5));
@@ -119,7 +125,7 @@ void main() {
 
     testWidgets('工具条右缘到视口 16（px-4）', (tester) async {
       await _pumpBar(tester);
-      final search = tester.getRect(toolbar(find.byIcon(Icons.search)).first);
+      final search = tester.getRect(toolbar(svgIcon(FlowUsIc.search)).first);
       expect(search.right, closeTo(1920 - FlowUsLayout.tabBarPaddingH, 0.5));
     });
 
@@ -134,8 +140,8 @@ void main() {
         ),
       );
       await tester.tap(find.text('分享'));
-      await tester.tap(toolbar(find.byIcon(Icons.comment_outlined)).first);
-      await tester.tap(toolbar(find.byIcon(Icons.search)).first);
+      await tester.tap(toolbar(svgIcon(FlowUsIc.comment)).first);
+      await tester.tap(toolbar(svgIcon(FlowUsIc.search)).first);
       await tester.pumpAndSettle();
       expect(shared, isTrue);
       expect(actions, ['评论', '搜索']);
@@ -165,7 +171,7 @@ void main() {
       addTearDown(g.removePointer);
       await g.moveTo(tester.getCenter(find.text('学习进度')));
       await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.close));
+      await tester.tap(svgIcon(FlowUsIc.close));
       await tester.pumpAndSettle();
       expect(closed, 't2');
     });
@@ -178,7 +184,7 @@ void main() {
         tester,
         callbacks: TabBarCallbacks(onCreateTab: () => created = true),
       );
-      await tester.tap(toolbar(find.byIcon(Icons.add)).first);
+      await tester.tap(toolbar(svgIcon(FlowUsIc.add)).first);
       await tester.pumpAndSettle();
       expect(created, isTrue);
     });

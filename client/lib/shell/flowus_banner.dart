@@ -11,6 +11,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../design/flowus_icons.dart';
 import '../design/tokens.dart';
 
 /// 系统横幅的红/蓝辅助色（横幅专属，不进全局色板——只在横幅出现）
@@ -57,7 +58,7 @@ class FlowUsSystemBanner extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.description_outlined,
+                const FlowUsSvgIcon(FlowUsIc.pages,
                     size: FlowUsComponents.toolButtonIconSize, color: FlowUsBannerColors.upgradeBorder),
                 const SizedBox(width: 8),
                 ConstrainedBox(
@@ -81,7 +82,7 @@ class FlowUsSystemBanner extends StatelessWidget {
                 child: SizedBox(
                   width: FlowUsComponents.inlineIconButton,
                   height: FlowUsComponents.inlineIconButton,
-                  child: Icon(Icons.close, size: 16, color: c.textTertiary),
+                  child: FlowUsSvgIcon(FlowUsIc.close, size: 16, color: c.textTertiary),
                 ),
               ),
             ),
@@ -135,7 +136,7 @@ class FlowUsDeleteBanner extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.delete_outline,
+                const FlowUsSvgIcon(FlowUsIc.trash,
                     size: FlowUsComponents.toolButtonIconSize, color: Colors.white),
                 const SizedBox(width: 8),
                 const Text('当前页面已删除',

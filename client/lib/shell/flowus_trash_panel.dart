@@ -13,6 +13,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../design/flowus_icons.dart';
 import '../design/tokens.dart';
 
 /// 回收站里的一条（我们自己的模型，字段只用渲染需要的）
@@ -190,7 +191,7 @@ class _TrashRow extends StatelessWidget {
           // 页面图标 20（真图标 M1-T12）
           Padding(
             padding: const EdgeInsets.only(top: 3),
-            child: Icon(Icons.description_outlined, size: FlowUsTrash.rowIconSize, color: const Color(0xFF91918E)),
+            child: FlowUsSvgIcon(FlowUsIc.pages, size: FlowUsTrash.rowIconSize, color: const Color(0xFF91918E)),
           ),
           const SizedBox(width: FlowUsTrash.rowIconGap),
           // 标题 + 副标题
@@ -238,9 +239,9 @@ class _TrashRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          _RowAction(icon: Icons.undo, tooltip: '恢复', onTap: () => onRestore?.call(entry)),
+          _RowAction(icon: FlowUsIc.luUndo2, tooltip: '恢复', onTap: () => onRestore?.call(entry)),
           const SizedBox(width: FlowUsTrash.rowActionGap),
-          _RowAction(icon: Icons.delete_outline, tooltip: '彻底删除', onTap: () => onDeleteForever?.call(entry)),
+          _RowAction(icon: FlowUsIc.trash, tooltip: '彻底删除', onTap: () => onDeleteForever?.call(entry)),
         ],
       ),
     );
@@ -251,7 +252,8 @@ class _TrashRow extends StatelessWidget {
 class _RowAction extends StatelessWidget {
   const _RowAction({required this.icon, required this.tooltip, this.onTap});
 
-  final IconData icon;
+  /// 真图标名（FlowUsIc.*）
+  final String icon;
   final String tooltip;
   final VoidCallback? onTap;
 
@@ -266,7 +268,7 @@ class _RowAction extends StatelessWidget {
           height: FlowUsTrash.rowActionSize,
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
           alignment: Alignment.center,
-          child: Icon(icon, size: 16, color: const Color(0xFF91918E)),
+          child: FlowUsSvgIcon(icon, size: 16, color: const Color(0xFF91918E)),
         ),
       ),
     );

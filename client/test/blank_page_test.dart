@@ -7,6 +7,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:bijiapp/design/flowus_icons.dart';
 import 'package:bijiapp/design/tokens.dart';
 import 'package:bijiapp/shell/flowus_blank_page.dart';
 
@@ -31,6 +32,11 @@ Future<void> _pump(
   ));
   await tester.pumpAndSettle();
 }
+
+
+/// 真图标现在是 SVG（M1-T12）：按名字找，而不是按 Material IconData
+Finder svgIcon(String name) =>
+    find.byWidgetPredicate((w) => w is FlowUsSvgIcon && w.name == name);
 
 void main() {
   testWidgets('提示行 16/24 占位灰 rgb(189,189,189)', (tester) async {
@@ -65,7 +71,7 @@ void main() {
     final pageRow = find.ancestor(of: find.text('页面'), matching: find.byType(Container)).first;
     final r = tester.getRect(pageRow);
     expect(r.height, closeTo(FlowUsLayout.blankEntryHeight, 0.5));
-    final icon = tester.getRect(find.byIcon(Icons.description_outlined).first);
+    final icon = tester.getRect(svgIcon(FlowUsIc.pages).first);
     expect(icon.width, closeTo(FlowUsLayout.blankEntryIconSize, 0.5));
     // 相邻行 y 步进 36
     final pageY = tester.getRect(find.text('页面')).top;

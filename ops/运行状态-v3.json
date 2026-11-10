@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T02:29:00.338Z",
+  "updatedAt": "2026-11-10T02:50:24.326Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -382,6 +382,13 @@
       "startedAt": "2026-11-10T02:24:00.000Z",
       "finishedAt": "2026-11-10T02:29:00.338Z",
       "note": "跨视口/缩放断言；抓到内容列 top 多算 48（标签条双重计入）并修正；12 断言，全量 234 绿"
+    },
+    {
+      "taskId": "M1-T12",
+      "status": "partial",
+      "startedAt": "2026-11-10T02:41:00.000Z",
+      "finishedAt": "2026-11-10T02:50:24.326Z",
+      "note": "93 SVG 进 assets + 生成 flowus_icons.dart(92) + 六界面换真图标；238 测试全绿；10 个图标无资产→拆 M1-T14"
     }
   ],
   "blocked": [],

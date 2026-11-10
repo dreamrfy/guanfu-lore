@@ -15,6 +15,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../design/flowus_icons.dart';
 import '../design/tokens.dart';
 
 /// 帮助菜单的一条
@@ -80,7 +81,7 @@ class _FlowUsFloatingButtonsState extends State<FlowUsFloatingButtons> {
               widget.onAiTap?.call();
             },
             // 上钮图标 20×20（AI 触发；Material 占位，真图标 M1-T12）
-            child: Icon(Icons.auto_awesome, size: FlowUsFloating.aiIconSize, color: c.primary),
+            child: FlowUsSvgIcon(FlowUsIc.aiFill, size: FlowUsFloating.aiIconSize, color: c.primary),
           ),
         ),
         Positioned(
@@ -91,7 +92,7 @@ class _FlowUsFloatingButtonsState extends State<FlowUsFloatingButtons> {
               setState(() => _menuOpen = !_menuOpen);
               widget.onHelpTap?.call();
             },
-            child: Icon(Icons.question_mark, size: FlowUsFloating.helpIconSize, color: c.textSub),
+            child: FlowUsSvgIcon(FlowUsIc.question, size: FlowUsFloating.helpIconSize, color: c.textSub),
           ),
         ),
       ],

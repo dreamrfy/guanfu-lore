@@ -8,6 +8,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:bijiapp/design/flowus_icons.dart';
 import 'package:bijiapp/design/tokens.dart';
 import 'package:bijiapp/shell/flowus_floating.dart';
 import 'package:bijiapp/shell/flowus_tabbar.dart';
@@ -144,7 +145,10 @@ void main() {
       await _pump(tester, width: 1600, height: 900);
       final ai = tester.getRect(
         find.ancestor(
-          of: find.descendant(of: find.byType(FlowUsFloatingButtons), matching: find.byIcon(Icons.auto_awesome)),
+          of: find.descendant(
+            of: find.byType(FlowUsFloatingButtons),
+            matching: find.byWidgetPredicate((w) => w is FlowUsSvgIcon && w.name == FlowUsIc.aiFill),
+          ),
           matching: find.byType(Container),
         ).first,
       );
