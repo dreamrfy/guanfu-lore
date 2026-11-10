@@ -787,7 +787,11 @@ class FlowUsShell extends StatelessWidget {
                       return Stack(
                         children: [
                           Positioned(
-                            left: left, top: FlowUsLayout.contentTopWithoutBanner,
+                            left: left,
+                            // 内容区在视口里的起点是 48（无横幅）/ 92（有横幅）——而这里已经在
+                            // Column 里、位于标签条/横幅**之下**，所以列内偏移就是 0。
+                            // 实测：真 FlowUs 内容滚动容器 y=48（无横幅），见 docs/基准/证据/M1-T10/title-top.json
+                            top: 0,
                             width: FlowUsLayout.contentColumnWidth,
                             child: Text('无标题',
                                 style: TextStyle(

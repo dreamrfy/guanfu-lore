@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T02:17:24.404Z",
+  "updatedAt": "2026-11-10T02:29:00.338Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -375,6 +375,13 @@
       "startedAt": "2026-11-10T02:07:00.000Z",
       "finishedAt": "2026-11-10T02:17:24.404Z",
       "note": "回收站浮层实测：面板638×608/搜索框616×32/列头46/行612×38·58/动作钮20×20；trash_panel 8断言，全量222绿"
+    },
+    {
+      "taskId": "M1-T10",
+      "status": "done",
+      "startedAt": "2026-11-10T02:24:00.000Z",
+      "finishedAt": "2026-11-10T02:29:00.338Z",
+      "note": "跨视口/缩放断言；抓到内容列 top 多算 48（标签条双重计入）并修正；12 断言，全量 234 绿"
     }
   ],
   "blocked": [],
