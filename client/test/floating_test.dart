@@ -48,7 +48,7 @@ void main() {
 
   testWidgets('两钮 36×36 全圆白底 1px 边框；距右 20、距底 86 / 40（实测渲染值）', (tester) async {
     await _pumpShell(tester);
-    final ai = tester.getRect(buttonOf(FlowUsIc.aiFill));
+    final ai = tester.getRect(buttonOf(FlowUsIc.aiFace));
     final help = tester.getRect(buttonOf(FlowUsIc.question));
 
     for (final r in [ai, help]) {
@@ -66,7 +66,7 @@ void main() {
       closeTo(FlowUsFloating.gap, 0.01),
     );
 
-    final deco = tester.widget<Container>(buttonOf(FlowUsIc.aiFill)).decoration as BoxDecoration;
+    final deco = tester.widget<Container>(buttonOf(FlowUsIc.aiFace)).decoration as BoxDecoration;
     expect(deco.shape, BoxShape.circle);
     expect(deco.color, Colors.white);
     expect((deco.border! as Border).top.color, const Color(0x0F000000)); // rgba(0,0,0,0.06)
@@ -75,7 +75,7 @@ void main() {
 
   testWidgets('图标尺寸 20（AI）/ 16（帮助）', (tester) async {
     await _pumpShell(tester);
-    expect(tester.widget<FlowUsSvgIcon>(floating(svgIcon(FlowUsIc.aiFill))).size, 20);
+    expect(tester.widget<FlowUsSvgIcon>(floating(svgIcon(FlowUsIc.aiFace))).size, 20);
     expect(tester.widget<FlowUsSvgIcon>(floating(svgIcon(FlowUsIc.question))).size, 16);
   });
 
@@ -161,7 +161,7 @@ void main() {
   testWidgets('点 AI 钮 → 回调；AI 面板属 M9', (tester) async {
     var ai = false;
     await _pumpShell(tester, onAi: () => ai = true);
-    await tester.tap(floating(svgIcon(FlowUsIc.aiFill)));
+    await tester.tap(floating(svgIcon(FlowUsIc.aiFace)));
     await tester.pumpAndSettle();
     expect(ai, isTrue);
     expect(find.text('帮助中心'), findsNothing);

@@ -81,7 +81,8 @@ class _FlowUsFloatingButtonsState extends State<FlowUsFloatingButtons> {
               widget.onAiTap?.call();
             },
             // 上钮图标 20×20（AI 触发；Material 占位，真图标 M1-T12）
-            child: FlowUsSvgIcon(FlowUsIc.aiFill, size: FlowUsFloating.aiIconSize, color: c.primary),
+            child: // 自带渐变 → 不能单色覆盖（tint: false）
+            FlowUsSvgIcon(FlowUsIc.aiFace, size: FlowUsFloating.aiIconSize, tint: false),
           ),
         ),
         Positioned(

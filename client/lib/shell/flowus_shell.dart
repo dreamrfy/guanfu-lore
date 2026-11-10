@@ -265,7 +265,8 @@ class _AiRow extends StatelessWidget {
         height: FlowUsLayout.sidebarIconRowHeight,
         child: Row(
           children: [
-            FlowUsSvgIcon(FlowUsIc.aiFill, size: FlowUsComponents.inlineIconButton, color: c.primary),
+            // 自带渐变 → 不能单色覆盖（tint: false）
+            FlowUsSvgIcon(FlowUsIc.aiFace, size: FlowUsComponents.inlineIconButton, tint: false),
             const SizedBox(width: 8),
             Expanded(child: Text('FlowUs AI',
                 style: TextStyle(fontSize: 14, height: 24 / 14, color: c.textMain))),
@@ -435,6 +436,7 @@ class _PageItemState extends State<_PageItem> {
                     turns: widget.node.expanded ? 0.25 : 0,
                     duration: const Duration(milliseconds: 100),
                     child: FlowUsSvgIcon(FlowUsIc.arrowRight01,
+                    key: ValueKey('row-chevron-${widget.node.id}'),
                         size: FlowUsLayout.sidebarHoverChevronSize, color: c.textTertiary),
                   ),
               )
@@ -706,8 +708,9 @@ class _CapacityCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
+            // 实测：图标是 20×20 的「容量/数据库」图标（IcCapacity），不是带圈 i
             Row(children: [
-              FlowUsSvgIcon(FlowUsIc.info, size: 16, color: c.textTertiary),
+              FlowUsSvgIcon(FlowUsIc.capacity, size: 20, color: c.textTertiary),
               const SizedBox(width: 6),
               Text('空间容量已用完',
                   style: TextStyle(fontSize: 14, height: 20 / 14, fontWeight: FontWeight.w600, color: c.textMain)),
@@ -716,8 +719,13 @@ class _CapacityCard extends StatelessWidget {
             Text('已有文件不受影响，升级后可继续上传',
                 style: TextStyle(fontSize: 12, height: 20 / 12, color: c.textTertiary)),
             const SizedBox(height: 6),
-            Text('立即升级 ›',
-                style: TextStyle(fontSize: 12, height: 20 / 12, fontWeight: FontWeight.w500, color: c.primary)),
+            // 实测：13px / 22px / w500 / **纯黑**（不是主色蓝）+ 12px 的 › 箭头，两者间隔 4
+            Row(mainAxisSize: MainAxisSize.min, children: [
+              const Text('立即升级',
+                  style: TextStyle(fontSize: 13, height: 22 / 13, fontWeight: FontWeight.w500, color: Color(0xFF000000))),
+              const SizedBox(width: 4),
+              const FlowUsSvgIcon(FlowUsIc.arrowRight01, size: 12, color: Color(0xFF000000)),
+            ]),
           ],
         ),
       ),

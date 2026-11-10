@@ -1,5 +1,5 @@
 {
- "count": 101,
+ "count": 103,
  "icons": [
   {
    "name": "IcAdd",
@@ -957,6 +957,24 @@
    ],
    "renderedSize": "20x20",
    "note": "无 data-icon（按语义自命名：通知）"
+  },
+  {
+   "name": "IcAiFace",
+   "file": "IcAiFace.svg",
+   "surfaces": [
+    "侧栏 FlowUs AI 行 / 右下 AI 钮"
+   ],
+   "renderedSize": "20x20",
+   "note": "无 data-icon（渐变圆脸，按语义自命名）"
+  },
+  {
+   "name": "IcCapacity",
+   "file": "IcCapacity.svg",
+   "surfaces": [
+    "侧栏底部容量卡片"
+   ],
+   "renderedSize": "20x20",
+   "note": "无 data-icon（按语义自命名）"
   }
  ]
 }

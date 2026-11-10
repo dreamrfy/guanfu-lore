@@ -19,6 +19,7 @@ abstract final class FlowUsIc {
   static const String add = 'IcAdd';
   static const String addBoard = 'IcAddBoard';
   static const String ai = 'IcAi';
+  static const String aiFace = 'IcAiFace';
   static const String aiFill = 'IcAiFill';
   static const String arrowDown01 = 'IcArrowDown01';
   static const String arrowHide = 'IcArrowHide';
@@ -34,6 +35,7 @@ abstract final class FlowUsIc {
   static const String board = 'IcBoard';
   static const String calendar = 'IcCalendar';
   static const String call = 'IcCall';
+  static const String capacity = 'IcCapacity';
   static const String chartNumber = 'IcChartNumber';
   static const String check = 'IcCheck';
   static const String check02 = 'IcCheck02';
@@ -123,6 +125,7 @@ abstract final class FlowUsIc {
     'IcAdd',
     'IcAddBoard',
     'IcAi',
+    'IcAiFace',
     'IcAiFill',
     'IcArrowDown01',
     'IcArrowHide',
@@ -138,6 +141,7 @@ abstract final class FlowUsIc {
     'IcBoard',
     'IcCalendar',
     'IcCall',
+    'IcCapacity',
     'IcChartNumber',
     'IcCheck',
     'IcCheck02',
@@ -229,17 +233,21 @@ abstract final class FlowUsIc {
 /// - [size] 实测值：16（29 个）/ 20（25 个）/ 12（2 个）/ 14（1 个）
 /// - [color] 用 ColorFilter(srcIn) 上色，填充式与描边式都适用
 class FlowUsSvgIcon extends StatelessWidget {
-  const FlowUsSvgIcon(this.name, {super.key, this.size = 16, this.color});
+  const FlowUsSvgIcon(this.name, {super.key, this.size = 16, this.color, this.tint = true});
 
   final String name;
   final double size;
   final Color? color;
 
+  /// 是否用单色覆盖（默认 true）。**自带多色/渐变的图标必须传 false**——
+  /// ColorFilter(srcIn) 会把渐变压成一个纯色（AI 渐变圆脸就是这么变成蓝圆片的）
+  final bool tint;
+
   @override
   Widget build(BuildContext context) {
     // 不给 color 时**跟随外层 IconTheme**（和 Material Icon 的行为一致）——
     // 否则 SVG 会用自身的 currentColor/黑色，在浅色侧栏里显得又黑又粗（M1-T13 并排对照时发现的）
-    final effective = color ?? IconTheme.of(context).color;
+    final effective = tint ? (color ?? IconTheme.of(context).color) : null;
     return SvgPicture.asset(
       'assets/icons/$name.svg',
       width: size,

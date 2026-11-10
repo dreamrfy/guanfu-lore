@@ -94,7 +94,8 @@ void main() {
       expect(find.text('市集'), findsOneWidget);
       expect(find.text('回收站'), findsOneWidget);
       expect(find.text('空间容量已用完'), findsOneWidget); // 底部容量卡片
-      expect(find.text('立即升级 ›'), findsOneWidget);
+      // M1-T15 起按实测拆开：13/22/500 纯黑的「立即升级」+ 12px 的 › 箭头
+      expect(find.text('立即升级'), findsOneWidget);
     });
 
     testWidgets('页项都在（空间 2 个 + 私人 3 个）', (tester) async {
@@ -239,7 +240,7 @@ void main() {
     testWidgets('悬停有子页的行：换成展开箭头（12×12），标题缩到 121 宽', (tester) async {
       await _pumpShell(tester);
       await hoverRow(tester, '磷化工知识库');
-      expect(svgIcon(FlowUsIc.arrowRight01), findsOneWidget);
+      expect(find.byKey(const ValueKey('row-chevron-pchem')), findsOneWidget);
       expect(svgIcon(FlowUsIc.folderContent), findsNothing); // 图标槽被箭头接管
       // 未悬停 161（= 210 − 41 − 8），悬停 121（再让出 4+20+4+20）
       expect(tester.getRect(find.text('磷化工知识库')).width, closeTo(121, 0.5));
@@ -278,7 +279,7 @@ void main() {
         callbacks: SidebarCallbacks(onToggleExpand: (id, ex) => calls.add((id, ex))),
       );
       await hoverRow(tester, '磷化工知识库');
-      await tester.tap(svgIcon(FlowUsIc.arrowRight01));
+      await tester.tap(find.byKey(const ValueKey('row-chevron-pchem')));
       await tester.pumpAndSettle();
       expect(calls, hasLength(1));
       expect(calls.single.$1, 'pchem');

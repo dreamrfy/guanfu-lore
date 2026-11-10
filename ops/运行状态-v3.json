@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T03:24:16.085Z",
+  "updatedAt": "2026-11-10T03:38:51.038Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -403,6 +403,13 @@
       "startedAt": "2026-11-10T03:20:00.000Z",
       "finishedAt": "2026-11-10T03:24:16.085Z",
       "note": "模块 M1 交付：截图链路+并排对照图3张+exe；自验修掉浮动钮阴影与SVG默认色两处；已知差异7条→拆M1-T15"
+    },
+    {
+      "taskId": "M1-T15",
+      "status": "partial",
+      "startedAt": "2026-11-10T03:52:00.000Z",
+      "finishedAt": "2026-11-10T03:38:51.038Z",
+      "note": "修 AI渐变圆脸/容量卡图标/升级链接纯黑/图标跟随IconTheme；挖出ColorFilter压渐变与SVG filter两个坑；字体拆分M1-T16"
     }
   ],
   "blocked": [],

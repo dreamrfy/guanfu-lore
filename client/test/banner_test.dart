@@ -54,7 +54,11 @@ void main() {
       expect((deco.border as Border?)?.bottom.color, FlowUsBannerColors.systemBorder);
 
       // 升级钮 74×28
-      final upgradeBtn = tester.getRect(find.ancestor(of: find.text('立即升级'), matching: find.byType(Container)).first);
+      // 注意：侧栏容量卡片里也有「立即升级」（M1-T15），所以要把查找限定在横幅内
+      final upgradeBtn = tester.getRect(find.ancestor(
+        of: find.descendant(of: find.byType(FlowUsSystemBanner), matching: find.text('立即升级')),
+        matching: find.byType(Container),
+      ).first);
       expect(upgradeBtn.width, 74);
       expect(upgradeBtn.height, closeTo(FlowUsComponents.buttonSmallHeight, 0.5));
     });
