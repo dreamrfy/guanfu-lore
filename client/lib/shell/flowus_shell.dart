@@ -20,7 +20,7 @@ import 'package:flutter/material.dart';
 
 import '../design/flowus_icons.dart';
 import '../page/page_title.dart';
-import '../page/paragraph_block.dart';
+import '../page/blocks.dart';
 import '../design/tokens.dart';
 import 'flowus_banner.dart';
 import 'flowus_floating.dart';
@@ -772,9 +772,9 @@ class FlowUsShell extends StatelessWidget {
     this.pageTitle,
     this.onPageTitleChanged,
     this.onPageTitleSave,
-    this.paragraphs = const [],
-    this.onParagraphChanged,
-    this.onParagraphEnter,
+    this.blocks = const [],
+    this.onBlockChanged,
+    this.onBlockEnter,
     this.showFloatingButtons = false,
     this.onFloatingAiTap,
     this.onFloatingHelpTap,
@@ -804,12 +804,12 @@ class FlowUsShell extends StatelessWidget {
   /// 防抖落库（null = 演示态不落库）
   final Future<void> Function(String title)? onPageTitleSave;
 
-  /// 正文段落（M2-T03）。空列表 = 不显示正文
-  final List<ParagraphData> paragraphs;
-  final void Function(String id, String text)? onParagraphChanged;
+  /// 正文块（M2-T03 段落 + M2-T04 各基础块）。空列表 = 不显示正文
+  final List<PageBlock> blocks;
+  final void Function(String id, String text)? onBlockChanged;
 
-  /// 某段回车 → 宿主插入新段
-  final void Function(String id)? onParagraphEnter;
+  /// 某块回车 → 宿主插入新块
+  final void Function(String id)? onBlockEnter;
 
   /// 侧栏图标行的激活态（M1-T16）：下标 0..4 表示当前所在路由，null = 无激活。
   /// 实测：在首页时第一格（首页）有浅灰圆角底块，其余格没有。
@@ -871,11 +871,11 @@ class FlowUsShell extends StatelessWidget {
                                   onChanged: onPageTitleChanged ?? (_) {},
                                   onSave: onPageTitleSave,
                                 ),
-                                if (paragraphs.isNotEmpty)
-                                  FlowUsParagraphList(
-                                    paragraphs: paragraphs,
-                                    onChanged: onParagraphChanged ?? (_, _) {},
-                                    onEnter: onParagraphEnter,
+                                if (blocks.isNotEmpty)
+                                  FlowUsBlockList(
+                                    blocks: blocks,
+                                    onChanged: onBlockChanged ?? (_, _) {},
+                                    onEnter: onBlockEnter,
                                   ),
                               ],
                             ),

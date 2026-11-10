@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'design/tokens.dart';
-import 'page/paragraph_block.dart';
+import 'page/blocks.dart';
 import 'shell/flowus_shell.dart';
 import 'shell/flowus_tabbar.dart';
 import 'shell/flowus_trash_panel.dart';
@@ -71,22 +71,39 @@ class _ShellAppState extends State<ShellApp> {
 
   final Map<String, String> _savedTitles = {};
 
-  /// 正文段落（M2-T03 演示数据）
-  List<ParagraphData> _paragraphs = const [
-    ParagraphData(id: 'p1', text: '这是正文段落，字号 16、行内行高 26、块高 34、块间距 2。'),
-    ParagraphData(id: 'p2', text: '在这一段回车会新建一个空段落（空段落显示占位文案）。'),
-    ParagraphData(id: 'p3'),
+  /// 正文块（M2-T03 段落 + M2-T04 各基础块）演示数据：把每种块都摆一个，方便对照
+  List<PageBlock> _blocks = const [
+    PageBlock(id: 'b1', kind: PageBlockKind.heading1, level: 1, text: '标题一（30/45/w600，块高 57）'),
+    PageBlock(id: 'b2', kind: PageBlockKind.heading2, level: 2, text: '标题二（块高 52）'),
+    PageBlock(id: 'b3', kind: PageBlockKind.heading3, level: 3, text: '标题三（块高 34）'),
+    PageBlock(id: 'b4', kind: PageBlockKind.heading4, level: 4, text: '标题四（块高 31）'),
+    PageBlock(id: 'b5', kind: PageBlockKind.paragraph, text: '正文段落：16/26，块高 34，块间距 2。'),
+    PageBlock(id: 'b6', kind: PageBlockKind.bulleted, text: '项目符号项（块高 36，缩进 26）'),
+    PageBlock(id: 'b7', kind: PageBlockKind.numbered, text: '编号项一（块高 34）'),
+    PageBlock(id: 'b8', kind: PageBlockKind.numbered, text: '编号项二（序号自增）'),
+    PageBlock(id: 'b9', kind: PageBlockKind.todo, text: '待办项（复选框尺寸未实测）'),
+    PageBlock(id: 'b10', kind: PageBlockKind.quote, text: '引述文字：16/26，缩进 26（x=742）'),
+    PageBlock(id: 'b11', kind: PageBlockKind.divider, text: ''),
+    PageBlock(id: 'b12', kind: PageBlockKind.code, text: 'code_line = 14/21，缩进 26'),
   ];
 
-  void _onParagraphChanged(String id, String text) {
-    setState(() => _paragraphs = [
-          for (final p in _paragraphs) p.id == id ? ParagraphData(id: id, text: text) : p,
+  void _onBlockChanged(String id, String text) {
+    setState(() => _blocks = [
+          for (final b in _blocks)
+            b.id == id
+                ? PageBlock(id: b.id, kind: b.kind, text: text, checked: b.checked, number: b.number, level: b.level)
+                : b,
         ]);
   }
 
-  void _onParagraphEnter(String id) {
+  void _onBlockEnter(String id) {
     _seq++;
-    setState(() => _paragraphs = insertParagraphAfter(_paragraphs, id, 'p-new-$_seq'));
+    final out = <PageBlock>[];
+    for (final b in _blocks) {
+      out.add(b);
+      if (b.id == id) out.add(PageBlock(id: 'b-new-$_seq', kind: PageBlockKind.paragraph));
+    }
+    setState(() => _blocks = out);
   }
 
   /// 按 T 开关回收站浮层（只为截图用；真实入口在侧栏「回收站」）
@@ -284,9 +301,9 @@ class _ShellAppState extends State<ShellApp> {
       pageTitle: _currentTitle,
       onPageTitleChanged: _onTitleChanged,
       onPageTitleSave: _onTitleSave,
-      paragraphs: _paragraphs,
-      onParagraphChanged: _onParagraphChanged,
-      onParagraphEnter: _onParagraphEnter,
+      blocks: _blocks,
+      onBlockChanged: _onBlockChanged,
+      onBlockEnter: _onBlockEnter,
       showFloatingButtons: true,
       onFloatingAiTap: () => _snack(context, 'FlowUs AI 面板属 M9'),
       onFloatingHelpTap: () => _snack(context, '帮助菜单（点右下帮助钮可开）'),

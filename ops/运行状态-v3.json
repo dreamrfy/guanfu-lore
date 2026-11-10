@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T04:12:02.140Z",
+  "updatedAt": "2026-11-10T04:25:45.721Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -431,6 +431,13 @@
       "startedAt": "2026-11-10T05:40:00.000Z",
       "finishedAt": "2026-11-10T04:12:02.140Z",
       "note": "段落块：16/26行内、块高34、间距2、占位grey3仅聚焦或单段时显示、Enter分段；9断言，257 测试全绿"
+    },
+    {
+      "taskId": "M2-T04",
+      "status": "partial",
+      "startedAt": "2026-11-10T06:10:00.000Z",
+      "finishedAt": "2026-11-10T04:25:45.721Z",
+      "note": "blocks.dart 10 种块，块高/缩进全实测；lv2-4字号/待办框/分割线/引述装饰未实测→M2-T17；266 测试全绿"
     }
   ],
   "blocked": [],
