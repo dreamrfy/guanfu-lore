@@ -121,10 +121,18 @@ class SidebarCallbacks {
 enum SidebarSection { space, private }
 
 class FlowUsSidebar extends StatelessWidget {
-  const FlowUsSidebar({super.key, required this.data, this.callbacks});
+  const FlowUsSidebar({
+    super.key,
+    required this.data,
+    this.callbacks,
+    this.activeQuickIconIndex,
+  });
 
   final SidebarData data;
   final SidebarCallbacks? callbacks;
+
+  /// 图标行激活态下标（M1-T16，null = 无激活）
+  final int? activeQuickIconIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +151,7 @@ class FlowUsSidebar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _SpaceNameRow(name: data.spaceName),
-          const _IconRow(),
+          _IconRow(activeIndex: activeQuickIconIndex),
           const SizedBox(height: 16), // 实测：图标行 86 → FlowUs AI 102
           const _AiRow(),
           const SizedBox(height: 8), // 实测：134 → 142
@@ -216,7 +224,10 @@ class _SpaceNameRow extends StatelessWidget {
 
 /// 图标行：高 32，5 个 32×32，起点 x=8，间距 45（实测 8/53/98/142/187）
 class _IconRow extends StatelessWidget {
-  const _IconRow();
+  const _IconRow({this.activeIndex});
+
+  /// 激活态下标（0=首页…4=更多）；null 无激活
+  final int? activeIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -240,8 +251,16 @@ class _IconRow extends StatelessWidget {
             for (var i = 0; i < icons.length; i++)
               Padding(
                 padding: EdgeInsets.only(right: i == icons.length - 1 ? 0 : 13), // 32 + 13 = 45
-                child: SizedBox(
-                  width: 32, height: 32,
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  // 激活态：浅灰圆角块（实测在首页时第一格有；尺寸 32×32、圆角 6）
+                  decoration: i == activeIndex
+                      ? BoxDecoration(
+                          color: FlowUsColors.sidebarItemSelected,
+                          borderRadius: BorderRadius.circular(FlowUsRadius.control),
+                        )
+                      : null,
                   child: IconTheme(data: IconThemeData(color: c.textSub), child: icons[i]),
                 ),
               ),
@@ -747,6 +766,7 @@ class FlowUsShell extends StatelessWidget {
     this.showDeleteBanner = false,
     this.onDeleteRestore,
     this.onDeleteConfirm,
+    this.activeQuickIconIndex,
     this.showFloatingButtons = false,
     this.onFloatingAiTap,
     this.onFloatingHelpTap,
@@ -769,6 +789,10 @@ class FlowUsShell extends StatelessWidget {
   final VoidCallback? onDeleteRestore;
   final VoidCallback? onDeleteConfirm;
 
+  /// 侧栏图标行的激活态（M1-T16）：下标 0..4 表示当前所在路由，null = 无激活。
+  /// 实测：在首页时第一格（首页）有浅灰圆角底块，其余格没有。
+  final int? activeQuickIconIndex;
+
   /// 右下角浮动圆钮（M1-T07）：true 显示
   final bool showFloatingButtons;
   final VoidCallback? onFloatingAiTap;
@@ -783,7 +807,7 @@ class FlowUsShell extends StatelessWidget {
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          FlowUsSidebar(data: data, callbacks: callbacks),
+          FlowUsSidebar(data: data, callbacks: callbacks, activeQuickIconIndex: activeQuickIconIndex),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,

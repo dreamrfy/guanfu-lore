@@ -224,6 +224,7 @@ class _ShellAppState extends State<ShellApp> {
         onShare: () => _snack(context, '分享（演示壳）'),
         onToolbarAction: (a) => _snack(context, '$a（演示壳）'),
       ),
+      activeQuickIconIndex: 0, // 演示态对齐真 FlowUs：首页高亮
       showFloatingButtons: true,
       onFloatingAiTap: () => _snack(context, 'FlowUs AI 面板属 M9'),
       onFloatingHelpTap: () => _snack(context, '帮助菜单（点右下帮助钮可开）'),

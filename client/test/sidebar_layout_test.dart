@@ -386,4 +386,36 @@ void main() {
   });
 }
 
-void _noopItemMenu(String pageId, String action) {}
+void _noopItemMenu(String pageId, String action) {
+
+  group('图标行激活态（M1-T16）', () {
+    testWidgets('activeQuickIconIndex=0 时第一格有浅灰圆角底块，其余格没有', (tester) async {
+      tester.view.physicalSize = const Size(1920, 945);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(const MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 228,
+            height: 945,
+            child: FlowUsSidebar(
+              data: SidebarData(spaceName: '两相欢的空间'),
+              activeQuickIconIndex: 0,
+            ),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      // 第一格（首页图标）外面是带底色的 Container，第二格不是
+      final home = find.ancestor(of: svgIcon(FlowUsIc.home), matching: find.byType(Container)).first;
+      final search = find.ancestor(of: svgIcon(FlowUsIc.luSearch), matching: find.byType(Container)).first;
+      final homeDeco = tester.widget<Container>(home).decoration as BoxDecoration?;
+      final searchDeco = tester.widget<Container>(search).decoration as BoxDecoration?;
+      expect(homeDeco?.color, FlowUsColors.sidebarItemSelected);
+      expect(homeDeco?.borderRadius, BorderRadius.circular(FlowUsRadius.control));
+      expect(searchDeco?.color, isNull);
+    });
+  });
+}

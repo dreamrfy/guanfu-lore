@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T03:38:51.038Z",
+  "updatedAt": "2026-11-10T03:53:26.525Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -410,6 +410,13 @@
       "startedAt": "2026-11-10T03:52:00.000Z",
       "finishedAt": "2026-11-10T03:38:51.038Z",
       "note": "修 AI渐变圆脸/容量卡图标/升级链接纯黑/图标跟随IconTheme；挖出ColorFilter压渐变与SVG filter两个坑；字体拆分M1-T16"
+    },
+    {
+      "taskId": "M1-T16",
+      "status": "done",
+      "startedAt": "2026-11-10T04:25:00.000Z",
+      "finishedAt": "2026-11-10T03:53:26.525Z",
+      "note": "测量推翻字体假设：字宽一致(83/97/96)、差在w500假粗；做首页激活tile+修截图黑边；客服气泡判定不存在"
     }
   ],
   "blocked": [],
