@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T08:03:56.000Z",
+  "updatedAt": "2026-11-10T08:15:01.000Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -557,6 +557,20 @@
       "startedAt": "2026-11-10T07:48:27.000Z",
       "finishedAt": "2026-11-10T08:03:56.000Z",
       "note": "Markdown转换:补引述 >、三字符分割线、行首三反引号代码块,并剔除内核冲突4条;13测试+353全绿;release敲键 # / --- 通过;代码块端到端待M2-T28"
+    },
+    {
+      "taskId": "M2-T12",
+      "status": "done",
+      "startedAt": "2026-11-10T08:14:53.000Z",
+      "finishedAt": "2026-11-10T08:14:53.000Z",
+      "note": "底部引用条:补采DOM盒(14/20三段,色#37352F/#91918E,Beta#5F5E5B,间距16,行高28);实现+接入shell;6测试+359全绿;固定在列底(真机随滚动)"
+    },
+    {
+      "taskId": "M2-T10",
+      "status": "blocked",
+      "startedAt": "2026-11-10T08:07:19.000Z",
+      "finishedAt": "2026-11-10T08:15:01.000Z",
+      "note": "缺规格:空间已满不能上传测试图,剪藏页图片懒加载只取到封面;拆M2-T29补采"
     }
   ],
   "blocked": [],

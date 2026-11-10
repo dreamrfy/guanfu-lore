@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import '../design/flowus_icons.dart';
 import '../page/page_title.dart';
 import '../page/page_body.dart';
+import '../page/page_footer.dart';
 import '../page/page_cover.dart';
 import '../design/tokens.dart';
 import 'flowus_banner.dart';
@@ -822,6 +823,8 @@ class FlowUsShell extends StatelessWidget {
     this.showFloatingButtons = false,
     this.onFloatingAiTap,
     this.onFloatingHelpTap,
+    this.footerInfo = const PageFooterInfo(),
+    this.showFooter = true,
   });
 
   final SidebarData data;
@@ -874,6 +877,12 @@ class FlowUsShell extends StatelessWidget {
   final bool showFloatingButtons;
   final VoidCallback? onFloatingAiTap;
   final VoidCallback? onFloatingHelpTap;
+
+  /// 底部引用条数据（M2-T12）：计数默认 0
+  final PageFooterInfo footerInfo;
+
+  /// 是否显示底部引用条
+  final bool showFooter;
 
   @override
   Widget build(BuildContext context) {
@@ -968,6 +977,8 @@ class FlowUsShell extends StatelessWidget {
                                     autoFocus: autoFocusPageBody,
                                   ),
                                 ),
+                                // M2-T12：底部引用条（测量值见 page_footer.dart 顶部注释）
+                                if (showFooter) FlowUsPageFooter(info: footerInfo),
                               ],
                             ),
                           ),
