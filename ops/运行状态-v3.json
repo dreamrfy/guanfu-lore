@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T00:27:18.221Z",
+  "updatedAt": "2026-11-10T00:41:36.199Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -17,7 +17,16 @@
     "probeCount": 36,
     "lastProbeAt": "2026-11-10T00:00:44.504Z"
   },
-  "running": [],
+  "running": [
+    {
+      "taskId": "M1-T04",
+      "sessionId": "manual-continue",
+      "module": "M1",
+      "startedAt": "2026-11-10T00:40:00.000Z",
+      "estimateMin": 45,
+      "probes": 0
+    }
+  ],
   "history": [
     {
       "taskId": "M0-T01",
@@ -281,9 +290,9 @@
     {
       "taskId": "M1-T03",
       "status": "done",
-      "startedAt": "2026-11-10T02:20:00.000Z",
-      "finishedAt": "2026-11-10T03:05:00.000Z",
-      "note": "页面树：缩进20/三态/悬停图标槽替换；CDP 补采磷化工7子页；19断言全绿"
+      "startedAt": "2026-11-10T00:27:18.221Z",
+      "finishedAt": "2026-11-10T00:40:40.365Z",
+      "note": "页面树：PageNode 树模型+展开摊平；缩进20/级、行恒 8/211/32、三态+悬停图标槽替换（叶子圆点/有子页箭头）+⋯@166＋@190；105 测试全绿、analyze 0；证据 docs/基准/证据/M1-T03/。注意：上一轮记了账但代码没落地，本轮补齐"
     }
   ],
   "blocked": [],

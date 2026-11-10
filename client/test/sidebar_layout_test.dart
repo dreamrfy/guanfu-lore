@@ -208,7 +208,7 @@ void main() {
   });
 
   group('页项悬停态（M1-T03 实测：底色 3% / 图标槽替换 / ⋯＋ 出现）', () {
-    Future<TestGesture> _hover(WidgetTester tester, String title) async {
+    Future<TestGesture> hoverRow(WidgetTester tester, String title) async {
       final g = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await g.addPointer(location: Offset.zero);
       addTearDown(g.removePointer);
@@ -220,7 +220,7 @@ void main() {
     testWidgets('悬停叶子行：底色 = 黑 3%，页图标被小圆点替换', (tester) async {
       await _pumpShell(tester); // 7 个 page 图标
       expect(find.byIcon(Icons.description_outlined), findsNWidgets(7));
-      await _hover(tester, '学习进度');
+      await hoverRow(tester, '学习进度');
       final box = tester.widget<Container>(
         find.ancestor(of: find.text('学习进度'), matching: find.byType(Container)).first,
       );
@@ -231,7 +231,7 @@ void main() {
 
     testWidgets('悬停有子页的行：换成展开箭头（12×12），标题缩到 121 宽', (tester) async {
       await _pumpShell(tester);
-      await _hover(tester, '磷化工知识库');
+      await hoverRow(tester, '磷化工知识库');
       expect(find.byIcon(Icons.chevron_right), findsOneWidget);
       expect(find.byIcon(Icons.folder_outlined), findsNothing); // 图标槽被箭头接管
       // 未悬停 161（= 210 − 41 − 8），悬停 121（再让出 4+20+4+20）
@@ -241,7 +241,7 @@ void main() {
     testWidgets('悬停出现 ⋯ 与 ＋（各 20×20），移出即消失', (tester) async {
       await _pumpShell(tester);
       expect(find.byIcon(Icons.more_horiz), findsOneWidget); // 只有顶部图标行那个
-      final g = await _hover(tester, '学习进度');
+      final g = await hoverRow(tester, '学习进度');
       expect(find.byIcon(Icons.more_horiz), findsNWidgets(2)); // 顶部 + 行内
       expect(find.byIcon(Icons.add), findsNWidgets(3)); // 两个分区头（透明占位）+ 行内
       await g.moveTo(const Offset(1400, 500)); // 移到主区
