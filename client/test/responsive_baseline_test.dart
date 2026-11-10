@@ -106,13 +106,15 @@ void main() {
   });
 
   group('纵向：有/无横幅两种状态（主内容区 y=92 / 48）', () {
-    testWidgets('无横幅时内容列顶部落在 48', (tester) async {
+    testWidgets('无横幅时标题顶部 = 48 + 入口行(66+20+2) = 136（M2-T11 实测）', (tester) async {
       await _pump(tester, width: 1920, height: 945);
       final title = tester.getRect(find.text('无标题'));
-      expect(title.top, closeTo(FlowUsLayout.contentTopWithoutBanner, 0.5));
+      // 内容区顶 48 → 入口行留白 66 → 入口行 20 → 2 → 标题（真 FlowUs 实测标题 y=136）
+      expect(title.top, closeTo(FlowUsLayout.contentTopWithoutBanner + 88, 0.5));
+      expect(title.top, closeTo(136, 0.5));
     });
 
-    testWidgets('有系统横幅时内容列整体下推到 92', (tester) async {
+    testWidgets('有系统横幅时标题整体下推 44（92 + 88 = 180）', (tester) async {
       tester.view.physicalSize = const Size(1920, 945);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -128,7 +130,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final title = tester.getRect(find.text('无标题'));
-      expect(title.top, closeTo(FlowUsLayout.contentTopWithBanner, 0.5));
+      expect(title.top, closeTo(FlowUsLayout.contentTopWithBanner + 88, 0.5));
       expect(tester.takeException(), isNull);
     });
   });

@@ -457,6 +457,38 @@ abstract final class FlowUsTrash {
   static const Color clearColor = Color(0xFF91918E);
 }
 
+// ---------------------------------------------------------------------------
+// 页面封面 / 图标入口（M2-T11 实测，2026-11-10）
+//
+//   · 封面：**主区全宽**（实测 x=228、w=1684 即主区宽）× **高 274**，紧贴标签条下沿（y=48）
+//   · 「添加图标」「添加封面」入口：文字 **14 / 20**、颜色 **#BDBDBD**、高 20，
+//     位于标题上方 **22px**（实测入口 y=114、标题 y=136）；两个入口之间相隔 41（351+56 → 448）
+//   · 有封面时这两个入口不再出现（只有「添加评论」）
+// ---------------------------------------------------------------------------
+
+abstract final class FlowUsPageHeader {
+  static const double coverHeight = 274;
+  static const Color entryColor = Color(0xFFBDBDBD);
+  static const double entryFontSize = 14;
+  static const double entryLineHeight = 20;
+  static const double entryHeight = 20;
+
+  /// 入口行在标题上方的距离（实测 136 − 114 = 22）
+  static const double entriesAboveTitle = 22;
+
+  /// 两个入口之间的水平间隔（351+56=407 → 448，即 41）
+  static const double entriesGap = 41;
+
+  /// 无封面时：内容区顶（y=48）到入口行（y=114）的距离 = 66
+  static const double entriesTopInset = 66;
+
+  /// 入口行底（134）到标题顶（136）的距离 = 2
+  static const double entriesToTitleGap = 2;
+
+  /// 有封面时：封面底（322）到标题顶（401）的距离 = 79（这一段是图标位）
+  static const double titleTopAfterCover = 79;
+}
+
 /// 选项颜色（单选/多选的胶囊配色）。实测 4 组；其余色相未采到，先不编。
 abstract final class FlowUsOptionColors {
   static const _green = (bg: Color(0xFFD2ECD5), fg: Color(0xFF3B5B46));

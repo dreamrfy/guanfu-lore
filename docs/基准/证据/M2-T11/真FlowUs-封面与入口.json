@@ -1,0 +1,125 @@
+{
+ "plainIdle": {
+  "entries": [
+   {
+    "tag": "DIV",
+    "text": "添加图标",
+    "x": 351,
+    "y": 114,
+    "w": 56,
+    "h": 20,
+    "fs": "14px",
+    "lh": "20px",
+    "fw": "400",
+    "color": "rgb(189, 189, 189)",
+    "bg": "rgba(0, 0, 0, 0)",
+    "radius": "0px",
+    "pad": "0px",
+    "op": 1
+   },
+   {
+    "tag": "DIV",
+    "text": "添加封面",
+    "x": 448,
+    "y": 114,
+    "w": 56,
+    "h": 20,
+    "fs": "14px",
+    "lh": "20px",
+    "fw": "400",
+    "color": "rgb(189, 189, 189)",
+    "bg": "rgba(0, 0, 0, 0)",
+    "radius": "0px",
+    "pad": "0px",
+    "op": 1
+   },
+   {
+    "tag": "DIV",
+    "text": "添加评论",
+    "x": 642,
+    "y": 114,
+    "w": 56,
+    "h": 20,
+    "fs": "14px",
+    "lh": "20px",
+    "fw": "400",
+    "color": "rgb(189, 189, 189)",
+    "bg": "rgba(0, 0, 0, 0)",
+    "radius": "0px",
+    "pad": "0px",
+    "op": 1
+   }
+  ],
+  "title": {
+   "tag": "HEADER",
+   "text": "学习进度",
+   "x": 324,
+   "y": 136,
+   "w": 1500,
+   "h": 64,
+   "fs": "40px",
+   "lh": "64px",
+   "fw": "600",
+   "color": "rgb(55, 53, 47)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": "0px",
+   "pad": "0px",
+   "op": 1
+  },
+  "cover": null,
+  "url": "https://flowus.cn/0e207dcb-a6fe-40d8-8867-af42cf465a72"
+ },
+ "withCover": {
+  "entries": [
+   {
+    "tag": "DIV",
+    "text": "添加评论",
+    "x": 448,
+    "y": 379,
+    "w": 56,
+    "h": 20,
+    "fs": "14px",
+    "lh": "20px",
+    "fw": "400",
+    "color": "rgb(189, 189, 189)",
+    "bg": "rgba(0, 0, 0, 0)",
+    "radius": "0px",
+    "pad": "0px",
+    "op": 1
+   }
+  ],
+  "title": {
+   "tag": "HEADER",
+   "text": "微信公众号剪藏",
+   "x": 324,
+   "y": 401,
+   "w": 1492,
+   "h": 64,
+   "fs": "40px",
+   "lh": "64px",
+   "fw": "600",
+   "color": "rgb(55, 53, 47)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": "0px",
+   "pad": "0px",
+   "op": 1
+  },
+  "cover": {
+   "tag": "IMG",
+   "text": "",
+   "x": 228,
+   "y": 48,
+   "w": 1684,
+   "h": 274,
+   "fs": "16px",
+   "lh": "24px",
+   "fw": "400",
+   "color": "rgb(55, 53, 47)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": "0px",
+   "pad": "0px",
+   "op": 1
+  },
+  "url": "https://flowus.cn/3bc1de67-adf9-4180-8c25-9e066265387c#f221c"
+ }
+}

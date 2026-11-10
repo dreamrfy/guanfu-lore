@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T05:41:17.523Z",
+  "updatedAt": "2026-11-10T05:55:34.949Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -494,6 +494,13 @@
       "startedAt": "2026-11-10T11:40:00.000Z",
       "finishedAt": "2026-11-10T05:41:17.523Z",
       "note": "page_save_pipeline：防抖+草稿+恢复判定+flush；内存SQLite 8断言全绿；未接演示壳（并入T15）"
+    },
+    {
+      "taskId": "M2-T11",
+      "status": "partial",
+      "startedAt": "2026-11-10T12:20:00.000Z",
+      "finishedAt": "2026-11-10T05:55:34.949Z",
+      "note": "封面全宽274+入口行14/20#BDBDBD/隔41/距顶66；7断言；选择器与数据接线拆M2-T23；308测试过"
     }
   ],
   "blocked": [],

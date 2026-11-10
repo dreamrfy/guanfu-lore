@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import '../design/flowus_icons.dart';
 import '../page/page_title.dart';
 import '../page/page_body.dart';
+import '../page/page_cover.dart';
 import '../design/tokens.dart';
 import 'flowus_banner.dart';
 import 'flowus_floating.dart';
@@ -775,6 +776,12 @@ class FlowUsShell extends StatelessWidget {
     this.pageContent = '',
     this.onPageContentChanged,
     this.autoFocusPageBody = false,
+    this.pageWithIcon = false,
+    this.pageWithCover = false,
+    this.coverImage,
+    this.onAddIcon,
+    this.onAddCover,
+    this.onAddComment,
     this.showFloatingButtons = false,
     this.onFloatingAiTap,
     this.onFloatingHelpTap,
@@ -810,6 +817,14 @@ class FlowUsShell extends StatelessWidget {
 
   /// 正文自动获得焦点（演示/截图用，便于直接敲 "/" 看斜杠菜单）
   final bool autoFocusPageBody;
+
+  /// 页面是否已有图标 / 封面（M2-T11）：决定两个入口是否显示
+  final bool pageWithIcon;
+  final bool pageWithCover;
+  final ImageProvider? coverImage;
+  final VoidCallback? onAddIcon;
+  final VoidCallback? onAddCover;
+  final VoidCallback? onAddComment;
 
   /// 侧栏图标行的激活态（M1-T16）：下标 0..4 表示当前所在路由，null = 无激活。
   /// 实测：在首页时第一格（首页）有浅灰圆角底块，其余格没有。
@@ -854,12 +869,22 @@ class FlowUsShell extends StatelessWidget {
                       final left = (box.maxWidth - FlowUsLayout.contentColumnWidth) / 2;
                       return Stack(
                         children: [
+                          // 封面（M2-T11）：主区全宽 × 274，紧贴标签条下沿
+                          if (pageWithCover && coverImage != null)
+                            Positioned(
+                              left: 0,
+                              right: 0,
+                              top: 0,
+                              height: FlowUsPageHeader.coverHeight,
+                              child: FlowUsPageCover(imageProvider: coverImage),
+                            ),
                           Positioned(
                             left: left,
                             // 内容区在视口里的起点是 48（无横幅）/ 92（有横幅）——而这里已经在
                             // Column 里、位于标签条/横幅**之下**，所以列内偏移就是 0。
                             // 实测：真 FlowUs 内容滚动容器 y=48（无横幅），见 docs/基准/证据/M1-T10/title-top.json
-                            top: 0,
+                            // 有封面时整体下移封面高度；无封面时给入口行留 66 的白
+                            top: pageWithCover ? FlowUsPageHeader.coverHeight : 0,
                             bottom: 0, // 给下界：正文要在里面滚动（否则编辑器要无限高度）
                             width: FlowUsLayout.contentColumnWidth,
                             // M2-T02：真标题块（40/64/w600，空值显示灰色「无标题」占位）
@@ -867,6 +892,26 @@ class FlowUsShell extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               mainAxisSize: MainAxisSize.max,
                               children: [
+                                // 入口行（无封面时才有）：上方留 66（实测 48→114）
+                                if (!pageWithCover)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: FlowUsPageHeader.entriesTopInset),
+                                    child: Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: FlowUsPageHeaderEntries(
+                                        showIcon: !pageWithIcon,
+                                        showCover: !pageWithCover,
+                                        onAddIcon: onAddIcon,
+                                        onAddCover: onAddCover,
+                                        onAddComment: onAddComment,
+                                      ),
+                                    ),
+                                  ),
+                                // 有封面时：标题距封面底 79（图标位）
+                                if (pageWithCover)
+                                  const SizedBox(height: FlowUsPageHeader.titleTopAfterCover)
+                                else
+                                  const SizedBox(height: FlowUsPageHeader.entriesToTitleGap),
                                 FlowUsPageTitle(
                                   title: pageTitle ?? '',
                                   onChanged: onPageTitleChanged ?? (_) {},
