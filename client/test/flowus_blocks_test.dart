@@ -281,8 +281,8 @@ void main() {
       await db.close();
     });
 
-    test('schemaVersion = 8', () {
-      expect(db.schemaVersion, 8);
+    test('schemaVersion 已升到 9（M2-T23 又加了 coverKey 列）', () {
+      expect(db.schemaVersion, 9);
     });
 
     test('迁移把 v1 正文就地改成 v2，且内容不丢', () async {

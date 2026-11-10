@@ -140,8 +140,8 @@ class _ShellAppState extends State<ShellApp> {
     PageNode(id: 'p-linux', title: 'liunx命令'),
     PageNode(id: 'p-site', title: '网站'),
     PageNode(id: 'p-account', title: '账号'),
-    PageNode(id: 'p-gzh', title: '微信公众号剪藏'),
-    PageNode(id: 'p-webclip', title: '网页剪藏'),
+    PageNode(id: 'p-gzh', title: '微信公众号剪藏', icon: '📰'),
+    PageNode(id: 'p-webclip', title: '网页剪藏', icon: '✂️'),
     PageNode(id: 'p-archive', title: '归档历史材料'),
   ];
 
@@ -317,6 +317,7 @@ class _ShellAppState extends State<ShellApp> {
       pageTitle: _currentTitle,
       onPageTitleChanged: _onTitleChanged,
       onPageTitleSave: _onTitleSave,
+      pageIcon: (_find(_spacePages, _selectedId ?? '') ?? _find(_privatePages, _selectedId ?? ''))?.icon ?? '',
       pageContent: _content,
       onPageContentChanged: _onContentChanged,
       autoFocusPageBody: true, // 演示/截图：正文默认聚焦，可直接敲 "/" 看斜杠菜单

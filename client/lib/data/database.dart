@@ -22,7 +22,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   /// v7→v8 的数据迁移（M2-T01）：把 `pages.content` 从我们自己的 v1 格式
   /// （`{"v":1,"b":[{"t","x","i"}]}` 或更早的纯文本）就地改写成 **FlowUs 真实块结构**（v2）。
@@ -73,6 +73,10 @@ class AppDatabase extends _$AppDatabase {
           // v7→v8（M2-T01 文档模型对齐）：正文改存 FlowUs 真实块结构（v2），只改数据不改表
           if (from < 8) {
             await migrateContentToFlowUsBlocks();
+          }
+          // v8→v9（M2-T23 封面）：pages 加 coverKey 列（存资源 key，空 = 无封面）
+          if (from < 9) {
+            await m.addColumn(pages, pages.coverKey);
           }
         },
         beforeOpen: (details) async {
@@ -348,6 +352,12 @@ class AppDatabase extends _$AppDatabase {
   }
 
   /// 设置页面图标（emoji；空串=清除）。
+  /// 设置封面（资源 key；空串 = 移除封面）
+  Future<void> setPageCover(String id, String coverKey) {
+    return (update(pages)..where((t) => t.id.equals(id)))
+        .write(PagesCompanion(coverKey: Value(coverKey), updatedAt: Value(DateTime.now())));
+  }
+
   Future<void> setPageIcon(String id, String icon) {
     return (update(pages)..where((t) => t.id.equals(id)))
         .write(PagesCompanion(icon: Value(icon), updatedAt: Value(DateTime.now())));

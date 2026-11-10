@@ -17,6 +17,7 @@ class Pages extends Table {
   TextColumn get parentId => text().nullable()(); // 页面树（P2-T01 启用）
   TextColumn get type => text().withDefault(const Constant(PageTypes.page))(); // 页面类型（V2.1 ①）
   TextColumn get icon => text().withDefault(const Constant(''))(); // 页面图标（emoji，可空）
+  TextColumn get coverKey => text().withDefault(const Constant(''))(); // 封面（资源 key；空=无封面，见 基准-文档模型 §3 cover）
   TextColumn get title => text().withDefault(const Constant(''))();
   TextColumn get content => text().withDefault(const Constant(''))();
   IntColumn get sortKey => integer().withDefault(const Constant(0))();

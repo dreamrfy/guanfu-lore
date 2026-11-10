@@ -51,6 +51,8 @@ class PageNode {
     this.kind = PageKind.page,
     this.children = const [],
     this.expanded = true,
+    this.icon = '',
+    this.coverKey = '',
   });
 
   final String id;
@@ -58,18 +60,36 @@ class PageNode {
   final PageKind kind;
   final List<PageNode> children;
 
+  /// 页面图标（emoji；空 = 无图标 → 侧栏用类型图标顶着）——对齐 `pages.icon`
+  final String icon;
+
+  /// 封面资源 key（空 = 无封面）——对齐 `pages.coverKey`
+  final String coverKey;
+
+  bool get hasIcon => icon.isNotEmpty;
+  bool get hasCover => coverKey.isNotEmpty;
+
   /// 是否展开（展开/折叠的**交互**属于 M1-T04；本任务只按数据渲染）
   final bool expanded;
 
   bool get hasChildren => children.isNotEmpty;
 
-  PageNode copyWith({bool? expanded, String? title, PageKind? kind, List<PageNode>? children}) =>
+  PageNode copyWith({
+    bool? expanded,
+    String? title,
+    PageKind? kind,
+    List<PageNode>? children,
+    String? icon,
+    String? coverKey,
+  }) =>
       PageNode(
         id: id,
         title: title ?? this.title,
         kind: kind ?? this.kind,
         children: children ?? this.children,
         expanded: expanded ?? this.expanded,
+        icon: icon ?? this.icon,
+        coverKey: coverKey ?? this.coverKey,
       );
 }
 
@@ -440,6 +460,16 @@ class _PageItemState extends State<_PageItem> {
   Widget _buildIconSlot(FlowUsColors c) {
     const s = FlowUsLayout.sidebarPageIconSlot;
     if (!_hovered) {
+      // M2-T23：有 emoji 图标就显示 emoji（对齐 pages.icon）；emoji 字号未实测，先 16
+      if (widget.node.hasIcon) {
+        return SizedBox(
+          width: s,
+          height: s,
+          child: Center(
+            child: Text(widget.node.icon, style: const TextStyle(fontSize: 16, height: 1)),
+          ),
+        );
+      }
       return SizedBox(width: s, height: s, child: FlowUsSvgIcon(_iconName, size: 16, color: c.textTertiary));
     }
     return SizedBox(
@@ -776,8 +806,8 @@ class FlowUsShell extends StatelessWidget {
     this.pageContent = '',
     this.onPageContentChanged,
     this.autoFocusPageBody = false,
-    this.pageWithIcon = false,
-    this.pageWithCover = false,
+    this.pageIcon = '',
+    this.pageCoverKey = '',
     this.coverImage,
     this.onAddIcon,
     this.onAddCover,
@@ -818,9 +848,12 @@ class FlowUsShell extends StatelessWidget {
   /// 正文自动获得焦点（演示/截图用，便于直接敲 "/" 看斜杠菜单）
   final bool autoFocusPageBody;
 
-  /// 页面是否已有图标 / 封面（M2-T11）：决定两个入口是否显示
-  final bool pageWithIcon;
-  final bool pageWithCover;
+  /// 页面图标（emoji，空 = 无）与封面资源 key（空 = 无）——M2-T23 起由数据驱动
+  final String pageIcon;
+  final String pageCoverKey;
+
+  bool get pageWithIcon => pageIcon.isNotEmpty;
+  bool get pageWithCover => pageCoverKey.isNotEmpty;
   final ImageProvider? coverImage;
   final VoidCallback? onAddIcon;
   final VoidCallback? onAddCover;
@@ -892,26 +925,26 @@ class FlowUsShell extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               mainAxisSize: MainAxisSize.max,
                               children: [
-                                // 入口行（无封面时才有）：上方留 66（实测 48→114）
-                                if (!pageWithCover)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: FlowUsPageHeader.entriesTopInset),
-                                    child: Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: FlowUsPageHeaderEntries(
-                                        showIcon: !pageWithIcon,
-                                        showCover: !pageWithCover,
-                                        onAddIcon: onAddIcon,
-                                        onAddCover: onAddCover,
-                                        onAddComment: onAddComment,
-                                      ),
+                                // 入口行：无封面时距内容顶 66（实测 48→114）；有封面时距封面底 57（322→379）
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                    top: pageWithCover
+                                        ? FlowUsPageHeader.entriesTopAfterCover
+                                        : FlowUsPageHeader.entriesTopInset,
+                                  ),
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: FlowUsPageHeaderEntries(
+                                      // 有封面时两个「添加」都消失，只留「添加评论」（实测）
+                                      showIcon: !pageWithIcon && !pageWithCover,
+                                      showCover: !pageWithCover,
+                                      onAddIcon: onAddIcon,
+                                      onAddCover: onAddCover,
+                                      onAddComment: onAddComment,
                                     ),
                                   ),
-                                // 有封面时：标题距封面底 79（图标位）
-                                if (pageWithCover)
-                                  const SizedBox(height: FlowUsPageHeader.titleTopAfterCover)
-                                else
-                                  const SizedBox(height: FlowUsPageHeader.entriesToTitleGap),
+                                ),
+                                const SizedBox(height: FlowUsPageHeader.entriesToTitleGap),
                                 FlowUsPageTitle(
                                   title: pageTitle ?? '',
                                   onChanged: onPageTitleChanged ?? (_) {},

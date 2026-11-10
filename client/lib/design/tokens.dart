@@ -485,7 +485,10 @@ abstract final class FlowUsPageHeader {
   /// 入口行底（134）到标题顶（136）的距离 = 2
   static const double entriesToTitleGap = 2;
 
-  /// 有封面时：封面底（322）到标题顶（401）的距离 = 79（这一段是图标位）
+  /// 有封面时：封面底（322）到「添加评论」入口行（379）的距离 = 57
+  static const double entriesTopAfterCover = 57;
+
+  /// 有封面时：封面底（322）到标题顶（401）的距离 = 79（= 57 + 20 + 2）
   static const double titleTopAfterCover = 79;
 }
 

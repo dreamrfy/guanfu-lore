@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T05:55:34.949Z",
+  "updatedAt": "2026-11-10T06:05:06.598Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -501,6 +501,13 @@
       "startedAt": "2026-11-10T12:20:00.000Z",
       "finishedAt": "2026-11-10T05:55:34.949Z",
       "note": "封面全宽274+入口行14/20#BDBDBD/隔41/距顶66；7断言；选择器与数据接线拆M2-T23；308测试过"
+    },
+    {
+      "taskId": "M2-T23",
+      "status": "done",
+      "startedAt": "2026-11-10T13:05:00.000Z",
+      "finishedAt": "2026-11-10T06:05:06.598Z",
+      "note": "coverKey列(v9)+setPageCover+PageNode.icon/coverKey+侧栏emoji+入口数据驱动+有封面只剩添加评论；7断言，315测试过"
     }
   ],
   "blocked": [],
