@@ -13,6 +13,8 @@
 //      → 尺寸暂按内核默认，已在任务表标注。
 
 import 'package:appflowy_editor_ce/appflowy_editor_ce.dart';
+
+import 'code_block_component.dart';
 import 'package:flutter/material.dart';
 
 /// 实测「基础块」组的每一项（名字 + 快捷码），**含我们做不出来的那些**。
@@ -41,7 +43,7 @@ const List<SlashItemSpec> kBasicBlockSlashItems = [
   SlashItemSpec('分割线', 'fgx'),
   SlashItemSpec('引述文字', 'yswz'),
   SlashItemSpec('着重文字', 'zzwz', supported: false), // 内核无 callout
-  SlashItemSpec('代码片段', 'dmpd', supported: false), // 内核无代码块
+  SlashItemSpec('代码片段', 'dmpd'), // M2-T19：自写组件已挂上
   SlashItemSpec('数学公式', 'sxgs', supported: false),
   SlashItemSpec('思维导图', 'swdt', supported: false),
   SlashItemSpec('思维导图页面', 'swdtym', supported: false),
@@ -94,5 +96,6 @@ List<SelectionMenuItem> buildFlowUsSlashItems() {
     _item(name: '编号列表', code: 'bhlb', icon: Icons.format_list_numbered, node: () => numberedListNode()),
     _item(name: '分割线', code: 'fgx', icon: Icons.horizontal_rule, node: () => dividerNode()),
     _item(name: '引述文字', code: 'yswz', icon: Icons.format_quote, node: () => quoteNode()),
+    _item(name: '代码片段', code: 'dmpd', icon: Icons.code, node: () => codeNode()),
   ];
 }

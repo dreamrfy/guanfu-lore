@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T06:34:25.080Z",
+  "updatedAt": "2026-11-10T06:48:14.000Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -529,6 +529,13 @@
       "startedAt": "2026-11-10T14:20:00.000Z",
       "finishedAt": "2026-11-10T06:34:25.080Z",
       "note": "认领未开工（估算每类型约200行组件代码），恢复TODO"
+    },
+    {
+      "taskId": "M2-T19",
+      "status": "done-partial",
+      "startedAt": "2026-11-10T06:37:03.913Z",
+      "finishedAt": "2026-11-10T06:48:14.000Z",
+      "note": "代码块组件(等宽14/21+缩进25)已交,evidence M2-T19;剩余5类另开M2-T25"
     }
   ],
   "blocked": [],

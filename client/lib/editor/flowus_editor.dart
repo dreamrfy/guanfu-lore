@@ -5,6 +5,7 @@ import 'package:appflowy_editor_ce/appflowy_editor_ce.dart';
 import 'package:flutter/material.dart';
 
 import 'block_handle.dart';
+import 'code_block_component.dart';
 import 'inline_shortcuts.dart';
 import 'slash_menu.dart';
 
@@ -200,6 +201,10 @@ Map<String, BlockComponentBuilder> _buildBlockComponents(EditorStyle style) {
     ),
     QuoteBlockKeys.type: QuoteBlockComponentBuilder(
       configuration: conf.copyWith(placeholderText: (_) => '引用文字'),
+    ),
+    // M2-T19：内核没有代码块，这里挂自写的组件
+    CodeBlockKeys.type: CodeBlockComponentBuilder(
+      configuration: conf.copyWith(placeholderText: (_) => '代码片段'),
     ),
     TodoListBlockKeys.type: TodoListBlockComponentBuilder(
       configuration: conf.copyWith(placeholderText: (_) => '待办事项'),

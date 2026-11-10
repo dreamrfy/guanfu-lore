@@ -51,17 +51,17 @@ void main() {
       expect(kOtherSlashGroups['媒体']!.length, 8);
     });
 
-    test('本轮真能做的 10 项；做不了的 13 项显式标注（不静默丢）', () {
+    test('现在能做 11 项（M2-T19 加了代码块）；做不了的 12 项显式标注（不静默丢）', () {
       final supported = kBasicBlockSlashItems.where((e) => e.supported).map((e) => e.name).toList();
-      expect(supported, ['正文', '待办列表', '标题1', '标题2', '标题3', '标题4', '项目列表', '编号列表', '分割线', '引述文字']);
+      expect(supported, ['正文', '待办列表', '标题1', '标题2', '标题3', '标题4', '项目列表', '编号列表', '分割线', '引述文字', '代码片段']);
 
       final unsupported = kBasicBlockSlashItems.where((e) => !e.supported).map((e) => e.name).toList();
-      expect(unsupported.length, 13);
-      expect(unsupported, containsAll(['代码片段', '着重文字', '折叠列表', '简单表格', '页面', '数学公式']));
+      expect(unsupported.length, 12);
+      expect(unsupported, containsAll(['着重文字', '折叠列表', '简单表格', '页面', '数学公式']));
     });
 
-    test('菜单项数与可做项一致（10）', () {
-      expect(buildFlowUsSlashItems().length, 10);
+    test('菜单项数与可做项一致（11）', () {
+      expect(buildFlowUsSlashItems().length, 11);
     });
   });
 

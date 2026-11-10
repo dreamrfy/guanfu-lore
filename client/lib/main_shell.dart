@@ -137,7 +137,8 @@ class _ShellAppState extends State<ShellApp> {
   final Map<String, String> _savedTitles = {};
 
   /// 正文（M2-T20：appflowy 文档 JSON）。演示内容只用内核支持的块：
-  /// 标题1-3 / 段落 / 项目符号 / 编号 / 待办 / 引述 / 分割线（代码块等内核没有，见 M2-T19）
+  /// 标题1-3 / 段落 / 项目符号 / 编号 / 待办 / 引述 / 分割线 / 代码块
+  /// （代码块是 M2-T19 自写组件：内核 6.1.1 里没有）
   String _content = const JsonEncoderShim().convert(_demoDocument);
 
   static const Map<String, dynamic> _demoDocument = {
@@ -154,6 +155,12 @@ class _ShellAppState extends State<ShellApp> {
         {'type': 'todo_list', 'data': {'checked': false, 'delta': [{'insert': '待办项'}]}},
         {'type': 'quote', 'data': {'delta': [{'insert': '引述文字（16/26）'}]}},
         {'type': 'divider', 'data': {}},
+        {
+          'type': 'code',
+          'data': {
+            'delta': [{'insert': 'select * from pages where cover_key is not null;'}],
+          },
+        },
         {'type': 'paragraph', 'data': {'delta': [{'insert': '在这一行打 / 可以唤起斜杠菜单，选中文字按 Ctrl+B 加粗。'}]}},
       ],
     },
