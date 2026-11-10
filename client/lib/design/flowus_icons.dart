@@ -76,6 +76,7 @@ abstract final class FlowUsIc {
   static const String mail = 'IcMail';
   static const String markdown = 'IcMarkdown';
   static const String member = 'IcMember';
+  static const String menu = 'IcMenu';
   static const String menuNext = 'IcMenuNext';
   static const String mindmap = 'IcMindmap';
   static const String more = 'IcMore';
@@ -182,6 +183,7 @@ abstract final class FlowUsIc {
     'IcMail',
     'IcMarkdown',
     'IcMember',
+    'IcMenu',
     'IcMenuNext',
     'IcMindmap',
     'IcMore',

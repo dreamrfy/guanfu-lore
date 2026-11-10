@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 
 import 'design/tokens.dart';
 
+import 'page/page_menu.dart';
 import 'shell/flowus_shell.dart';
 import 'shell/flowus_tabbar.dart';
 import 'shell/flowus_trash_panel.dart';
@@ -36,6 +37,9 @@ class _ShellAppState extends State<ShellApp> {
   ];
   String? _activeTab = 't1';
   bool _trashOpen = false;
+
+  /// 页面右上「⋯」长面板（M2-T13）
+  bool _pageMenuOpen = false;
 
   /// 当前页标题（M2-T02）：主区输入框、侧栏页项、标签条三处同步
   String _currentTitle = '学习进度';
@@ -96,10 +100,15 @@ class _ShellAppState extends State<ShellApp> {
 
   void _onContentChanged(String json) => setState(() => _content = json);
 
-  /// 按 T 开关回收站浮层（只为截图用；真实入口在侧栏「回收站」）
+  /// 截图/演示用快捷键：T 开关回收站浮层、P 开关页面「⋯」长面板
+  /// （真实入口分别是侧栏「回收站」与右上工具栏的 ⋯）
   KeyEventResult _onKey(FocusNode node, KeyEvent event) {
     if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.keyT) {
       setState(() => _trashOpen = !_trashOpen);
+      return KeyEventResult.handled;
+    }
+    if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.keyP) {
+      setState(() => _pageMenuOpen = !_pageMenuOpen);
       return KeyEventResult.handled;
     }
     return KeyEventResult.ignored;
@@ -191,6 +200,17 @@ class _ShellAppState extends State<ShellApp> {
         child: Stack(
           children: [
             Positioned.fill(child: _buildShell(data)),
+            if (_pageMenuOpen)
+              Positioned(
+                right: 8,
+                top: FlowUsLayout.tabBarHeight,
+                child: FlowUsPageMenu(
+                  onItem: (item) {
+                    setState(() => _pageMenuOpen = false);
+                    _snack(context, '${item.label}（演示壳，未接动作）');
+                  },
+                ),
+              ),
             if (_trashOpen)
               // 回收站浮层（M1-T09）：实测是浮层不是页面
               Positioned.fill(
@@ -285,7 +305,13 @@ class _ShellAppState extends State<ShellApp> {
           _activeTab = id;
         }),
         onShare: () => _snack(context, '分享（演示壳）'),
-        onToolbarAction: (a) => _snack(context, '$a（演示壳）'),
+        onToolbarAction: (a) {
+          if (a == '页面菜单') {
+            setState(() => _pageMenuOpen = !_pageMenuOpen);
+            return;
+          }
+          _snack(context, '$a（演示壳）');
+        },
       ),
       activeQuickIconIndex: 0, // 演示态对齐真 FlowUs：首页高亮
       pageTitle: _currentTitle,

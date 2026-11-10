@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:appflowy_editor_ce/appflowy_editor_ce.dart';
 import 'package:flutter/material.dart';
 
+import 'block_handle.dart';
 import 'inline_shortcuts.dart';
 import 'slash_menu.dart';
 
@@ -135,6 +136,8 @@ class _FlowUsEditorState extends State<FlowUsEditor> {
       autoFocus: widget.autoFocus,
       shrinkWrap: widget.shrinkWrap,
       blockComponentBuilders: _buildBlockComponents(style),
+      // M2-T07：每个块套一层 hover 外壳（块手柄 + 「＋」）
+      blockWrapper: flowUsBlockWrapper,
       // 默认斜杠命令挂的是它自己的英文菜单；必须显式替换成我们的中文菜单项
       characterShortcutEvents: [
         customSlashCommand(buildFlowUsSlashItems()),
