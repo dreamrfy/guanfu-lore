@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'design/tokens.dart';
+import 'page/paragraph_block.dart';
 import 'shell/flowus_shell.dart';
 import 'shell/flowus_tabbar.dart';
 import 'shell/flowus_trash_panel.dart';
@@ -69,6 +70,24 @@ class _ShellAppState extends State<ShellApp> {
   }
 
   final Map<String, String> _savedTitles = {};
+
+  /// 正文段落（M2-T03 演示数据）
+  List<ParagraphData> _paragraphs = const [
+    ParagraphData(id: 'p1', text: '这是正文段落，字号 16、行内行高 26、块高 34、块间距 2。'),
+    ParagraphData(id: 'p2', text: '在这一段回车会新建一个空段落（空段落显示占位文案）。'),
+    ParagraphData(id: 'p3'),
+  ];
+
+  void _onParagraphChanged(String id, String text) {
+    setState(() => _paragraphs = [
+          for (final p in _paragraphs) p.id == id ? ParagraphData(id: id, text: text) : p,
+        ]);
+  }
+
+  void _onParagraphEnter(String id) {
+    _seq++;
+    setState(() => _paragraphs = insertParagraphAfter(_paragraphs, id, 'p-new-$_seq'));
+  }
 
   /// 按 T 开关回收站浮层（只为截图用；真实入口在侧栏「回收站」）
   KeyEventResult _onKey(FocusNode node, KeyEvent event) {
@@ -265,6 +284,9 @@ class _ShellAppState extends State<ShellApp> {
       pageTitle: _currentTitle,
       onPageTitleChanged: _onTitleChanged,
       onPageTitleSave: _onTitleSave,
+      paragraphs: _paragraphs,
+      onParagraphChanged: _onParagraphChanged,
+      onParagraphEnter: _onParagraphEnter,
       showFloatingButtons: true,
       onFloatingAiTap: () => _snack(context, 'FlowUs AI 面板属 M9'),
       onFloatingHelpTap: () => _snack(context, '帮助菜单（点右下帮助钮可开）'),

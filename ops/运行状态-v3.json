@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T04:01:38.891Z",
+  "updatedAt": "2026-11-10T04:12:02.140Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -424,6 +424,13 @@
       "startedAt": "2026-11-10T05:05:00.000Z",
       "finishedAt": "2026-11-10T04:01:38.891Z",
       "note": "page_title.dart 40/64/w600+占位grey3+防抖800ms；三处同步（主区/侧栏/标签）集成断言；248 测试全绿"
+    },
+    {
+      "taskId": "M2-T03",
+      "status": "done",
+      "startedAt": "2026-11-10T05:40:00.000Z",
+      "finishedAt": "2026-11-10T04:12:02.140Z",
+      "note": "段落块：16/26行内、块高34、间距2、占位grey3仅聚焦或单段时显示、Enter分段；9断言，257 测试全绿"
     }
   ],
   "blocked": [],

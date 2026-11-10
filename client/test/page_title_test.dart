@@ -111,14 +111,15 @@ void main() {
       await tester.pumpAndSettle();
 
       // 初始：主区标题 = 学习进度（演示壳默认），侧栏与标签条也有「学习进度」
-      expect(find.byType(TextField), findsOneWidget);
+      final titleField = find.descendant(of: find.byType(FlowUsPageTitle), matching: find.byType(TextField));
+      expect(titleField, findsOneWidget);
       expect(find.text('学习进度'), findsWidgets);
 
-      await tester.enterText(find.byType(TextField), '改过的标题');
+      await tester.enterText(titleField, '改过的标题');
       await tester.pumpAndSettle();
 
       // 主区
-      expect(tester.widget<TextField>(find.byType(TextField)).controller?.text, '改过的标题');
+      expect(tester.widget<TextField>(titleField).controller?.text, '改过的标题');
       // 侧栏页项 + 标签条 各自都有新标题（注意：find.text 也会命中 TextField 自己的 EditableText，
       // 所以按容器分别断言，而不是数总数）
       expect(

@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 
 import '../design/flowus_icons.dart';
 import '../page/page_title.dart';
+import '../page/paragraph_block.dart';
 import '../design/tokens.dart';
 import 'flowus_banner.dart';
 import 'flowus_floating.dart';
@@ -771,6 +772,9 @@ class FlowUsShell extends StatelessWidget {
     this.pageTitle,
     this.onPageTitleChanged,
     this.onPageTitleSave,
+    this.paragraphs = const [],
+    this.onParagraphChanged,
+    this.onParagraphEnter,
     this.showFloatingButtons = false,
     this.onFloatingAiTap,
     this.onFloatingHelpTap,
@@ -799,6 +803,13 @@ class FlowUsShell extends StatelessWidget {
 
   /// 防抖落库（null = 演示态不落库）
   final Future<void> Function(String title)? onPageTitleSave;
+
+  /// 正文段落（M2-T03）。空列表 = 不显示正文
+  final List<ParagraphData> paragraphs;
+  final void Function(String id, String text)? onParagraphChanged;
+
+  /// 某段回车 → 宿主插入新段
+  final void Function(String id)? onParagraphEnter;
 
   /// 侧栏图标行的激活态（M1-T16）：下标 0..4 表示当前所在路由，null = 无激活。
   /// 实测：在首页时第一格（首页）有浅灰圆角底块，其余格没有。
@@ -851,10 +862,22 @@ class FlowUsShell extends StatelessWidget {
                             top: 0,
                             width: FlowUsLayout.contentColumnWidth,
                             // M2-T02：真标题块（40/64/w600，空值显示灰色「无标题」占位）
-                            child: FlowUsPageTitle(
-                              title: pageTitle ?? '',
-                              onChanged: onPageTitleChanged ?? (_) {},
-                              onSave: onPageTitleSave,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                FlowUsPageTitle(
+                                  title: pageTitle ?? '',
+                                  onChanged: onPageTitleChanged ?? (_) {},
+                                  onSave: onPageTitleSave,
+                                ),
+                                if (paragraphs.isNotEmpty)
+                                  FlowUsParagraphList(
+                                    paragraphs: paragraphs,
+                                    onChanged: onParagraphChanged ?? (_, _) {},
+                                    onEnter: onParagraphEnter,
+                                  ),
+                              ],
                             ),
                           ),
                           // 右下角浮动圆钮（M1-T07）：浮层自己定位（钮距右 20 / 距底 86 与 40；菜单距底 84），
