@@ -1,5 +1,5 @@
 {
- "count": 103,
+ "count": 104,
  "icons": [
   {
    "name": "IcAdd",
@@ -975,6 +975,14 @@
    ],
    "renderedSize": "20x20",
    "note": "无 data-icon（按语义自命名）"
+  },
+  {
+   "name": "IcMenu",
+   "file": "IcMenu.svg",
+   "surfaces": [
+    "正文块 hover 手柄"
+   ],
+   "renderedSize": "16x16"
   }
  ]
 }
