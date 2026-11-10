@@ -20,7 +20,7 @@ import 'package:flutter/material.dart';
 
 import '../design/flowus_icons.dart';
 import '../page/page_title.dart';
-import '../page/blocks.dart';
+import '../page/page_body.dart';
 import '../design/tokens.dart';
 import 'flowus_banner.dart';
 import 'flowus_floating.dart';
@@ -772,9 +772,9 @@ class FlowUsShell extends StatelessWidget {
     this.pageTitle,
     this.onPageTitleChanged,
     this.onPageTitleSave,
-    this.blocks = const [],
-    this.onBlockChanged,
-    this.onBlockEnter,
+    this.pageContent = '',
+    this.onPageContentChanged,
+    this.autoFocusPageBody = false,
     this.showFloatingButtons = false,
     this.onFloatingAiTap,
     this.onFloatingHelpTap,
@@ -804,12 +804,12 @@ class FlowUsShell extends StatelessWidget {
   /// 防抖落库（null = 演示态不落库）
   final Future<void> Function(String title)? onPageTitleSave;
 
-  /// 正文块（M2-T03 段落 + M2-T04 各基础块）。空列表 = 不显示正文
-  final List<PageBlock> blocks;
-  final void Function(String id, String text)? onBlockChanged;
+  /// 页面正文（M2-T20 起统一用 appflowy 富文本内核）。空串 = 空文档
+  final String pageContent;
+  final ValueChanged<String>? onPageContentChanged;
 
-  /// 某块回车 → 宿主插入新块
-  final void Function(String id)? onBlockEnter;
+  /// 正文自动获得焦点（演示/截图用，便于直接敲 "/" 看斜杠菜单）
+  final bool autoFocusPageBody;
 
   /// 侧栏图标行的激活态（M1-T16）：下标 0..4 表示当前所在路由，null = 无激活。
   /// 实测：在首页时第一格（首页）有浅灰圆角底块，其余格没有。
@@ -860,23 +860,29 @@ class FlowUsShell extends StatelessWidget {
                             // Column 里、位于标签条/横幅**之下**，所以列内偏移就是 0。
                             // 实测：真 FlowUs 内容滚动容器 y=48（无横幅），见 docs/基准/证据/M1-T10/title-top.json
                             top: 0,
+                            bottom: 0, // 给下界：正文要在里面滚动（否则编辑器要无限高度）
                             width: FlowUsLayout.contentColumnWidth,
                             // M2-T02：真标题块（40/64/w600，空值显示灰色「无标题」占位）
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
-                              mainAxisSize: MainAxisSize.min,
+                              mainAxisSize: MainAxisSize.max,
                               children: [
                                 FlowUsPageTitle(
                                   title: pageTitle ?? '',
                                   onChanged: onPageTitleChanged ?? (_) {},
                                   onSave: onPageTitleSave,
                                 ),
-                                if (blocks.isNotEmpty)
-                                  FlowUsBlockList(
-                                    blocks: blocks,
-                                    onChanged: onBlockChanged ?? (_, _) {},
-                                    onEnter: onBlockEnter,
+                                // Margin：正文与标题之间留 8（标题块 64 高，正文首块自带 4 内边距）
+                                const SizedBox(height: 8),
+                                // 正文占满剩余高度、由编辑器自己滚（外层再套 ScrollView 会触发
+                                // appflowy overlay 的 "no offstage children" 断言）
+                                Expanded(
+                                  child: FlowUsPageBody(
+                                    content: pageContent,
+                                    onChanged: onPageContentChanged ?? (_) {},
+                                    autoFocus: autoFocusPageBody,
                                   ),
+                                ),
                               ],
                             ),
                           ),

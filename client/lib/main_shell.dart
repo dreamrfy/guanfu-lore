@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'design/tokens.dart';
-import 'page/blocks.dart';
+
 import 'shell/flowus_shell.dart';
 import 'shell/flowus_tabbar.dart';
 import 'shell/flowus_trash_panel.dart';
@@ -71,40 +71,30 @@ class _ShellAppState extends State<ShellApp> {
 
   final Map<String, String> _savedTitles = {};
 
-  /// 正文块（M2-T03 段落 + M2-T04 各基础块）演示数据：把每种块都摆一个，方便对照
-  List<PageBlock> _blocks = const [
-    PageBlock(id: 'b1', kind: PageBlockKind.heading1, level: 1, text: '标题一（30/45/w600，块高 57）'),
-    PageBlock(id: 'b2', kind: PageBlockKind.heading2, level: 2, text: '标题二（块高 52）'),
-    PageBlock(id: 'b3', kind: PageBlockKind.heading3, level: 3, text: '标题三（块高 34）'),
-    PageBlock(id: 'b4', kind: PageBlockKind.heading4, level: 4, text: '标题四（块高 31）'),
-    PageBlock(id: 'b5', kind: PageBlockKind.paragraph, text: '正文段落：16/26，块高 34，块间距 2。'),
-    PageBlock(id: 'b6', kind: PageBlockKind.bulleted, text: '项目符号项（块高 36，缩进 26）'),
-    PageBlock(id: 'b7', kind: PageBlockKind.numbered, text: '编号项一（块高 34）'),
-    PageBlock(id: 'b8', kind: PageBlockKind.numbered, text: '编号项二（序号自增）'),
-    PageBlock(id: 'b9', kind: PageBlockKind.todo, text: '待办项（复选框尺寸未实测）'),
-    PageBlock(id: 'b10', kind: PageBlockKind.quote, text: '引述文字：16/26，缩进 26（x=742）'),
-    PageBlock(id: 'b11', kind: PageBlockKind.divider, text: ''),
-    PageBlock(id: 'b12', kind: PageBlockKind.code, text: 'code_line = 14/21，缩进 26'),
-  ];
+  /// 正文（M2-T20：appflowy 文档 JSON）。演示内容只用内核支持的块：
+  /// 标题1-3 / 段落 / 项目符号 / 编号 / 待办 / 引述 / 分割线（代码块等内核没有，见 M2-T19）
+  String _content = const JsonEncoderShim().convert(_demoDocument);
 
-  void _onBlockChanged(String id, String text) {
-    setState(() => _blocks = [
-          for (final b in _blocks)
-            b.id == id
-                ? PageBlock(id: b.id, kind: b.kind, text: text, checked: b.checked, number: b.number, level: b.level)
-                : b,
-        ]);
-  }
+  static const Map<String, dynamic> _demoDocument = {
+    'document': {
+      'type': 'page',
+      'children': [
+        {'type': 'heading', 'data': {'level': 1, 'delta': [{'insert': '标题一（30/45/w600）'}]}},
+        {'type': 'heading', 'data': {'level': 2, 'delta': [{'insert': '标题二'}]}},
+        {'type': 'heading', 'data': {'level': 3, 'delta': [{'insert': '标题三'}]}},
+        {'type': 'paragraph', 'data': {'delta': [{'insert': '正文段落：16 / 26，块高 34，块间距 2。'}]}},
+        {'type': 'bulleted_list', 'data': {'delta': [{'insert': '项目符号项（缩进 26）'}]}},
+        {'type': 'numbered_list', 'data': {'delta': [{'insert': '编号项一'}]}},
+        {'type': 'numbered_list', 'data': {'delta': [{'insert': '编号项二（序号自增）'}]}},
+        {'type': 'todo_list', 'data': {'checked': false, 'delta': [{'insert': '待办项'}]}},
+        {'type': 'quote', 'data': {'delta': [{'insert': '引述文字（16/26）'}]}},
+        {'type': 'divider', 'data': {}},
+        {'type': 'paragraph', 'data': {'delta': [{'insert': '在这一行打 / 可以唤起斜杠菜单，选中文字按 Ctrl+B 加粗。'}]}},
+      ],
+    },
+  };
 
-  void _onBlockEnter(String id) {
-    _seq++;
-    final out = <PageBlock>[];
-    for (final b in _blocks) {
-      out.add(b);
-      if (b.id == id) out.add(PageBlock(id: 'b-new-$_seq', kind: PageBlockKind.paragraph));
-    }
-    setState(() => _blocks = out);
-  }
+  void _onContentChanged(String json) => setState(() => _content = json);
 
   /// 按 T 开关回收站浮层（只为截图用；真实入口在侧栏「回收站」）
   KeyEventResult _onKey(FocusNode node, KeyEvent event) {
@@ -301,11 +291,24 @@ class _ShellAppState extends State<ShellApp> {
       pageTitle: _currentTitle,
       onPageTitleChanged: _onTitleChanged,
       onPageTitleSave: _onTitleSave,
-      blocks: _blocks,
-      onBlockChanged: _onBlockChanged,
-      onBlockEnter: _onBlockEnter,
+      pageContent: _content,
+      onPageContentChanged: _onContentChanged,
+      autoFocusPageBody: true, // 演示/截图：正文默认聚焦，可直接敲 "/" 看斜杠菜单
       showFloatingButtons: true,
       onFloatingAiTap: () => _snack(context, 'FlowUs AI 面板属 M9'),
       onFloatingHelpTap: () => _snack(context, '帮助菜单（点右下帮助钮可开）'),
     );
+}
+
+/// 极简 JSON 编码（只用于把演示文档常量转成字符串；避免在极简场景引 dart:convert 的其它名字）
+class JsonEncoderShim {
+  const JsonEncoderShim();
+  String convert(Object? v) => _encode(v);
+  static String _encode(Object? v) {
+    if (v is String) return '"${v.replaceAll('"', r'\"')}"';
+    if (v is bool || v is num) return '$v';
+    if (v is List) return '[${v.map(_encode).join(',')}]';
+    if (v is Map) return '{${v.entries.map((e) => '"${e.key}":${_encode(e.value)}').join(',')}}';
+    return 'null';
+  }
 }

@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T05:02:46.642Z",
+  "updatedAt": "2026-11-10T05:12:28.084Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -466,6 +466,13 @@
       "startedAt": "2026-11-10T08:40:00.000Z",
       "finishedAt": "2026-11-10T05:02:46.642Z",
       "note": "斜杠菜单23项清单照抄+10项可做；发现正文两套实现（自研块 vs appflowy内核）→拆M2-T20；279通过1skip"
+    },
+    {
+      "taskId": "M2-T20",
+      "status": "done",
+      "startedAt": "2026-11-10T09:25:00.000Z",
+      "finishedAt": "2026-11-10T05:12:28.084Z",
+      "note": "正文收敛到 appflowy 内核：page_body + 壳层参数改名；踩两个坑(SingleChildScrollView/Positioned无下界)；真机截图取证；279测试过"
     }
   ],
   "blocked": [],

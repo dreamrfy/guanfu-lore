@@ -55,6 +55,7 @@ class FlowUsEditor extends StatefulWidget {
     required this.onChanged,
     this.autoFocus = false,
     this.readOnly = false,
+    this.shrinkWrap = false,
     this.onReady,
   });
 
@@ -62,6 +63,9 @@ class FlowUsEditor extends StatefulWidget {
   final ValueChanged<String> onChanged;
   final bool autoFocus;
   final bool readOnly;
+
+  /// 放在可滚动容器里时必须 true（否则要无限高度 → BoxConstraints 断言）
+  final bool shrinkWrap;
 
   /// 测试/诊断用：编辑器状态就绪后回调（可用来驱动文档操作）。
   final void Function(EditorState state)? onReady;
@@ -129,6 +133,7 @@ class _FlowUsEditorState extends State<FlowUsEditor> {
       editorStyle: style,
       editable: !widget.readOnly,
       autoFocus: widget.autoFocus,
+      shrinkWrap: widget.shrinkWrap,
       blockComponentBuilders: _buildBlockComponents(style),
       // 默认斜杠命令挂的是它自己的英文菜单；必须显式替换成我们的中文菜单项
       characterShortcutEvents: [
