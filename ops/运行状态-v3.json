@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T09:07:16.000Z",
+  "updatedAt": "2026-11-10T09:31:53.000Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -599,6 +599,20 @@
       "startedAt": "2026-11-10T08:57:17.000Z",
       "finishedAt": "2026-11-10T09:07:16.000Z",
       "note": "拖拽排序+2px指示线(控制器级测试通过);release端合成鼠标未触发、真机指示线未采到、长按未接→拆M2-T32"
+    },
+    {
+      "taskId": "M2-T28",
+      "status": "blocked",
+      "startedAt": "2026-11-10T09:17:21.000Z",
+      "finishedAt": "2026-11-10T09:31:53.000Z",
+      "note": "复验暴露release库打不开(迁移读空列);已修复(M2-T33);敲键复验留到下一轮"
+    },
+    {
+      "taskId": "M2-T33",
+      "status": "done-partial",
+      "startedAt": "2026-11-10T09:31:53.000Z",
+      "finishedAt": "2026-11-10T09:31:53.000Z",
+      "note": "修复:迁移改用customSelect只取id/content;加启动失败红条+TEMP日志;验证无横幅;回归待下轮"
     }
   ],
   "blocked": [],

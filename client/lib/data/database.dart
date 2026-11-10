@@ -29,13 +29,17 @@ class AppDatabase extends _$AppDatabase {
   ///
   /// 幂等：已经是 v2 的行、空正文跳过。**结构不变、只改数据**，所以不需要动表、不需要重跑 codegen。
   Future<void> migrateContentToFlowUsBlocks() async {
-    final rows = await select(pages).get();
+    // ⚠️ 这里不能用 select(pages).get()：迁移在 onUpgrade 里跑，而 v9 才加的 coverKey 列
+    // 还没建出来，生成的行映射会读不到该列（Null check operator used on a null value）→ 整库打不开。
+    // 只取当时一定存在的两列。
+    final rows = await customSelect('SELECT id, content FROM pages', readsFrom: {pages}).get();
     for (final row in rows) {
-      final content = row.content;
+      final content = row.read<String>('content');
+      final id = row.read<String>('id');
       if (content.trim().isEmpty) continue;
       if (FlowUsDocument.storedVersionOf(content) == FlowUsDocument.storedVersion) continue;
-      final doc = FlowUsDocument.fromLegacyContent(content, pageId: row.id);
-      await (update(pages)..where((t) => t.id.equals(row.id)))
+      final doc = FlowUsDocument.fromLegacyContent(content, pageId: id);
+      await (update(pages)..where((t) => t.id.equals(id)))
           .write(PagesCompanion(content: Value(doc.toStoredJson())));
     }
   }

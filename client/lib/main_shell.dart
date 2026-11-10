@@ -6,6 +6,8 @@
 // 跑法：flutter run -t lib/main_shell.dart -d windows
 //       flutter build windows --release -t lib/main_shell.dart --no-tree-shake-icons
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
@@ -57,9 +59,30 @@ class _ShellAppState extends State<ShellApp> {
     _bootstrap();
   }
 
+  /// 启动失败时的原因（release 里没有控制台，写到临时文件里便于排查）
+  String? _bootError;
+
   /// 打开库 → 取（或建）一页 → 接保存链 → 检查草稿
   Future<void> _bootstrap() async {
-    final db = widget.database ?? AppDatabase();
+    if (widget.database == null) {
+      try {
+        await _bootstrapReal();
+} catch (e, st) {
+        _bootError = e.toString();
+        try {
+          final f = File('${Directory.systemTemp.path}${Platform.pathSeparator}bijiapp-boot.log');
+          await f.writeAsString('BOOT ERROR\n$e\n$st');
+        } catch (_) {}
+        if (mounted) setState(() {});
+      }
+      return;
+    }
+    await _bootstrapWith(widget.database!);
+  }
+
+  Future<void> _bootstrapReal() async => _bootstrapWith(AppDatabase());
+
+  Future<void> _bootstrapWith(AppDatabase db) async {
     final pages = await db.listAllActive();
     final page = pages.isEmpty ? await db.createPage(title: '学习进度', content: _content) : pages.first;
     final pipe = PageSavePipeline(db: db, pageId: page.id);
@@ -276,6 +299,21 @@ class _ShellAppState extends State<ShellApp> {
         child: Stack(
           children: [
             Positioned.fill(child: _buildShell(data)),
+            // 启动失败横幅（诊断用）：release 没控制台，把异常直接显示出来
+            if (_bootError != null)
+              Positioned(
+                left: 0,
+                right: 0,
+                top: FlowUsLayout.tabBarHeight,
+                child: Container(
+                  color: const Color(0xFFFFE5E5),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: Text('数据库打不开：$_bootError',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 12, color: Color(0xFFB42318))),
+                ),
+              ),
             // 崩溃恢复横幅（M2-T15 装配演示）：文案是占位，真 FlowUs 的提示形态未采（见任务表）
             if (_hasRecoverableDraft)
               Positioned(
