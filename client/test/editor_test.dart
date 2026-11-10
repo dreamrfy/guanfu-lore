@@ -144,17 +144,18 @@ void main() {
       final field = find.byType(TextField).first;
       await tester.enterText(field, '- ');
       await tester.pumpAndSettle();
-      expect(fired.last, contains('"t":"bullet"'), reason: fired.last);
+      expect(decodeBlocks(fired.last).single.type, BlockType.bullet, reason: fired.last);
       expect(tester.widget<TextField>(field).controller!.text, '',
           reason: '触发词不应残留在输入框（显示层与块模型一致）');
       await tester.enterText(field, '# ');
       await tester.pumpAndSettle();
-      expect(fired.last, contains('"t":"h1"'), reason: fired.last);
+      expect(decodeBlocks(fired.last).single.type, BlockType.h1, reason: fired.last);
       expect(tester.widget<TextField>(field).controller!.text, '');
       await tester.enterText(field, '[x] ');
       await tester.pumpAndSettle();
-      expect(fired.last, contains('"t":"todo"'), reason: fired.last);
-      expect(fired.last, contains('"d":true'), reason: fired.last);
+      final todo = decodeBlocks(fired.last).single;
+      expect(todo.type, BlockType.todo, reason: fired.last);
+      expect(todo.checked, true, reason: fired.last);
       expect(tester.widget<TextField>(field).controller!.text, '');
     });
 
@@ -170,8 +171,9 @@ void main() {
       expect(find.text('块操作'), findsOneWidget, reason: '输入 / 应弹出块菜单');
       await tester.tap(find.text('引用'));
       await tester.pumpAndSettle();
-      expect(fired.last, contains('"t":"quote"'), reason: fired.last);
-      expect(fired.last, isNot(contains('/')), reason: '唤起符不留在正文');
+      expect(decodeBlocks(fired.last).single.type, BlockType.quote, reason: fired.last);
+      expect(decodeBlocks(fired.last).every((b) => !b.text.contains('/')), true,
+          reason: '唤起符不留在正文');
     });
   });
 }

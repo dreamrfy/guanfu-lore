@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'asset_store_common.dart' show StoredAsset;
+import 'flowus_blocks.dart';
 import 'ids.dart';
 import 'assets_table.dart';
 import 'pages_table.dart';
@@ -21,7 +22,23 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
+
+  /// v7→v8 的数据迁移（M2-T01）：把 `pages.content` 从我们自己的 v1 格式
+  /// （`{"v":1,"b":[{"t","x","i"}]}` 或更早的纯文本）就地改写成 **FlowUs 真实块结构**（v2）。
+  ///
+  /// 幂等：已经是 v2 的行、空正文跳过。**结构不变、只改数据**，所以不需要动表、不需要重跑 codegen。
+  Future<void> migrateContentToFlowUsBlocks() async {
+    final rows = await select(pages).get();
+    for (final row in rows) {
+      final content = row.content;
+      if (content.trim().isEmpty) continue;
+      if (FlowUsDocument.storedVersionOf(content) == FlowUsDocument.storedVersion) continue;
+      final doc = FlowUsDocument.fromLegacyContent(content, pageId: row.id);
+      await (update(pages)..where((t) => t.id.equals(row.id)))
+          .write(PagesCompanion(content: Value(doc.toStoredJson())));
+    }
+  }
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -52,6 +69,10 @@ class AppDatabase extends _$AppDatabase {
           // v6→v7（视觉对齐）：pages 加 icon 列（emoji 图标）
           if (from < 7) {
             await m.addColumn(pages, pages.icon);
+          }
+          // v7→v8（M2-T01 文档模型对齐）：正文改存 FlowUs 真实块结构（v2），只改数据不改表
+          if (from < 8) {
+            await migrateContentToFlowUsBlocks();
           }
         },
         beforeOpen: (details) async {

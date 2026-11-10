@@ -1,4 +1,4 @@
-import 'dart:convert';
+import '../data/flowus_blocks.dart';
 
 /// 编辑器块类型（P2-T03 范围：标题/段落/引用/勾选/无序列表/分割线；加粗为段落内行内标记）。
 enum BlockType { p, h1, quote, todo, bullet, divider }
@@ -9,18 +9,28 @@ BlockType blockTypeOf(String s) => BlockType.values.firstWhere(
     );
 
 class BlockData {
-  BlockData({required this.id, required this.type, required this.text, this.checked = false});
+  BlockData({
+    required this.id,
+    required this.type,
+    required this.text,
+    this.checked = false,
+    this.level,
+  });
 
   final String id; // 稳定块 ID（控制器/焦点按它复用，光标不跳的关键）
   BlockType type;
   String text;
   bool checked; // 仅 todo 用
 
-  BlockData copy({BlockType? type, String? text, bool? checked}) => BlockData(
+  /// 标题级别（M2-T01：从 FlowUs 的 `data.level` 读出来，1–4；旧 6 类编辑器只用 h1=1）
+  int? level;
+
+  BlockData copy({BlockType? type, String? text, bool? checked, int? level}) => BlockData(
         id: id,
         type: type ?? this.type,
         text: text ?? this.text,
         checked: checked ?? this.checked,
+        level: level ?? this.level,
       );
 }
 
@@ -32,52 +42,91 @@ String _rnd() {
   return _seed.toRadixString(36).padLeft(2, '0');
 }
 
-/// —— 序列化：正文列存 JSON（v1）；旧纯文本自动兼容（按行转段落）——
+/// —— 序列化：正文列改存 **FlowUs 真实块结构**（M2-T01 起，v2）——
+///
+/// v2 形状 = 真 FlowUs 的 blocks 对象（以 uuid 为键 + `parentId`/`subNodes` + `data.segments`），
+/// 定义在 `lib/data/flowus_blocks.dart`。旧格式 `{v:1,b:[…]}` 与更早的纯文本仍能读。
+///
+/// ⚠️ **已知限制**：这个旧编辑器只有 6 类块、没有行内样式，所以 v2 → BlockData → v2 会丢
+/// `enhancer`（加粗/斜体等）。当前库里不存在带样式的页面（旧格式从来没存过样式），
+/// 真编辑器（M2-T05）上线后这条限制消失。
 
-String encodeBlocks(List<BlockData> blocks) {
-  return jsonEncode({
-    'v': 1,
-    'b': [
-      for (final b in blocks)
-        {
-          't': b.type.name,
-          'x': b.text,
-          if (b.type == BlockType.todo) 'd': b.checked,
-          'i': b.id,
-        }
-    ],
-  });
+const String kLocalRootBlockId = 'local-root';
+
+String encodeBlocks(List<BlockData> blocks, {String rootId = kLocalRootBlockId}) {
+  final doc = FlowUsDocument(rootId: rootId);
+  doc.blocks[rootId] = FlowUsBlock(
+    uuid: rootId,
+    rawType: FlowUsBlockType.page.code,
+    data: {
+      'segments': <Object?>[],
+      'pageFixedWidth': false,
+    },
+  );
+  for (final b in blocks) {
+    final code = _codeOf(b.type);
+    doc.appendChild(
+      rootId,
+      FlowUsBlock(
+        uuid: b.id,
+        rawType: code,
+        data: {
+          if (code != FlowUsBlockType.divider.code)
+            'segments': [FlowUsSegment.plain(b.text).toJson()],
+          if (b.type == BlockType.h1) 'level': b.level ?? 1,
+          if (b.type == BlockType.todo) 'checked': b.checked,
+        },
+      ),
+    );
+  }
+  return doc.toStoredJson();
 }
 
+int _codeOf(BlockType t) => switch (t) {
+      BlockType.p => FlowUsBlockType.paragraph.code,
+      BlockType.h1 => FlowUsBlockType.heading.code,
+      BlockType.quote => FlowUsBlockType.quote.code,
+      BlockType.todo => FlowUsBlockType.todo.code,
+      BlockType.bullet => FlowUsBlockType.bulletedList.code,
+      BlockType.divider => FlowUsBlockType.divider.code,
+    };
+
+/// 数字码 → 旧编辑器的 6 类块（认得的降到最近的一档，不丢文字；不认识的当段落）
+BlockType _blockTypeOfCode(int code) => switch (FlowUsBlockType.fromCode(code)) {
+      FlowUsBlockType.heading || FlowUsBlockType.toggleHeading => BlockType.h1,
+      FlowUsBlockType.quote => BlockType.quote,
+      FlowUsBlockType.todo => BlockType.todo,
+      FlowUsBlockType.bulletedList ||
+      FlowUsBlockType.numberedList ||
+      FlowUsBlockType.toggleList =>
+        BlockType.bullet,
+      FlowUsBlockType.divider => BlockType.divider,
+      _ => BlockType.p,
+    };
+
+BlockData _emptyBlock({String text = ''}) =>
+    BlockData(id: newBlockId(), type: BlockType.p, text: text);
+
 List<BlockData> decodeBlocks(String content) {
-  if (content.isEmpty) {
-    return [BlockData(id: newBlockId(), type: BlockType.p, text: '')];
-  }
-  if (!content.startsWith('{"v":')) {
-    // 旧版纯文本：非空行转段落
-    return [
-      for (final line in content.split('\n'))
-        if (line.trim().isNotEmpty)
-          BlockData(id: newBlockId(), type: BlockType.p, text: line)
-    ];
-  }
+  if (content.trim().isEmpty) return [_emptyBlock()];
   try {
-    final map = jsonDecode(content) as Map<String, dynamic>;
-    final list = (map['b'] as List).cast<Map<String, dynamic>>();
+    final version = FlowUsDocument.storedVersionOf(content);
+    final doc = version == FlowUsDocument.storedVersion
+        ? FlowUsDocument.fromStoredJson(content)
+        : FlowUsDocument.fromLegacyContent(content, pageId: kLocalRootBlockId);
     final blocks = [
-      for (final e in list)
+      for (final child in doc.childrenOf(doc.rootId))
         BlockData(
-          id: (e['i'] as String?) ?? newBlockId(),
-          type: blockTypeOf(e['t'] as String? ?? 'p'),
-          text: e['x'] as String? ?? '',
-          checked: e['d'] == true,
+          id: child.uuid,
+          type: _blockTypeOfCode(child.rawType),
+          text: child.plainText,
+          checked: child.data['checked'] == true,
+          level: child.headingLevel,
         ),
     ];
-    return blocks.isEmpty
-        ? [BlockData(id: newBlockId(), type: BlockType.p, text: '')]
-        : blocks;
+    return blocks.isEmpty ? [_emptyBlock()] : blocks;
   } catch (_) {
-    return [BlockData(id: newBlockId(), type: BlockType.p, text: content)];
+    return [_emptyBlock(text: content)];
   }
 }
 

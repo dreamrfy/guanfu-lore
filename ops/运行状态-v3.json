@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T00:41:36.199Z",
+  "updatedAt": "2026-11-10T00:54:52.572Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -293,6 +293,13 @@
       "startedAt": "2026-11-10T00:27:18.221Z",
       "finishedAt": "2026-11-10T00:40:40.365Z",
       "note": "页面树：PageNode 树模型+展开摊平；缩进20/级、行恒 8/211/32、三态+悬停图标槽替换（叶子圆点/有子页箭头）+⋯@166＋@190；105 测试全绿、analyze 0；证据 docs/基准/证据/M1-T03/。注意：上一轮记了账但代码没落地，本轮补齐"
+    },
+    {
+      "taskId": "M2-T01",
+      "status": "done",
+      "startedAt": "2026-11-10T00:47:00.000Z",
+      "finishedAt": "2026-11-10T00:54:52.572Z",
+      "note": "FlowUs 块模型 Dart 镜像 + 正文序列化 v1→v2 + DB v7→v8 幂等迁移；20 断言/全量 125 全绿；证据 docs/基准/证据/M2-T01"
     }
   ],
   "blocked": [],
