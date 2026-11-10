@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T04:40:34.677Z",
+  "updatedAt": "2026-11-10T04:54:40.021Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -452,6 +452,13 @@
       "startedAt": "2026-11-10T07:15:00.000Z",
       "finishedAt": "2026-11-10T04:40:34.677Z",
       "note": "行内样式改实测值(16/26/#37352F/w600/行内码底色)；发现内核无内置行内快捷键→拆M2-T18；271 通过 1 skip"
+    },
+    {
+      "taskId": "M2-T18",
+      "status": "done",
+      "startedAt": "2026-11-10T07:55:00.000Z",
+      "finishedAt": "2026-11-10T04:54:40.021Z",
+      "note": "formatDelta+CommandShortcutEvent 接上5条行内快捷键(toggle)；加粗键位官方页确认，其余待实测；9断言，275全绿"
     }
   ],
   "blocked": [],

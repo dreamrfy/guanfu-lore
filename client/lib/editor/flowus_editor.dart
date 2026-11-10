@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'package:appflowy_editor_ce/appflowy_editor_ce.dart';
 import 'package:flutter/material.dart';
 
+import 'inline_shortcuts.dart';
+
 /// 路线 A：新块编辑器（appflowy_editor 内核 + FlowUs 风格外观与中文菜单）。
 ///
 /// 数据格式（pages.content）：
@@ -132,6 +134,11 @@ class _FlowUsEditorState extends State<FlowUsEditor> {
         customSlashCommand(_buildSelectionMenuItems()),
         ...standardCharacterShortcutEvents
             .where((e) => e.key != 'show the slash menu'),
+      ],
+      // M2-T18：内核没有行内样式快捷键，这里注册我们自己的（加粗键位已实测）
+      commandShortcutEvents: [
+        ...flowUsInlineShortcuts,
+        ...standardCommandShortcutEvents,
       ],
     );
   }

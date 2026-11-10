@@ -157,12 +157,63 @@ void main() {
     });
   });
 
-  group('快捷键（本轮实测：内核没有内置，缺口已拆 M2-T18）', () {
-    test('appflowy_editor_ce 6.1.1 的行内快捷键：包内只有 character shortcut（Markdown 转换）与 slash command', () {
-      // 这不是"猜"：翻包源码 shortcuts/ 目录下只有 character/ 与 command/ 两类，
-      // 没有 Ctrl+B / Ctrl+I / Ctrl+U / Ctrl+E 这类行内样式 handler，且 _toggleAttribute 是私有的。
-      // 所以"快捷键"这部分本轮做不了 → 已拆 M2-T18（先探 API，再接 keyEventHandlers 或加工具栏）。
-      expect(true, isTrue);
-    }, skip: '内核无内置行内快捷键；补齐见 M2-T18');
+  group('快捷键（M2-T18：我们自己注册的 CommandShortcutEvent）', () {
+    Future<EditorState> pumpEditor(WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      late EditorState state;
+      // 用 JSON 直接造一段两个字的正文，再用 API 选中它（不走 enterText，避免依赖 EditableText 定位）
+      const doc = '{"document":{"type":"page","children":[{"type":"paragraph","data":{"delta":[{"insert":"文字"}]}}]}}';
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 708,
+            child: FlowUsEditor(initialContent: doc, onChanged: (_) {}, autoFocus: true, onReady: (s) => state = s),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+      state.selection = Selection.single(path: [0], startOffset: 0, endOffset: 2);
+      await tester.pumpAndSettle();
+      return state;
+    }
+
+    Future<void> pressCtrl(WidgetTester tester, LogicalKeyboardKey key) async {
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      await tester.sendKeyEvent(key);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('Ctrl+B 加粗；再按一次取消（toggle）', (tester) async {
+      final state = await pumpEditor(tester);
+      await pressCtrl(tester, LogicalKeyboardKey.keyB);
+      var json = contentFromDocument(state.document);
+      expect(json, contains('"bold"'), reason: 'Ctrl+B 应写入 bold；实际：$json');
+
+      await pressCtrl(tester, LogicalKeyboardKey.keyB);
+      json = contentFromDocument(state.document);
+      expect(json.contains('"bold":true'), isFalse, reason: '再按一次应取消加粗；实际：$json');
+    });
+
+    testWidgets('Ctrl+I 斜体', (tester) async {
+      final state = await pumpEditor(tester);
+      await pressCtrl(tester, LogicalKeyboardKey.keyI);
+      expect(contentFromDocument(state.document), contains('"italic"'));
+    });
+
+    testWidgets('Ctrl+U 下划线', (tester) async {
+      final state = await pumpEditor(tester);
+      await pressCtrl(tester, LogicalKeyboardKey.keyU);
+      expect(contentFromDocument(state.document), contains('"underline"'));
+    });
+
+    testWidgets('Ctrl+E 行内代码', (tester) async {
+      final state = await pumpEditor(tester);
+      await pressCtrl(tester, LogicalKeyboardKey.keyE);
+      expect(contentFromDocument(state.document), contains('"code"'));
+    });
   });
 }
