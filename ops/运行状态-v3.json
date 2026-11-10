@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T01:33:56.541Z",
+  "updatedAt": "2026-11-10T01:37:00.940Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -17,7 +17,16 @@
     "probeCount": 36,
     "lastProbeAt": "2026-11-10T00:00:44.504Z"
   },
-  "running": [],
+  "running": [
+    {
+      "taskId": "M1-T07",
+      "sessionId": "run-1794274620",
+      "module": "M1",
+      "startedAt": "2026-11-10T01:37:00.940Z",
+      "estimateMin": 40,
+      "probes": 0
+    }
+  ],
   "history": [
     {
       "taskId": "M0-T01",
@@ -333,6 +342,13 @@
       "startedAt": "2026-11-10T05:25:00.000Z",
       "finishedAt": "2026-11-10T06:00:00.000Z",
       "note": "系统横幅+删除横幅（红底取色#CB4042）；8断言全绿182无回归"
+    },
+    {
+      "taskId": "M1-T07",
+      "status": "done",
+      "startedAt": "2026-11-10T06:05:00.000Z",
+      "finishedAt": "2026-11-10T06:30:00.000Z",
+      "note": "浮动圆钮两钮36全圆右下40/40；悬停/展开面板未采到留回调；2断言全绿"
     }
   ],
   "blocked": [],
