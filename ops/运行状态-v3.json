@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T01:06:35.680Z",
+  "updatedAt": "2026-11-10T01:09:33.915Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -17,16 +17,7 @@
     "probeCount": 36,
     "lastProbeAt": "2026-11-10T00:00:44.504Z"
   },
-  "running": [
-    {
-      "taskId": "M4-T01",
-      "sessionId": "run-1794272795",
-      "module": "M4",
-      "startedAt": "2026-11-10T01:06:35.680Z",
-      "estimateMin": 50,
-      "probes": 0
-    }
-  ],
+  "running": [],
   "history": [
     {
       "taskId": "M0-T01",
@@ -314,6 +305,13 @@
       "startedAt": "2026-11-10T03:10:00.000Z",
       "finishedAt": "2026-11-10T04:20:00.000Z",
       "note": "五回调接线+8项菜单面板+右键同款；28断言全绿134无回归；余项（分区头整行hover/菜单跟随定位）转M1-T05后校"
+    },
+    {
+      "taskId": "M4-T01",
+      "status": "done",
+      "startedAt": "2026-11-10T01:12:00.000Z",
+      "finishedAt": "2026-11-10T01:09:33.915Z",
+      "note": "flowus_table.dart：字段19码/视图7种/记录=页面块/schema顺序/幂等序列化；16 断言，全量150绿，analyze 0；证据 docs/基准/证据/M4-T01"
     }
   ],
   "blocked": [],
