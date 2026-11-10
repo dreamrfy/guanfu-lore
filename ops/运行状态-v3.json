@@ -8,7 +8,7 @@
     "maxToolCallsPerSession": 60
   },
   "lockDir": "ops/锁",
-  "updatedAt": "2026-11-10T01:06:01.765Z",
+  "updatedAt": "2026-11-10T01:06:35.680Z",
   "runtime": {
     "startedAt": "2026-11-10T01:56:00+08:00",
     "stoppedAt": null,
@@ -19,11 +19,11 @@
   },
   "running": [
     {
-      "taskId": "M1-T04",
-      "sessionId": "manual-continue",
-      "module": "M1",
-      "startedAt": "2026-11-10T00:40:00.000Z",
-      "estimateMin": 45,
+      "taskId": "M4-T01",
+      "sessionId": "run-1794272795",
+      "module": "M4",
+      "startedAt": "2026-11-10T01:06:35.680Z",
+      "estimateMin": 50,
       "probes": 0
     }
   ],
@@ -307,6 +307,13 @@
       "startedAt": "2026-11-10T00:56:00.000Z",
       "finishedAt": "2026-11-10T01:06:01.765Z",
       "note": "签名取件码核心 + 闸门 + CLI + 34 断言；botocore 逐字节比对通过；真实链路因本机 R2 DNS 污染未验证 → 拆 M3-T09"
+    },
+    {
+      "taskId": "M1-T04",
+      "status": "done",
+      "startedAt": "2026-11-10T03:10:00.000Z",
+      "finishedAt": "2026-11-10T04:20:00.000Z",
+      "note": "五回调接线+8项菜单面板+右键同款；28断言全绿134无回归；余项（分区头整行hover/菜单跟随定位）转M1-T05后校"
     }
   ],
   "blocked": [],
