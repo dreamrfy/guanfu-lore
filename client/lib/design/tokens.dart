@@ -30,6 +30,16 @@ abstract final class FlowUsLayout {
   /// 标签条高
   static const double tabBarHeight = 48;
 
+  /// 标签条内部（M1-T05 补采，证据 M1-T05/toolbar.json）
+  static const double tabBarPaddingH = 16; // px-4（左 244 = 228+16 / 右缘 1904 = 1920−16）
+  static const double tabBarTabHeight = 32; // 标签高
+  static const double tabBarTabMarginH = 8; // mx-2（首标签 x=252 = 244+8）
+  static const double tabBarTabPadding = 4; // p-1（文字到标签边）
+  static const double tabBarTabMaxTextWidth = 166; // max-w-[166px]
+  static const double toolbarButtonSize = 28; // 图标钮 28×28
+  static const double toolbarGap = 8; // 工具条元素间距（全 8）
+  static const double toolbarShareWidth = 44; // 分享钮 44×32
+
   /// 系统横幅（容量提示等）高
   static const double bannerHeight = 44;
 
@@ -269,7 +279,13 @@ abstract final class FlowUsComponents {
   static const double buttonSmallHeight = 28; // 提示条按钮 / 顶栏工具钮
   static const double toolButtonSize = 28;
   static const double toolButtonIconSize = 20;
+
+  /// ⚠️ 历史遗留：M0-T05 曾把右上工具条间距记为 36，M1-T05 现场复测**全 8**
+  /// （分享 44 → 评论 28 → 快速访问 28 → ⋯ 28 → 分隔线 1 → 搜索 28，六元素 gap 全 8）。
+  /// 本常量已不再被工具条使用；保留是为防其它旧引用，M1 收口时删除。
+  @Deprecated('工具条间距实测是 8（toolbarGap），不是 36')
   static const double toolButtonGap = 36;
+
   static const double inlineIconButton = 20; // 侧栏行内 ⋯ / ＋
   static const double floatingButton = 36; // 右下角圆形浮动钮
 

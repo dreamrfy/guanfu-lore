@@ -19,6 +19,7 @@
 import 'package:flutter/material.dart';
 
 import '../design/tokens.dart';
+import 'flowus_tabbar.dart';
 
 /// 侧栏页项 ⋯/右键菜单的 8 项（实测顺序，分隔线在第 1 项与第 6 项「删除」之后）
 const List<String> kSidebarItemMenuActions = [
@@ -708,11 +709,24 @@ class _CapacityCard extends StatelessWidget {
   }
 }
 
-/// 外壳：侧栏 + 主区占位（主区详细结构在 M1-T05；本轮只为了能看到侧栏在正确位置）
+/// 外壳：侧栏 + 标签条 + 主区（M1-T05 起带标签条；主区正文仍是占位）
 class FlowUsShell extends StatelessWidget {
-  const FlowUsShell({super.key, required this.data, this.callbacks});
+  const FlowUsShell({
+    super.key,
+    required this.data,
+    this.callbacks,
+    this.tabs = const [],
+    this.activeTabId,
+    this.tabBarCallbacks,
+  });
+
   final SidebarData data;
   final SidebarCallbacks? callbacks;
+
+  /// 标签条（M1-T05）。空列表 = 不显示标签（保持旧测试的单侧栏布局）
+  final List<FlowUsTab> tabs;
+  final String? activeTabId;
+  final TabBarCallbacks? tabBarCallbacks;
 
   @override
   Widget build(BuildContext context) {
@@ -724,25 +738,34 @@ class FlowUsShell extends StatelessWidget {
         children: [
           FlowUsSidebar(data: data, callbacks: callbacks),
           Expanded(
-            child: LayoutBuilder(
-              builder: (ctx, box) {
-                // 内容列固定 708、在主区内水平居中（面向 M1-T05 的骨架先摆好）
-                final left = (box.maxWidth - FlowUsLayout.contentColumnWidth) / 2;
-                return Stack(
-                  children: [
-                    Positioned(
-                      left: left, top: FlowUsLayout.contentTopWithoutBanner,
-                      width: FlowUsLayout.contentColumnWidth,
-                      child: Text('无标题',
-                          style: TextStyle(
-                              fontSize: FlowUsTypography.pageTitle.fontSize,
-                              height: FlowUsTypography.pageTitle.height,
-                              fontWeight: FlowUsTypography.pageTitle.fontWeight,
-                              color: c.textTertiary)),
-                    ),
-                  ],
-                );
-              },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (tabs.isNotEmpty)
+                  FlowUsTabBar(tabs: tabs, activeTabId: activeTabId, callbacks: tabBarCallbacks),
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (ctx, box) {
+                      // 内容列固定 708、在主区内水平居中（面向 M1-T05 的骨架先摆好）
+                      final left = (box.maxWidth - FlowUsLayout.contentColumnWidth) / 2;
+                      return Stack(
+                        children: [
+                          Positioned(
+                            left: left, top: FlowUsLayout.contentTopWithoutBanner,
+                            width: FlowUsLayout.contentColumnWidth,
+                            child: Text('无标题',
+                                style: TextStyle(
+                                    fontSize: FlowUsTypography.pageTitle.fontSize,
+                                    height: FlowUsTypography.pageTitle.height,
+                                    fontWeight: FlowUsTypography.pageTitle.fontWeight,
+                                    color: c.textTertiary)),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         ],
