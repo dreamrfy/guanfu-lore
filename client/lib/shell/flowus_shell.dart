@@ -19,6 +19,7 @@
 import 'package:flutter/material.dart';
 
 import '../design/tokens.dart';
+import 'flowus_banner.dart';
 import 'flowus_tabbar.dart';
 
 /// 侧栏页项 ⋯/右键菜单的 8 项（实测顺序，分隔线在第 1 项与第 6 项「删除」之后）
@@ -709,7 +710,7 @@ class _CapacityCard extends StatelessWidget {
   }
 }
 
-/// 外壳：侧栏 + 标签条 + 主区（M1-T05 起带标签条；主区正文仍是占位）
+/// 外壳：侧栏 + 标签条 + 横幅 + 主区（M1-T05 标签条 / M1-T06 横幅）
 class FlowUsShell extends StatelessWidget {
   const FlowUsShell({
     super.key,
@@ -718,6 +719,11 @@ class FlowUsShell extends StatelessWidget {
     this.tabs = const [],
     this.activeTabId,
     this.tabBarCallbacks,
+    this.systemBannerText,
+    this.onSystemBannerClose,
+    this.showDeleteBanner = false,
+    this.onDeleteRestore,
+    this.onDeleteConfirm,
   });
 
   final SidebarData data;
@@ -728,9 +734,19 @@ class FlowUsShell extends StatelessWidget {
   final String? activeTabId;
   final TabBarCallbacks? tabBarCallbacks;
 
+  /// 系统横幅（M1-T06）：文字非空才显示
+  final String? systemBannerText;
+  final VoidCallback? onSystemBannerClose;
+
+  /// 删除恢复横幅（M1-T06）：true 显示红条
+  final bool showDeleteBanner;
+  final VoidCallback? onDeleteRestore;
+  final VoidCallback? onDeleteConfirm;
+
   @override
   Widget build(BuildContext context) {
     final c = flowUsColors(context);
+    final showSystemBanner = systemBannerText != null && systemBannerText!.isNotEmpty;
     return Scaffold(
       backgroundColor: c.contentBg,
       body: Row(
@@ -743,6 +759,17 @@ class FlowUsShell extends StatelessWidget {
               children: [
                 if (tabs.isNotEmpty)
                   FlowUsTabBar(tabs: tabs, activeTabId: activeTabId, callbacks: tabBarCallbacks),
+                // 横幅都是独立一条，出现时把主内容整体下推（不做浮层——基准-全局框架 §6.4）
+                if (showSystemBanner)
+                  FlowUsSystemBanner(
+                    text: systemBannerText!,
+                    onClose: onSystemBannerClose,
+                  ),
+                if (showDeleteBanner)
+                  FlowUsDeleteBanner(
+                    onRestore: onDeleteRestore,
+                    onDelete: onDeleteConfirm,
+                  ),
                 Expanded(
                   child: LayoutBuilder(
                     builder: (ctx, box) {
