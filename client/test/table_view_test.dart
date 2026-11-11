@@ -84,17 +84,19 @@ void main() {
     expect(find.text('阅读状态'), findsOneWidget);
     expect(find.text('磷酸铁锂成本分析'), findsOneWidget);
     expect(find.text('磷石膏处理工艺'), findsOneWidget);
-    expect(find.textContaining('2 / 2 条'), findsOneWidget);
+    expect(find.text('2 行'), findsOneWidget, reason: '视图栏显示行数');
   });
 
-  testWidgets('「新建记录」→ 行数 +1（数据真的变了）', (tester) async {
+  testWidgets('「创建 → 新建记录」→ 行数 +1（数据真的变了）', (tester) async {
     final r = await _mount(tester, _table());
-    await tester.tap(find.text('新建记录'));
+    await tester.tap(find.text('创建'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('新建记录').last);
     await tester.pumpAndSettle();
 
     expect(r.changes, isNotEmpty, reason: '必须回调出去让宿主落库');
     expect(r.latestFn().records.length, 3);
-    expect(find.textContaining('3 / 3 条'), findsOneWidget);
+    expect(find.text('3 行'), findsOneWidget);
   });
 
   testWidgets('点列头 → 弹出列菜单（含改名/换类型/筛选/删除）', (tester) async {
@@ -206,8 +208,29 @@ void main() {
     expect(find.text('我的想法'), findsOneWidget);
     expect(find.text('公众号'), findsWidgets, reason: '属性区要显示字段');
     // 表格**仍在**（左侧没被详情面板顶掉）——用户 11-11 定的形态
-    expect(find.text('新建记录'), findsOneWidget, reason: '表格要一直可见');
+    expect(find.text('创建'), findsOneWidget, reason: '视图栏要一直可见');
     expect(find.text('标题'), findsWidgets, reason: '列头要还在');
+  });
+
+  testWidgets('「展开成整页」→ 记录页盖住表格；「返回表格」→ 回到右侧展开', (tester) async {
+    await _mount(tester, _table());
+    await tester.tap(find.byIcon(Icons.open_in_new).first);
+    await tester.pumpAndSettle();
+    expect(find.text('作者原文'), findsOneWidget);
+
+    // 点「展开成整页」（记录页标题右边的全屏图标）
+    await tester.tap(find.byIcon(Icons.open_in_full));
+    await tester.pumpAndSettle();
+
+    // 整页形态：出现「返回表格」，表格不见了
+    expect(find.text('返回表格'), findsOneWidget);
+    expect(find.text('创建'), findsNothing, reason: '整页时表格被盖住');
+
+    // 返回 → 回到右侧展开
+    await tester.tap(find.text('返回表格'));
+    await tester.pumpAndSettle();
+    expect(find.text('创建'), findsOneWidget);
+    expect(find.text('作者原文'), findsOneWidget);
   });
 
   testWidgets('记录页在表格**右边**（不是插在行下面）', (tester) async {
@@ -215,7 +238,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.open_in_new).first);
     await tester.pumpAndSettle();
 
-    final tableX = tester.getTopLeft(find.text('新建记录')).dx;
+    final tableX = tester.getTopLeft(find.text('创建')).dx;
     final recordX = tester.getTopLeft(find.text('作者原文')).dx;
     expect(recordX, greaterThan(tableX), reason: '记录页要在表格右边');
   });

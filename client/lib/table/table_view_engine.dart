@@ -13,8 +13,10 @@ import 'cell_editors.dart';
 import 'cell_renderers.dart';
 import 'column_menu.dart';
 import 'flowus_table.dart';
+import 'record_full_page.dart';
 import 'record_page.dart';
 import 'table_engine.dart';
+import 'view_bar.dart';
 import '../design/tokens.dart';
 
 /// 一个真能用的表格视图
@@ -31,7 +33,6 @@ class FlowUsTableView extends StatefulWidget {
     this.onRecordCellChanged,
     this.onRecordNotesChanged,
     this.onRecordTitleChanged,
-    this.onOpenFullPage,
   });
 
   final FlowUsCollection collection;
@@ -60,8 +61,6 @@ class FlowUsTableView extends StatefulWidget {
   /// 记录页里改了标题 → 落库
   final void Function(String recordId, String title)? onRecordTitleChanged;
 
-  /// 「展开成整页」（用户 11-11 要的：长文时能切成整页）
-  final void Function(FlowUsRecord record)? onOpenFullPage;
 
   @override
   State<FlowUsTableView> createState() => _FlowUsTableViewState();
@@ -91,6 +90,9 @@ class _FlowUsTableViewState extends State<FlowUsTableView> {
   /// 打开记录页的记录 id（**右侧面板**形态 —— 用户 11-11 定的：
   /// 「点行 → 右侧展开记录页」，表格一直可见；长文另开整页）
   String? _openRecordId;
+
+  /// **整页形态**打开的记录 id（长文时用；非空时整页盖住表格）
+  String? _fullPageRecordId;
 
   @override
   void didUpdateWidget(covariant FlowUsTableView old) {
@@ -274,7 +276,7 @@ class _FlowUsTableViewState extends State<FlowUsTableView> {
 
   /// 菜单锚点（列头的全局坐标）
   Offset _menuAnchor = Offset.zero;
-  final Offset _filterAnchor = Offset.zero;
+  Offset _filterAnchor = Offset.zero;
 
   @override
   void initState() {
@@ -303,6 +305,14 @@ class _FlowUsTableViewState extends State<FlowUsTableView> {
 
     // ⚠️ 用户 11-11 定的形态：**表格在左、详情在右**（表格一直可见）。
     //    所以这里是一个 Row，不是"点行后在行下面展开"。
+    // 整页形态优先（长文时用）
+    final fullRecord = _fullPageRecordId == null
+        ? null
+        : widget.collection.recordById(_fullPageRecordId!);
+    if (fullRecord != null) {
+      return _buildFullPage(fullRecord);
+    }
+
     final openRecord = _openRecordId == null ? null : widget.collection.recordById(_openRecordId!);
 
     return Stack(
@@ -315,20 +325,43 @@ class _FlowUsTableViewState extends State<FlowUsTableView> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-        // ---- 工具条 ----
+        // ---- 视图栏 + 字段管理 ----
         Padding(
           padding: const EdgeInsets.only(bottom: 6),
           child: Row(
             children: [
-              TextButton.icon(
-                onPressed: _addRow,
-                icon: const Icon(Icons.add, size: 15),
-                label: const Text('新建记录', style: TextStyle(fontSize: 13, height: 18 / 13)),
-                style: TextButton.styleFrom(
-                  foregroundColor: c.primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
-                  minimumSize: const Size(0, 26),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              Expanded(
+                child: FlowUsViewBar(
+                  collection: widget.collection,
+                  currentView: _view,
+                  visibleCount: records.length,
+                  totalCount: widget.collection.records.length,
+                  hasFilter: _filters.isNotEmpty,
+                  hasSort: _sorters.isNotEmpty,
+                  onSelectView: (v) => setState(() {
+                    _view = v;
+                    _filters = FlowUsTableEngine.readFilters(v);
+                    _sorters = FlowUsTableEngine.readSorters(v);
+                  }),
+                  onCreateRecord: _addRow,
+                  onFilter: () => setState(() {
+                    // 没有具体字段时，筛选器用第一个字段当锚点
+                    final first = widget.collection.fields.isEmpty
+                        ? null
+                        : widget.collection.fields.first;
+                    if (first == null) return;
+                    _filterAnchor = Offset.zero;
+                    _filterFieldId = first.id;
+                  }),
+                  onSort: () {
+                    // 排序走列头（点列头就有升/降）→ 这里给个提示
+                    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                      const SnackBar(
+                        content: Text('点列头可以排序'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
                 ),
               ),
               TextButton.icon(
@@ -341,11 +374,6 @@ class _FlowUsTableViewState extends State<FlowUsTableView> {
                   minimumSize: const Size(0, 26),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-              ),
-              const Spacer(),
-              Text(
-                '${records.length} / ${widget.collection.records.length} 条',
-                style: const TextStyle(fontSize: 12, height: 18 / 12, color: Color(0xFF91918E)),
               ),
             ],
           ),
@@ -457,9 +485,10 @@ class _FlowUsTableViewState extends State<FlowUsTableView> {
                       collection: widget.collection,
                       record: openRecord,
                       aiStatusText: widget.aiStatusOf?.call(openRecord),
-                      onOpenFullPage: widget.onOpenFullPage == null
-                          ? null
-                          : () => widget.onOpenFullPage!(openRecord),
+                      // 「展开成整页」：本视图自己就能切（不用宿主再开一页）
+                      onOpenFullPage: () => setState(() {
+                        _fullPageRecordId = openRecord.uuid;
+                      }),
                       onTitleChanged: (t) =>
                           widget.onRecordTitleChanged?.call(openRecord.uuid, t),
                       onCellChanged: (fieldId, v) =>
@@ -481,6 +510,35 @@ class _FlowUsTableViewState extends State<FlowUsTableView> {
               overlayChildBuilder: (ctx) => _buildFilterPanel(ctx),
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  /// 整页形态的记录页（盖住表格）
+  Widget _buildFullPage(FlowUsRecord record) {
+    return Stack(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: FlowUsRecordFullPage(
+            collection: widget.collection,
+            record: record,
+            aiStatusText: widget.aiStatusOf?.call(record),
+            onBack: () => setState(() => _fullPageRecordId = null),
+            onTitleChanged: (t) => widget.onRecordTitleChanged?.call(record.uuid, t),
+            onCellChanged: (fieldId, v) =>
+                widget.onRecordCellChanged?.call(record.uuid, fieldId, v),
+            onNotesChanged: (t) => widget.onRecordNotesChanged?.call(record.uuid, t),
+          ),
+        ),
+        OverlayPortal(
+          controller: _menuPortal,
+          overlayChildBuilder: (ctx) => _buildColumnMenu(ctx),
+        ),
+        OverlayPortal(
+          controller: _filterPortal,
+          overlayChildBuilder: (ctx) => _buildFilterPanel(ctx),
         ),
       ],
     );

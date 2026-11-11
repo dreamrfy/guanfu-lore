@@ -280,9 +280,20 @@ class _ShellAppState extends State<ShellApp> {
 
   @override
   void dispose() {
-    _pipe?.flush();
-    _pipe?.dispose();
-    if (widget.database == null) _db?.close();
+    // ⚠️ flush() 是**异步**的（防抖落库），而 close() 是同步的 ——
+    //    先 flush 再 close 会让 flush 写到已关闭的库上，抛
+    //    "Can't re-open a database after closing it"。
+    //    正确做法：关库前先 flush，并吞掉 flush 的异常（dispose 阶段不该炸）。
+    final pipe = _pipe;
+    final db = _db;
+    if (pipe != null) {
+      pipe.flush().catchError((_) {}).whenComplete(() {
+        pipe.dispose();
+        if (widget.database == null) db?.close();
+      });
+    } else {
+      if (widget.database == null) db?.close();
+    }
     super.dispose();
   }
 
