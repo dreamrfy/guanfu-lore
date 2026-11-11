@@ -78,8 +78,39 @@ flutter:
   uses-material-design: true
 
   # M1-T12：真 FlowUs 收割的 93 个 SVG（Ic* 自研 87 + Lucide 6，均为实采原文）
+  # ⚠️ M12：这些自研图标**授权已弃用**，仅作过渡/对照；正式用开源图标库（见 assets/icons/ 下各主题目录）
+  # ⚠️ 必须**逐个列出子目录**：写 `- assets/icons/` 只打包目录下的**文件**，
+  #    不会递归子目录里的 svg（实测：只写 `assets/icons/` 时，
+  #    打包产物里 icons/ 下只有 icon-map.json，四个主题的 svg 全丢 → 图标全空）
   assets:
-    - assets/icons/
+    - assets/icons/icon-map.json
+    - assets/icons/mingcute/
+    - assets/icons/phosphor/
+    - assets/icons/lucide/
+    - assets/icons/legacy/
+    - assets/fonts/NotoSansSC-charset.txt
+
+  # M12-T02 字体包：Noto Sans SC（Google 开源 OFL）
+  #
+  # ⚠️ 为什么是**静态实例**而不是可变字体（VF）：
+  #    Flutter 对可变字体的 `fontWeight` **无效** —— w400/w500/w600/w700 渲染出来粗细一样
+  #    （w700 只是被横向拉宽的变形）。实测证据：
+  #    docs/基准/证据/M12-T01/可变字体vs静态字重对比.png
+  #    → 必须用 fontTools 从 VF 生成静态实例再打包。
+  #
+  # ⚠️ 为什么做了子集化：完整 VF 静态实例每个 10.6MB（三档 31MB）。
+  #    子集到 GB2312 全集（6763 汉字）+ ASCII + 常用标点/符号/希腊字母/西里尔/圈号
+  #    → 每档 104KB，三档共 312KB。charset 清单见 assets/fonts/NotoSansSC-charset.txt
+  #    （重新生成命令见 docs/基准/证据/M12-T01/README.md）
+  fonts:
+    - family: NotoSansSC
+      fonts:
+        - asset: assets/fonts/NotoSansSC-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/NotoSansSC-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/NotoSansSC-SemiBold.ttf
+          weight: 600
 
   # To add assets to your application, add an assets section, like this:
   # assets:

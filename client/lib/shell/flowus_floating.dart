@@ -76,13 +76,15 @@ class _FlowUsFloatingButtonsState extends State<FlowUsFloatingButtons> {
           right: FlowUsFloating.insetRight,
           bottom: FlowUsFloating.aiBottom,
           child: _FloatingButton(
+            key2: const Key('floating-ai-button'),
             onTap: () {
               if (_menuOpen) setState(() => _menuOpen = false);
               widget.onAiTap?.call();
             },
-            // 上钮图标 20×20（AI 触发；Material 占位，真图标 M1-T12）
-            child: // 自带渐变 → 不能单色覆盖（tint: false）
-            FlowUsSvgIcon(FlowUsIc.aiFace, size: FlowUsFloating.aiIconSize, tint: false),
+            // 上钮图标 20×20（AI 触发）—— M12：换成开源库的 AI 图标
+            // （FlowUs 的"渐变圆脸"是它的私有视觉，开源库里没有；
+            //   渐变圆脸的自绘版留在 settings/appearance_panel.dart 里做预览）
+            child: FlowUsSvgIcon(FlowUsIc.ai, size: FlowUsFloating.aiIconSize),
           ),
         ),
         Positioned(
@@ -103,10 +105,13 @@ class _FlowUsFloatingButtonsState extends State<FlowUsFloatingButtons> {
 
 /// 单个圆钮：36×36、全圆、白底、边框 rgba(0,0,0,0.06)。悬停**不变色**（实测）
 class _FloatingButton extends StatelessWidget {
-  const _FloatingButton({required this.child, this.onTap});
+  const _FloatingButton({required this.child, this.onTap, this.key2});
 
   final Widget child;
   final VoidCallback? onTap;
+
+  /// 供测试/代码定位用（不占用 super.key）
+  final Key? key2;
 
   @override
   Widget build(BuildContext context) {
@@ -114,6 +119,11 @@ class _FloatingButton extends StatelessWidget {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
+        key: key2,
+        // ⚠️ behavior: opaque —— 按钮自己就是命中区。
+        //   默认 deferToChild 会去问 child；而 child（自绘的 AI 圆脸 / SVG）要么不命中、
+        //   要么命中后父级手势竞技场不触发 → 整钮点不动（实测）。
+        behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Container(
           width: FlowUsComponents.floatingButton,

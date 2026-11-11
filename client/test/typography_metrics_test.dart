@@ -42,8 +42,13 @@ void main() {
     expect(_width('升级后可继续上传', size: 12, weight: FontWeight.w400), closeTo(96, 2));
   });
 
-  test('字体栈与真 FlowUs 的 computed font-family 同序（第一项必须是 my-quote）', () {
-    expect(FlowUsTypography.fontFamily.startsWith('my-quote'), true);
+  test('字体栈**不含 FlowUs 私有字体**，默认是开源 Noto Sans SC（M12-T02）', () {
+    // my-quote 是 FlowUs 私有字体 → 已从栈里去掉（授权问题）
+    expect(FlowUsTypography.fontFamily.contains('my-quote'), false);
+    expect(FlowUsTypography.fontFamily.contains('NotoSansSC'), true,
+        reason: '默认档应是打包进来的开源 Noto Sans SC');
+    // 系统兜底仍保留（没装 Noto 的机器不至于没字）
+    expect(FlowUsTypography.fontFamily.contains('Microsoft YaHei'), true);
     expect(FlowUsTypography.fontFamily.contains('PingFang SC'), true);
     expect(FlowUsTypography.fontFamily.contains('Microsoft YaHei'), true);
   });

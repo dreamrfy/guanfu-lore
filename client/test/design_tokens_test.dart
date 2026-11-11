@@ -89,8 +89,13 @@ void main() {
   });
 
   group('字体（基准-字体与图标 / 正文行高与块结构）', () {
-    test('字体栈照抄，首位是 my-quote', () {
-      expect(FlowUsTypography.fontFamily.startsWith('my-quote'), isTrue);
+    test('字体栈**不含 FlowUs 私有字体**，默认是开源 Noto Sans SC', () {
+      // M12-T02：my-quote 是 FlowUs 私有字体，已从栈里去掉
+      expect(FlowUsTypography.fontFamily.contains('my-quote'), isFalse);
+      expect(FlowUsTypography.fontFamily.contains('NotoSansSC'), isTrue,
+          reason: '默认档应是打包进来的开源 Noto Sans SC');
+      expect(FlowUsTypography.fontFamily.contains('Microsoft YaHei'), isTrue,
+          reason: '系统兜底链要保留（没装 Noto 的机器不至于没字）');
       expect(FlowUsTypography.fontFamily.contains('Microsoft YaHei'), isTrue);
     });
 

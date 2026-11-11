@@ -16,6 +16,8 @@
 
 import 'package:flutter/material.dart';
 
+import 'font_themes.dart';
+
 // ---------------------------------------------------------------------------
 // 布局（基准-全局框架）
 // ---------------------------------------------------------------------------
@@ -207,8 +209,6 @@ class FlowUsColors extends ThemeExtension<FlowUsColors> {
 // ---------------------------------------------------------------------------
 
 abstract final class FlowUsTypography {
-  /// 字体栈**照抄**。首位的 my-quote 在真 FlowUs 里加载失败、实际回退到微软雅黑——
-  /// 我们照抄栈即可，**不要换字体**（换了就不一致）。
   /// emoji 字体回退链（M2-T24）：主字体栈只有西文/中文，emoji 会落到 tofu，
   /// Windows 上靠 `Segoe UI Emoji` 兜底
   static const List<String> emojiFontFallback = [
@@ -217,10 +217,16 @@ abstract final class FlowUsTypography {
     'Apple Color Emoji',
   ];
 
-  static const String fontFamily =
-      'my-quote, "PingFang SC", "Microsoft YaHei", ui-sans-serif, -apple-system, '
-      'BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, '
-      '"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"';
+  /// **当前生效的字体栈**（M12-T02 起可切换）。
+  ///
+  /// ⚠️ 原来的栈是 `my-quote, PingFang SC, Microsoft YaHei, ...` —— **my-quote 是 FlowUs
+  ///    私有字体，不能再用**（授权问题，见 [[bijiapp-font-icon-license]]）。
+  ///    而且我们从来就没打包过它 —— 实际落到微软雅黑。
+  ///    → 现在改成"可切换的字体主题"，默认 Noto Sans SC（开源 OFL）。
+  ///
+  /// 这个变量由 [applyFontTheme] 在启动时按设置改写；读它的所有地方都会跟着变。
+  static String fontFamily = FontThemes.notoSansSc.stack;
+
 
   /// 页面大标题（页顶那个 `<h1>`）—— **不是**文档内的标题块
   static const TextStyle pageTitle = TextStyle(
@@ -524,3 +530,24 @@ abstract final class FlowUsOptionColors {
 /// 当前主题对应的一组色值
 FlowUsColors flowUsColors(BuildContext context) =>
     Theme.of(context).brightness == Brightness.dark ? FlowUsColors.dark : FlowUsColors.light;
+// ---------------------------------------------------------------------------
+// 字体主题应用（M12-T02）
+// ---------------------------------------------------------------------------
+
+/// 应用一套字体主题：改写全局字体栈 + 返回配好的 ThemeData。
+///
+/// 切换后**全 App 立刻生效** —— 因为 [FlowUsTypography.fontFamily] 是全局变量，
+/// 而所有 TextStyle 都基于它。
+///
+/// 用法：
+/// ```dart
+/// final theme = applyFontTheme(FontThemes.byId(savedId));
+/// ```
+ThemeData applyFontTheme(FontTheme fontTheme) {
+  FlowUsTypography.fontFamily = fontTheme.stack;
+  return ThemeData(
+    useMaterial3: true,
+    fontFamily: fontTheme.family.isEmpty ? null : fontTheme.family,
+    scaffoldBackgroundColor: const Color(0xFFFFFFFF),
+  );
+}

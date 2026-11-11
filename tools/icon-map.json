@@ -1,0 +1,527 @@
+{
+  "IcAdd": {
+    "mingcute": "add.svg",
+    "phosphor": "plus-fill.svg",
+    "lucide": "plus.svg"
+  },
+  "IcAddBoard": {
+    "mingcute": "add-circle.svg",
+    "phosphor": "plus-circle-fill.svg",
+    "lucide": "circle-plus.svg"
+  },
+  "IcAi": {
+    "mingcute": "sparkles.svg",
+    "phosphor": "sparkle-fill.svg",
+    "lucide": "sparkles.svg"
+  },
+  "IcAiFill": {
+    "mingcute": "sparkles-2.svg",
+    "phosphor": "sparkle-fill.svg",
+    "lucide": "sparkles.svg"
+  },
+  "IcArrowDown01": {
+    "mingcute": "down.svg",
+    "phosphor": "caret-down-fill.svg",
+    "lucide": "chevron-down.svg"
+  },
+  "IcArrowHide": {
+    "mingcute": "left.svg",
+    "phosphor": "caret-left-fill.svg",
+    "lucide": "chevron-left.svg"
+  },
+  "IcArrowLeft02": {
+    "mingcute": "arrow-left.svg",
+    "phosphor": "arrow-left-fill.svg",
+    "lucide": "arrow-left.svg"
+  },
+  "IcArrowRight01": {
+    "mingcute": "right.svg",
+    "phosphor": "caret-right-fill.svg",
+    "lucide": "chevron-right.svg"
+  },
+  "IcArrowRight02": {
+    "mingcute": "arrow-right.svg",
+    "phosphor": "arrow-right-fill.svg",
+    "lucide": "arrow-right.svg"
+  },
+  "IcArrowShow": {
+    "mingcute": "down.svg",
+    "phosphor": "caret-down-fill.svg",
+    "lucide": "chevron-down.svg"
+  },
+  "IcAscending": {
+    "mingcute": "sort-ascending.svg",
+    "phosphor": "sort-ascending-fill.svg",
+    "lucide": "list-sort-ascending.svg"
+  },
+  "IcAssociation": {
+    "mingcute": "link.svg",
+    "phosphor": "link-fill.svg",
+    "lucide": "link-2.svg"
+  },
+  "IcBlockFullPageOpen": {
+    "mingcute": "fullscreen.svg",
+    "phosphor": "arrows-out-fill.svg",
+    "lucide": "fullscreen.svg"
+  },
+  "IcBlockRightSidebarOpen": {
+    "mingcute": "layout-3.svg",
+    "phosphor": "sidebar-simple-fill.svg",
+    "lucide": "panel-right.svg"
+  },
+  "IcCalendar": {
+    "mingcute": "calendar.svg",
+    "phosphor": "calendar-fill.svg",
+    "lucide": "calendar.svg"
+  },
+  "IcCall": {
+    "mingcute": "phone.svg",
+    "phosphor": "phone-fill.svg",
+    "lucide": "phone.svg"
+  },
+  "IcChartNumber": {
+    "mingcute": "file-digit.svg",
+    "phosphor": "number-one-fill.svg",
+    "lucide": "numbers.svg"
+  },
+  "IcCheck": {
+    "mingcute": "check-circle.svg",
+    "phosphor": "check-circle-fill.svg",
+    "lucide": "circle-check.svg"
+  },
+  "IcCheck02": {
+    "mingcute": "check.svg",
+    "phosphor": "check-fill.svg",
+    "lucide": "check.svg"
+  },
+  "IcCheckbox": {
+    "mingcute": "checkbox.svg",
+    "phosphor": "square-fill.svg",
+    "lucide": "square.svg"
+  },
+  "IcCheckboxCheck": {
+    "mingcute": "checkbox.svg",
+    "phosphor": "check-square-fill.svg",
+    "lucide": "square-check-big.svg"
+  },
+  "IcClockCheck": {
+    "mingcute": "clock-check.svg",
+    "phosphor": "clock-fill.svg",
+    "lucide": "clock-check.svg"
+  },
+  "IcClockPlus": {
+    "mingcute": "clock-plus.svg",
+    "phosphor": "clock-fill.svg",
+    "lucide": "clock-plus.svg"
+  },
+  "IcClose": {
+    "mingcute": "close.svg",
+    "phosphor": "x-fill.svg",
+    "lucide": "x.svg"
+  },
+  "IcCoin": {
+    "mingcute": "coin.svg",
+    "phosphor": "coin-fill.svg",
+    "lucide": "coins.svg"
+  },
+  "IcComment": {
+    "mingcute": "comment.svg",
+    "phosphor": "chat-fill.svg",
+    "lucide": "message-square.svg"
+  },
+  "IcCommentResolved": {
+    "mingcute": "message-square-check.svg",
+    "phosphor": "chat-circle-dots-fill.svg",
+    "lucide": "message-square-check.svg"
+  },
+  "IcDescending": {
+    "mingcute": "sort-descending.svg",
+    "phosphor": "sort-descending-fill.svg",
+    "lucide": "list-sort-descending.svg"
+  },
+  "IcDownload": {
+    "mingcute": "download.svg",
+    "phosphor": "download-simple-fill.svg",
+    "lucide": "download.svg"
+  },
+  "IcDuplicate": {
+    "mingcute": "copy.svg",
+    "phosphor": "copy-fill.svg",
+    "lucide": "copy.svg"
+  },
+  "IcEdit02": {
+    "mingcute": "edit-2.svg",
+    "phosphor": "pencil-simple-fill.svg",
+    "lucide": "pencil.svg"
+  },
+  "IcExclusiveChoice": {
+    "mingcute": "radio.svg",
+    "phosphor": "radio-button-fill.svg",
+    "lucide": "circle-dot.svg"
+  },
+  "IcExportPage": {
+    "mingcute": "file-export.svg",
+    "phosphor": "export-fill.svg",
+    "lucide": "file-up.svg"
+  },
+  "IcFilter": {
+    "mingcute": "filter.svg",
+    "phosphor": "funnel-fill.svg",
+    "lucide": "funnel.svg"
+  },
+  "IcFolderContent": {
+    "mingcute": "folder-2.svg",
+    "phosphor": "folder-fill.svg",
+    "lucide": "folder.svg"
+  },
+  "IcFormula": {
+    "mingcute": "formula.svg",
+    "phosphor": "sigma-fill.svg",
+    "lucide": "sigma.svg"
+  },
+  "IcGeneralSetting": {
+    "mingcute": "settings-1.svg",
+    "phosphor": "gear-fill.svg",
+    "lucide": "settings.svg"
+  },
+  "IcGift": {
+    "mingcute": "gift.svg",
+    "phosphor": "gift-fill.svg",
+    "lucide": "gift.svg"
+  },
+  "IcHide": {
+    "mingcute": "eye-close.svg",
+    "phosphor": "eye-slash-fill.svg",
+    "lucide": "eye-off.svg"
+  },
+  "IcHistory": {
+    "mingcute": "clock-1.svg",
+    "phosphor": "clock-counter-clockwise-fill.svg",
+    "lucide": "rotate-ccw-clock.svg"
+  },
+  "IcIcon": {
+    "mingcute": "app-window.svg",
+    "phosphor": "app-window-fill.svg",
+    "lucide": "shapes.svg"
+  },
+  "IcImage": {
+    "mingcute": "image-edit.svg",
+    "phosphor": "image-fill.svg",
+    "lucide": "image.svg"
+  },
+  "IcInfo": {
+    "mingcute": "information.svg",
+    "phosphor": "info-fill.svg",
+    "lucide": "info.svg"
+  },
+  "IcInviteHelp": {
+    "mingcute": "question.svg",
+    "phosphor": "question-mark-fill.svg",
+    "lucide": "circle-question-mark.svg"
+  },
+  "IcJumpTo": {
+    "mingcute": "corner-down-right.svg",
+    "phosphor": "arrow-bend-down-right-fill.svg",
+    "lucide": "corner-down-right.svg"
+  },
+  "IcLink": {
+    "mingcute": "link.svg",
+    "phosphor": "link-fill.svg",
+    "lucide": "link-2.svg"
+  },
+  "IcList": {
+    "mingcute": "list-ordered.svg",
+    "phosphor": "list-fill.svg",
+    "lucide": "list.svg"
+  },
+  "IcLock": {
+    "mingcute": "lock.svg",
+    "phosphor": "lock-fill.svg",
+    "lucide": "lock.svg"
+  },
+  "IcLogOut": {
+    "mingcute": "exit.svg",
+    "phosphor": "sign-out-fill.svg",
+    "lucide": "log-out.svg"
+  },
+  "IcMail": {
+    "mingcute": "mail.svg",
+    "phosphor": "envelope-fill.svg",
+    "lucide": "mail.svg"
+  },
+  "IcMarkdown": {
+    "mingcute": "markdown.svg",
+    "phosphor": "markdown-logo-fill.svg",
+    "lucide": "file-code.svg"
+  },
+  "IcMember": {
+    "mingcute": "group.svg",
+    "phosphor": "users-three-fill.svg",
+    "lucide": "users.svg"
+  },
+  "IcMenuNext": {
+    "mingcute": "right.svg",
+    "phosphor": "caret-right-fill.svg",
+    "lucide": "chevron-right.svg"
+  },
+  "IcMore": {
+    "mingcute": "more-2.svg",
+    "phosphor": "dots-three-fill.svg",
+    "lucide": "ellipsis.svg"
+  },
+  "IcMove": {
+    "mingcute": "move.svg",
+    "phosphor": "arrows-out-cardinal-fill.svg",
+    "lucide": "grip-vertical.svg"
+  },
+  "IcMultipleChoice": {
+    "mingcute": "list-check.svg",
+    "phosphor": "list-checks-fill.svg",
+    "lucide": "list-checks.svg"
+  },
+  "IcNaviDot": {
+    "mingcute": "dot.svg",
+    "phosphor": "dot-fill.svg",
+    "lucide": "circle-dot.svg"
+  },
+  "IcNaviUnfold": {
+    "mingcute": "chevrons-left-right.svg",
+    "phosphor": "arrows-out-fill.svg",
+    "lucide": "chevrons-left-right.svg"
+  },
+  "IcPageEmpty": {
+    "mingcute": "file.svg",
+    "phosphor": "file-fill.svg",
+    "lucide": "file.svg"
+  },
+  "IcPageHistory": {
+    "mingcute": "history-2.svg",
+    "phosphor": "clock-counter-clockwise-fill.svg",
+    "lucide": "rotate-ccw-clock.svg"
+  },
+  "IcPages": {
+    "mingcute": "document.svg",
+    "phosphor": "file-fill.svg",
+    "lucide": "file-text.svg"
+  },
+  "IcPaperclip": {
+    "mingcute": "attachment.svg",
+    "phosphor": "paperclip-fill.svg",
+    "lucide": "paperclip.svg"
+  },
+  "IcPin": {
+    "mingcute": "pin.svg",
+    "phosphor": "push-pin-fill.svg",
+    "lucide": "pin.svg"
+  },
+  "IcPropertyText": {
+    "mingcute": "font.svg",
+    "phosphor": "text-align-left-fill.svg",
+    "lucide": "type.svg"
+  },
+  "IcQuestion": {
+    "mingcute": "question.svg",
+    "phosphor": "question-fill.svg",
+    "lucide": "circle-question-mark.svg"
+  },
+  "IcQuickAccess": {
+    "mingcute": "star.svg",
+    "phosphor": "star-fill.svg",
+    "lucide": "star.svg"
+  },
+  "IcRollup": {
+    "mingcute": "chart-bar.svg",
+    "phosphor": "chart-bar-fill.svg",
+    "lucide": "chart-column.svg"
+  },
+  "IcSearch": {
+    "mingcute": "search.svg",
+    "phosphor": "magnifying-glass-fill.svg",
+    "lucide": "search.svg"
+  },
+  "IcSettingapps": {
+    "mingcute": "layout-grid.svg",
+    "phosphor": "grid-four-fill.svg",
+    "lucide": "layout-grid.svg"
+  },
+  "IcSettingglobeShare": {
+    "mingcute": "globe.svg",
+    "phosphor": "globe-fill.svg",
+    "lucide": "globe.svg"
+  },
+  "IcSettingmember": {
+    "mingcute": "settings-2.svg",
+    "phosphor": "user-circle-fill.svg",
+    "lucide": "settings-2.svg"
+  },
+  "IcSettings": {
+    "mingcute": "settings-3.svg",
+    "phosphor": "gear-six-fill.svg",
+    "lucide": "settings-2.svg"
+  },
+  "IcShoppingCart": {
+    "mingcute": "shopping-cart-1.svg",
+    "phosphor": "shopping-cart-fill.svg",
+    "lucide": "shopping-cart.svg"
+  },
+  "IcSpace": {
+    "mingcute": "space.svg",
+    "phosphor": "cube-fill.svg",
+    "lucide": "space.svg"
+  },
+  "IcSubscribe": {
+    "mingcute": "bookmark.svg",
+    "phosphor": "bookmark-fill.svg",
+    "lucide": "bookmark.svg"
+  },
+  "IcTable": {
+    "mingcute": "table.svg",
+    "phosphor": "table-fill.svg",
+    "lucide": "table.svg"
+  },
+  "IcTemplate": {
+    "mingcute": "file-new.svg",
+    "phosphor": "file-text-fill.svg",
+    "lucide": "file-pen.svg"
+  },
+  "IcTimeline": {
+    "mingcute": "timeline.svg",
+    "phosphor": "path-fill.svg",
+    "lucide": "timeline.svg"
+  },
+  "IcTitle": {
+    "mingcute": "heading-1.svg",
+    "phosphor": "text-h-fill.svg",
+    "lucide": "heading-1.svg"
+  },
+  "IcTrash": {
+    "mingcute": "delete.svg",
+    "phosphor": "trash-fill.svg",
+    "lucide": "trash.svg"
+  },
+  "IcTurnInto": {
+    "mingcute": "switch.svg",
+    "phosphor": "key-return-fill.svg",
+    "lucide": "replace.svg"
+  },
+  "IcUpgrade": {
+    "mingcute": "arrow-up-circle.svg",
+    "phosphor": "arrow-circle-up-fill.svg",
+    "lucide": "circle-arrow-up.svg"
+  },
+  "IcUser": {
+    "mingcute": "user-1.svg",
+    "phosphor": "user-fill.svg",
+    "lucide": "user.svg"
+  },
+  "IcUserAdd": {
+    "mingcute": "user-add.svg",
+    "phosphor": "user-plus-fill.svg",
+    "lucide": "user-plus.svg"
+  },
+  "IcUserEdit": {
+    "mingcute": "user-edit.svg",
+    "phosphor": "user-focus-fill.svg",
+    "lucide": "user-pen.svg"
+  },
+  "MIcPdf": {
+    "mingcute": "file.svg",
+    "phosphor": "file-pdf-fill.svg",
+    "lucide": "file-type.svg"
+  },
+  "MIcWord": {
+    "mingcute": "file.svg",
+    "phosphor": "file-doc-fill.svg",
+    "lucide": "file-type.svg"
+  },
+  "MoveHorizontal": {
+    "mingcute": "transfer-horizontal.svg",
+    "phosphor": "arrows-horizontal-fill.svg",
+    "lucide": "move-horizontal.svg"
+  },
+  "Presentation": {
+    "mingcute": "presentation-1.svg",
+    "phosphor": "presentation-fill.svg",
+    "lucide": "presentation.svg"
+  },
+  "Redo2": {
+    "mingcute": "refresh-2.svg",
+    "phosphor": "arrow-clockwise-fill.svg",
+    "lucide": "redo-2.svg"
+  },
+  "Search": {
+    "mingcute": "search.svg",
+    "phosphor": "magnifying-glass-fill.svg",
+    "lucide": "search.svg"
+  },
+  "Store": {
+    "mingcute": "store.svg",
+    "phosphor": "storefront-fill.svg",
+    "lucide": "store.svg"
+  },
+  "Undo2": {
+    "mingcute": "refresh-anticlockwise-1.svg",
+    "phosphor": "arrow-counter-clockwise-fill.svg",
+    "lucide": "undo-2.svg"
+  },
+  "IcMindmap": {
+    "mingcute": "mind-map.svg",
+    "phosphor": "tree-structure-fill.svg",
+    "lucide": "network.svg"
+  },
+  "IcBoard": {
+    "mingcute": "board.svg",
+    "phosphor": "kanban-fill.svg",
+    "lucide": "kanban.svg"
+  },
+  "IcGallery": {
+    "mingcute": "gallery-thumbnails.svg",
+    "phosphor": "images-fill.svg",
+    "lucide": "gallery-horizontal-end.svg"
+  },
+  "IcFormNew": {
+    "mingcute": "report-forms.svg",
+    "phosphor": "file-dashed-fill.svg",
+    "lucide": "square-dashed.svg"
+  },
+  "IcImport": {
+    "mingcute": "file-import.svg",
+    "phosphor": "file-arrow-down-fill.svg",
+    "lucide": "import.svg"
+  },
+  "IcFolder": {
+    "mingcute": "folder.svg",
+    "phosphor": "folder-fill.svg",
+    "lucide": "folder.svg"
+  },
+  "IcHome": {
+    "mingcute": "home-1.svg",
+    "phosphor": "house-fill.svg",
+    "lucide": "house.svg"
+  },
+  "IcAvatar": {
+    "mingcute": "circle-user.svg",
+    "phosphor": "user-circle-fill.svg",
+    "lucide": "circle-user.svg"
+  },
+  "Bell": {
+    "mingcute": "bell-ringing.svg",
+    "phosphor": "bell-fill.svg",
+    "lucide": "bell.svg"
+  },
+  "IcAiFace": {
+    "mingcute": "robot.svg",
+    "phosphor": "robot-fill.svg",
+    "lucide": "bot.svg"
+  },
+  "IcCapacity": {
+    "mingcute": "database-zap.svg",
+    "phosphor": "database-fill.svg",
+    "lucide": "database-check.svg"
+  },
+  "IcMenu": {
+    "mingcute": "dot-grid.svg",
+    "phosphor": "dots-six-fill.svg",
+    "lucide": "grip.svg"
+  }
+}

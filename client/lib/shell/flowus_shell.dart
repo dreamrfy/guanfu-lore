@@ -311,7 +311,7 @@ class _AiRow extends StatelessWidget {
         child: Row(
           children: [
             // 自带渐变 → 不能单色覆盖（tint: false）
-            FlowUsSvgIcon(FlowUsIc.aiFace, size: FlowUsComponents.inlineIconButton, tint: false),
+            FlowUsSvgIcon(FlowUsIc.ai, size: FlowUsComponents.inlineIconButton),
             const SizedBox(width: 8),
             Expanded(child: Text('FlowUs AI',
                 style: TextStyle(fontSize: 14, height: 24 / 14, color: c.textMain))),

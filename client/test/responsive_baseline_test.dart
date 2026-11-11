@@ -149,7 +149,7 @@ void main() {
         find.ancestor(
           of: find.descendant(
             of: find.byType(FlowUsFloatingButtons),
-            matching: find.byWidgetPredicate((w) => w is FlowUsSvgIcon && w.name == FlowUsIc.aiFace),
+            matching: find.byWidgetPredicate((w) => w is FlowUsSvgIcon && w.name == FlowUsIc.ai),
           ),
           matching: find.byType(Container),
         ).first,

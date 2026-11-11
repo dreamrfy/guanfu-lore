@@ -46,9 +46,12 @@ void main() {
   Finder buttonOf(String iconName) =>
       find.ancestor(of: floating(svgIcon(iconName)), matching: find.byType(Container)).first;
 
+  /// AI 钮（M12：AI 图标换成开源库的机器人图标）
+  Finder aiButton() => buttonOf(FlowUsIc.ai);
+
   testWidgets('两钮 36×36 全圆白底 1px 边框；距右 20、距底 86 / 40（实测渲染值）', (tester) async {
     await _pumpShell(tester);
-    final ai = tester.getRect(buttonOf(FlowUsIc.aiFace));
+    final ai = tester.getRect(aiButton());
     final help = tester.getRect(buttonOf(FlowUsIc.question));
 
     for (final r in [ai, help]) {
@@ -66,7 +69,11 @@ void main() {
       closeTo(FlowUsFloating.gap, 0.01),
     );
 
-    final deco = tester.widget<Container>(buttonOf(FlowUsIc.aiFace)).decoration as BoxDecoration;
+    // 钮的装饰 = 圆形白底 + 边框（在 _FloatingButton 的 Container 上）
+    final deco = tester
+        .widget<Container>(find.ancestor(
+            of: floating(svgIcon(FlowUsIc.ai)), matching: find.byType(Container)).first)
+        .decoration as BoxDecoration;
     expect(deco.shape, BoxShape.circle);
     expect(deco.color, Colors.white);
     expect((deco.border! as Border).top.color, const Color(0x0F000000)); // rgba(0,0,0,0.06)
@@ -75,7 +82,7 @@ void main() {
 
   testWidgets('图标尺寸 20（AI）/ 16（帮助）', (tester) async {
     await _pumpShell(tester);
-    expect(tester.widget<FlowUsSvgIcon>(floating(svgIcon(FlowUsIc.aiFace))).size, 20);
+    expect(tester.widget<FlowUsSvgIcon>(floating(svgIcon(FlowUsIc.ai))).size, 20);
     expect(tester.widget<FlowUsSvgIcon>(floating(svgIcon(FlowUsIc.question))).size, 16);
   });
 
@@ -161,7 +168,7 @@ void main() {
   testWidgets('点 AI 钮 → 回调；AI 面板属 M9', (tester) async {
     var ai = false;
     await _pumpShell(tester, onAi: () => ai = true);
-    await tester.tap(floating(svgIcon(FlowUsIc.aiFace)));
+    await tester.tap(floating(svgIcon(FlowUsIc.ai)));
     await tester.pumpAndSettle();
     expect(ai, isTrue);
     expect(find.text('帮助中心'), findsNothing);

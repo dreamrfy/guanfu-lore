@@ -82,7 +82,17 @@ void main() {
       // 关闭钮中心 x ≈ 1920 − 16 − 10 = 1894
       final closeCenter = tester.getCenter(svgIcon(FlowUsIc.close));
       expect(closeCenter.dx, closeTo(1920 - FlowUsLayout.tabBarPaddingH - 10, 1.5));
-      await tester.tap(svgIcon(FlowUsIc.close));
+      // 探测：tap SVG 本体 vs tap 它的父级
+      await tester.tap(svgIcon(FlowUsIc.close), warnIfMissed: false);
+      // ignore: avoid_print
+      print('tap SVG 后 closed=$closed');
+      if (!closed) {
+        final svgFinder = svgIcon(FlowUsIc.close);
+        // ignore: avoid_print
+        print('SVG rect=${tester.getRect(svgFinder)}');
+        // ignore: avoid_print
+        print('SVG 是否有尺寸=${tester.getSize(svgFinder)}');
+      }
       expect(closed, isTrue);
     });
 

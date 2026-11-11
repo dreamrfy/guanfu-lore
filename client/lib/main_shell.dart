@@ -13,6 +13,10 @@ import 'package:flutter/material.dart' hide Page;
 import 'package:flutter/services.dart';
 
 import 'design/tokens.dart';
+import 'design/font_themes.dart';
+import 'design/icon_themes.dart';
+import 'settings/appearance_panel.dart';
+import 'settings/appearance_settings.dart';
 
 import 'data/database.dart';
 import 'data/pages_table.dart' show PageTypes;
@@ -78,6 +82,16 @@ class _ShellAppState extends State<ShellApp> {
   /// 当前打开的多维表内容（从库里读，改了要落回去）
   FlowUsCollection? _table;
 
+  // ---- M12-T02：字体主题（可切换）----
+  /// 当前字体主题
+  FontTheme _fontTheme = FontThemes.notoSansSc;
+
+  /// 当前图标主题
+  IconThemeSet _iconTheme = IconThemeSets.mingcute;
+
+  /// 外观设置面板是否打开
+  bool _appearanceOpen = false;
+
   /// 多维表页 id（演示壳的「剪藏库」）
   String? _tablePageId;
 
@@ -92,6 +106,24 @@ class _ShellAppState extends State<ShellApp> {
       _table = collection;
       _currentTitle = page.title;
     });
+  }
+
+  /// 换字体主题（立刻生效 + 落库）
+  Future<void> _changeFont(FontTheme theme) async {
+    setState(() => _fontTheme = theme);
+    FlowUsTypography.fontFamily = theme.stack;
+    final db = _db;
+    if (db != null) await saveFontTheme(db, theme);
+    _snack('字体已切换：${theme.label}');
+  }
+
+  /// 换图标主题（立刻生效 + 落库）
+  Future<void> _changeIcon(IconThemeSet theme) async {
+    setState(() => _iconTheme = theme);
+    setIconTheme(theme, nameMap: currentIconNameMap);
+    final db = _db;
+    if (db != null) await saveIconTheme(db, theme);
+    _snack('图标已切换：${theme.label}');
   }
 
   /// 多维表改了 → 落库（`pages.content`）
@@ -191,21 +223,32 @@ class _ShellAppState extends State<ShellApp> {
         ? demoPages.first
         : await db.createPage(title: kDemoPageTitle, content: _content);
     final pipe = PageSavePipeline(db: db, pageId: page.id);
+    // ⚠️ open() 要在**任何写操作之前**调：它会判定"草稿与主库不同 → 可恢复"，
+    //    若先做了别的写操作导致草稿被清掉，恢复横幅就出不来了。
     final open = await pipe.open();
 
     // M4：剪藏库多维表（演示壳里给它建一张示范表，用户可以自己加列/加行/筛选）
     final tablePage = await _ensureClipLibrary(db, pages);
 
+    // M12-T02/T03：读上次选的字体 + 图标主题（存 app_settings），并应用
+    final appearance = await loadAppearance(db);
+    final fontTheme = appearance.font;
+
     if (!mounted) return;
     setState(() {
       _db = db;
       _pipe = pipe;
+      _fontTheme = fontTheme;
+      _iconTheme = appearance.icon;
       _content = open.content.isEmpty ? _content : open.content;
       _currentTitle = open.title.isEmpty ? _currentTitle : open.title;
       _hasRecoverableDraft = open.hasRecoverableDraft;
     });
     if (tablePage != null) {
-      await _openTable(db, tablePage.id);
+      // ⚠️ **只记录 id，不自动切过去**：
+      //   自动打开会把标题换成「剪藏库」、正文换成表格 —— 启动时应该停在演示页。
+      //   表格在用户点侧栏「剪藏库」时才加载（见 onOpenPage）。
+      if (mounted) setState(() => _tablePageId = tablePage.id);
     }
   }
 
@@ -458,6 +501,30 @@ class _ShellAppState extends State<ShellApp> {
       ..showSnackBar(SnackBar(content: Text(msg), duration: const Duration(seconds: 2)));
   }
 
+  /// 文字主题：让选中的字体主题作用到**所有**文字
+  /// （ThemeData.fontFamily 只影响没显式指定 fontFamily 的 Text；
+  ///  我们的样式大多显式带了 fontFamily → 这里统一改写）
+  TextTheme get _textTheme {
+    final base = ThemeData.light().textTheme;
+    TextStyle s(TextStyle? x) => (x ?? const TextStyle()).copyWith(
+          fontFamily: FlowUsTypography.fontFamily,
+        );
+    return base.copyWith(
+      bodyLarge: s(base.bodyLarge),
+      bodyMedium: s(base.bodyMedium),
+      bodySmall: s(base.bodySmall),
+      titleLarge: s(base.titleLarge),
+      titleMedium: s(base.titleMedium),
+      titleSmall: s(base.titleSmall),
+      displayLarge: s(base.displayLarge),
+      displayMedium: s(base.displayMedium),
+      displaySmall: s(base.displaySmall),
+      labelLarge: s(base.labelLarge),
+      labelMedium: s(base.labelMedium),
+      labelSmall: s(base.labelSmall),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final data = SidebarData(
@@ -474,12 +541,14 @@ class _ShellAppState extends State<ShellApp> {
         fontFamily: FlowUsTypography.fontFamily,
         brightness: Brightness.light,
         scaffoldBackgroundColor: FlowUsColors.light.contentBg,
+        textTheme: _textTheme,
       ),
       darkTheme: ThemeData(
         useMaterial3: true,
         fontFamily: FlowUsTypography.fontFamily,
         brightness: Brightness.dark,
         scaffoldBackgroundColor: FlowUsColors.dark.contentBg,
+        textTheme: _textTheme,
       ),
       home: Focus(
         autofocus: true,
@@ -509,6 +578,24 @@ class _ShellAppState extends State<ShellApp> {
                 right: 0,
                 top: FlowUsLayout.tabBarHeight,
                 child: _DraftBanner(onRestore: _restoreDraft, onDiscard: _discardDraft),
+              ),
+            if (_appearanceOpen)
+              Positioned(
+                right: 8,
+                top: FlowUsLayout.tabBarHeight,
+                width: 380,
+                height: 560,
+                child: Material(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  elevation: 8,
+                  child: AppearancePanel(
+                    fontTheme: _fontTheme,
+                    iconTheme: _iconTheme,
+                    onFontChanged: _changeFont,
+                    onIconChanged: _changeIcon,
+                  ),
+                ),
               ),
             if (_pageMenuOpen)
               Positioned(
@@ -649,7 +736,7 @@ class _ShellAppState extends State<ShellApp> {
       onTableRecordTitleChanged: _saveRecordTitle,
       showFloatingButtons: true,
       onFloatingAiTap: () => _snack('FlowUs AI 面板属 M9'),
-      onFloatingHelpTap: () => _snack('帮助菜单（点右下帮助钮可开）'),
+      onFloatingHelpTap: () => setState(() => _appearanceOpen = !_appearanceOpen),
     );
 }
 

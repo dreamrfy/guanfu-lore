@@ -15,6 +15,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import 'icon_themes.dart';
+
 /// 图标文件名常量（= assets/icons/ 下的文件名，不含扩展名）
 abstract final class FlowUsIc {
   static const String luBell = 'Bell';
@@ -254,13 +256,30 @@ class FlowUsSvgIcon extends StatelessWidget {
     // 不给 color 时**跟随外层 IconTheme**（和 Material Icon 的行为一致）——
     // 否则 SVG 会用自身的 currentColor/黑色，在浅色侧栏里显得又黑又粗（M1-T13 并排对照时发现的）
     final effective = tint ? (color ?? IconTheme.of(context).color) : null;
-    return SvgPicture.asset(
-      'assets/icons/$name.svg',
-      width: size,
-      height: size,
-      colorFilter: effective == null ? null : ColorFilter.mode(effective, BlendMode.srcIn),
-      // 图标就是图标：不让它跟随系统字体缩放变形
-      allowDrawingOutsideViewBox: true,
+    // M12-T03：按**当前图标主题**取资产路径（主题切换 → 立刻换图）
+    final path = currentIconTheme
+        .assetPath(currentIconNameMap.resolve(name, currentIconTheme.id));
+    // ⚠️ **必须包一层 GestureDetector(behavior: opaque)**（2026-11-11 换开源图标时实测踩到）：
+    //   · vector_graphics 的命中测试按 **SVG path 的填充像素**算 →
+    //     **描边式图标（X 是两条细线）的中心是空的，点中心不命中**；
+    //   · 而外层 GestureDetector 默认 `behavior: deferToChild` →
+    //     child 命中了，父级手势就**不**触发（Flutter 的手势竞技场规则）。
+    //   → 结果：图标看着在那儿，点不动（实测横幅关闭钮、拖拽手柄都点不动）。
+    //
+    //   解法：给 SVG 包一层**没有 onTap 的** GestureDetector(behavior: opaque)：
+    //     它按**整个图标盒**命中（不按 path 像素），且因为自己没有 onTap，
+    //     不会吞掉事件 —— 父级的 GestureDetector / InkWell 照样收到 tap。
+    //   （实测：包之前 tapped=false，包之后 tapped=true）
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      child: SvgPicture.asset(
+        path,
+        width: size,
+        height: size,
+        colorFilter: effective == null ? null : ColorFilter.mode(effective, BlendMode.srcIn),
+        // 图标就是图标：不让它跟随系统字体缩放变形
+        allowDrawingOutsideViewBox: true,
+      ),
     );
   }
 }
