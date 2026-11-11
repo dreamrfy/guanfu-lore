@@ -529,6 +529,9 @@ class _ShellAppState extends State<ShellApp> {
   Widget build(BuildContext context) {
     final data = SidebarData(
       spaceName: '两相欢的空间',
+      // ⚠️ 2026-11-11 用户裁定（自用、无限量、不付费）：
+      //   「空间容量已用完 / 立即升级」是 FlowUs 的付费墙提示 → **不显示**。
+      showCapacityCard: false,
       spacePages: _spacePages,
       privatePages: _privatePages,
       selectedPageId: _selectedId,
@@ -579,21 +582,23 @@ class _ShellAppState extends State<ShellApp> {
                 top: FlowUsLayout.tabBarHeight,
                 child: _DraftBanner(onRestore: _restoreDraft, onDiscard: _discardDraft),
               ),
+            // 外观设置面板（侧栏底部「设置」打开）
             if (_appearanceOpen)
               Positioned(
-                right: 8,
+                left: 8,
                 top: FlowUsLayout.tabBarHeight,
-                width: 380,
-                height: 560,
+                width: 360,
+                height: 620,
                 child: Material(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
-                  elevation: 8,
+                  elevation: 12,
                   child: AppearancePanel(
                     fontTheme: _fontTheme,
                     iconTheme: _iconTheme,
                     onFontChanged: _changeFont,
                     onIconChanged: _changeIcon,
+                    onClose: () => setState(() => _appearanceOpen = false),
                   ),
                 ),
               ),
@@ -720,6 +725,7 @@ class _ShellAppState extends State<ShellApp> {
         },
       ),
       activeQuickIconIndex: 0, // 演示态对齐真 FlowUs：首页高亮
+      onOpenSettings: () => setState(() => _appearanceOpen = !_appearanceOpen),
       pageTitle: _currentTitle,
       onPageTitleChanged: _onTitleChanged,
       onPageTitleSave: _onTitleSave,
@@ -736,7 +742,7 @@ class _ShellAppState extends State<ShellApp> {
       onTableRecordTitleChanged: _saveRecordTitle,
       showFloatingButtons: true,
       onFloatingAiTap: () => _snack('FlowUs AI 面板属 M9'),
-      onFloatingHelpTap: () => setState(() => _appearanceOpen = !_appearanceOpen),
+      onFloatingHelpTap: () => _snack('帮助菜单（演示壳）'),
     );
 }
 

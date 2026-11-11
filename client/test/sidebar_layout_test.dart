@@ -82,8 +82,9 @@ void main() {
     });
   });
 
-  group('侧栏结构完整性（八块一个都不能少）', () {
-    testWidgets('空间名 / 图标行 / FlowUs AI / 两个分区 / 查看更多 / 底部三项 / 容量卡片', (tester) async {
+  group('侧栏结构完整性', () {
+    testWidgets('空间名 / 图标行 / FlowUs AI / 两个分区 / 查看更多 / 我的订阅 / 回收站 / 设置',
+        (tester) async {
       await _pumpShell(tester);
       expect(find.text('两相欢的空间'), findsOneWidget); // 空间名行
       expect(find.text('FlowUs AI'), findsOneWidget); // AI 行
@@ -91,11 +92,18 @@ void main() {
       expect(find.text('私人'), findsOneWidget); // 分区 2
       expect(find.text('查看更多'), findsOneWidget);
       expect(find.text('我的订阅'), findsOneWidget);
-      expect(find.text('市集'), findsOneWidget);
       expect(find.text('回收站'), findsOneWidget);
-      expect(find.text('空间容量已用完'), findsOneWidget); // 底部容量卡片
-      // M1-T15 起按实测拆开：13/22/500 纯黑的「立即升级」+ 12px 的 › 箭头
-      expect(find.text('立即升级'), findsOneWidget);
+      expect(find.text('设置'), findsOneWidget); // M12：外观设置入口
+    });
+
+    testWidgets('⚠️ 不显示 FlowUs 的付费墙元素（2026-11-11 用户裁定：自用、无限量、不付费）',
+        (tester) async {
+      await _pumpShell(tester);
+      expect(find.text('市集'), findsNothing,
+          reason: '市集是 FlowUs 的多人共享模板市场，我们没有');
+      expect(find.text('空间容量已用完'), findsNothing,
+          reason: '付费墙提示，自用无限量没有对应实体');
+      expect(find.text('立即升级'), findsNothing, reason: '同上');
     });
 
     testWidgets('页项都在（空间 2 个 + 私人 3 个）', (tester) async {

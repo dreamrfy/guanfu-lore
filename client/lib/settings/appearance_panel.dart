@@ -26,12 +26,16 @@ class AppearancePanel extends StatelessWidget {
     required this.iconTheme,
     required this.onFontChanged,
     required this.onIconChanged,
+    this.onClose,
   });
 
   final FontTheme fontTheme;
   final IconThemeSet iconTheme;
   final void Function(FontTheme theme) onFontChanged;
   final void Function(IconThemeSet theme) onIconChanged;
+
+  /// 关闭面板（可选）
+  final VoidCallback? onClose;
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +45,23 @@ class AppearancePanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          Row(
+            children: [
+              const Text('外观',
+                  style: TextStyle(
+                      fontSize: 15, height: 22 / 15, fontWeight: FontWeight.w600)),
+              const Spacer(),
+              if (onClose != null)
+                InkWell(
+                  onTap: onClose,
+                  child: const Padding(
+                    padding: EdgeInsets.all(4),
+                    child: Icon(Icons.close, size: 16, color: Color(0xFF91918E)),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
           const _SectionTitle('字体'),
           const SizedBox(height: 8),
           for (final t in FontThemes.all)

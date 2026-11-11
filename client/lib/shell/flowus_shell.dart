@@ -104,7 +104,9 @@ class SidebarData {
     this.spacePages = const [],
     this.privatePages = const [],
     this.selectedPageId,
-    this.showCapacityCard = true,
+    // ⚠️ 默认**不显示**容量卡：那是 FlowUs 的付费墙提示（用户 11-11 裁定：自用、无限量、不付费）。
+    //    要显示的话宿主显式传 true。
+    this.showCapacityCard = false,
   });
 
   final String spaceName;
@@ -152,10 +154,14 @@ class FlowUsSidebar extends StatelessWidget {
     required this.data,
     this.callbacks,
     this.activeQuickIconIndex,
+    this.onOpenSettings,
   });
 
   final SidebarData data;
   final SidebarCallbacks? callbacks;
+
+  /// 侧栏底部「设置」→ 打开外观/设置面板（M12）
+  final VoidCallback? onOpenSettings;
 
   /// 图标行激活态下标（M1-T16，null = 无激活）
   final int? activeQuickIconIndex;
@@ -198,9 +204,16 @@ class FlowUsSidebar extends StatelessWidget {
           ),
           _PlainRow(icon: FlowUsIc.more, label: '查看更多'),
           const Spacer(),
+          // ⚠️ 2026-11-11 用户裁定（自用、无限量、不付费）：
+          //   「我的订阅」保留（以后可能带 RSS）；「市集」**删掉**（FlowUs 的多人共享模板市场，我们没有）；
+          //   「空间容量已用完 / 立即升级」**删掉**（付费墙提示，自用无限量没有对应实体）。
           _PlainRow(icon: FlowUsIc.subscribe, label: '我的订阅'),
-          _PlainRow(icon: FlowUsIc.luStore, label: '市集'),
           _PlainRow(icon: FlowUsIc.trash, label: '回收站'),
+          _PlainRow(
+            icon: FlowUsIc.settings,
+            label: '设置',
+            onTap: onOpenSettings,
+          ),
           if (data.showCapacityCard) const _CapacityCard(),
           const SizedBox(height: 8),
         ],
@@ -718,11 +731,14 @@ class _MenuItemState extends State<_MenuItem> {
 
 /// 底部普通行（查看更多 / 我的订阅 / 市集 / 回收站）
 class _PlainRow extends StatelessWidget {
-  const _PlainRow({required this.icon, required this.label});
+  const _PlainRow({required this.icon, required this.label, this.onTap});
 
   /// 真图标名（FlowUsIc.*）。底部三项实测都是 16×16 的自研/Lucide 图标
   final String icon;
   final String label;
+
+  /// 点这一行（null = 只显示）
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -731,7 +747,10 @@ class _PlainRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: FlowUsLayout.sidebarItemMarginH),
       child: SizedBox(
         height: FlowUsLayout.sidebarItemHeight,
-        child: Padding(
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(6),
+          child: Padding(
           padding: const EdgeInsets.only(left: 8, right: FlowUsLayout.sidebarItemPaddingRight),
           child: Row(
             children: [
@@ -743,6 +762,7 @@ class _PlainRow extends StatelessWidget {
               Expanded(child: Text(label,
                   style: TextStyle(fontSize: 14, height: 24 / 14, fontWeight: FontWeight.w500, color: c.textSub))),
             ],
+          ),
           ),
         ),
       ),
@@ -806,6 +826,7 @@ class FlowUsShell extends StatelessWidget {
     this.tabBarCallbacks,
     this.systemBannerText,
     this.onSystemBannerClose,
+    this.onOpenSettings,
     this.showDeleteBanner = false,
     this.onDeleteRestore,
     this.onDeleteConfirm,
@@ -847,6 +868,9 @@ class FlowUsShell extends StatelessWidget {
   /// 系统横幅（M1-T06）：文字非空才显示
   final String? systemBannerText;
   final VoidCallback? onSystemBannerClose;
+
+  /// 侧栏底部「设置」→ 打开外观/设置面板（M12）
+  final VoidCallback? onOpenSettings;
 
   /// 删除恢复横幅（M1-T06）：true 显示红条
   final bool showDeleteBanner;
@@ -923,7 +947,12 @@ class FlowUsShell extends StatelessWidget {
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          FlowUsSidebar(data: data, callbacks: callbacks, activeQuickIconIndex: activeQuickIconIndex),
+          FlowUsSidebar(
+            data: data,
+            callbacks: callbacks,
+            activeQuickIconIndex: activeQuickIconIndex,
+            onOpenSettings: onOpenSettings,
+          ),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
