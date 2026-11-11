@@ -20,6 +20,7 @@ import 'page/page_menu.dart';
 import 'page/page_save_pipeline.dart';
 import 'shell/flowus_shell.dart';
 import 'table/flowus_table.dart';
+import 'table/table_engine.dart';
 import 'shell/flowus_tabbar.dart';
 import 'shell/flowus_trash_panel.dart';
 
@@ -34,6 +35,12 @@ const String kClipLibraryTitle = '剪藏库';
 
 /// 剪藏库在侧栏里的 id
 const String kClipLibraryId = 'clip-lib';
+
+/// 记录页「我的想法」在单元格里的存储键（约定键，不是用户可见的列）
+const String kRecordNotesKey = '__notes';
+
+/// 记录页「作者原文」在单元格里的存储键
+const String kRecordAuthorKey = '__author';
 
 void main() => runApp(const ShellApp());
 
@@ -93,6 +100,29 @@ class _ShellAppState extends State<ShellApp> {
     final id = _tablePageId;
     if (id == null) return;
     await _db?.updatePageContent(id, c.toStoredJson());
+  }
+
+  /// 记录页里改了一个属性值 → 落库
+  Future<void> _saveRecordCell(String recordId, String fieldId, Object? value) async {
+    final t = _table;
+    if (t == null) return;
+    await _saveTable(FlowUsTableEngine.setCell(t, recordId, fieldId, value));
+  }
+
+  /// 记录页里改了「我的想法」→ 落库
+  Future<void> _saveRecordNotes(String recordId, String text) async {
+    final t = _table;
+    if (t == null) return;
+    await _saveTable(FlowUsTableEngine.setCell(t, recordId, kRecordNotesKey, text));
+  }
+
+  /// 记录页里改了标题 → 落库
+  Future<void> _saveRecordTitle(String recordId, String title) async {
+    final t = _table;
+    if (t == null) return;
+    final titleField = t.titleField;
+    if (titleField == null) return;
+    await _saveTable(FlowUsTableEngine.setCell(t, recordId, titleField.id, title));
   }
 
   @override
@@ -603,6 +633,9 @@ class _ShellAppState extends State<ShellApp> {
       pageIsTable: _selectedId == kClipLibraryId,
       pageTable: _table,
       onPageTableChanged: _saveTable,
+      onTableRecordCellChanged: _saveRecordCell,
+      onTableRecordNotesChanged: _saveRecordNotes,
+      onTableRecordTitleChanged: _saveRecordTitle,
       showFloatingButtons: true,
       onFloatingAiTap: () => _snack('FlowUs AI 面板属 M9'),
       onFloatingHelpTap: () => _snack('帮助菜单（点右下帮助钮可开）'),

@@ -197,7 +197,7 @@ void main() {
     expect(r.latestFn().recordById('r1')!.cells['f3'], '已读');
   });
 
-  testWidgets('行操作钮 → 打开记录页（记录页出现）', (tester) async {
+  testWidgets('行操作钮 → **右侧**展开记录页（表格仍在左侧）', (tester) async {
     await _mount(tester, _table());
     await tester.tap(find.byIcon(Icons.open_in_new).first);
     await tester.pumpAndSettle();
@@ -205,6 +205,19 @@ void main() {
     expect(find.text('作者原文'), findsOneWidget);
     expect(find.text('我的想法'), findsOneWidget);
     expect(find.text('公众号'), findsWidgets, reason: '属性区要显示字段');
+    // 表格**仍在**（左侧没被详情面板顶掉）——用户 11-11 定的形态
+    expect(find.text('新建记录'), findsOneWidget, reason: '表格要一直可见');
+    expect(find.text('标题'), findsWidgets, reason: '列头要还在');
+  });
+
+  testWidgets('记录页在表格**右边**（不是插在行下面）', (tester) async {
+    await _mount(tester, _table());
+    await tester.tap(find.byIcon(Icons.open_in_new).first);
+    await tester.pumpAndSettle();
+
+    final tableX = tester.getTopLeft(find.text('新建记录')).dx;
+    final recordX = tester.getTopLeft(find.text('作者原文')).dx;
+    expect(recordX, greaterThan(tableX), reason: '记录页要在表格右边');
   });
 
   testWidgets('删行 → 确认 → 行真的少了', (tester) async {

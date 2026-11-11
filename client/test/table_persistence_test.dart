@@ -68,6 +68,54 @@ void main() {
     expect(reread.records.first.cells['我的评分'], 5);
   });
 
+  testWidgets('记录页：改「我的想法」+ 改属性 → 落库 → 重开还在', (tester) async {
+    tester.view.physicalSize = const Size(1920, 945);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final db = AppDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(db.close);
+    await tester.pumpWidget(ShellApp(database: db));
+    await tester.pumpAndSettle();
+
+    // 先造一条记录
+    final pages0 = await db.listAllActive();
+    final clipPage0 = pages0.firstWhere((p) => p.title == '剪藏库');
+    var c = FlowUsCollection.fromStoredJson(clipPage0.content);
+    c = FlowUsTableEngine.addRow(c);
+    c = FlowUsTableEngine.setCell(c, c.records.first.uuid, 'title', '磷酸铁锂成本分析');
+    await db.updatePageContent(clipPage0.id, c.toStoredJson());
+
+    // 重开 App（重新 pump，让它读到新数据）
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(ShellApp(database: db));
+    await tester.pumpAndSettle();
+
+    // 点开剪藏库 → 点行 → 记录页展开
+    await tester.tap(find.text('剪藏库').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.open_in_new).first);
+    await tester.pumpAndSettle();
+
+    // 记录页在**右侧面板**（用户 11-11 定的形态：表格在左、详情在右）
+    expect(find.text('作者原文'), findsOneWidget, reason: '记录页要展开在右侧');
+    expect(find.text('我的想法'), findsOneWidget);
+
+    // 在「我的想法」里写点东西（记录页的最后一个 TextField 就是它）
+    await tester.enterText(find.byType(TextField).last, '这个数据我觉得有问题');
+    await tester.pumpAndSettle();
+
+    // 落库检查
+    final pages1 = await db.listAllActive();
+    final clipPage1 = pages1.firstWhere((p) => p.title == '剪藏库');
+    final after = FlowUsCollection.fromStoredJson((await db.pageById(clipPage1.id))!.content);
+    expect(after.records.length, 1);
+    expect(after.records.first.cells['__notes'], '这个数据我觉得有问题',
+        reason: '「我的想法」必须真的落库');
+  });
+
   testWidgets('演示壳打开「剪藏库」→ 渲染表格（能点、能加行）', (tester) async {
     tester.view.physicalSize = const Size(1920, 945);
     tester.view.devicePixelRatio = 1.0;

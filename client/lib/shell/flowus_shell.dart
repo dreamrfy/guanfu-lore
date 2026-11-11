@@ -820,6 +820,9 @@ class FlowUsShell extends StatelessWidget {
     this.pageTable,
     this.onPageTableChanged,
     this.onOpenTableRecord,
+    this.onTableRecordCellChanged,
+    this.onTableRecordNotesChanged,
+    this.onTableRecordTitleChanged,
     this.pageIcon = '',
     this.pageCoverKey = '',
     this.coverImage,
@@ -875,6 +878,15 @@ class FlowUsShell extends StatelessWidget {
 
   /// 点表格某一行 → 打开记录页
   final ValueChanged<FlowUsRecord>? onOpenTableRecord;
+
+  /// 记录页里改了一个属性值
+  final void Function(String recordId, String fieldId, Object? value)? onTableRecordCellChanged;
+
+  /// 记录页里改了「我的想法」
+  final void Function(String recordId, String text)? onTableRecordNotesChanged;
+
+  /// 记录页里改了标题
+  final void Function(String recordId, String title)? onTableRecordTitleChanged;
 
   /// 页面图标（emoji，空 = 无）与封面资源 key（空 = 无）——M2-T23 起由数据驱动
   final String pageIcon;
@@ -995,6 +1007,9 @@ class FlowUsShell extends StatelessWidget {
                                           onCollectionChanged:
                                               onPageTableChanged ?? (_) {},
                                           onOpenRecord: onOpenTableRecord,
+                                          onRecordCellChanged: onTableRecordCellChanged,
+                                          onRecordNotesChanged: onTableRecordNotesChanged,
+                                          onRecordTitleChanged: onTableRecordTitleChanged,
                                         )
                                       : FlowUsPageBody(
                                           content: pageContent,

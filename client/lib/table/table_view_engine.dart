@@ -28,6 +28,10 @@ class FlowUsTableView extends StatefulWidget {
     this.onColumnResized,
     this.aiActions = const [],
     this.aiStatusOf,
+    this.onRecordCellChanged,
+    this.onRecordNotesChanged,
+    this.onRecordTitleChanged,
+    this.onOpenFullPage,
   });
 
   final FlowUsCollection collection;
@@ -46,6 +50,18 @@ class FlowUsTableView extends StatefulWidget {
 
   /// 某条记录的 AI 状态文案
   final String? Function(FlowUsRecord record)? aiStatusOf;
+
+  /// 记录页里改了一个属性值 → 落库
+  final void Function(String recordId, String fieldId, Object? value)? onRecordCellChanged;
+
+  /// 记录页里改了「我的想法」→ 落库
+  final void Function(String recordId, String text)? onRecordNotesChanged;
+
+  /// 记录页里改了标题 → 落库
+  final void Function(String recordId, String title)? onRecordTitleChanged;
+
+  /// 「展开成整页」（用户 11-11 要的：长文时能切成整页）
+  final void Function(FlowUsRecord record)? onOpenFullPage;
 
   @override
   State<FlowUsTableView> createState() => _FlowUsTableViewState();
@@ -72,7 +88,8 @@ class _FlowUsTableViewState extends State<FlowUsTableView> {
   /// 打开筛选器的字段 id
   String? _filterFieldId;
 
-  /// 打开记录页的记录 id
+  /// 打开记录页的记录 id（**右侧面板**形态 —— 用户 11-11 定的：
+  /// 「点行 → 右侧展开记录页」，表格一直可见；长文另开整页）
   String? _openRecordId;
 
   @override
@@ -284,12 +301,20 @@ class _FlowUsTableViewState extends State<FlowUsTableView> {
         if (f.id != titleFieldId) f,
     ];
 
+    // ⚠️ 用户 11-11 定的形态：**表格在左、详情在右**（表格一直可见）。
+    //    所以这里是一个 Row，不是"点行后在行下面展开"。
+    final openRecord = _openRecordId == null ? null : widget.collection.recordById(_openRecordId!);
+
     return Stack(
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
         // ---- 工具条 ----
         Padding(
           padding: const EdgeInsets.only(bottom: 6),
@@ -333,8 +358,10 @@ class _FlowUsTableViewState extends State<FlowUsTableView> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const _IndexHeaderCell(),
+              // 冻结的标题列：与行一样可压缩（窄容器不溢出）
               for (final f in frozen)
-                _HeaderCell(
+                Flexible(
+                  child: _HeaderCell(
                   key: ValueKey('h_${f.id}'),
                   field: f,
                   width: _widthOf(f.id),
@@ -345,6 +372,7 @@ class _FlowUsTableViewState extends State<FlowUsTableView> {
                     _menuFieldId = _menuFieldId == f.id ? null : f.id;
                   }),
                   onResize: (d) => _resize(f.id, d),
+                  ),
                 ),
               Expanded(
                 child: SingleChildScrollView(
@@ -407,6 +435,41 @@ class _FlowUsTableViewState extends State<FlowUsTableView> {
               },
               onDelete: () => _deleteRow(r),
             ),
+                ],
+              ),
+            ),
+            // ---- 右侧：详情（记录页）----
+            //    宽度**自适应**：容器窄时不能硬写 420（会把左边的表格挤没，
+            //    甚至把详情面板自己挤成 0 宽 → 点开记录页看不到东西）。
+            if (openRecord != null)
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: Container(
+                  margin: const EdgeInsets.only(left: 16),
+                  padding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0x0F000000)),
+                  ),
+                  child: SingleChildScrollView(
+                    child: FlowUsRecordPage(
+                      collection: widget.collection,
+                      record: openRecord,
+                      aiStatusText: widget.aiStatusOf?.call(openRecord),
+                      onOpenFullPage: widget.onOpenFullPage == null
+                          ? null
+                          : () => widget.onOpenFullPage!(openRecord),
+                      onTitleChanged: (t) =>
+                          widget.onRecordTitleChanged?.call(openRecord.uuid, t),
+                      onCellChanged: (fieldId, v) =>
+                          widget.onRecordCellChanged?.call(openRecord.uuid, fieldId, v),
+                      onNotesChanged: (t) =>
+                          widget.onRecordNotesChanged?.call(openRecord.uuid, t),
+                    ),
+                  ),
+                ),
+              ),
             // ---- 列菜单（OverlayPortal：画到表格外）----
             OverlayPortal(
               controller: _menuPortal,
@@ -567,7 +630,10 @@ class _RowView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _IndexCell(text: '$index'),
-                for (final f in frozenFields) _cell(f),
+                // 冻结的标题列：容器窄时**可压缩**（Flex 1），
+                // 否则 序号(66) + 标题(180) + 操作钮(56) 会在窄容器里溢出。
+                for (final f in frozenFields)
+                  Flexible(child: _cell(f)),
                 Expanded(
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -583,6 +649,9 @@ class _RowView extends StatelessWidget {
                 // ⚠️ 不用 IconButton：它的默认最小宽度是 48px（tap target），
                 //    两个并排就 96px > 64px 的槽位 → 必然溢出。
                 //    这里自绘 24×24 的点击区（真 FlowUs 行内操作钮就是 20×20）。
+                //
+                // ⚠️ 必须**固定在右侧**、不能放进横向滚动区 ——
+                //    放进去的话它在滚动区最右端，屏幕外点不到（实测点不到）。
                 SizedBox(
                   width: 56,
                   child: Row(
@@ -606,7 +675,6 @@ class _RowView extends StatelessWidget {
               ],
             ),
           ),
-          if (isOpen) _RecordPageHost(record: record, collection: collection, aiStatus: aiStatus),
         ],
       ),
     );
@@ -622,31 +690,6 @@ class _RowView extends StatelessWidget {
       onStartEdit: () => onEditCell(f.id),
       onCommit: (v) => onCommitCell(f.id, v),
       onCancel: onCancelEdit,
-    );
-  }
-}
-
-/// 行内展开的记录页（右侧展开形态；整页形态由宿主另开页面）
-class _RecordPageHost extends StatelessWidget {
-  const _RecordPageHost({required this.record, required this.collection, this.aiStatus});
-
-  final FlowUsRecord record;
-  final FlowUsCollection collection;
-  final String? aiStatus;
-
-  @override
-  Widget build(BuildContext context) {
-    // 记录页的编辑由外部（宿主）负责落库；这里先给出只读骨架 + 占位回调
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 4, 8, 12),
-      child: FlowUsRecordPage(
-        collection: collection,
-        record: record,
-        aiStatusText: aiStatus,
-        onTitleChanged: (_) {},
-        onCellChanged: (_, _) {},
-        onNotesChanged: (_) {},
-      ),
     );
   }
 }
