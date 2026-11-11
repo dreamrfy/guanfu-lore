@@ -8,16 +8,18 @@
 
 import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Page;
 
 import 'package:flutter/services.dart';
 
 import 'design/tokens.dart';
 
 import 'data/database.dart';
+import 'data/pages_table.dart' show PageTypes;
 import 'page/page_menu.dart';
 import 'page/page_save_pipeline.dart';
 import 'shell/flowus_shell.dart';
+import 'table/flowus_table.dart';
 import 'shell/flowus_tabbar.dart';
 import 'shell/flowus_trash_panel.dart';
 
@@ -26,6 +28,12 @@ const String kDemoPageTitle = '学习进度';
 
 /// 演示页在侧栏里的 id（与真 FlowUs 截图状态一致：默认选中「学习进度」）
 const String kDemoPageId = 'study';
+
+/// **剪藏库**多维表页的标题（M4：剪藏内容落进这张表）
+const String kClipLibraryTitle = '剪藏库';
+
+/// 剪藏库在侧栏里的 id
+const String kClipLibraryId = 'clip-lib';
 
 void main() => runApp(const ShellApp());
 
@@ -58,6 +66,34 @@ class _ShellAppState extends State<ShellApp> {
   AppDatabase? _db;
   PageSavePipeline? _pipe;
   bool _hasRecoverableDraft = false;
+
+  // ---- M4：多维表（剪藏库）----
+  /// 当前打开的多维表内容（从库里读，改了要落回去）
+  FlowUsCollection? _table;
+
+  /// 多维表页 id（演示壳的「剪藏库」）
+  String? _tablePageId;
+
+  /// 打开多维表页：从库里读 content 并解析成表
+  Future<void> _openTable(AppDatabase db, String pageId) async {
+    final page = await db.pageById(pageId);
+    if (page == null) return;
+    final collection = FlowUsCollection.fromStoredJson(page.content);
+    if (!mounted) return;
+    setState(() {
+      _tablePageId = pageId;
+      _table = collection;
+      _currentTitle = page.title;
+    });
+  }
+
+  /// 多维表改了 → 落库（`pages.content`）
+  Future<void> _saveTable(FlowUsCollection c) async {
+    setState(() => _table = c);
+    final id = _tablePageId;
+    if (id == null) return;
+    await _db?.updatePageContent(id, c.toStoredJson());
+  }
 
   @override
   void initState() {
@@ -126,6 +162,10 @@ class _ShellAppState extends State<ShellApp> {
         : await db.createPage(title: kDemoPageTitle, content: _content);
     final pipe = PageSavePipeline(db: db, pageId: page.id);
     final open = await pipe.open();
+
+    // M4：剪藏库多维表（演示壳里给它建一张示范表，用户可以自己加列/加行/筛选）
+    final tablePage = await _ensureClipLibrary(db, pages);
+
     if (!mounted) return;
     setState(() {
       _db = db;
@@ -134,6 +174,59 @@ class _ShellAppState extends State<ShellApp> {
       _currentTitle = open.title.isEmpty ? _currentTitle : open.title;
       _hasRecoverableDraft = open.hasRecoverableDraft;
     });
+    if (tablePage != null) {
+      await _openTable(db, tablePage.id);
+    }
+  }
+
+  /// 建/取「剪藏库」多维表页（type=table）。
+  ///
+  /// 字段是**建议值**——用户可以自己增删改（M4 的通用引擎就是这么设计的：
+  /// 「具体公众号剪藏这个表格要哪些字段我到时候自己来」）。
+  Future<Page?> _ensureClipLibrary(AppDatabase db, List<Page> pages) async {
+    final existing = pages.where((p) => p.title == kClipLibraryTitle).toList();
+    if (existing.isNotEmpty) return existing.first;
+
+    final collection = FlowUsCollection(
+      id: 'clip-lib',
+      fields: [
+        FlowUsFieldDefinition(id: 'title', name: '标题', rawType: 'title'),
+        FlowUsFieldDefinition(id: 'f_src', name: '来源类型', rawType: 'select', options: [
+          {'name': '公众号', 'color': 'green'},
+          {'name': 'B站', 'color': 'blue'},
+          {'name': '小红书', 'color': 'pink'},
+          {'name': '抖音', 'color': 'orange'},
+        ]),
+        FlowUsFieldDefinition(id: 'f_acct', name: '公众号', rawType: 'text'),
+        FlowUsFieldDefinition(id: 'f_time', name: '收藏时间', rawType: 'date'),
+        FlowUsFieldDefinition(id: 'f_read', name: '阅读状态', rawType: 'select', options: [
+          {'name': '未读', 'color': 'gray'},
+          {'name': '已读', 'color': 'green'},
+        ]),
+        FlowUsFieldDefinition(id: 'f_ai', name: 'AI 简介', rawType: 'text'),
+        FlowUsFieldDefinition(id: 'f_state', name: '存档状态', rawType: 'select', options: [
+          {'name': '已存档', 'color': 'green'},
+          {'name': '存档中', 'color': 'blue'},
+          {'name': '不完整', 'color': 'orange'},
+          {'name': '失败', 'color': 'red'},
+        ]),
+        FlowUsFieldDefinition(id: 'f_aistate', name: 'AI 状态', rawType: 'select', options: [
+          {'name': '待生成', 'color': 'gray'},
+          {'name': '生成中', 'color': 'blue'},
+          {'name': '已完成', 'color': 'green'},
+          {'name': '失败', 'color': 'red'},
+        ]),
+      ],
+      records: const [],
+      views: [FlowUsView(uuid: 'v1', rawType: 'table', title: '表格视图')],
+    );
+
+    final page = await db.createPage(
+      title: kClipLibraryTitle,
+      content: collection.toStoredJson(),
+      type: PageTypes.table,
+    );
+    return page;
   }
 
   Future<void> _restoreDraft() async {
@@ -262,6 +355,8 @@ class _ShellAppState extends State<ShellApp> {
 
   List<PageNode> _spacePages = const [
     PageNode(id: 'study', title: '学习进度', kind: PageKind.database), // 真 FlowUs 里它是多维表页（网格图标）
+    // M4：剪藏库（真多维表页，能加列/加行/筛选/排序）
+    PageNode(id: kClipLibraryId, title: '剪藏库', kind: PageKind.database),
     PageNode(
       id: 'pchem',
       title: '磷化工知识库',
@@ -418,10 +513,19 @@ class _ShellAppState extends State<ShellApp> {
   Widget _buildShell(SidebarData data) => FlowUsShell(
         data: data,
         callbacks: SidebarCallbacks(
-          onOpenPage: (id) => setState(() {
-            _selectedId = id;
-            _currentTitle = _find(_spacePages, id)?.title ?? _find(_privatePages, id)?.title ?? '';
-          }),
+          onOpenPage: (id) {
+            setState(() {
+              _selectedId = id;
+              _currentTitle = _find(_spacePages, id)?.title ?? _find(_privatePages, id)?.title ?? '';
+            });
+            // M4：点开「剪藏库」→ 真的把那张多维表读出来
+            if (id == kClipLibraryId) {
+              final pid = _tablePageId;
+              if (pid != null && _db != null) {
+                _openTable(_db!, pid);
+              }
+            }
+          },
           onToggleExpand: (id, expanded) => setState(() {
             final hit = _find(_spacePages, id) ?? _find(_privatePages, id);
             if (hit != null) {
@@ -495,6 +599,10 @@ class _ShellAppState extends State<ShellApp> {
       pageContent: _content,
       onPageContentChanged: _onContentChanged,
       autoFocusPageBody: true, // 演示/截图：正文默认聚焦，可直接敲 "/" 看斜杠菜单
+      // M4：当前是「剪藏库」多维表页 → 正文区渲染表格
+      pageIsTable: _selectedId == kClipLibraryId,
+      pageTable: _table,
+      onPageTableChanged: _saveTable,
       showFloatingButtons: true,
       onFloatingAiTap: () => _snack('FlowUs AI 面板属 M9'),
       onFloatingHelpTap: () => _snack('帮助菜单（点右下帮助钮可开）'),

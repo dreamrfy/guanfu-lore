@@ -36,10 +36,12 @@ void main() {
     await tester.pumpWidget(ShellApp(database: db));
     await tester.pumpAndSettle();
 
-    // 自动建了一页
+    // 自动建了页：「学习进度」（文档）+「剪藏库」（M4 的多维表页）
     final pages = await db.listAllActive();
-    expect(pages.length, 1);
-    expect(pages.first.title, '学习进度');
+    expect(pages.length, 2);
+    final titles = pages.map((p) => p.title).toSet();
+    expect(titles, contains('学习进度'));
+    expect(titles, contains('剪藏库'), reason: 'M4：剪藏库多维表页应自动建好');
 
     // 正文渲染（富文本内核）
     expect(find.text('标题一（30/45/w600）'), findsNothing, reason: '内核按块渲染，不是整段 Text');

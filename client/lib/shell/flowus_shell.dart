@@ -24,6 +24,8 @@ import '../page/page_body.dart';
 import '../page/page_footer.dart';
 import '../page/page_cover.dart';
 import '../design/tokens.dart';
+import '../table/flowus_table.dart';
+import '../table/table_view_engine.dart';
 import 'flowus_banner.dart';
 import 'flowus_floating.dart';
 import 'flowus_tabbar.dart';
@@ -814,6 +816,10 @@ class FlowUsShell extends StatelessWidget {
     this.pageContent = '',
     this.onPageContentChanged,
     this.autoFocusPageBody = false,
+    this.pageIsTable = false,
+    this.pageTable,
+    this.onPageTableChanged,
+    this.onOpenTableRecord,
     this.pageIcon = '',
     this.pageCoverKey = '',
     this.coverImage,
@@ -857,6 +863,18 @@ class FlowUsShell extends StatelessWidget {
 
   /// 正文自动获得焦点（演示/截图用，便于直接敲 "/" 看斜杠菜单）
   final bool autoFocusPageBody;
+
+  /// 这一页是**多维表**（`pages.type == 'table'`）→ 正文区渲染表格而不是编辑器（M4）。
+  final bool pageIsTable;
+
+  /// 多维表内容（`FlowUsCollection`；为空时渲染空表）
+  final FlowUsCollection? pageTable;
+
+  /// 表格改了（加列/改值/筛选/排序…）→ 宿主落库
+  final ValueChanged<FlowUsCollection>? onPageTableChanged;
+
+  /// 点表格某一行 → 打开记录页
+  final ValueChanged<FlowUsRecord>? onOpenTableRecord;
 
   /// 页面图标（emoji，空 = 无）与封面资源 key（空 = 无）——M2-T23 起由数据驱动
   final String pageIcon;
@@ -971,11 +989,18 @@ class FlowUsShell extends StatelessWidget {
                                 // 正文占满剩余高度、由编辑器自己滚（外层再套 ScrollView 会触发
                                 // appflowy overlay 的 "no offstage children" 断言）
                                 Expanded(
-                                  child: FlowUsPageBody(
-                                    content: pageContent,
-                                    onChanged: onPageContentChanged ?? (_) {},
-                                    autoFocus: autoFocusPageBody,
-                                  ),
+                                  child: pageIsTable
+                                      ? FlowUsTableView(
+                                          collection: pageTable ?? _emptyCollection,
+                                          onCollectionChanged:
+                                              onPageTableChanged ?? (_) {},
+                                          onOpenRecord: onOpenTableRecord,
+                                        )
+                                      : FlowUsPageBody(
+                                          content: pageContent,
+                                          onChanged: onPageContentChanged ?? (_) {},
+                                          autoFocus: autoFocusPageBody,
+                                        ),
                                 ),
                                 // M2-T12：底部引用条（测量值见 page_footer.dart 顶部注释）
                                 if (showFooter) FlowUsPageFooter(info: footerInfo),
@@ -1005,3 +1030,6 @@ class FlowUsShell extends StatelessWidget {
     );
   }
 }
+
+/// 空表（没有表格页时用）
+final FlowUsCollection _emptyCollection = FlowUsCollection(id: '');
