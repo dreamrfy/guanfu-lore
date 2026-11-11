@@ -41,3 +41,6 @@ docs/验收证据/P0-V01-原始数据/poll.js
 # Web 数据库引擎文件（第三方编译产物，扫描器误报；由 scripts/fetch-web-db-binaries.sh 按版本钉死下载）
 client/web/sqlite3.wasm
 client/web/drift_worker.js
+
+# 临时对比工具（用完即弃，不入库）
+tools/font_compare/
