@@ -1,0 +1,35 @@
+# 行尾规范：仓库里的文本文件统一用 CRLF（Windows 开发环境）。
+#
+# 为什么加这个（2026-11-11 实测踩到）：
+#   开发状态.md 用 LF 写回后，git 报「609 增 571 删」，实际只多了 38 行 ——
+#   全是行尾噪音（`git diff --ignore-cr-at-eol` 才能看出真实变化）。
+#   同理 `ops/运行状态-v3.json`（Python 写回默认 LF）也会触发同样的假 diff。
+#
+# 规则：文本文件按 CRLF 存取；二进制文件不做转换。
+# ⚠️ 已入库的文件不做批量规范化（那会产生上万行假 diff）；
+#    新增/修改的文件按此规则落盘即可。
+* text=auto eol=crlf
+
+# 二进制文件：不做任何转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.bmp binary
+*.ico binary
+*.webp binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.7z binary
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+*.apk binary
+*.aab binary
+*.wasm binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
