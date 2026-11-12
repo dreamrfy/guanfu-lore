@@ -1,0 +1,72 @@
+import { useEffect } from "react";
+import { flushDocs, useStore } from "./data/store";
+import { fontStackOf } from "./design/fonts";
+import { AppShell } from "./shell/AppShell";
+
+export function App() {
+  const ready = useStore((s) => s.ready);
+  const bootError = useStore((s) => s.bootError);
+  const hydrate = useStore((s) => s.hydrate);
+  const theme = useStore((s) => s.theme);
+  const fontTheme = useStore((s) => s.fontTheme);
+  const iconSet = useStore((s) => s.iconSet);
+
+  // 主题 / 字体 / 图标风格挂在 <html> 上，样式统一走 CSS 变量
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty("--font-family", fontStackOf(fontTheme));
+  }, [fontTheme]);
+
+  useEffect(() => {
+    document.documentElement.dataset.iconSet = iconSet;
+  }, [iconSet]);
+
+  // 启动：从本地数据库读出页面（空库则建第一篇）
+  useEffect(() => {
+    void hydrate();
+  }, [hydrate]);
+
+  // 关窗/刷新前，把防抖里还没落盘的正文写掉
+  useEffect(() => {
+    const onLeave = () => {
+      void flushDocs();
+    };
+    window.addEventListener("beforeunload", onLeave);
+    return () => window.removeEventListener("beforeunload", onLeave);
+  }, []);
+
+  // 窄窗口下右栏是浮层，会把正文盖住 —— 这时先自动收起（不写进偏好，宽屏下仍按你的设置来）
+  useEffect(() => {
+    const apply = () => {
+      if (window.innerWidth < 1000 && useStore.getState().rightPanelOpen) {
+        useStore.getState().setRightPanelOpen(false, false);
+      }
+    };
+    apply();
+    window.addEventListener("resize", apply);
+    return () => window.removeEventListener("resize", apply);
+  }, []);
+
+  if (!ready) {
+    return <div className="boot">正在打开知识库…</div>;
+  }
+
+  if (bootError) {
+    return (
+      <div className="boot boot--error">
+        <div>
+          <div style={{ fontSize: 15, marginBottom: 8 }}>本地数据库打不开</div>
+          <div style={{ marginBottom: 12 }}>{bootError}</div>
+          <button className="icon-btn" onClick={() => window.location.reload()}>
+            重新载入
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return <AppShell />;
+}
