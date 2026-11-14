@@ -5,11 +5,40 @@
   "maxConcurrent": 2,
   "running": [],
   "history": [
-    {"task": "T00", "result": "DONE", "finishedAt": "2026-11-15T02:47:00+08:00", "commit": "ff7f147"},
-    {"task": "T01", "result": "DONE", "finishedAt": "2026-11-15T03:02:00+08:00"},
-    {"task": "T02", "result": "DONE", "finishedAt": "2026-11-15T03:10:00+08:00"},
-    {"task": "T03", "result": "DONE·部分", "finishedAt": "2026-11-15T03:26:00+08:00", "note": "真机意图验证顺延T08（备用机锁屏阻塞安装，等用户解锁）"},
-    {"task": "T04", "result": "DONE", "finishedAt": "2026-11-15T04:01:00+08:00", "note": "单测17/17绿；真实服务422/401契约验证"}
+    {
+      "task": "T00",
+      "result": "DONE",
+      "finishedAt": "2026-11-15T02:47:00+08:00",
+      "commit": "ff7f147"
+    },
+    {
+      "task": "T01",
+      "result": "DONE",
+      "finishedAt": "2026-11-15T03:02:00+08:00"
+    },
+    {
+      "task": "T02",
+      "result": "DONE",
+      "finishedAt": "2026-11-15T03:10:00+08:00"
+    },
+    {
+      "task": "T03",
+      "result": "DONE·部分",
+      "finishedAt": "2026-11-15T03:26:00+08:00",
+      "note": "真机意图验证顺延T08（备用机锁屏阻塞安装，等用户解锁）"
+    },
+    {
+      "task": "T04",
+      "result": "DONE",
+      "finishedAt": "2026-11-15T04:01:00+08:00",
+      "note": "单测17/17绿；真实服务422/401契约验证"
+    },
+    {
+      "task": "T05",
+      "result": "DONE",
+      "finishedAt": "2026-11-15T04:17:00+08:00",
+      "note": "设置页+测试连接；单测20/20绿"
+    }
   ],
   "notes": "看门狗第 5 版：30 分钟断停、断点尾重试、单会话 3 任务。停止方式：仓库根建 ops/STOP。"
 }
