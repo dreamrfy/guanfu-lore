@@ -5,9 +5,9 @@
  * 验证：complete 条目会导入、partial/pending 不收、重复调用幂等、服务器不可达不炸。
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { db } from "./db";
+import { db, type CollectionRow, type FieldDef, type RecordRow } from "./db";
 import { useStore } from "./store";
-import { autoImportServerClips } from "./clipBox";
+import { autoImportServerClips, clipReadState, isClipUnread, unreadClipCount } from "./clipBox";
 
 const PNG_BYTES = new Uint8Array([137, 80, 78, 71]).buffer;
 
@@ -182,5 +182,77 @@ describe("剪藏箱自动入库（I01）", () => {
 
     expect(result).toEqual({ checked: 0, imported: 0 });
     expect(useStore.getState().collections.find((c) => c.name === "剪藏库")).toBeUndefined();
+  });
+});
+
+describe("未读/已读判定（I02）", () => {
+  it("clipReadState：按字段名+选项名定位；缺字段或缺选项返回 null", () => {
+    const collection = useStore.getState().collections.find((c) => c.name === "剪藏库");
+    expect(collection).toBeUndefined(); // 本组用例没导入过，先确认干净
+    const field = (name: string, options?: Array<{ id: string; name: string }>): FieldDef =>
+      ({ id: "f-" + name, name, type: "select", options } as FieldDef);
+    const table: CollectionRow = {
+      id: "t1",
+      name: "剪藏库",
+      icon: null,
+      fields: [
+        field("标题"),
+        field("状态", [
+          { id: "opt-u", name: "未读" },
+          { id: "opt-r", name: "已读" },
+        ]),
+      ],
+      views: [],
+      records: [],
+      createdAt: 0,
+      updatedAt: 0,
+      deletedAt: null,
+    } as unknown as CollectionRow;
+    expect(clipReadState(table)).toEqual({ fieldId: "f-状态", unreadId: "opt-u", readId: "opt-r" });
+    expect(clipReadState({ ...table, fields: [field("标题")] })).toBeNull();
+    expect(clipReadState({ ...table, fields: [field("状态", [{ id: "o", name: "未读" }])] })).toBeNull();
+    expect(clipReadState(undefined)).toBeNull();
+  });
+
+  it("isClipUnread / unreadClipCount：状态=未读才算未读", () => {
+    const collection = {
+      id: "t1",
+      name: "剪藏库",
+      fields: [
+        { id: "f-状态", name: "状态", type: "select", options: [
+          { id: "opt-u", name: "未读" },
+          { id: "opt-r", name: "已读" },
+        ] },
+      ],
+    } as unknown as CollectionRow;
+    const rec = (status: string): RecordRow =>
+      ({ id: "r1", collectionId: "t1", values: { "f-状态": status }, doc: null, snapshotAssetId: null }) as unknown as RecordRow;
+    expect(isClipUnread(collection, rec("opt-u"))).toBe(true);
+    expect(isClipUnread(collection, rec("opt-r"))).toBe(false);
+    expect(isClipUnread(collection, rec(""))).toBe(false);
+    expect(unreadClipCount(collection, [rec("opt-u"), rec("opt-r"), rec("opt-u")])).toBe(2);
+    expect(unreadClipCount(collection, undefined)).toBe(0);
+  });
+
+  it("端到端：自动导入的记录默认未读，setCell 标已读后入库且不再算未读", async () => {
+    stubClipServer();
+    await autoImportServerClips();
+
+    const store = useStore.getState();
+    const collection = store.collections.find((c) => c.name === "剪藏库")!;
+    const st = clipReadState(collection)!;
+    expect(st).not.toBeNull();
+    let records = useStore.getState().records[collection.id];
+    expect(records).toHaveLength(1);
+    expect(isClipUnread(collection, records[0])).toBe(true);
+
+    store.setCell(collection.id, records[0].id, st.fieldId, st.readId);
+
+    records = useStore.getState().records[collection.id];
+    expect(isClipUnread(collection, records[0])).toBe(false);
+    expect(records[0].values[st.fieldId]).toBe(st.readId);
+    const stored = await db.records.get(records[0].id);
+    expect(stored?.values[st.fieldId]).toBe(st.readId); // 落库了
+    expect(unreadClipCount(collection, records)).toBe(0); // 侧栏角标归零
   });
 });

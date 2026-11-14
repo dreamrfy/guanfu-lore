@@ -8,7 +8,7 @@
  * 注意：服务器给的图片地址是**5 分钟有效的签名 URL**，所以导入时必须把图片
  * 下载进本地附件库，否则过一会儿图就没了。
  */
-import { repo } from "./db";
+import { repo, type CollectionRow, type RecordRow } from "./db";
 import { loadClipServerUrl, loadClipToken } from "./clipApi";
 import { textToBlocks } from "./ragIndex";
 import { clipLinkKey } from "./clipIngest";
@@ -207,4 +207,33 @@ export async function autoImportServerClips(): Promise<{ checked: number; import
     if (result?.ok && !result.skipped) imported++;
   }
   return { checked: candidates.length, imported };
+}
+
+/* ---------------- 未读 / 已读（I02） ---------------- */
+
+/**
+ * 「状态」字段的未读/已读选项定位。按字段名 + 选项名找（I01 建表、手动剪藏
+ * ingest 建表都用这套名字），拿不到就返回 null——没有这套机制的表不参与未读逻辑。
+ */
+export type ClipReadState = { fieldId: string; unreadId: string; readId: string };
+
+export function clipReadState(collection: CollectionRow | undefined): ClipReadState | null {
+  const field = collection?.fields.find((f) => f.name === "状态");
+  const unread = field?.options?.find((o) => o.name === "未读");
+  const read = field?.options?.find((o) => o.name === "已读");
+  return field && unread && read ? { fieldId: field.id, unreadId: unread.id, readId: read.id } : null;
+}
+
+export function isClipUnread(collection: CollectionRow | undefined, record: RecordRow): boolean {
+  const st = clipReadState(collection);
+  return st !== null && record.values[st.fieldId] === st.unreadId;
+}
+
+/** 未读条数；records 没加载进内存时按 0 处理（调用方负责先 ensureRecords） */
+export function unreadClipCount(
+  collection: CollectionRow | undefined,
+  records: RecordRow[] | undefined
+): number {
+  if (!records) return 0;
+  return records.reduce((n, r) => n + (isClipUnread(collection, r) ? 1 : 0), 0);
 }

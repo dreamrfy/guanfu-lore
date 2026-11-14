@@ -13,6 +13,7 @@ import {
   TITLE_COL_WIDTH,
 } from "../data/collections";
 import { CLIP_COLLECTION_NAME, useStore } from "../data/store";
+import { clipReadState, isClipUnread } from "../data/clipBox";
 import { AppIcon } from "../design/icons";
 import { AiBatchDialog } from "./AiBatchDialog";
 import { ViewBar } from "./ViewBar";
@@ -459,13 +460,19 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
                 }
                 onClick={() => {
                   cancelOpen();
-                  openTimer.current = window.setTimeout(
-                    () => openRecord(collection.id, rec.id),
-                    220
-                  );
+                  openTimer.current = window.setTimeout(() => {
+                    openRecord(collection.id, rec.id);
+                    // 收集箱语义：点开一条未读就顺手标已读（写库 + 进同步队列，走 setCell）
+                    const st = clipReadState(collection);
+                    if (st && isClipUnread(collection, rec)) {
+                      setCell(collection.id, rec.id, st.fieldId, st.readId);
+                    }
+                  }, 220);
                 }}
               >
-                <td className="grid__idx">{i + 1}</td>
+                <td className="grid__idx">
+                  {isClipUnread(collection, rec) ? <span className="unread-dot" title="未读" /> : i + 1}
+                </td>
                 {collection.fields.map((f, colIdx) => {
                   const key = `${rec.id}:${f.id}`;
                   const editing = editingCell === key;

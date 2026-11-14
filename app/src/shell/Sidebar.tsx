@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useStore } from "../data/store";
 import type { PageRow } from "../data/db";
+import { clipReadState, unreadClipCount } from "../data/clipBox";
 import { searchAll, setPendingBlockFocus, type SearchResult } from "../data/search";
 import { AppIcon } from "../design/icons";
 import { ClipButton } from "./ClipDialog";
@@ -74,6 +75,8 @@ export function Sidebar() {
   const activeCollectionId = useStore((s) => s.activeCollectionId);
   const openCollection = useStore((s) => s.openCollection);
   const createCollection = useStore((s) => s.createCollection);
+  const records = useStore((s) => s.records);
+  const ensureRecords = useStore((s) => s.ensureRecords);
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -89,6 +92,14 @@ export function Sidebar() {
     const q = query.trim().toLowerCase();
     return rows.filter((r) => r.title.toLowerCase().includes(q)).map((r) => ({ ...r, depth: 0 }));
   }, [pages, query]);
+
+  // 收集箱（带未读/已读的表）的未读角标：开机侧栏就要能显示，
+  // 所以这里提前把它的记录补进内存（进过内存后，自动导入/标已读会实时刷新角标）
+  useEffect(() => {
+    for (const c of collections) {
+      if (clipReadState(c) && !records[c.id]) void ensureRecords(c.id);
+    }
+  }, [collections, records, ensureRecords]);
 
   const flash = (msg: string) => {
     setHint(msg);
@@ -176,17 +187,25 @@ export function Sidebar() {
               </button>
             </div>
             {collections.length === 0 && <div className="sidebar__hint">还没有表格。剪藏库将来也放在这里。</div>}
-            {collections.map((c) => (
-              <div
-                key={c.id}
-                className={`tree-item${c.id === activeCollectionId ? " tree-item--active" : ""}`}
-                onClick={() => void openCollection(c.id)}
-                title={c.name}
-              >
-                <span style={{ fontSize: 14 }}>{c.icon ?? "🗂️"}</span>
-                <span className="tree-item__label">{c.name}</span>
-              </div>
-            ))}
+            {collections.map((c) => {
+              const unread = unreadClipCount(c, records[c.id]);
+              return (
+                <div
+                  key={c.id}
+                  className={`tree-item${c.id === activeCollectionId ? " tree-item--active" : ""}`}
+                  onClick={() => void openCollection(c.id)}
+                  title={c.name}
+                >
+                  <span style={{ fontSize: 14 }}>{c.icon ?? "🗂️"}</span>
+                  <span className="tree-item__label">{c.name}</span>
+                  {unread > 0 && (
+                    <span className="sidebar__badge" title={`${unread} 条未读`}>
+                      {unread > 99 ? "99+" : unread}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
           </>
         )}
 

@@ -207,6 +207,30 @@ body {
   white-space: nowrap;
 }
 
+/* 收集箱未读角标（侧栏表格名旁边） */
+.sidebar__badge {
+  flex: 0 0 auto;
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* 收集箱列表里的未读圆点（替代行号显示） */
+.unread-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary);
+  vertical-align: middle;
+}
+
 .tree-item__actions {
   display: none;
   gap: 2px;
