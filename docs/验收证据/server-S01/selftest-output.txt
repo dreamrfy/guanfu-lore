@@ -1,0 +1,17 @@
+✅ 不带 Token 上传 → 401
+✅ 上传 → 200 且 ok
+✅ 返回 storage=local（没配 R2）
+✅ 返回 sha256 与 key
+✅ 返回 mime=image/png
+✅ 索引落库：assetId/ext/size 可查
+✅ 下载 → 200 且字节一致
+✅ 下载 Content-Type=image/png
+✅ 下载不存在的资产 → 404
+✅ 非法 assetId → 400 bad_asset_id
+✅ 非法 ext → 400 unsupported_ext
+✅ 空请求体 → 400 empty_body
+✅ 同 id 覆盖上传 → 200
+✅ 覆盖后索引 size/sha 更新
+✅ 覆盖后下载到新字节
+✅ 既有接口 /api/sync/row 不受影响
+自测全部通过

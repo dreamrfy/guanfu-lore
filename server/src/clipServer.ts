@@ -22,9 +22,17 @@ import {
   readChanges,
   readRow,
   resolveConflict,
+  upsertAssetIndex,
+  getAssetIndex,
   type PushChangeInput,
 } from "./cloud/syncStore.ts";
 import { getServerClip, listServerClips } from "./cloud/clipApi.ts";
+import {
+  MAX_ASSET_UPLOAD_BYTES,
+  putAssetBytes,
+  getAssetBytes,
+  validateAssetUpload,
+} from "./cloud/assetSync.ts";
 import { R2ClipStore } from "./store/r2ClipStore.ts";
 import { loadR2Config, getObject } from "./store/r2Store.ts";
 
@@ -33,6 +41,25 @@ async function readAssetBytes(key: string): Promise<Uint8Array | null> {
   const cfg = loadR2Config(process.env);
   const buf = await getObject(cfg, key);
   return buf ?? null;
+}
+
+/** 读二进制请求体（资产上传用；与 readBody 不同：不转 utf8，上限 40MB） */
+function readBodyRaw(req: http.IncomingMessage, maxBytes: number): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    let size = 0;
+    req.on("data", (chunk: Buffer) => {
+      size += chunk.length;
+      if (size > maxBytes) {
+        reject(new Error("body_too_large"));
+        req.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on("end", () => resolve(Buffer.concat(chunks)));
+    req.on("error", reject);
+  });
 }
 
 /** 剪藏箱用的存储（懒初始化：没配 R2 时只有用到剪藏箱才会报错） */
@@ -175,6 +202,8 @@ export function createClipServer(): http.Server {
       (req.method === "POST" && url === "/api/sync/pull") ||
       (req.method === "POST" && url === "/api/sync/push") ||
       (req.method === "POST" && url === "/api/sync/conflicts/resolve") ||
+      (req.method === "POST" && url === "/api/sync/assets") ||
+      (req.method === "GET" && url.startsWith("/api/sync/assets/")) ||
       (req.method === "GET" && url === "/api/sync/row") ||
       (req.method === "GET" && url === "/api/sync/conflicts");
     if (!known) {
@@ -265,6 +294,69 @@ export function createClipServer(): http.Server {
         return;
       }
       sendJson(res, 200, { ok: true, entity, entityId, ...row }, cors);
+      return;
+    }
+
+    // 资产上传（S01）：assetId/ext 走 query，图片字节走 body（二进制，不走 JSON 门）
+    if (req.method === "POST" && url === "/api/sync/assets") {
+      const query = new URL(req.url ?? "http://x", "http://x").searchParams;
+      const v = validateAssetUpload(query.get("assetId") ?? undefined, query.get("ext") ?? undefined);
+      if (!v.ok) {
+        sendJson(res, 400, { ok: false, code: v.code, error: v.error }, cors);
+        return;
+      }
+      let body: Buffer;
+      try {
+        body = await readBodyRaw(req, MAX_ASSET_UPLOAD_BYTES);
+      } catch {
+        sendJson(res, 413, { ok: false, code: "body_too_large", error: `资产超过 ${MAX_ASSET_UPLOAD_BYTES} 字节上限` }, cors);
+        return;
+      }
+      if (body.length === 0) {
+        sendJson(res, 400, { ok: false, code: "empty_body", error: "请求体为空" }, cors);
+        return;
+      }
+      try {
+        const stored = await putAssetBytes(v.assetId, v.ext, body);
+        upsertAssetIndex({
+          assetId: stored.assetId,
+          ext: stored.ext,
+          mime: stored.mime,
+          size: stored.size,
+          sha256: stored.sha256,
+          storage: stored.storage,
+          objectKey: stored.key,
+        });
+        sendJson(res, 200, { ok: true, ...stored }, cors);
+      } catch (e) {
+        sendJson(res, 500, { ok: false, code: "internal", error: `资产落库失败：${String((e as Error)?.message ?? e).slice(0, 120)}` }, cors);
+      }
+      return;
+    }
+
+    // 资产下载（S01）：按索引路由到 R2 或本地盘
+    if (req.method === "GET" && url.startsWith("/api/sync/assets/")) {
+      const assetId = decodeURIComponent(url.slice("/api/sync/assets/".length));
+      try {
+        const meta = getAssetIndex(assetId);
+        if (!meta) {
+          sendJson(res, 404, { ok: false, code: "not_found", error: "服务器上没有这个资产" }, cors);
+          return;
+        }
+        const bytes = await getAssetBytes(meta.assetId, meta.ext);
+        if (!bytes) {
+          sendJson(res, 404, { ok: false, code: "not_found", error: "资产索引在但字节缺失" }, cors);
+          return;
+        }
+        res.writeHead(200, {
+          "Content-Type": meta.mime,
+          "Cache-Control": "private, max-age=31536000, immutable",
+          ...cors,
+        });
+        res.end(Buffer.from(bytes));
+      } catch (e) {
+        sendJson(res, 500, { ok: false, code: "internal", error: String((e as Error)?.message ?? e).slice(0, 120) }, cors);
+      }
       return;
     }
 

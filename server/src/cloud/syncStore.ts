@@ -95,6 +95,17 @@ function getDb(): DatabaseSync {
       payload TEXT NOT NULL,
       created_at INTEGER NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS asset_index (
+      asset_id TEXT PRIMARY KEY,
+      ext TEXT NOT NULL,
+      mime TEXT NOT NULL,
+      size INTEGER NOT NULL,
+      sha256 TEXT NOT NULL,
+      storage TEXT NOT NULL,
+      object_key TEXT NOT NULL,
+      actor TEXT NOT NULL DEFAULT '',
+      created_at INTEGER NOT NULL
+    );
     CREATE INDEX IF NOT EXISTS change_log_entity ON change_log (entity, entity_id);
   `);
   return db;
@@ -106,6 +117,73 @@ export function closeSyncDb(): void {
     db.close();
     db = null;
   }
+}
+
+/* ---- 资产索引（S01：字节进对象存储，元数据进这里）---- */
+
+export type AssetIndexRow = {
+  assetId: string;
+  ext: string;
+  mime: string;
+  size: number;
+  sha256: string;
+  storage: string;
+  objectKey: string;
+  actor: string;
+  createdAt: number;
+};
+
+/** 上传后登记（同 assetId 重复上传覆盖：键 immutable 语义，内容应相同） */
+export function upsertAssetIndex(row: {
+  assetId: string;
+  ext: string;
+  mime: string;
+  size: number;
+  sha256: string;
+  storage: string;
+  objectKey: string;
+  actor?: string;
+}): void {
+  getDb()
+    .prepare(
+      `INSERT INTO asset_index (asset_id, ext, mime, size, sha256, storage, object_key, actor, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(asset_id) DO UPDATE SET
+         ext=excluded.ext, mime=excluded.mime, size=excluded.size, sha256=excluded.sha256,
+         storage=excluded.storage, object_key=excluded.object_key, created_at=excluded.created_at`
+    )
+    .run(
+      row.assetId,
+      row.ext,
+      row.mime,
+      row.size,
+      row.sha256,
+      row.storage,
+      row.objectKey,
+      row.actor ?? "",
+      nowMs()
+    );
+}
+
+export function getAssetIndex(assetId: string): AssetIndexRow | null {
+  const r = getDb()
+    .prepare(
+      `SELECT asset_id, ext, mime, size, sha256, storage, object_key, actor, created_at
+       FROM asset_index WHERE asset_id = ?`
+    )
+    .get(assetId) as Record<string, unknown> | undefined;
+  if (!r) return null;
+  return {
+    assetId: String(r.asset_id),
+    ext: String(r.ext),
+    mime: String(r.mime),
+    size: Number(r.size),
+    sha256: String(r.sha256),
+    storage: String(r.storage),
+    objectKey: String(r.object_key),
+    actor: String(r.actor),
+    createdAt: Number(r.created_at),
+  };
 }
 
 function nowMs(): number {
