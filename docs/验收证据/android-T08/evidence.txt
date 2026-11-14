@@ -1,0 +1,19 @@
+T08 证据汇总（2026-11-15 04:45）—— BLOCKED·等用户
+
+== 阻塞证据 ==
+- 2026-11-15 当天 3 次 adb install 尝试（03:19 debug 包、04:33 release 包、04:45 release 包）全部卡死在 'Performing Streamed Install'，timeout 杀掉
+- logcat 实录（android-T03/evidence.txt）：系统发起 CONFIRM_INSTALL → com.android.packageinstaller/.InstallStart，
+  但 canShowActivityWhileKeyguardShowing=false —— 备用机锁屏时确认弹窗无法显示，安装无限等待
+- 截屏（android-T03/phone-screen-1.png）：熄屏全黑，无人值守不可能点弹窗
+
+== 解除阻塞后 T08 自动做的事 ==
+1. adb install -r android-shell/app/build/outputs/apk/release/app-release.apk（已签名，690KB）
+2. 启动 MainActivity，logcat 查崩溃（AndroidRuntime FATAL）
+3. am start -a android.intent.action.VIEW -d 'https://mp.weixin.qq.com/s?__biz=测试' 验证 VIEW 入口，截屏
+4. am start -a android.intent.action.SEND -t text/plain --es android.intent.extra.TEXT '看看 https://example.com' 验证 SEND 入口，截屏
+5. 以上证据落本目录
+
+== 恢复方法 ==
+解锁备用机一次，并在 开发人员选项 开启「USB 安装」；然后把任务表里 T08 的状态改回 TODO，
+看门狗下一轮触发即自动执行。或直接手动跑：
+  E:/dev/tools/pt/platform-tools/adb.exe install -r android-shell/app/build/outputs/apk/release/app-release.apk
