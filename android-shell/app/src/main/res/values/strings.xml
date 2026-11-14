@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">观复壳</string>
     <string name="received_share">收到分享：</string>
+    <string name="received_open">收到网页打开请求：</string>
     <string name="received_share_no_url">收到分享，但未找到链接：</string>
     <string name="waiting">观复壳已就绪。从微信/浏览器「分享」或直接打开网页即可进入剪藏。</string>
 </resources>

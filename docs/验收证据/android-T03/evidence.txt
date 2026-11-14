@@ -1,0 +1,24 @@
+T03 证据汇总（2026-11-15 03:25）
+
+1) 构建：./gradlew assembleDebug --no-daemon → BUILD SUCCESSFUL in 15s
+2) APK manifest VIEW 过滤器（aapt2 dump xmltree 摘录）：VIEW + DEFAULT + BROWSABLE + scheme http/https 齐备：
+              E: intent-filter (line=35)
+                  E: action (line=36)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.intent.action.VIEW" (Raw: "android.intent.action.VIEW")
+                  E: category (line=38)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.intent.category.DEFAULT" (Raw: "android.intent.category.DEFAULT")
+                  E: category (line=39)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.intent.category.BROWSABLE" (Raw: "android.intent.category.BROWSABLE")
+                  E: data (line=41)
+                    A: http://schemas.android.com/apk/res/android:scheme(0x01010027)="http" (Raw: "http")
+                  E: data (line=42)
+                    A: http://schemas.android.com/apk/res/android:scheme(0x01010027)="https" (Raw: "https")
+3) 真机安装受阻记录（备用机 8BF4C20819011732）：
+   - adb install 卡在 'Performing Streamed Install' >4min（phone-screen-1.png 截屏为熄屏全黑）；
+   - logcat 实录：系统发起 CONFIRM_INSTALL -> com.android.packageinstaller/.InstallStart，
+     但 canShowActivityWhileKeyguardShowing=false —— 锁屏下确认弹窗无法显示，安装无限等待；
+   - 结论：需用户解锁备用机并开启 开发人员选项>USB安装（或保持解锁状态重试），属于 BLOCKED·等用户；
+   - 真机 am start 双入口验证顺延至 T08。
+11-15 03:19:44.760  2046  2178 I ActivityTaskManager: START u0 {act=android.content.pm.action.CONFIRM_INSTALL flg=0x10008000 hwFlg=0x10 pkg=com.android.packageinstaller cmp=com.android.packageinstaller/.InstallStart (has extras)} from uid 1000
+11-15 03:19:44.767  2046  2178 D ActivityTaskManager: canShowActivityWhileKeyguardShowing false r=ActivityRecord{140da87 u0 com.android.packageinstaller/.InstallStart t153}
+11-15 03:19:44.767  2046  2178 D ActivityTaskManager: canShowActivityWhileKeyguardShowing false r=ActivityRecord{18f74c6 u0 com.android.settings/.Settings$DevelopmentSettingsActivity t152}

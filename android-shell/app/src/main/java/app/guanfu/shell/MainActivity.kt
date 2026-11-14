@@ -48,6 +48,11 @@ class MainActivity : Activity() {
                     urlView.text = text ?: ""
                 }
             }
+            Intent.ACTION_VIEW -> {
+                val url = intent.dataString ?: intent.data?.toString()
+                statusView.text = getString(R.string.received_open)
+                urlView.text = url ?: ""
+            }
             else -> {
                 statusView.text = getString(R.string.waiting)
                 urlView.text = ""
