@@ -1,0 +1,24 @@
+T04 证据汇总（2026-11-15 04:00）
+
+== 单测结果（testDebugUnitTest，JUnit4）==
+TEST-app.guanfu.shell.ClipClientTest.xml: tests="6" skipped="0" failures="0" errors="0"
+TEST-app.guanfu.shell.ClipRealServiceTest.xml: tests="2" skipped="0" failures="0" errors="0"
+TEST-app.guanfu.shell.ExtractUrlTest.xml: tests="9" skipped="0" failures="0" errors="0"
+
+== 本地 mock 服务器集成测试（裸 ServerSocket 模拟 /api/clip）==
+- Bearer 头 + {"url":...} body 校验：服务端校验失败回 400（客户端正确解析为失败）
+- 超时重试：首响应 sleep 3s（> readTimeout 1.5s），客户端重试 1 次后成功，retried=true
+- HTTP 401 不重试（服务端明确回答）；连接拒绝重试 1 次后失败并标记 retried
+
+== 真实服务契约冒烟（https://clip.guanfu.app，Bearer 取自 E:/credentials/clip.token，值不落盘）==
+- 正确 token：HTTP 422（部署版白名单提示：第一批只支持公众号文章与 B 站视频）
+  → 证明路由/Bearer 鉴权/JSON 契约端到端通；未在用户剪藏箱制造记录
+- 错误 token：HTTP 401「缺少或错误的访问 Token」→ 鉴权生效
+- 注：html 直交分支是本地未部署的较新服务端代码，待服务端部署任务上线后补成功路径
+
+== 修复的 bug ==
+- ClipClient：重试成功路径丢失 retried 标志（once() 返回未 copy）——被重试测试逮住
+
+== APK ==
+- app/build/outputs/apk/debug/app-debug.apk（MainActivity 收到 URL 即后台 POST + Toast）
+- BuildConfig.DEFAULT_CLIP_TOKEN 构建时注入 E:/credentials/clip.token，token 不进仓库
