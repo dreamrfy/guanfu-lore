@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "个人知识库 · 剪藏",
+  "version": "0.1.0",
+  "description": "把当前网页剪藏进个人知识库（正文交给服务端清洗与存档）",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "剪藏到个人知识库"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

@@ -5,11 +5,16 @@ import {
   asDateMs,
   asNumber,
   compareByField,
+  defaultValueFor,
   makeCollection,
   makeField,
+  makeFilter,
   makeRecord,
+  makeSort,
   makeView,
   matchesFilter,
+  needsValue,
+  operatorsFor,
 } from "./collections";
 import type { FieldDef, RecordRow } from "./db";
 
@@ -31,6 +36,73 @@ describe("建表", () => {
     expect(c.fields[1].type).toBe("select");
     expect(c.fields[1].options).toHaveLength(3);
     expect(c.views).toHaveLength(1);
+  });
+});
+
+describe("筛选/排序的界面辅助", () => {
+  it("运算符按字段类型给，日期不能「包含」", () => {
+    expect(operatorsFor("date")).toContain("before");
+    expect(operatorsFor("date")).not.toContain("contains");
+    expect(operatorsFor("number")).toContain("gt");
+    expect(operatorsFor("select")).toEqual(["is", "isNot", "isEmpty", "isNotEmpty"]);
+    expect(operatorsFor("checkbox")).toEqual(["is"]);
+  });
+
+  it("只有「为空 / 不为空」不需要填值", () => {
+    expect(needsValue("isEmpty")).toBe(false);
+    expect(needsValue("isNotEmpty")).toBe(false);
+    expect(needsValue("contains")).toBe(true);
+    expect(needsValue("gt")).toBe(true);
+  });
+
+  it("默认值：数字 0、日期有值、勾选框 true、单选取第一个选项", () => {
+    const num = field("number");
+    expect(defaultValueFor(num)).toBe(0);
+    const date = field("date");
+    expect(typeof defaultValueFor(date)).toBe("number");
+    expect(defaultValueFor(field("checkbox"))).toBe(true);
+
+    const sel = makeField("select", "状态");
+    sel.options = [{ id: "o1", name: "未开始", color: "grey" }];
+    expect(defaultValueFor(sel)).toBe("o1");
+  });
+
+  it("新条件用该字段第一个合法的运算符，并带默认值", () => {
+    const text = makeField("text", "标题");
+    const f = makeFilter(text);
+    expect(f.fieldId).toBe(text.id);
+    expect(f.operator).toBe("contains");
+    expect(f.value).toBe("");
+    expect(f.id).toBeTruthy();
+
+    const f2 = makeFilter(makeField("checkbox", "完成"));
+    expect(f2.operator).toBe("is");
+    expect(f2.value).toBe(true);
+  });
+
+  it("新排序默认升序，方向可改", () => {
+    expect(makeSort("f1")).toEqual({ fieldId: "f1", direction: "asc" });
+    expect(makeSort("f1", "desc").direction).toBe("desc");
+  });
+
+  it("文本「包含」还没填值时不算筛选（保护刚加条件的瞬间）", () => {
+    const t = field("text");
+    expect(matchesFilter(rec({ f1: "苹果笔记" }), t, { operator: "contains", value: "" })).toBe(true);
+    expect(matchesFilter(rec({ f1: "" }), t, { operator: "contains", value: "" })).toBe(true);
+    expect(matchesFilter(rec({ f1: "苹果笔记" }), t, { operator: "contains", value: "香蕉" })).toBe(false);
+  });
+
+  it("日期「早于/晚于」真的能筛（和界面运算符对齐）", () => {
+    const d = field("date");
+    const r = rec({ f1: Date.parse("2026-01-02") });
+    expect(matchesFilter(r, d, { operator: "before", value: Date.parse("2026-01-03") })).toBe(true);
+    expect(matchesFilter(r, d, { operator: "after", value: Date.parse("2026-01-03") })).toBe(false);
+  });
+
+  it("勾选框「等于」按布尔值筛", () => {
+    const c = field("checkbox");
+    expect(matchesFilter(rec({ f1: true }), c, { operator: "is", value: true })).toBe(true);
+    expect(matchesFilter(rec({ f1: false }), c, { operator: "is", value: true })).toBe(false);
   });
 });
 

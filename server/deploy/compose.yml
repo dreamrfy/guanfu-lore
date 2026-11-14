@@ -1,0 +1,88 @@
+# 剪藏服务（阶段一 · 本地原型）——服务器端部署
+#
+# 组成：
+#   clip  : 剪藏 HTTP 接口（网页端/扩展调用，带 Bearer Token）
+#   poll  : 微信客服轮询（每 5 分钟一次；原来是宿主机 systemd timer，现在进容器）
+#   caddy : 对外 HTTPS 入口（profile=public，域名确定后再开）
+#
+# 常用命令（在 /opt/bijiapp/deploy 下）：
+#   docker compose up -d                 起剪藏 + 轮询（仅本机 127.0.0.1:8787）
+#   docker compose --profile public up -d  再加上 Caddy 对外（需要先设 CLIP_DOMAIN）
+#   docker compose logs -f clip           看剪藏日志
+name: bijiapp
+
+services:
+  clip:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: bijiapp-clip
+    restart: unless-stopped
+    env_file:
+      # R2_* 等（未用到也无所谓，统一注入）
+      - /etc/bijiapp/r2.env
+    environment:
+      # 访问 Token 从文件读：凭证明文不进 compose 文件
+      CLIP_TOKEN_FILE: /etc/bijiapp/clip.token
+      # 容器内监听 0.0.0.0（对外仍只绑宿主 127.0.0.1）
+      CLIP_HOST: 0.0.0.0
+      KF_DATA_DIR: data
+      KF_ASSETS_DIR: data/assets
+    volumes:
+      # 数据与凭证分离：程序目录被误打包也漏不了秘密
+      - ./data:/app/data
+      - /etc/bijiapp:/etc/bijiapp:ro
+    # 只绑本机回环：对外由 Caddy 统一出入口（还没配域名时也安全）
+    ports:
+      - "127.0.0.1:8787:8787"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8787/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  poll:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: bijiapp-poll
+    restart: unless-stopped
+    command:
+      - sh
+      - -c
+      - "while true; do node src/cloud/vpsPoll.ts; sleep 300; done"
+    env_file:
+      - /etc/bijiapp/r2.env
+    environment:
+      KF_SECRETS_FILE: /etc/bijiapp/wecom-kf.json
+      KF_DATA_DIR: data
+      KF_ASSETS_DIR: data/assets
+    volumes:
+      - ./data:/app/data
+      - /etc/bijiapp:/etc/bijiapp:ro
+    # 轮询容器不是 HTTP 服务，别用镜���里的健康检查
+    healthcheck:
+      disable: true
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: bijiapp-caddy
+    profiles: ["public"]
+    restart: unless-stopped
+    environment:
+      # 域名确定后在这里填（或写进 /etc/bijiapp/caddy.env）
+      CLIP_DOMAIN: ${CLIP_DOMAIN:-}
+    depends_on:
+      - clip
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

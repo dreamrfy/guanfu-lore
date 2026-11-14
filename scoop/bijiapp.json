@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ScoopInstaller/Scoop/master/schema/bucket.json",
+  "version": "0.1.0",
+  "description": "个人知识库 · AI 原生的块式个人知识库（网页 + 桌面壳）",
+  "homepage": "https://github.com/OWNER/bijiapp",
+  "license": "MIT",
+  "url": "https://github.com/OWNER/bijiapp/releases/download/v0.1.0/bijiapp_0.1.0_x64-setup.exe",
+  "hash": "REPLACE_WITH_SHA256_OF_THE_INSTALLER",
+  "architecture": "x64",
+  "shortcuts": [
+    {
+      "name": "bijiapp",
+      "url": "$dir\\bijiapp.exe",
+      "icon": "$dir\\bijiapp.exe"
+    }
+  ],
+  "checkver": "https://github.com/OWNER/bijiapp/releases/latest",
+  "autoupdate": {
+    "url": "https://github.com/OWNER/bijiapp/releases/download/v$version/bijiapp_$version_x64-setup.exe",
+    "hash": "REPLACE_WITH_SHA256_OF_THE_INSTALLER"
+  }
+}

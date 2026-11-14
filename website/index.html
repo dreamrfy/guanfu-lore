@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>观复 · Lore — AI 原生的块式个人知识库</title>
+<meta name="description" content="观复 Lore：把微信里转发的文章、视频收进自己的知识库，块式编辑、多维表格、Agent 级 AI。数据完全自持的开源软件。" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%AD%3C/text%3E%3C/svg%3E" />
+<style>
+  :root { --ink:#1d1c1d; --sub:#6b6a6e; --accent:#4f46e5; --line:#e8e7ec; --bg:#fbfafc; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif; color:var(--ink); background:var(--bg); line-height:1.7; }
+  .wrap { max-width:880px; margin:0 auto; padding:0 24px; }
+  header { display:flex; justify-content:space-between; align-items:center; padding:22px 0; }
+  header .logo { font-weight:700; font-size:18px; letter-spacing:1px; }
+  header nav a { margin-left:20px; color:var(--sub); text-decoration:none; font-size:14px; }
+  header nav a:hover { color:var(--ink); }
+  .hero { text-align:center; padding:90px 0 70px; }
+  .hero h1 { font-size:44px; font-weight:800; letter-spacing:2px; }
+  .hero h1 span { color:var(--accent); }
+  .hero p.tag { margin-top:18px; font-size:19px; color:var(--sub); }
+  .cta { margin-top:36px; display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+  .cta a { display:inline-block; padding:12px 28px; border-radius:8px; text-decoration:none; font-size:15px; }
+  .cta .primary { background:var(--accent); color:#fff; }
+  .cta .ghost { border:1px solid var(--line); background:#fff; color:var(--ink); }
+  section { padding:52px 0; border-top:1px solid var(--line); }
+  section h2 { font-size:24px; margin-bottom:8px; }
+  section .lede { color:var(--sub); margin-bottom:30px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:12px; padding:22px; }
+  .card h3 { font-size:16px; margin-bottom:8px; }
+  .card p { font-size:14px; color:var(--sub); }
+  ol.steps { max-width:640px; margin:0 auto; }
+  ol.steps li { margin:12px 0; color:var(--sub); font-size:15px; }
+  ol.steps b { color:var(--ink); }
+  footer { text-align:center; color:var(--sub); font-size:13px; padding:40px 0 60px; border-top:1px solid var(--line); }
+  footer a { color:var(--sub); }
+  .pill { display:inline-block; font-size:12px; color:var(--accent); background:#eef2ff; border-radius:999px; padding:4px 12px; margin-bottom:18px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">观复 · Lore</div>
+    <nav>
+      <a href="#features">特性</a>
+      <a href="#start">上手</a>
+      <a href="https://github.com/" target="_blank" rel="noopener">开源仓库（即将开放）</a>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <div class="pill">开源 · 数据自持 · 第一版打磨中</div>
+    <h1>观复 · <span>Lore</span></h1>
+    <p class="tag">AI 原生的块式个人知识库 —— 捕获 → 整理 → 提炼 → 输出</p>
+    <div class="cta">
+      <a class="primary" href="#" aria-disabled="true">桌面版下载（即将推出）</a>
+      <a class="ghost" href="https://guanfu.app" title="网页版正在部署">网页版入口</a>
+    </div>
+  </div>
+
+  <section id="features">
+    <h2>它为你做什么</h2>
+    <p class="lede">四步闭环，把互联网信息变成你自己的知识。</p>
+    <div class="grid">
+      <div class="card"><h3>📥 剪藏（捕获）</h3><p>微信公众号文章、B站视频，微信转发即入库；网页划线、粘贴链接也行。原文本地留底，不怕被删。</p></div>
+      <div class="card"><h3>🗂 多维表格（整理）</h3><p>块式文档 + Notion 式多维表，筛选、排序、分组视图，学习进度尽在掌握。</p></div>
+      <div class="card"><h3>🤖 Agent 级 AI（提炼）</h3><p>总结改写、知识库问答（RAG）、可挂 Skill 与 MCP；供应商你自己选，Key 自己管。</p></div>
+      <div class="card"><h3>📤 导出分享（输出）</h3><p>Markdown / HTML 导出，整库备份恢复，数据永远在你手里。</p></div>
+    </div>
+  </section>
+
+  <section id="start">
+    <h2>上手三步</h2>
+    <p class="lede">观复是纯开源自部署软件：你的 AI Key、你的存储桶、你的数据。</p>
+    <ol class="steps">
+      <li><b>① 自选服务</b> —— 在设置界面填入你自己的 AI 供应商与对象存储（任何兼容 OpenAI 接口的服务、任何 S3 兼容桶）。</li>
+      <li><b>② 部署剪藏服务</b> —— 一份 Docker Compose 把服务端跑起来，配好域名即可从微信转发收藏。</li>
+      <li><b>③ 开始收集</b> —— 桌面端写作整理，手机端微信转发即剪藏。</li>
+    </ol>
+  </section>
+
+  <footer>
+    © 2026 观复 · Lore ｜ 名字取自《道德经》「万物并作，吾以观复」——看知识反复往来，长出自己的体系。
+    <br /><a href="https://www.guanfu.app">www.guanfu.app</a>
+  </footer>
+</div>
+</body>
+</html>

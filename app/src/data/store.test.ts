@@ -139,6 +139,43 @@ describe("应用状态", () => {
   });
 });
 
+describe("AI 命令通道", () => {
+  it("斜杠命令写进 store，面板关着也会顺手打开右侧面板", () => {
+    useStore.setState({ rightPanelOpen: false, aiCommand: null });
+    s().dispatchAiCommand({ kind: "summary" });
+    expect(s().aiCommand).toEqual({ kind: "summary" });
+    expect(s().rightPanelOpen).toBe(true);
+    s().clearAiCommand();
+    expect(s().aiCommand).toBeNull();
+  });
+});
+
+describe("多维表格：记录详情", () => {
+  it("打开记录会顺手展开右侧面板，正文防抖落库，删表后自动收起", async () => {
+    await s().hydrate();
+    const collectionId = await s().createCollection("剪藏库");
+    await s().addRecord(collectionId);
+    const rec = s().records[collectionId][0];
+    expect(rec).toBeTruthy();
+
+    useStore.setState({ rightPanelOpen: false });
+    s().openRecord(collectionId, rec.id);
+    expect(s().openRecordRef).toEqual({ collectionId, recordId: rec.id });
+    expect(s().rightPanelOpen).toBe(true);
+
+    const blocks = [{ type: "paragraph", content: "正文第一段" }];
+    s().setRecordDoc(collectionId, rec.id, blocks);
+    expect(s().records[collectionId][0].doc).toEqual(blocks); // 内存立刻可读
+
+    await sleep(400);
+    const rows = await repo.listRecords(collectionId);
+    expect(rows[0].doc).toEqual(blocks); // 防抖后确实落库了
+
+    await s().deleteCollection(collectionId);
+    expect(s().openRecordRef).toBeNull();
+  });
+});
+
 describe("页面层级（拖拽移动）", () => {
   it("能把页面变成另一篇的子页，也能拖回顶层", async () => {
     await s().hydrate();

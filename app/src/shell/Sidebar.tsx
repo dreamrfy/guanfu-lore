@@ -3,6 +3,8 @@ import { useStore } from "../data/store";
 import type { PageRow } from "../data/db";
 import { searchAll, setPendingBlockFocus, type SearchResult } from "../data/search";
 import { AppIcon } from "../design/icons";
+import { ClipButton } from "./ClipDialog";
+import { TemplateMenu } from "./TemplateMenu";
 
 /** 命中处加亮 */
 function Snippet({ text, start, end }: { text: string; start: number; end: number }) {
@@ -325,6 +327,10 @@ export function Sidebar() {
           <AppIcon name="trash" set={iconSet} />
           回收站{trash.length > 0 ? `（${trash.length}）` : ""}
         </button>
+
+        <ClipButton />
+
+        <TemplateMenu />
 
         <button
           className="icon-btn"

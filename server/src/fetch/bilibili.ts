@@ -33,8 +33,13 @@ export async function resolveBvid(shortUrl: string, fetchFn: SafeGetLike = safeG
   } catch {
     throw new Error("B站短链不是合法 URL");
   }
+  // 用户直接粘贴的完整视频地址：BV 号就在 URL 里，不必再走一次短链跳转
+  if (BILIBILI_VIDEO_HOSTS.has(entryHost)) {
+    const direct = shortUrl.match(BV_RE);
+    if (direct) return direct[1]!;
+  }
   if (!B23_HOSTS.has(entryHost)) {
-    throw new Error("B站短链主机不在白名单：" + entryHost);
+    throw new Error("B站链接主机不在白名单：" + entryHost);
   }
   const res = await fetchFn(shortUrl, {}, {
     tries: 2,
@@ -100,6 +105,8 @@ export async function fetchBilibiliFromShortLink(
     title: meta.title,
     desc: meta.desc,
     coverUrl: meta.coverUrl,
+    // UP主也是"作者"：剪藏库的「作者」列直接用它，不再让用户去备注里找
+    author: meta.owner,
     capability: "metadata-only",
     note: "UP主 " + meta.owner + " · 时长 " + meta.durationSec + " 秒（公开 API；字幕待阶段二）",
   };

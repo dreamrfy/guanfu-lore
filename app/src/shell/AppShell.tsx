@@ -4,6 +4,7 @@ import { useActiveDoc, useActivePage, useStore } from "../data/store";
 import { assetUrl, uploadAsset } from "../data/assets";
 import { AppIcon } from "../design/icons";
 import { PageEditor } from "../editor/PageEditor";
+import { Backlinks } from "./Backlinks";
 import { CollectionView } from "./CollectionView";
 import { RightPanel } from "./RightPanel";
 import { Sidebar } from "./Sidebar";
@@ -132,6 +133,8 @@ export function AppShell() {
   const setPageIcon = useStore((s) => s.setPageIcon);
   const uploadFile = useStore((s) => s.uploadFile);
   const activeCollectionId = useStore((s) => s.activeCollectionId);
+  // 记录详情里要放正文编辑器，窄面板不够用
+  const recordOpen = useStore((s) => s.openRecordRef !== null);
   const page = useActivePage();
   const doc = useActiveDoc();
 
@@ -190,6 +193,8 @@ export function AppShell() {
                 ) : (
                   <div className="empty-state">正在载入正文…</div>
                 )}
+
+                {page && <Backlinks pageId={page.id} />}
               </>
             )}
           </div>
@@ -198,7 +203,7 @@ export function AppShell() {
       </main>
 
       {rightPanelOpen && (
-        <aside className="shell__right">
+        <aside className={`shell__right${recordOpen ? " shell__right--wide" : ""}`}>
           <RightPanel page={page} />
         </aside>
       )}

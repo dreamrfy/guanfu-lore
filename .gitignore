@@ -44,3 +44,9 @@ client/web/drift_worker.js
 
 # 临时对比工具（用完即弃，不入库）
 tools/font_compare/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example

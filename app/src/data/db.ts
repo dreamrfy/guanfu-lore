@@ -131,7 +131,52 @@ export type RecordRow = {
   collectionId: string;
   /** fieldId → 值 */
   values: Record<string, unknown>;
+  /** 记录正文（BlockNote 块数组）。记录详情页的笔记体，与单元格值分开存 */
+  doc?: unknown[];
+  /** 剪藏记录的「原文离线快照」附件 id（自包含 HTML，图片已内联） */
+  snapshotAssetId?: string | null;
   createdAt: number;
+  updatedAt: number;
+};
+
+/** 同步层：一条待推送的本地改动 */
+export type OutboxRow = {
+  id?: number;
+  /** page / collection / record */
+  entity: string;
+  entityId: string;
+  op: "upsert" | "delete";
+  /** 改动后的内容（delete 时为 null） */
+  payload: unknown;
+  /** 改这个时客户端看到的服务器版本号（乐观锁） */
+  baseSeq: number;
+  actor: string;
+  createdAt: number;
+};
+
+/** 同步层：本地保存的冲突副本 */
+export type SyncConflictRow = {
+  id?: number;
+  entity: string;
+  entityId: string;
+  /** 我这边的版本 */
+  payload: unknown;
+  /** 服务器当时的版本号 */
+  serverSeq: number;
+  createdAt: number;
+};
+
+/** 问知识库：一个段落的向量 */
+export type RagVectorRow = {
+  chunkId: string;
+  entity: string;
+  entityId: string;
+  blockId: string;
+  /** 文本指纹：变了就要重新向量化 */
+  hash: string;
+  dim: number;
+  /** Float32Array 的底层字节 */
+  vec: ArrayBuffer;
   updatedAt: number;
 };
 
@@ -156,6 +201,12 @@ class KnowledgeDB extends Dexie {
   assets!: EntityTable<AssetRow, "id">;
   collections!: EntityTable<CollectionRow, "id">;
   records!: EntityTable<RecordRow, "id">;
+  /** 同步层（决策 D4）：本地改动待推送队列 */
+  outbox!: EntityTable<OutboxRow, "id">;
+  /** 同步层：本地保存的冲突副本（服务器版本 vs 我的版本） */
+  syncConflicts!: EntityTable<SyncConflictRow, "id">;
+  /** 问知识库：段落向量（按 chunkId 存，变了就重算） */
+  ragVectors!: EntityTable<RagVectorRow, "chunkId">;
 
   constructor() {
     super("bijiapp.v3.store");
@@ -192,6 +243,32 @@ class KnowledgeDB extends Dexie {
       assets: "id, pageId, kind, createdAt",
       collections: "id, updatedAt",
       records: "id, collectionId, updatedAt",
+    });
+
+    // 版本 5 —— 同步层：待推送队列 + 本地冲突副本
+    // 为什么要"队列"而不是直接推：断网时改动不能丢，得先落本地、联网后再补推。
+    this.version(5).stores({
+      pages: "id, parentId, updatedAt, deletedAt, sortKey",
+      docs: "pageId, updatedAt",
+      meta: "key",
+      assets: "id, pageId, kind, createdAt",
+      collections: "id, updatedAt",
+      records: "id, collectionId, updatedAt",
+      outbox: "++id, entity, entityId, createdAt",
+      syncConflicts: "++id, entity, entityId, createdAt",
+    });
+
+    // 版本 6 —— 问知识库：段落向量表（chunkId 为主键，文本变了就重算）
+    this.version(6).stores({
+      pages: "id, parentId, updatedAt, deletedAt, sortKey",
+      docs: "pageId, updatedAt",
+      meta: "key",
+      assets: "id, pageId, kind, createdAt",
+      collections: "id, updatedAt",
+      records: "id, collectionId, updatedAt",
+      outbox: "++id, entity, entityId, createdAt",
+      syncConflicts: "++id, entity, entityId, createdAt",
+      ragVectors: "chunkId, entity, entityId",
     });
   }
 }
@@ -402,6 +479,51 @@ export const repo = {
 
   async deleteRecord(id: string): Promise<void> {
     await db.records.delete(id);
+  },
+
+  /* ---------------- 同步层（决策 D4） ---------------- */
+
+  async listOutbox(): Promise<OutboxRow[]> {
+    const rows = await db.outbox.orderBy("createdAt").toArray();
+    return rows;
+  },
+
+  async putOutbox(row: OutboxRow): Promise<number> {
+    return Number(await db.outbox.add(row));
+  },
+
+  async deleteOutbox(id: number): Promise<void> {
+    await db.outbox.delete(id);
+  },
+
+  async clearOutbox(): Promise<void> {
+    await db.outbox.clear();
+  },
+
+  async listSyncConflicts(): Promise<SyncConflictRow[]> {
+    return db.syncConflicts.orderBy("createdAt").toArray();
+  },
+
+  async putSyncConflict(row: SyncConflictRow): Promise<number> {
+    return Number(await db.syncConflicts.add(row));
+  },
+
+  async deleteSyncConflict(id: number): Promise<void> {
+    await db.syncConflicts.delete(id);
+  },
+
+  /* ---------------- 问知识库：向量 ---------------- */
+
+  async listRagVectors(): Promise<RagVectorRow[]> {
+    return db.ragVectors.toArray();
+  },
+
+  async putRagVector(row: RagVectorRow): Promise<void> {
+    await db.ragVectors.put(row);
+  },
+
+  async deleteRagVector(chunkId: string): Promise<void> {
+    await db.ragVectors.delete(chunkId);
   },
 
   /** 整库导出（备份用） */

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>个人知识库 · 剪藏</title>
+    <style>
+      body {
+        width: 300px;
+        margin: 0;
+        padding: 14px;
+        font-family: "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+        font-size: 13px;
+        color: #37352f;
+      }
+      label {
+        display: block;
+        margin: 10px 0 4px;
+        font-size: 12px;
+        color: #91918e;
+      }
+      input {
+        width: 100%;
+        box-sizing: border-box;
+        height: 30px;
+        padding: 0 8px;
+        font-family: inherit;
+        font-size: 13px;
+        color: #37352f;
+        background: #fff;
+        border: 1px solid rgba(55, 53, 47, 0.12);
+        border-radius: 6px;
+      }
+      button {
+        width: 100%;
+        height: 32px;
+        margin-top: 12px;
+        font-family: inherit;
+        font-size: 13px;
+        color: #fff;
+        background: #2383e2;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      .hint {
+        margin-top: 10px;
+        font-size: 11px;
+        line-height: 1.6;
+        color: #b7b6b1;
+      }
+      #status {
+        min-height: 16px;
+        margin-top: 8px;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div><b>剪藏到个人知识库</b></div>
+
+    <label for="server">剪藏服务地址</label>
+    <input id="server" placeholder="http://127.0.0.1:8787" />
+
+    <label for="token">访问 Token（服务端设了才需要）</label>
+    <input id="token" type="password" placeholder="Bearer token" />
+
+    <button id="save">保存设置</button>
+    <button id="clip">剪藏当前页</button>
+    <div id="status"></div>
+    <div class="hint">
+      剪藏后正文由服务端清洗并存档；回到网页端「快速剪藏 → 服务器剪藏箱」就能看到并导入剪藏库。
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

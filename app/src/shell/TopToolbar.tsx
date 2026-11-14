@@ -5,6 +5,8 @@ import { dropLeadingTitleBlock, markdownToBlocks, titleFromMarkdown } from "../d
 import { AppIcon, ICON_SETS, type IconSetId } from "../design/icons";
 import { FONT_THEMES } from "../design/fonts";
 import { PageMenu } from "./PageMenu";
+import { AiPanel } from "./AiPanel";
+import { SyncButton } from "./SyncButton";
 
 function useOutsideClose(onClose: () => void) {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -31,6 +33,7 @@ export function TopToolbar() {
   const toggleSidebar = useStore((s) => s.toggleSidebar);
 
   const [openMenu, setOpenMenu] = useState<null | "appearance" | "more">(null);
+  const [chatOpen, setChatOpen] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const mdRef = useRef<HTMLInputElement | null>(null);
@@ -89,6 +92,14 @@ export function TopToolbar() {
       {busy && <span className="toolbar__toast">{busy}</span>}
 
       <div className="toolbar__spacer" />
+
+      {/* 同步（决策 D4）：待推送 / 冲突副本 */}
+      <SyncButton />
+
+      {/* 全局对话：不依赖当前页面也能聊 */}
+      <button className="icon-btn" title="AI 对话" onClick={() => setChatOpen(true)}>
+        <AppIcon name="ai" set={iconSet} />
+      </button>
 
       {/* 页面菜单（导出 / 复制 / 副本 / 删除） */}
       <PageMenu />
@@ -220,6 +231,21 @@ export function TopToolbar() {
           if (f) void onPickMarkdown(f);
         }}
       />
+      {chatOpen && (
+        <div className="modal" role="dialog" aria-modal="true" onMouseDown={() => setChatOpen(false)}>
+          <div className="modal__card chatmodal" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="modal__head">
+              <b>AI 对话</b>
+              <button className="icon-btn" title="关闭" onClick={() => setChatOpen(false)}>
+                ×
+              </button>
+            </div>
+            <div className="modal__body chatmodal__body">
+              <AiPanel initialTab="chat" hideTabs />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

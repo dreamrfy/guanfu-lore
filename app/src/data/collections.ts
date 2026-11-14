@@ -4,7 +4,16 @@
  * 刻意与界面分开：这里不碰 DOM、不碰 React，方便单测。
  * 时间一律存成毫秒数（date 字段），排序/比较都在这一层统一。
  */
-import { newId, type CollectionRow, type FieldDef, type FieldType, type RecordRow, type ViewDef } from "./db";
+import {
+  newId,
+  type CollectionRow,
+  type FieldDef,
+  type FieldType,
+  type FilterCondition,
+  type RecordRow,
+  type SortDef,
+  type ViewDef,
+} from "./db";
 
 export const FIELD_TYPE_LABEL: Record<FieldType, string> = {
   text: "文本",
@@ -148,7 +157,9 @@ export function matchesFilter(record: RecordRow, field: FieldDef, cond: { operat
       // 文本类：包含 / 等于 / 不等于（大小写不敏感，中文直接子串匹配）
       const a = asText(raw).toLowerCase();
       const b = asText(cond.value).toLowerCase();
-      if (op === "contains") return b !== "" && a.includes(b);
+      // 条件刚加上、值还没填（空串）时视为"这条条件还没生效"，
+      // 否则一加条件整张表就变空，用户会以为数据丢了。
+      if (op === "contains") return b === "" || a.includes(b);
       if (op === "is") return a === b;
       if (op === "isNot") return a !== b;
       return false;
@@ -233,4 +244,77 @@ export function applyView(records: RecordRow[], collection: CollectionRow, view:
   }
 
   return rows;
+}
+
+/* ---------------- 筛选/排序的界面辅助 ----------------
+ *
+ * 界面只负责"摆控件"，哪些运算符对哪种字段有意义仍然由这里说了算。
+ * 这样加控件时不会把「日期不能比大小」这种规则漏在界面层。
+ */
+
+export const OPERATOR_LABEL: Record<FilterCondition["operator"], string> = {
+  contains: "包含",
+  is: "等于",
+  isNot: "不等于",
+  isEmpty: "为空",
+  isNotEmpty: "不为空",
+  gt: "大于",
+  lt: "小于",
+  gte: "大于等于",
+  lte: "小于等于",
+  before: "早于",
+  after: "晚于",
+};
+
+export function operatorsFor(type: FieldType): FilterCondition["operator"][] {
+  switch (type) {
+    case "number":
+      return ["is", "gt", "lt", "gte", "lte", "isEmpty", "isNotEmpty"];
+    case "date":
+      return ["is", "before", "after", "isEmpty", "isNotEmpty"];
+    case "select":
+    case "multiSelect":
+      return ["is", "isNot", "isEmpty", "isNotEmpty"];
+    case "checkbox":
+      return ["is"];
+    default:
+      return ["contains", "is", "isNot", "isEmpty", "isNotEmpty"];
+  }
+}
+
+/** 这个运算符后面要不要填一个值 */
+export function needsValue(op: FilterCondition["operator"]): boolean {
+  return op !== "isEmpty" && op !== "isNotEmpty";
+}
+
+/** 新条件的默认值：按字段类型给一个能立刻成立的值，避免"加了条件却永远筛不出东西" */
+export function defaultValueFor(field: FieldDef): unknown {
+  switch (field.type) {
+    case "number":
+      return 0;
+    case "date":
+      return Date.now();
+    case "checkbox":
+      return true;
+    case "select":
+    case "multiSelect":
+      return field.options?.[0]?.id ?? "";
+    default:
+      return "";
+  }
+}
+
+/** 为新字段拼一条默认条件（字段没了/类型换了，调用方负责重建） */
+export function makeFilter(field: FieldDef): FilterCondition {
+  const operator = operatorsFor(field.type)[0];
+  return {
+    id: newId(),
+    fieldId: field.id,
+    operator,
+    ...(needsValue(operator) ? { value: defaultValueFor(field) } : {}),
+  };
+}
+
+export function makeSort(fieldId: string, direction: SortDef["direction"] = "asc"): SortDef {
+  return { fieldId, direction };
 }

@@ -29,6 +29,14 @@ export function App() {
     void hydrate();
   }, [hydrate]);
 
+  // 自动同步：定时把本地改动推上去、把云端改动拉下来（断网会自动退避重试）
+  useEffect(() => {
+    const start = useStore.getState().startAutoSync;
+    const stop = useStore.getState().stopAutoSync;
+    start();
+    return () => stop();
+  }, []);
+
   // 关窗/刷新前，把防抖里还没落盘的正文写掉
   useEffect(() => {
     const onLeave = () => {

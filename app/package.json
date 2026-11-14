@@ -13,7 +13,10 @@
     "predev": "node tools/gen-icons.mjs",
     "prebuild": "node tools/gen-icons.mjs",
     "check": "node tools/check-icons.mjs && tsc --noEmit",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
   },
   "keywords": [],
   "author": "",
@@ -46,6 +49,7 @@
     "tailwindcss": "^4.3.5",
     "typescript": "^7.0.2",
     "vite": "^8.3.8",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.0",
+    "@tauri-apps/cli": "^2.0.0"
   }
 }

@@ -9,6 +9,32 @@
 node src/cli.ts --help
 ```
 
+## 本地联调桩（`tests/fixtures/`）
+
+```bash
+node tests/fixtures/mock-mcp.mjs   # MCP: http://127.0.0.1:8901/mcp
+node tests/fixtures/mock-ai.mjs    # AI : http://127.0.0.1:8899/v1
+```
+
+只用于验证网页端的 AI / MCP 界面与「工具调用闭环」，不参与生产。mock AI 在请求带 `tools`
+时会先返回一次 `tool_call`（`mcp_0`，查北京天气），收到工具回执后再给最终回答。
+
+## 剪藏 HTTP 接口（给网页端「快速剪藏」用）
+
+```bash
+node src/clipServer.ts [--port 8787]
+```
+
+- 只监听 `127.0.0.1`，不对外网开放。
+- `POST /api/clip`，请求体 `{"url":"<公众号或B站链接>"}`：
+  返回 `{ ok, clip, contentHtml, snapshotHtml, assets }`。图片以 base64 返回；`snapshotHtml`
+  是图片已内联的自包含 HTML 快照。失败时返回 `{ ok:false, code, error }`。
+- `GET /api/health`：健康检查。
+- 允许来源默认 `http://localhost:5173`、`http://127.0.0.1:5173`、`http://localhost:5174`、`http://127.0.0.1:5174`；
+  用 `CLIP_HTTP_ORIGINS`（逗号分隔）覆盖。
+- 默认数据目录是 `server/data`；联调想隔离时用 `KF_DATA_DIR` / `KF_ASSETS_DIR` 指到别处。
+- 失败的剪藏记录会在下次手动重试时自动清掉再抓，不会被幂等键永久挡住。
+
 ## 命令与真实能力
 
 | 命令 | 做什么 | 能力边界 |

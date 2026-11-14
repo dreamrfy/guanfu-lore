@@ -49,6 +49,9 @@ dependencies:
 
   # M1-T12 图标接线：真 FlowUs 的 93 个 SVG（docs/基准/图标/ → assets/icons/）
   flutter_svg: ^2.0.10
+  flutter_mingcute: ^3.1.0
+  lucide_icons_flutter: ^4.0.3
+  phosphor_icons: ^3.0.1
 
 dev_dependencies:
   flutter_test:

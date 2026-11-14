@@ -1,0 +1,11 @@
+{
+  "version": "v4",
+  "startedAt": "2026-11-15T02:30:00+08:00",
+  "taskTable": "开发任务表-v3.3-云端批.md",
+  "maxConcurrent": 2,
+  "running": [
+    {"task": "T00", "startedAt": "2026-11-15T02:45:00+08:00", "note": "基线快照提交"}
+  ],
+  "history": [],
+  "notes": "看门狗第 5 版：30 分钟断停、断点尾重试、单会话 3 任务。停止方式：仓库根建 ops/STOP。"
+}

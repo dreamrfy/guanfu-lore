@@ -32,6 +32,21 @@ export interface PipelineDeps {
   now?: () => Date;
   /** 重试策略（默认只重试网络类错误） */
   retry?: <T>(fn: () => Promise<T>) => Promise<T>;
+  /**
+   * 可选：捕获"成功解析的正文"。
+   * 给 HTTP 接口层用——它需要把正文交给网页端转成编辑器块，
+   * 但编排器本身不关心这件事（因此设为可选，不影响原有测试与 CLI）。
+   */
+  onArticle?: (captured: CapturedArticle) => void;
+}
+
+/** 供接口层复用的解析产物（图片 file 是快照里的相对文件名） */
+export interface CapturedArticle {
+  id: string;
+  parsed: ParsedArticle;
+  /** 图片已替换成本地相对引用的正文 HTML */
+  contentHtml: string;
+  images: Array<{ file: string; assetId: string; ext: string; sourceUrl: string }>;
 }
 
 export interface PipelineFailure {
@@ -60,6 +75,8 @@ export interface PipelineStats {
   imagesFailed: number;
   failures: PipelineFailure[];
   elapsedMs: number;
+  /** 本轮真正入库的剪藏 id（HTTP 接口按它回读结果） */
+  clipIds: string[];
 }
 
 function defaultRetry<T>(fn: () => Promise<T>): Promise<T> {
@@ -97,6 +114,7 @@ export async function runPipeline(
     imagesFailed: 0,
     failures: [],
     elapsedMs: 0,
+    clipIds: [],
   };
 
   for (const msg of messages) {
@@ -214,6 +232,7 @@ export async function runPipeline(
     // ---- 图片：先按 URL 去重再逐张下载；失败只降级为 partial，不丢正文 ----
     const mapping = new Map<string, string>();
     const assets: Clip["assets"] = [];
+    const capturedImages: CapturedArticle["images"] = [];
     let imageFailed = 0;
     const seenImageUrls = new Set<string>();
     const uniqueManifest = parsed.imageManifest.filter((entry) => {
@@ -225,8 +244,15 @@ export async function runPipeline(
     for (const entry of uniqueManifest) {
       try {
         const downloaded = await retry(() => deps.downloadImage(entry.sourceUrl));
-        mapping.set(entry.sourceUrl, downloaded.assetRef.assetId + "." + downloaded.assetRef.ext);
+        const file = downloaded.assetRef.assetId + "." + downloaded.assetRef.ext;
+        mapping.set(entry.sourceUrl, file);
         assets.push(downloaded.assetRef);
+        capturedImages.push({
+          file,
+          assetId: downloaded.assetRef.assetId,
+          ext: downloaded.assetRef.ext,
+          sourceUrl: entry.sourceUrl,
+        });
         stats.imagesDownloaded += 1;
       } catch (e) {
         imageFailed += 1;
@@ -242,6 +268,7 @@ export async function runPipeline(
     }
 
     const contentHtml = rewriteImageSources(parsed.contentHtml, mapping);
+    deps.onArticle?.({ id, parsed, contentHtml, images: capturedImages });
 
     // ---- 快照 HTML 落盘（图片已替换为同目录相对引用） ----
     let assetWriteFailures = 0;
@@ -338,6 +365,7 @@ async function persist(stats: PipelineStats, deps: PipelineDeps, clip: Clip): Pr
     return;
   }
   stats.saved += 1;
+  stats.clipIds.push(clip.id);
   if (clip.status === "complete") stats.complete += 1;
   else if (clip.status === "partial") stats.partial += 1;
   else stats.failed += 1;

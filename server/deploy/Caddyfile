@@ -1,0 +1,20 @@
+# 剪藏服务的对外入口。
+#
+# 域名确定后设 CLIP_DOMAIN 环境变量（compose 里已留位置），Caddy 会自动申请并续期 HTTPS 证书。
+# 没域名时不要开这个 profile：容器起不来会白耗 Caddy 的证书签发额度。
+
+{$CLIP_DOMAIN} {
+	encode zstd gzip
+
+	# 剪藏服务自己校验 Bearer Token；这里只做 TLS 与转发
+	reverse_proxy clip:8787
+
+	# 剪藏返回的正文很大（原文快照可达数 MB），别让中间层截断
+	request_body {
+		max_size 10MB
+	}
+
+	log {
+		output stdout
+	}
+}

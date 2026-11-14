@@ -1,7 +1,12 @@
 // B站抓取白名单自测（第二轮 N-03）
 // 不联网：注入假 fetch，检查 resolveBvid / fetchBilibiliMeta 是否把白名单交给安全 HTTP 层。
 // 用法: node tests/bilibili.selftest.ts
-import { resolveBvid, fetchBilibiliMeta, type SafeGetLike } from "../src/fetch/bilibili.ts";
+import {
+  resolveBvid,
+  fetchBilibiliMeta,
+  fetchBilibiliFromShortLink,
+  type SafeGetLike,
+} from "../src/fetch/bilibili.ts";
 import type { SafeResponse } from "../src/fetch/http.ts";
 
 let failed = 0;
@@ -50,6 +55,14 @@ function fakeFetch(finalUrl: string, body = ""): { fn: SafeGetLike; calls: Captu
   check("拒绝 evil.bilibili.com.evil.com", !checkHost("evil.bilibili.com.evil.com"));
 }
 
+// ---- 完整视频地址：直接取 BV，不再发一次网络请求 ----
+{
+  const { fn, calls } = fakeFetch("https://www.bilibili.com/video/ignored");
+  const bvid = await resolveBvid("https://www.bilibili.com/video/BV1GJ411x7h7?p=1", fn);
+  check("完整地址能直接取 BV 号", bvid === "BV1GJ411x7h7", bvid);
+  check("完整地址不发网络请求", calls.length === 0, String(calls.length));
+}
+
 {
   const { fn } = fakeFetch("https://www.bilibili.com/video/BV1xx411c7mD");
   for (const evil of ["https://example.com/abc", "https://b23.tv.evil.com/abc", "https://evilb23.tv/abc"]) {
@@ -89,6 +102,18 @@ function fakeFetch(finalUrl: string, body = ""): { fn: SafeGetLike; calls: Captu
   check("不允许 example.com", !allowed!.has("example.com"));
   check("不允许 www.bilibili.com（API 只走 api 域）", !allowed!.has("www.bilibili.com"));
   check("带 Referer", calls[0]!.headers.Referer === "https://www.bilibili.com/", calls[0]!.headers.Referer);
+}
+
+// ---- 归一化条目：UP 主写进 author，剪藏库「作者」列才有值 ----
+{
+  const payload = JSON.stringify({
+    code: 0,
+    data: { title: "标题", desc: "简介", owner: { name: "UP" }, duration: 60, pic: "http://i1.hdslb.com/x.jpg" },
+  });
+  const { fn, calls } = fakeFetch("https://api.bilibili.com/x/web-interface/view", payload);
+  const item = await fetchBilibiliFromShortLink("https://www.bilibili.com/video/BV1xx411c7mD", fn);
+  check("B站条目的作者 = UP 主", item.author === "UP", String(item.author));
+  check("完整地址不先跳短链（只调用一次 API）", calls.length === 1, String(calls.length));
 }
 
 // ---- API 返回错误码时要抛出 ----

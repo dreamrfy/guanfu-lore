@@ -1,9 +1,21 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type PointerEvent as ReactPointerEvent, useEffect, useMemo, useRef, useState } from "react";
 import type { CollectionRow, FieldDef, FieldType, RecordRow } from "../data/db";
 import { OPTION_COLORS } from "../data/db";
-import { applyView, asChecked, asDateMs, asNumber, asStringList, asText, FIELD_TYPE_LABEL } from "../data/collections";
-import { useStore } from "../data/store";
+import {
+  applyView,
+  asChecked,
+  asDateMs,
+  asNumber,
+  asStringList,
+  asText,
+  DEFAULT_COL_WIDTH,
+  FIELD_TYPE_LABEL,
+  TITLE_COL_WIDTH,
+} from "../data/collections";
+import { CLIP_COLLECTION_NAME, useStore } from "../data/store";
 import { AppIcon } from "../design/icons";
+import { AiBatchDialog } from "./AiBatchDialog";
+import { ViewBar } from "./ViewBar";
 
 /** 按字段类型渲染只读值 */
 function CellValue({ field, record }: { field: FieldDef; record: RecordRow }) {
@@ -65,8 +77,8 @@ function CellValue({ field, record }: { field: FieldDef; record: RecordRow }) {
   return <span className={field.type === "text" ? "cell-title" : undefined}>{text}</span>;
 }
 
-/** 单元格编辑：双击进入编辑态 */
-function CellEditor({
+/** 单元格编辑：表格里双击进入，记录详情页里常驻 */
+export function CellEditor({
   field,
   record,
   onCommit,
@@ -293,10 +305,31 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
   const setCell = useStore((s) => s.setCell);
   const removeRecord = useStore((s) => s.removeRecord);
   const ensureRecords = useStore((s) => s.ensureRecords);
+  const updateField = useStore((s) => s.updateField);
+  const openRecord = useStore((s) => s.openRecord);
+  const openRecordRef = useStore((s) => s.openRecordRef);
 
   const [editingCell, setEditingCell] = useState<string | null>(null);
   const [menuFieldId, setMenuFieldId] = useState<string | null>(null);
   const [addFieldOpen, setAddFieldOpen] = useState(false);
+  const [batchOpen, setBatchOpen] = useState(false);
+  /**
+   * 拖列宽时先只改这里的临时值，松手才写库。
+   * 如果 pointermove 里直接 updateField，每移动 1px 就往 IndexedDB 写一次整张表。
+   */
+  const [drag, setDrag] = useState<{ id: string; width: number } | null>(null);
+  /**
+   * 单击行 = 打开记录详情，双击单元格 = 原地编辑。
+   * 单击必须等 220ms 再开面板：否则双击的第一下就把面板打开、布局一挪，第二下就点偏了。
+   */
+  const openTimer = useRef<number | null>(null);
+
+  const cancelOpen = () => {
+    if (openTimer.current !== null) {
+      clearTimeout(openTimer.current);
+      openTimer.current = null;
+    }
+  };
 
   useEffect(() => {
     void ensureRecords(collectionId);
@@ -311,6 +344,27 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
   if (!collection) return <div className="empty-state">这张表不见了</div>;
 
   const filtered = rows.length !== records.length;
+  const widthOf = (f: FieldDef) => drag?.id === f.id ? drag.width : f.width ?? DEFAULT_COL_WIDTH;
+  const gridWidth = 48 + collection.fields.reduce((sum, f) => sum + widthOf(f), 0) + 40;
+
+  /** 拖动列头右边缘改列宽：移动时只更新本地状态，松手才落库 */
+  const startResize = (e: ReactPointerEvent, f: FieldDef) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const startX = e.clientX;
+    const startW = widthOf(f);
+    const move = (ev: PointerEvent) => {
+      setDrag({ id: f.id, width: Math.max(80, startW + ev.clientX - startX) });
+    };
+    const up = (ev: PointerEvent) => {
+      document.removeEventListener("pointermove", move);
+      document.removeEventListener("pointerup", up);
+      setDrag(null);
+      updateField(collection.id, f.id, { width: Math.max(80, startW + ev.clientX - startX) });
+    };
+    document.addEventListener("pointermove", move);
+    document.addEventListener("pointerup", up);
+  };
 
   return (
     <div className="collection">
@@ -327,15 +381,26 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
         <button className="btn" onClick={() => void addRecord(collection.id)}>
           ＋ 新建记录
         </button>
+        {collection.name === CLIP_COLLECTION_NAME && (
+          <button className="btn" onClick={() => setBatchOpen(true)}>
+            AI 总结
+          </button>
+        )}
       </div>
 
+      {view && <ViewBar collection={collection} view={view} />}
+
       <div className="collection__scroll">
-        <table className="grid">
+        <table className="grid" style={{ width: gridWidth, tableLayout: "fixed" }}>
           <thead>
             <tr>
-              <th className="grid__idx">#</th>
-              {collection.fields.map((f) => (
-                <th key={f.id} style={{ width: f.width ?? 180 }}>
+              <th className="grid__idx grid__idx--head">#</th>
+              {collection.fields.map((f, colIdx) => (
+                <th
+                  key={f.id}
+                  className={colIdx === 0 ? "grid__frozen" : undefined}
+                  style={{ width: widthOf(f) }}
+                >
                   <div className="grid__th">
                     <button className="grid__th-btn" onClick={() => setMenuFieldId(f.id)} title="列设置">
                       <span className="grid__th-name">{f.name}</span>
@@ -344,6 +409,17 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
                     {menuFieldId === f.id && (
                       <ColumnMenu collection={collection} field={f} onClose={() => setMenuFieldId(null)} />
                     )}
+                    <span
+                      className="grid__resize"
+                      title="拖动调整列宽（双击恢复默认）"
+                      onPointerDown={(e) => startResize(e, f)}
+                      onDoubleClick={(e) => {
+                        e.stopPropagation();
+                        updateField(collection.id, f.id, {
+                          width: f.type === "text" ? TITLE_COL_WIDTH : DEFAULT_COL_WIDTH,
+                        });
+                      }}
+                    />
                   </div>
                 </th>
               ))}
@@ -374,16 +450,33 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
           </thead>
           <tbody>
             {rows.map((rec, i) => (
-              <tr key={rec.id}>
+              <tr
+                key={rec.id}
+                className={
+                  openRecordRef?.recordId === rec.id && openRecordRef.collectionId === collection.id
+                    ? "grid__row--open"
+                    : undefined
+                }
+                onClick={() => {
+                  cancelOpen();
+                  openTimer.current = window.setTimeout(
+                    () => openRecord(collection.id, rec.id),
+                    220
+                  );
+                }}
+              >
                 <td className="grid__idx">{i + 1}</td>
-                {collection.fields.map((f) => {
+                {collection.fields.map((f, colIdx) => {
                   const key = `${rec.id}:${f.id}`;
                   const editing = editingCell === key;
                   return (
                     <td
                       key={f.id}
-                      className="grid__cell"
-                      onDoubleClick={() => setEditingCell(key)}
+                      className={`grid__cell${colIdx === 0 ? " grid__frozen" : ""}`}
+                      onDoubleClick={() => {
+                        cancelOpen();
+                        setEditingCell(key);
+                      }}
                       title={editing ? "" : "双击编辑"}
                     >
                       {editing ? (
@@ -408,7 +501,8 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
                   <button
                     className="icon-btn"
                     title="删除这一行"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       if (confirm("删除这条记录？")) void removeRecord(collection.id, rec.id);
                     }}
                   >
@@ -427,6 +521,10 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
           </tbody>
         </table>
       </div>
+
+      {batchOpen && (
+        <AiBatchDialog collection={collection} records={records} onClose={() => setBatchOpen(false)} />
+      )}
     </div>
   );
 }

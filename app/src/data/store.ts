@@ -24,6 +24,10 @@ import {
   type ViewDef,
 } from "./db";
 import { makeCollection, makeField, makeRecord } from "./collections";
+import { AI_STATUS_FIELD, AI_STATUS_OPTIONS, AI_SUMMARY_FIELD } from "./aiFields";
+import type { AiCommand } from "./aiCommands";
+import { enqueueChange, conflictList, pendingCount, resolveLocalConflict, runSync, type SyncSummary } from "./sync";
+import { AUTO_SYNC_TICK_MS, shouldAutoSync } from "./syncAuto";
 import { resolveAssetRefs, unresolveAssetRefs, uploadAsset } from "./assets";
 import { DEFAULT_FONT_THEME } from "../design/fonts";
 import { DEFAULT_ICON_SET, type IconSetId } from "../design/icons";
@@ -31,6 +35,9 @@ import { DEFAULT_ICON_SET, type IconSetId } from "../design/icons";
 export type ThemeMode = "light" | "dark";
 
 const PREFS_KEY = "yzgifyz.h8.prefs";
+
+/** 剪藏落地的固定表名（重复剪藏、设置页、验收都按这个名字找） */
+export const CLIP_COLLECTION_NAME = "剪藏库";
 
 type Prefs = {
   theme: ThemeMode;
@@ -70,6 +77,19 @@ export function readPrefs(): Prefs {
   return loadPrefs();
 }
 
+/** 排进同步队列（决策 D4）。失败不影响本地操作——同步不能反过来拖垮编辑。 */
+function queue(input: {
+  entity: "page" | "collection" | "record";
+  entityId: string;
+  op: "upsert" | "delete";
+  payload: unknown;
+}): void {
+  void enqueueChange(input).catch(() => {});
+}
+
+/** 自动同步的定时器（全局一份） */
+let autoTimer: number | null = null;
+
 /** 正文防抖落库 */
 const docTimers = new Map<string, number>();
 
@@ -94,13 +114,44 @@ function scheduleDocSave(pageId: string, blocks: unknown[]): void {
   );
 }
 
+/** 记录正文的防抖落库（键 = collectionId:recordId，同一记录连续输入只写最后一次） */
+const recordTimers = new Map<string, number>();
+
+function writeRecord(collectionId: string, recordId: string): Promise<void> {
+  const row = (useStore.getState().records[collectionId] ?? []).find((r) => r.id === recordId);
+  if (!row) return Promise.resolve();
+  return repo.putRecord({ ...row, doc: unresolveAssetRefs(row.doc ?? []) as unknown[] });
+}
+
+function scheduleRecordSave(collectionId: string, recordId: string): void {
+  const key = `${collectionId}:${recordId}`;
+  const prev = recordTimers.get(key);
+  if (prev) clearTimeout(prev);
+  recordTimers.set(
+    key,
+    window.setTimeout(() => {
+      recordTimers.delete(key);
+      void writeRecord(collectionId, recordId);
+    }, 300)
+  );
+}
+
 /** 立刻把还没落盘的正文写掉（关窗/切走前用；调用后仍可继续编辑） */
 export async function flushDocs(): Promise<void> {
   const pending = [...docTimers.keys()];
   docTimers.forEach((t) => clearTimeout(t));
   docTimers.clear();
+  const pendingRecords = [...recordTimers.keys()];
+  recordTimers.forEach((t) => clearTimeout(t));
+  recordTimers.clear();
   const docs = useStore.getState().docs;
-  await Promise.all(pending.map((id) => writeDoc(id, docs[id] ?? [])));
+  await Promise.all([
+    ...pending.map((id) => writeDoc(id, docs[id] ?? [])),
+    ...pendingRecords.map((key) => {
+      const [collectionId, recordId] = key.split(":");
+      return writeRecord(collectionId, recordId);
+    }),
+  ]);
 }
 
 type Store = {
@@ -130,9 +181,35 @@ type Store = {
   updateField: (collectionId: string, fieldId: string, patch: Partial<FieldDef>) => void;
   removeField: (collectionId: string, fieldId: string) => void;
   addRecord: (collectionId: string) => Promise<void>;
+  /** 剪藏库：不存在就按固定字段建一张（公众号 / B站 / 其他 + 作者、链接、收藏时间、状态） */
+  ensureClipCollection: () => Promise<CollectionRow>;
+  /** 给集合补上「AI 摘要 / AI 状态」两列（已有则跳过），返回最新表 */
+  ensureAiFields: (collectionId: string) => Promise<CollectionRow | null>;
+  /** 新增一条剪藏记录：正文与快照一起入库，内存里保存"可显示"的正文 */
+  addClipRecord: (
+    collectionId: string,
+    values: Record<string, unknown>,
+    blocks: unknown[],
+    snapshotAssetId?: string | null
+  ) => Promise<string>;
   setCell: (collectionId: string, recordId: string, fieldId: string, value: unknown) => void;
   removeRecord: (collectionId: string, recordId: string) => Promise<void>;
   updateView: (collectionId: string, viewId: string, patch: Partial<ViewDef>) => void;
+  /** 非空 = 表格里打开了某条记录的详情（右侧面板显示） */
+  openRecordRef: { collectionId: string; recordId: string } | null;
+  /** 自动同步开关（定时推 + 拉） */
+  autoSync: boolean;
+  setAutoSync: (on: boolean) => void;
+  startAutoSync: () => void;
+  stopAutoSync: () => void;
+  /** 待处理的 AI 命令（斜杠菜单等入口触发；右侧面板打开后取走） */
+  aiCommand: AiCommand | null;
+  dispatchAiCommand: (command: AiCommand) => void;
+  clearAiCommand: () => void;
+  openRecord: (collectionId: string, recordId: string) => void;
+  closeRecord: () => void;
+  /** 记录正文（BlockNote 块数组），防抖落库 */
+  setRecordDoc: (collectionId: string, recordId: string, blocks: unknown[]) => void;
 
   theme: ThemeMode;
   iconSet: IconSetId;
@@ -143,7 +220,25 @@ type Store = {
   hydrate: () => Promise<void>;
   ensureDoc: (pageId: string) => Promise<void>;
 
-  createPage: (parentId?: string | null) => Promise<string>;
+  /* ---- 同步（决策 D4） ---- */
+  syncStatus: { pending: number; conflicts: number; lastSyncAt: number | null; lastErrorAt: number | null; busy: boolean };
+  refreshSyncStatus: () => Promise<void>;
+  runSyncNow: () => Promise<SyncSummary>;
+  /** 把远端变更应用到内存（数据库已由同步引擎写好） */
+  applyRemoteChange: (
+    entity: string,
+    entityId: string,
+    op: "upsert" | "delete",
+    payload: unknown
+  ) => void;
+  resolveSyncConflict: (id: number, action: "keep-server" | "use-mine") => Promise<void>;
+
+  /**
+   * 新建页面。initialBlocks 用于"从模板新建"：
+   * 必须在 openTab 之前把正文放进内存，否则编辑器会先按空文档挂载，
+   * 之后再把正文塞进去它也不会重读（PageEditor 只在挂载时取 initialBlocks）。
+   */
+  createPage: (parentId?: string | null, initialBlocks?: PartialBlock[]) => Promise<string>;
   renamePage: (id: string, title: string) => void;
   setPageIcon: (id: string, icon: string | null) => void;
   /** 设置封面（传 null 表示移除封面） */
@@ -195,6 +290,10 @@ export const useStore = create<Store>((set, get) => {
     collections: [],
     records: {},
     activeCollectionId: null,
+    openRecordRef: null,
+    autoSync: true,
+    aiCommand: null,
+    syncStatus: { pending: 0, conflicts: 0, lastSyncAt: null, lastErrorAt: null, busy: false },
     theme: prefs.theme,
     iconSet: prefs.iconSet,
     fontTheme: prefs.fontTheme,
@@ -253,11 +352,19 @@ export const useStore = create<Store>((set, get) => {
       persist(next);
     },
 
-    createPage: async (parentId = null) => {
+    createPage: async (parentId = null, initialBlocks = []) => {
       const row = makePageRow(parentId, "");
       await repo.putPage(row);
-      set((s) => ({ pages: [...s.pages, row], docs: { ...s.docs, [row.id]: [] } }));
+      set((s) => ({ pages: [...s.pages, row], docs: { ...s.docs, [row.id]: initialBlocks } }));
       get().openTab(row.id);
+      if (initialBlocks.length > 0) scheduleDocSave(row.id, initialBlocks);
+      // 同步层：新建的页面也要排队推上去
+      void enqueueChange({
+        entity: "page",
+        entityId: row.id,
+        op: "upsert",
+        payload: { page: row, blocks: initialBlocks },
+      }).catch(() => {});
       return row.id;
     },
 
@@ -267,6 +374,12 @@ export const useStore = create<Store>((set, get) => {
       const next = { ...row, title, updatedAt: Date.now() };
       set((s) => ({ pages: s.pages.map((p) => (p.id === id ? next : p)) }));
       persist(next);
+      void enqueueChange({
+        entity: "page",
+        entityId: id,
+        op: "upsert",
+        payload: { page: next },
+      }).catch(() => {});
     },
 
     setPageIcon: (id, icon) => {
@@ -275,6 +388,12 @@ export const useStore = create<Store>((set, get) => {
       const next = { ...row, icon, updatedAt: Date.now() };
       set((s) => ({ pages: s.pages.map((p) => (p.id === id ? next : p)) }));
       persist(next);
+      void enqueueChange({
+        entity: "page",
+        entityId: id,
+        op: "upsert",
+        payload: { page: next },
+      }).catch(() => {});
     },
 
     setParent: (id, parentId) => {
@@ -349,7 +468,15 @@ export const useStore = create<Store>((set, get) => {
     ensureRecords: async (collectionId) => {
       if (get().records[collectionId]) return;
       const rows = await repo.listRecords(collectionId);
-      set((s) => ({ records: { ...s.records, [collectionId]: rows } }));
+      // 记录正文里的 asset:// 也要换成可显示地址（和页面正文同一套规则）
+      const resolved = await Promise.all(
+        rows.map(async (row) =>
+          row.doc
+            ? { ...row, doc: (await resolveAssetRefs(row.doc)) as unknown[] }
+            : row
+        )
+      );
+      set((s) => ({ records: { ...s.records, [collectionId]: resolved } }));
     },
 
     createCollection: async (name = "新建表格") => {
@@ -361,7 +488,11 @@ export const useStore = create<Store>((set, get) => {
     },
 
     openCollection: async (id) => {
-      set({ activeCollectionId: id });
+      // 换表时把上一张表打开的记录详情关掉，避免面板里还挂着别的表的数据
+      set({
+        activeCollectionId: id,
+        openRecordRef: get().openRecordRef?.collectionId === id ? get().openRecordRef : null,
+      });
       await get().ensureRecords(id);
     },
 
@@ -382,6 +513,7 @@ export const useStore = create<Store>((set, get) => {
           collections: s.collections.filter((c) => c.id !== id),
           records,
           activeCollectionId: s.activeCollectionId === id ? null : s.activeCollectionId,
+          openRecordRef: s.openRecordRef?.collectionId === id ? null : s.openRecordRef,
         };
       });
     },
@@ -393,18 +525,27 @@ export const useStore = create<Store>((set, get) => {
       const next = { ...row, fields: [...row.fields, field], updatedAt: Date.now() };
       set((s) => ({ collections: s.collections.map((c) => (c.id === collectionId ? next : c)) }));
       await repo.putCollection(next);
+      queue({ entity: "collection", entityId: collectionId, op: "upsert", payload: { collection: next } });
     },
 
     updateField: (collectionId, fieldId, patch) => {
       const row = get().collections.find((c) => c.id === collectionId);
       if (!row) return;
+      const prevField = row.fields.find((f) => f.id === fieldId);
+      const typeChanged = patch.type !== undefined && prevField !== undefined && patch.type !== prevField.type;
       const next = {
         ...row,
         fields: row.fields.map((f) => (f.id === fieldId ? { ...f, ...patch } : f)),
+        // 类型换了（单选→数字之类），旧条件的运算符/值已无意义，
+        // 留着会把整张表筛成空，所以只丢掉这一列的筛选条件，排序不动。
+        views: typeChanged
+          ? row.views.map((v) => ({ ...v, filters: v.filters.filter((c) => c.fieldId !== fieldId) }))
+          : row.views,
         updatedAt: Date.now(),
       };
       set((s) => ({ collections: s.collections.map((c) => (c.id === collectionId ? next : c)) }));
       void repo.putCollection(next);
+      queue({ entity: "collection", entityId: collectionId, op: "upsert", payload: { collection: next } });
     },
 
     removeField: (collectionId, fieldId) => {
@@ -423,6 +564,7 @@ export const useStore = create<Store>((set, get) => {
       };
       set((s) => ({ collections: s.collections.map((c) => (c.id === collectionId ? next : c)) }));
       void repo.putCollection(next);
+      queue({ entity: "collection", entityId: collectionId, op: "upsert", payload: { collection: next } });
     },
 
     addRecord: async (collectionId) => {
@@ -431,6 +573,85 @@ export const useStore = create<Store>((set, get) => {
       set((s) => ({
         records: { ...s.records, [collectionId]: [...(s.records[collectionId] ?? []), rec] },
       }));
+      queue({ entity: "record", entityId: rec.id, op: "upsert", payload: { record: rec } });
+    },
+
+    ensureClipCollection: async () => {
+      const existing = get().collections.find((c) => c.name === CLIP_COLLECTION_NAME);
+      if (existing) return existing;
+
+      const base = makeCollection(CLIP_COLLECTION_NAME);
+      const title = base.fields.find((f) => f.type === "text") ?? makeField("text", "标题");
+      const source: FieldDef = {
+        ...makeField("select", "来源"),
+        options: [
+          { id: newId(), name: "公众号", color: "green" },
+          { id: newId(), name: "B站", color: "pink" },
+          { id: newId(), name: "其他", color: "grey" },
+        ],
+      };
+      const status: FieldDef = {
+        ...makeField("select", "状态"),
+        options: [
+          { id: newId(), name: "未读", color: "blue" },
+          { id: newId(), name: "已读", color: "grey" },
+        ],
+      };
+      const row: CollectionRow = {
+        ...base,
+        icon: "📥",
+        fields: [title, source, makeField("text", "作者"), makeField("url", "原文链接"), makeField("date", "收藏时间"), status],
+        updatedAt: Date.now(),
+      };
+      await repo.putCollection(row);
+      set((s) => ({
+        collections: [...s.collections, row],
+        records: { ...s.records, [row.id]: [] },
+      }));
+      return row;
+    },
+
+    ensureAiFields: async (collectionId) => {
+      const row = get().collections.find((c) => c.id === collectionId);
+      if (!row) return null;
+      const hasSummary = row.fields.some((f) => f.name === AI_SUMMARY_FIELD);
+      const hasStatus = row.fields.some((f) => f.name === AI_STATUS_FIELD);
+      if (hasSummary && hasStatus) return row;
+
+      const fields = [...row.fields];
+      if (!hasSummary) fields.push(makeField("text", AI_SUMMARY_FIELD));
+      if (!hasStatus) {
+        const colors = ["grey", "blue", "green", "red"];
+        fields.push({
+          ...makeField("select", AI_STATUS_FIELD),
+          options: AI_STATUS_OPTIONS.map((name, i) => ({ id: newId(), name, color: colors[i] ?? "grey" })),
+        });
+      }
+      const next: CollectionRow = { ...row, fields, updatedAt: Date.now() };
+      await repo.putCollection(next);
+      set((s) => ({ collections: s.collections.map((c) => (c.id === collectionId ? next : c)) }));
+      return next;
+    },
+
+    addClipRecord: async (collectionId, values, blocks, snapshotAssetId) => {
+      const rec = makeRecord(collectionId, values);
+      const stored: RecordRow = {
+        ...rec,
+        doc: unresolveAssetRefs(blocks) as unknown[],
+        snapshotAssetId: snapshotAssetId ?? null,
+      };
+      await repo.putRecord(stored);
+      // 内存里存"可显示"的那份（图片是 blob 地址），写库前再换回 asset://
+      const display: RecordRow = {
+        ...stored,
+        doc: (await resolveAssetRefs(stored.doc ?? [])) as unknown[],
+      };
+      set((s) => ({
+        records: { ...s.records, [collectionId]: [...(s.records[collectionId] ?? []), display] },
+      }));
+      // 同步层推的是"库里那份"（图片是 asset:// 引用），不是内存里的 blob 地址
+      queue({ entity: "record", entityId: rec.id, op: "upsert", payload: { record: stored } });
+      return rec.id;
     },
 
     setCell: (collectionId, recordId, fieldId, value) => {
@@ -442,12 +663,16 @@ export const useStore = create<Store>((set, get) => {
         records: { ...s.records, [collectionId]: list.map((r) => (r.id === recordId ? next : r)) },
       }));
       void repo.putRecord(next);
+      queue({ entity: "record", entityId: recordId, op: "upsert", payload: { record: next } });
     },
 
     removeRecord: async (collectionId, recordId) => {
       await repo.deleteRecord(recordId);
       set((s) => ({
         records: { ...s.records, [collectionId]: (s.records[collectionId] ?? []).filter((r) => r.id !== recordId) },
+        // 删掉的正是面板里打开的那条，就顺手把面板收起来
+        openRecordRef:
+          s.openRecordRef?.recordId === recordId ? null : s.openRecordRef,
       }));
     },
 
@@ -461,6 +686,158 @@ export const useStore = create<Store>((set, get) => {
       };
       set((s) => ({ collections: s.collections.map((c) => (c.id === collectionId ? next : c)) }));
       void repo.putCollection(next);
+    },
+
+    refreshSyncStatus: async () => {
+      const pending = await pendingCount();
+      const conflicts = (await conflictList()).length;
+      set((s) => ({ syncStatus: { ...s.syncStatus, pending, conflicts } }));
+    },
+
+    runSyncNow: async () => {
+      set((s) => ({ syncStatus: { ...s.syncStatus, busy: true } }));
+      const result = await runSync();
+      for (const change of result.applied) {
+        get().applyRemoteChange(change.entity, change.entityId, change.op, change.payload);
+      }
+      const pending = await pendingCount();
+      const conflicts = (await conflictList()).length;
+      set((s) => ({
+        syncStatus: {
+          pending,
+          conflicts,
+          lastSyncAt: result.ok ? Date.now() : s.syncStatus.lastSyncAt,
+          lastErrorAt: result.ok ? null : Date.now(),
+          busy: false,
+        },
+      }));
+      return result;
+    },
+
+    applyRemoteChange: (entity, entityId, op, payload) => {
+      if (entity === "page") {
+        const data = payload as { page?: PageRow; blocks?: unknown[] } | null;
+        const page = data?.page;
+        if (!page) return;
+        set((s) => {
+          if (op === "delete") {
+            const docs = { ...s.docs };
+            delete docs[entityId];
+            return { pages: s.pages.filter((p) => p.id !== entityId), docs };
+          }
+          const pages = s.pages.some((p) => p.id === entityId)
+            ? s.pages.map((p) => (p.id === entityId ? page : p))
+            : [...s.pages, page];
+          const docs = data?.blocks ? { ...s.docs, [entityId]: data.blocks } : s.docs;
+          return { pages, docs };
+        });
+        return;
+      }
+      if (entity === "collection") {
+        const data = payload as { collection?: CollectionRow } | null;
+        const collection = data?.collection;
+        if (!collection) return;
+        set((s) => ({
+          collections:
+            op === "delete"
+              ? s.collections.filter((c) => c.id !== entityId)
+              : s.collections.some((c) => c.id === entityId)
+                ? s.collections.map((c) => (c.id === entityId ? collection : c))
+                : [...s.collections, collection],
+        }));
+        return;
+      }
+      if (entity === "record") {
+        const data = payload as { record?: RecordRow } | null;
+        const record = data?.record;
+        if (!record) return;
+        set((s) => {
+          const list = s.records[record.collectionId] ?? [];
+          const next =
+            op === "delete"
+              ? list.filter((r) => r.id !== entityId)
+              : list.some((r) => r.id === entityId)
+                ? list.map((r) => (r.id === entityId ? record : r))
+                : [...list, record];
+          return { records: { ...s.records, [record.collectionId]: next } };
+        });
+      }
+    },
+
+    resolveSyncConflict: async (id, action) => {
+      await resolveLocalConflict(id, action);
+      await get().refreshSyncStatus();
+    },
+
+    setAutoSync: (on) => {
+      set({ autoSync: on });
+      if (on) get().startAutoSync();
+      else get().stopAutoSync();
+    },
+
+    startAutoSync: () => {
+      if (autoTimer !== null) return;
+      const tick = () => {
+        const s = get();
+        if (!s.autoSync) return;
+        const due = shouldAutoSync({
+          pending: s.syncStatus.pending,
+          lastSyncAt: s.syncStatus.lastSyncAt,
+          lastErrorAt: s.syncStatus.lastErrorAt,
+          now: Date.now(),
+        });
+        if (!due) return;
+        void s.runSyncNow().catch(() => {});
+      };
+      autoTimer = window.setInterval(tick, AUTO_SYNC_TICK_MS);
+      tick(); // 启动时先来一次，把云端内容拉下来
+    },
+
+    stopAutoSync: () => {
+      if (autoTimer === null) return;
+      clearInterval(autoTimer);
+      autoTimer = null;
+    },
+
+    dispatchAiCommand: (command) => {      // 面板关着也要接得住命令：顺手打开右侧面板，命令不会丢
+      set({ aiCommand: command });
+      if (!get().rightPanelOpen) {
+        set({ rightPanelOpen: true });
+        savePrefs({ rightPanelOpen: true });
+      }
+    },
+
+    clearAiCommand: () => set({ aiCommand: null }),
+
+    openRecord: (collectionId, recordId) => {
+      set({ openRecordRef: { collectionId, recordId } });
+      // 右侧面板关着的话，用户点了也没地方看，顺手打开
+      if (!get().rightPanelOpen) {
+        set({ rightPanelOpen: true });
+        savePrefs({ rightPanelOpen: true });
+      }
+    },
+
+    closeRecord: () => set({ openRecordRef: null }),
+
+    setRecordDoc: (collectionId, recordId, blocks) => {
+      const list = get().records[collectionId] ?? [];
+      const row = list.find((r) => r.id === recordId);
+      if (!row) return;
+      const next = { ...row, doc: blocks, updatedAt: Date.now() };
+      set((s) => ({
+        records: { ...s.records, [collectionId]: list.map((r) => (r.id === recordId ? next : r)) },
+      }));
+      scheduleRecordSave(collectionId, recordId);
+      // 同步层推库里那份（asset:// 引用），blob 地址在别的设备上没意义
+      void repo.putRecord({ ...next, doc: unresolveAssetRefs(blocks) as unknown[] }).then(() =>
+        queue({
+          entity: "record",
+          entityId: recordId,
+          op: "upsert",
+          payload: { record: { ...next, doc: unresolveAssetRefs(blocks) } },
+        })
+      );
     },
 
     moveToTrash: async (id) => {
@@ -507,6 +884,7 @@ export const useStore = create<Store>((set, get) => {
         const next = { ...row, updatedAt: Date.now() };
         set((s) => ({ pages: s.pages.map((p) => (p.id === id ? next : p)) }));
         // 正文在防抖里落，元信息这里跟着落一次即可（避免每次敲键都写 pages）
+        queue({ entity: "page", entityId: id, op: "upsert", payload: { page: next, blocks } });
       }
     },
 
@@ -515,7 +893,7 @@ export const useStore = create<Store>((set, get) => {
       if (activeTabId === id) return;
       const nextTabs = tabs.includes(id) ? tabs : [...tabs, id];
       // 打开页面时退出"正在看表格"的状态，否则主区还显示着表
-      set({ tabs: nextTabs, activeTabId: id, activeCollectionId: null });
+      set({ tabs: nextTabs, activeTabId: id, activeCollectionId: null, openRecordRef: null });
       savePrefs({ tabs: nextTabs, activeTabId: id });
       void get().ensureDoc(id);
     },
@@ -531,7 +909,7 @@ export const useStore = create<Store>((set, get) => {
     },
 
     setActiveTab: (id) => {
-      set({ activeTabId: id, activeCollectionId: null });
+      set({ activeTabId: id, activeCollectionId: null, openRecordRef: null });
       savePrefs({ activeTabId: id });
       void get().ensureDoc(id);
     },

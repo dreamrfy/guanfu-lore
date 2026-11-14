@@ -382,6 +382,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "6.0.0"
+  flutter_mingcute:
+    dependency: "direct main"
+    description:
+      name: flutter_mingcute
+      sha256: ff0bd77ddd76cd8d11d038f928a136dc85515adec3c802f069ffbc3e0f75e1e2
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "3.1.0"
   flutter_svg:
     dependency: "direct main"
     description:
@@ -560,6 +568,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.3.0"
+  lucide_icons_flutter:
+    dependency: "direct main"
+    description:
+      name: lucide_icons_flutter
+      sha256: d2ad72b8059ee0ad578d0aeb72bf4e7841c0126f360a8aa37f06e305e1fc7e4b
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "4.0.3"
   markdown:
     dependency: transitive
     description:
@@ -720,6 +736,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "7.1.0"
+  phosphor_icons:
+    dependency: "direct main"
+    description:
+      name: phosphor_icons
+      sha256: "0f32a6c6a7bbadb2e42cba15ec103dcd23dfa47137f17a6f5b5a078081ac55f8"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "3.0.1"
   platform:
     dependency: transitive
     description:
@@ -1143,4 +1167,4 @@ packages:
     version: "3.1.4"
 sdks:
   dart: ">=3.13.7 <4.0.0"
-  flutter: ">=3.44.0"
+  flutter: ">=3.47.8"

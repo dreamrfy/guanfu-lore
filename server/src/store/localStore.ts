@@ -122,6 +122,14 @@ export function existsClip(id: string): boolean {
   return !!getDb().prepare("SELECT id FROM clips WHERE id = ?").get(id);
 }
 
+/**
+ * 删掉一条剪藏（只用于「失败记录重试」）。
+ * 失败记录会占住幂等键，不删就永远跳过重抓。
+ */
+export function deleteClip(id: string): void {
+  getDb().prepare("DELETE FROM clips WHERE id = ?").run(id);
+}
+
 /** 清单：一次查询取全（P2-02：不再逐行 getClip 造成 N+1） */
 export function listClips(): Clip[] {
   const rows = getDb().prepare("SELECT * FROM clips ORDER BY saved_at").all() as Array<Record<string, unknown>>;
