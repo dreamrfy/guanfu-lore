@@ -1,0 +1,18 @@
+单测（testDebugUnitTest，JUnit4）：tests=9 skipped=0 failures=0 errors=0 —— ExtractUrlTest 全绿
+
+APK 内 AndroidManifest 已含 SEND intent-filter（aapt2 dump xmltree 摘录）：
+              E: intent-filter (line=23)
+                  E: action (line=24)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.intent.action.MAIN" (Raw: "android.intent.action.MAIN")
+                  E: category (line=26)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.intent.category.LAUNCHER" (Raw: "android.intent.category.LAUNCHER")
+              E: intent-filter (line=28)
+                  E: action (line=29)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.intent.action.SEND" (Raw: "android.intent.action.SEND")
+                  E: category (line=31)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.intent.category.DEFAULT" (Raw: "android.intent.category.DEFAULT")
+                  E: data (line=33)
+                    A: http://schemas.android.com/apk/res/android:mimeType(0x01010026)="text/plain" (Raw: "text/plain")
+
+构建：./gradlew testDebugUnitTest assembleDebug --no-daemon → BUILD SUCCESSFUL in 25s（40 tasks）
+APK：app/build/outputs/apk/debug/app-debug.apk
