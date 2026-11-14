@@ -10,6 +10,7 @@
  */
 import { repo, type OutboxRow, type PageRow, type CollectionRow, type RecordRow } from "./db";
 import { loadClipServerUrl, loadClipToken } from "./clipApi";
+import { syncAssetsForChanges } from "./assetSync";
 
 export type SyncEntity = "page" | "collection" | "record";
 
@@ -37,6 +38,9 @@ export type SyncSummary = {
   pulled: number;
   pushed: number;
   conflicts: number;
+  /** 本次顺带补传成功的附件数（S02：失败不拦推送，留给下次补） */
+  assetsUploaded?: number;
+  assetsFailed?: number;
   /** 拉到并已写进本地库的变更（界面用它刷新内存里的状态） */
   applied: LocalChange[];
   error?: string;
@@ -285,6 +289,10 @@ export async function runSync(): Promise<SyncSummary> {
     // 2) 推
     const outbox = await repo.listOutbox();
     if (outbox.length > 0) {
+      // 页面可能带图：先把未上传过的附件字节传上去（失败不拦推送）
+      const assets = await syncAssetsForChanges(outbox);
+      summary.assetsUploaded = assets.uploaded.length;
+      summary.assetsFailed = assets.failed.length;
       const push = await post("/api/sync/push", { changes: buildPushPayload(outbox) });
       if (push.status !== 200 || !push.data?.ok) {
         summary.error = push.data?.error ?? `推送失败（HTTP ${push.status}）`;
@@ -333,6 +341,12 @@ export async function pushDirectChange(input: {
   payload: unknown;
   baseSeq: number;
 }): Promise<{ ok: boolean; status?: "applied" | "conflict"; seq?: number; error?: string }> {
+  // 附件先补传（尽力而为：失败不拦页面推送，图留待下次同步/拉取端补缺）
+  if (input.entity === "page") {
+    await syncAssetsForChanges([
+      { entity: input.entity, op: "upsert", payload: input.payload },
+    ]);
+  }
   const push = await post("/api/sync/push", {
     changes: [
       {
