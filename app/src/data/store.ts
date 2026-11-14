@@ -39,6 +39,30 @@ const PREFS_KEY = "yzgifyz.h8.prefs";
 /** 剪藏落地的固定表名（重复剪藏、设置页、验收都按这个名字找） */
 export const CLIP_COLLECTION_NAME = "剪藏库";
 
+/* ---------------- 剪藏箱自动入库（I01） ---------------- */
+
+// 服务器每 5 分钟收一批微信转发的文章，客户端用同样的节奏核对；
+// 导入本体在 clipBox.ts（幂等，按原链判重），这里只管「什么时候跑」。
+// 动态引入是为了避免 store ↔ clipBox 的静态循环依赖（它要用 useStore）。
+let clipImportBusy = false;
+let lastClipImportAt = 0;
+const CLIP_IMPORT_INTERVAL_MS = 5 * 60_000;
+
+async function maybeAutoImportClips(): Promise<void> {
+  if (clipImportBusy) return;
+  if (Date.now() - lastClipImportAt < CLIP_IMPORT_INTERVAL_MS) return;
+  clipImportBusy = true;
+  lastClipImportAt = Date.now();
+  try {
+    const { autoImportServerClips } = await import("./clipBox");
+    await autoImportServerClips();
+  } catch {
+    /* 剪藏箱没连上不影响页面同步等其他功能 */
+  } finally {
+    clipImportBusy = false;
+  }
+}
+
 type Prefs = {
   theme: ThemeMode;
   iconSet: IconSetId;
@@ -324,6 +348,8 @@ export const useStore = create<Store>((set, get) => {
         set({ pages: alive, trash, tabs, activeTabId: active, collections, ready: true, bootError: null });
         savePrefs({ tabs, activeTabId: active });
         if (active) void get().ensureDoc(active);
+        // 开机顺手把服务器剪藏箱里已完成的新文章收进来（幂等，失败静默）
+        void maybeAutoImportClips();
       } catch (e) {
         // 关键：启动流程必须有失败路径，否则界面会永远停在"正在打开知识库…"，用户无从下手
         console.error("[db] 启动失败", e);
@@ -704,6 +730,8 @@ export const useStore = create<Store>((set, get) => {
       for (const change of result.applied) {
         get().applyRemoteChange(change.entity, change.entityId, change.op, change.payload);
       }
+      // 同步成功后核对一次剪藏箱（内部有 5 分钟节流，不会每次同步都打服务器）
+      if (result.ok) void maybeAutoImportClips();
       const pending = await pendingCount();
       const conflicts = (await conflictList()).length;
       set((s) => ({

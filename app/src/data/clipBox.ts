@@ -1,8 +1,9 @@
 /**
  * 服务器剪藏箱（客户端侧）
  *
- * 微信客服转发进来的文章，服务器每 5 分钟自动收进 R2；客户端在这里看清单，
- * 一键「导入」到剪藏库（正文 + 图片 + 原文快照都落到本地）。
+ * 微信客服转发进来的文章，服务器每 5 分钟自动收进 R2；客户端在开机和自动同步时
+ * 自动把已完成的文章收进本地「剪藏库」（正文 + 图片 + 原文快照），剪藏箱页面
+ * 里的清单和「导入」按钮保留，兜底处理没自动导入成功的条目。
  *
  * 注意：服务器给的图片地址是**5 分钟有效的签名 URL**，所以导入时必须把图片
  * 下载进本地附件库，否则过一会儿图就没了。
@@ -182,4 +183,28 @@ export async function importServerClip(id: string): Promise<ImportResult> {
   const blocks = textToBlocks(detail.clip.text ?? "");
   await store.addClipRecord(collection.id, values, blocks, snapshotAssetId);
   return { ok: true, title: detail.clip.title };
+}
+
+/**
+ * 批量自动导入服务器剪藏箱（开机 + 自动同步成功后调用）。
+ * 只收 status === "complete" 的条目——抓取到一半的（partial/pending）收进来
+ * 会是残缺文章，等服务器处理完自然会变成 complete，下轮再收；
+ * 已导入过的按原文链接判重跳过（幂等），所以重复调用不会多出记录。
+ */
+export async function autoImportServerClips(): Promise<{ checked: number; imported: number }> {
+  const entries = await fetchServerClipIndex();
+  const candidates = entries.filter((e) => e.status === "complete");
+  if (candidates.length === 0) return { checked: candidates.length, imported: 0 };
+
+  const store = useStore.getState();
+  const collection = await store.ensureClipCollection();
+  // 判重读的是内存里的 records，开机后还没人打开过剪藏库时要先补进来
+  await store.ensureRecords(collection.id);
+
+  let imported = 0;
+  for (const entry of candidates) {
+    const result = await importServerClip(entry.id).catch(() => null);
+    if (result?.ok && !result.skipped) imported++;
+  }
+  return { checked: candidates.length, imported };
 }
