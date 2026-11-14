@@ -3,7 +3,9 @@
   "startedAt": "2026-11-15T02:30:00+08:00",
   "taskTable": "开发任务表-v3.3-云端批.md",
   "maxConcurrent": 2,
-  "running": [],
+  "running": [
+    {"task": "T03", "startedAt": "2026-11-15T03:20:00+08:00", "note": "接收浏览器打开 VIEW"}
+  ],
   "history": [
     {"task": "T00", "result": "DONE", "finishedAt": "2026-11-15T02:47:00+08:00", "commit": "ff7f147"},
     {"task": "T01", "result": "DONE", "finishedAt": "2026-11-15T03:02:00+08:00"},
