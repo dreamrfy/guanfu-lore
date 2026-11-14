@@ -7,7 +7,7 @@
  * 失败策略：附件上传失败**不拦页面推送**——文字比图重要，图留给下一次同步补传；
  * 拉取端（S03）发现缺附件再从服务端取回，两端都不依赖对方成功。
  */
-import { repo } from "./db";
+import { repo, db } from "./db";
 import { ASSET_SCHEME } from "./assets";
 import { loadClipServerUrl, loadClipToken } from "./clipApi";
 
@@ -139,4 +139,75 @@ export async function syncAssetsForChanges(
   }
   if (ids.size === 0) return { uploaded: [], failed: [], skipped: [] };
   return uploadPendingAssets([...ids]);
+}
+
+/* ---------------- 拉取端补缺图（S03） ---------------- */
+
+export type AssetFetchOutcome = {
+  /** 从服务端取回并已落本地 assets 表（保留远端 id） */
+  fetched: string[];
+  /** 服务端也没有或响应不合法（破图留给用户可见，下次同步再试） */
+  missing: string[];
+};
+
+async function fetchAssetFromServer(id: string): Promise<{ mime: string; data: ArrayBuffer } | null> {
+  const server = await loadClipServerUrl();
+  const token = await loadClipToken();
+  const res = await fetch(`${server}/api/sync/assets/${encodeURIComponent(id)}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) return null;
+  const mime = (res.headers.get("Content-Type") ?? "").split(";")[0]!.trim();
+  // 只收图片：服务端索引可能指向被覆盖过的任意字节，别把垃圾存进本地库
+  if (!mime.startsWith("image/")) return null;
+  return { mime, data: await res.arrayBuffer() };
+}
+
+/** 本地缺的字节才取；取回后按远端 id 落 assets 表 */
+export async function fetchMissingAssets(assetIds: string[], pageId: string | null): Promise<AssetFetchOutcome> {
+  const outcome: AssetFetchOutcome = { fetched: [], missing: [] };
+  for (const id of assetIds) {
+    if (await repo.getAsset(id)) continue;
+    try {
+      const row = await fetchAssetFromServer(id);
+      if (!row) {
+        outcome.missing.push(id);
+        continue;
+      }
+      await db.assets.put({
+        id,
+        pageId,
+        kind: "image",
+        mime: row.mime,
+        size: row.data.byteLength,
+        data: row.data,
+        createdAt: Date.now(),
+      });
+      outcome.fetched.push(id);
+    } catch {
+      outcome.missing.push(id);
+    }
+  }
+  return outcome;
+}
+
+/** pull 了一批页面变更后调用：收集引用、按"第一个引用它的页面"归属补缺 */
+export async function syncAssetsFromChanges(
+  changes: Array<{ entity: string; entityId: string; op: string; payload: unknown }>
+): Promise<AssetFetchOutcome> {
+  const referrer = new Map<string, string | null>();
+  for (const change of changes) {
+    if (change.entity !== "page" || change.op !== "upsert") continue;
+    for (const id of collectAssetRefs(change.payload)) {
+      if (!referrer.has(id)) referrer.set(id, change.entityId);
+    }
+  }
+  if (referrer.size === 0) return { fetched: [], missing: [] };
+  let outcome: AssetFetchOutcome = { fetched: [], missing: [] };
+  for (const [id, pageId] of referrer) {
+    const one = await fetchMissingAssets([id], pageId);
+    outcome.fetched.push(...one.fetched);
+    outcome.missing.push(...one.missing);
+  }
+  return outcome;
 }

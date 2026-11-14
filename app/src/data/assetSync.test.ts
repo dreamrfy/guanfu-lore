@@ -3,8 +3,10 @@ import { db, repo } from "./db";
 import {
   collectAssetRefs,
   extFromMime,
+  fetchMissingAssets,
   getUploadedAssets,
   syncAssetsForChanges,
+  syncAssetsFromChanges,
   uploadPendingAssets,
 } from "./assetSync";
 
@@ -112,8 +114,7 @@ describe("uploadPendingAssets", () => {
   });
 });
 
-describe("syncAssetsForChanges", () => {
-  it("只处理 page+upsert，收集 payload 里的附件引用去重后补传", async () => {
+describe("syncAssetsForChanges", () => {  it("只处理 page+upsert，收集 payload 里的附件引用去重后补传", async () => {
     await putAsset("a-1", "image/png", PNG);
     const { calls } = stubFetch([{ status: 200 }]);
 
@@ -137,5 +138,91 @@ describe("syncAssetsForChanges", () => {
     ]);
     expect(outcome.uploaded).toEqual([]);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("fetchMissingAssets（S03 拉取端）", () => {
+  /** 资产下载桩：按 assetId 脚本返回字节/状态 */
+  function stubAssetFetch(script: Record<string, { status: number; mime: string; bytes?: ArrayBuffer }>) {
+    const urls: string[] = [];
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      urls.push(url);
+      const id = decodeURIComponent(url.split("/api/sync/assets/")[1] ?? "");
+      const step = script[id];
+      if (!step) return new Response("not found", { status: 404 });
+      return new Response(step.bytes ?? new ArrayBuffer(0), {
+        status: step.status,
+        headers: { "Content-Type": step.mime },
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    return { urls, fetchMock, script };
+  }
+
+  it("本地缺 → GET 取回落库（保远端 id、mime 取自响应头）；已有 → 跳过不发请求", async () => {
+    await repo.setMeta("clipToken", "t");
+    await db.assets.put({ id: "a-existing", pageId: null, kind: "image", mime: "image/png", size: 2, data: new ArrayBuffer(2), createdAt: 0 });
+    const bytes = new ArrayBuffer(12);
+    const { urls, fetchMock } = stubAssetFetch({
+      "a-1": { status: 200, mime: "image/png", bytes },
+    });
+
+    const outcome = await fetchMissingAssets(["a-1", "a-existing"], "p-1");
+    expect(outcome.fetched).toEqual(["a-1"]);
+    expect(outcome.missing).toEqual([]);
+    expect(urls).toHaveLength(1);
+    expect(urls[0]).toContain("/api/sync/assets/a-1");
+    expect(fetchMock.mock.calls[0]?.[1]?.headers).toEqual({ Authorization: "Bearer t" });
+
+    const row = await repo.getAsset("a-1");
+    expect(row?.mime).toBe("image/png");
+    expect(row?.size).toBe(12);
+    expect(row?.kind).toBe("image");
+    expect(row?.pageId).toBe("p-1");
+
+    // 本地已有 → 再调不发请求
+    const again = await fetchMissingAssets(["a-1"], null);
+    expect(again.fetched).toEqual([]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("服务端 404 或非图片 Content-Type → missing，不落库", async () => {
+    const { fetchMock } = stubAssetFetch({
+      "a-404": { status: 404, mime: "text/plain" },
+      "a-junk": { status: 200, mime: "application/octet-stream", bytes: new ArrayBuffer(4) },
+    });
+
+    const outcome = await fetchMissingAssets(["a-404", "a-junk"], null);
+    expect(outcome.missing.sort()).toEqual(["a-404", "a-junk"]);
+    expect(outcome.fetched).toEqual([]);
+    expect(await repo.getAsset("a-404")).toBeNull();
+    expect(await repo.getAsset("a-junk")).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("syncAssetsFromChanges（S03 编排）", () => {
+  it("只看 page+upsert，按第一个引用它的页面归属补缺", async () => {
+    const bytes = new ArrayBuffer(6);
+    const urls: string[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        urls.push(url);
+        return new Response(bytes, { status: 200, headers: { "Content-Type": "image/gif" } });
+      })
+    );
+
+    const outcome = await syncAssetsFromChanges([
+      { entity: "record", entityId: "r-1", op: "upsert", payload: { src: "asset://x" } },
+      { entity: "page", entityId: "p-A", op: "delete", payload: { src: "asset://x" } },
+      { entity: "page", entityId: "p-A", op: "upsert", payload: { blocks: [{ src: "asset://a-1" }] } },
+      { entity: "page", entityId: "p-B", op: "upsert", payload: { page: { coverAssetId: "a-2" } } },
+    ]);
+    expect(outcome.fetched.sort()).toEqual(["a-1", "a-2"]);
+    expect(urls).toHaveLength(2);
+
+    const row = await repo.getAsset("a-2");
+    expect(row?.pageId).toBe("p-B");
   });
 });

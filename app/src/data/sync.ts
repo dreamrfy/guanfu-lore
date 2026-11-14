@@ -10,7 +10,7 @@
  */
 import { repo, type OutboxRow, type PageRow, type CollectionRow, type RecordRow } from "./db";
 import { loadClipServerUrl, loadClipToken } from "./clipApi";
-import { syncAssetsForChanges } from "./assetSync";
+import { syncAssetsForChanges, syncAssetsFromChanges } from "./assetSync";
 
 export type SyncEntity = "page" | "collection" | "record";
 
@@ -41,6 +41,9 @@ export type SyncSummary = {
   /** 本次顺带补传成功的附件数（S02：失败不拦推送，留给下次补） */
   assetsUploaded?: number;
   assetsFailed?: number;
+  /** 本次从服务端取回的缺图数（S03） */
+  assetsFetched?: number;
+  assetsMissing?: number;
   /** 拉到并已写进本地库的变更（界面用它刷新内存里的状态） */
   applied: LocalChange[];
   error?: string;
@@ -285,6 +288,11 @@ export async function runSync(): Promise<SyncSummary> {
     }
     await setSeqs(seqs);
     await setCursor(Number(pull.data.nextSeq ?? cursor));
+
+    // 1.5) 补缺图：拉到的页面引用了本地没有的附件 → 从服务端取回（失败不拦推送/同步）
+    const fetched = await syncAssetsFromChanges(summary.applied);
+    summary.assetsFetched = fetched.fetched.length;
+    summary.assetsMissing = fetched.missing.length;
 
     // 2) 推
     const outbox = await repo.listOutbox();
