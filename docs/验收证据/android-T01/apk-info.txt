@@ -1,0 +1,5 @@
+902219 app/build/outputs/apk/debug/app-debug.apk
+cbb0faebbfcfa648c15c591ce56a547383d3a794a50b2429aa4d70ae3627d1fd *app/build/outputs/apk/debug/app-debug.apk
+构建: Gradle 9.3.1 / AGP 9.1.0 / Kotlin 2.4.0 / JDK17 / compileSdk 36 / minSdk 26 / targetSdk 35
+命令: JAVA_HOME=E:/VBcoding/biyaaozhicheng/dev/jdk/* GRADLE_USER_HOME=E:/VBcoding/biyaaozhicheng/dev/gradle-home ./gradlew assembleDebug --no-daemon
+结果: BUILD SUCCESSFUL in 2m 1s, 34 tasks
