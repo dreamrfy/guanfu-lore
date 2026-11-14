@@ -278,13 +278,22 @@ export async function runSync(): Promise<SyncSummary> {
     }
     const changes: RemoteChange[] = pull.data.changes ?? [];
     const seqs = await getSeqs();
+    // 自回声防护：本地还有没推上去的改动的行，不能被远端版本覆盖——
+    // 否则刚敲的字会被"自己几分钟前推上去的旧快照"打回（S04 端到端实测踩到）。
+    // 这类行只推进 seq 游标，不写库不动内存；推送时乐观锁会正常处理竞争。
+    const pendingIds = new Set(
+      (await repo.listOutbox()).map((row) => `${row.entity}:${row.entityId}`)
+    );
     for (const change of changes) {
       const parsed = parseRemoteChange(change);
       if (!parsed) continue;
-      await applyRemoteToDb(parsed);
+      const pending = pendingIds.has(`${change.entity}:${change.entityId}`);
+      if (!pending) {
+        await applyRemoteToDb(parsed);
+        summary.applied.push(parsed);
+      }
       seqs[seqKey(change.entity, change.entityId)] = change.seq;
       summary.pulled += 1;
-      summary.applied.push(parsed);
     }
     await setSeqs(seqs);
     await setCursor(Number(pull.data.nextSeq ?? cursor));

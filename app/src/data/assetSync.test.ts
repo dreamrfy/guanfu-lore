@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { db, repo } from "./db";
+import { useStore } from "./store";
+import { releaseAssetUrls } from "./assets";
+import { runSync } from "./sync";
 import {
   collectAssetRefs,
   extFromMime,
@@ -35,8 +38,39 @@ function stubFetch(script: Array<{ status: number; body?: unknown } | Error>) {
 
 beforeEach(async () => {
   vi.unstubAllGlobals();
+  releaseAssetUrls();
+  useStore.setState({ ready: true, pages: [], trash: [], docs: {}, tabs: [], activeTabId: null });
   await repo.setMeta("syncUploadedAssets", {});
   await db.assets.clear();
+});
+
+describe("setBlocks 同步 payload（S04 端到端逮到的 bug 回归）", () => {
+  it("入队的 payload 里 blob: 地址必须换回 asset://，附件引用可被 collectAssetRefs 收到", async () => {
+    const pageId = await useStore.getState().createPage(null, []);
+    const file = new File([new Uint8Array([137, 80, 78, 71])], "t.png", { type: "image/png" });
+    const blobUrl = await useStore.getState().uploadFile(file, "image", null);
+    expect(blobUrl).toMatch(/^blob:/);
+
+    useStore.getState().setBlocks(pageId, [
+      { type: "paragraph", content: [{ type: "text", text: "hi", styles: {} }] },
+      { type: "image", props: { url: blobUrl } },
+    ] as never);
+    // 入队是异步合并的（同一页只留最新一条），等一拍再查
+    await new Promise((r) => setTimeout(r, 80));
+
+    const outbox = await repo.listOutbox();
+    const pageRow = outbox.find((r) => r.entity === "page" && r.entityId === pageId);
+    expect(pageRow).toBeDefined();
+    const payload = pageRow!.payload as { blocks: Array<{ type?: string; props?: { url?: string } }> };
+    console.log("DEBUG payload blocks:", JSON.stringify(payload.blocks));
+    const img = payload.blocks.find((b) => b.type === "image");
+    expect(img?.props?.url).toMatch(/^asset:\/\//);
+    expect(JSON.stringify(payload)).not.toContain("blob:");
+
+    // 附件引用能被 S02 的收集函数看到（否则图片永远传不出去）
+    const { collectAssetRefs } = await import("./assetSync");
+    expect(collectAssetRefs(payload)).toContain(img!.props!.url!.slice("asset://".length));
+  });
 });
 
 describe("extFromMime", () => {
@@ -224,5 +258,74 @@ describe("syncAssetsFromChanges（S03 编排）", () => {
 
     const row = await repo.getAsset("a-2");
     expect(row?.pageId).toBe("p-B");
+  });
+});
+
+describe("runSync 自回声防护（S04 端到端逮到的 bug 回归）", () => {
+  /** 按 URL 路由的 fetch 桩：pull 给脚本、push/assets 给 OK */
+  function stubSyncFetch(pullChanges: unknown[]) {
+    const pushes: unknown[] = [];
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      const u = String(url);
+      if (u.includes("/api/sync/pull")) {
+        return new Response(JSON.stringify({ ok: true, changes: pullChanges, nextSeq: 9 }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      if (u.includes("/api/sync/push")) {
+        pushes.push(JSON.parse(String(init?.body)));
+        return new Response(JSON.stringify({ ok: true, results: [] }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { "Content-Type": "application/json" } });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    return { pushes };
+  }
+
+  it("本地有 pending 改动的行：远端变更不写库不入内存，seq 照常推进；无 pending 的行正常应用", async () => {
+    await repo.setMeta("clipServerUrl", "http://127.0.0.1:8787");
+    await repo.setMeta("clipToken", "t");
+    await repo.setMeta("syncCursor", 0);
+    await repo.setMeta("syncSeqs", {});
+    await repo.setMeta("syncUploadedAssets", {});
+    await repo.clearOutbox();
+    await db.assets.clear();
+
+    // 本地行（用户刚改过标题，还在 outbox 里待推）
+    await db.pages.put({
+      id: "p-local", parentId: null, title: "本地新标题", icon: null,
+      createdAt: 1, updatedAt: 2, deletedAt: null, sortKey: 1,
+    });
+    const { enqueueChange } = await import("./sync");
+    await enqueueChange({
+      entity: "page",
+      entityId: "p-local",
+      op: "upsert",
+      payload: { page: { id: "p-local", title: "本地新标题" }, blocks: [] },
+    });
+
+    stubSyncFetch([
+      { seq: 8, entity: "page", entityId: "p-local", op: "upsert", payload: JSON.stringify({ page: { id: "p-local", title: "远端标题" }, blocks: [] }), actor: "other", baseSeq: 0, createdAt: 1 },
+      { seq: 9, entity: "page", entityId: "p-clean", op: "upsert", payload: JSON.stringify({ page: { id: "p-clean", parentId: null, title: "远端页面", icon: null, createdAt: 1, updatedAt: 2, deletedAt: null, sortKey: 1 }, blocks: [] }), actor: "other", baseSeq: 0, createdAt: 1 },
+    ]);
+
+    const summary = await runSync();
+    expect(summary.ok).toBe(true);
+    // pending 行：不进 applied、库里标题保持本地版
+    expect(summary.applied.find((c) => c.entityId === "p-local")).toBeUndefined();
+    expect((await db.pages.get("p-local"))?.title).toBe("本地新标题");
+    // 无 pending 行：正常应用
+    expect(summary.applied.find((c) => c.entityId === "p-clean")).toBeDefined();
+    expect((await db.pages.get("p-clean"))?.title).toBe("远端页面");
+    // seq 游标照常推进（两条都算拉过）
+    expect(await repo.getMeta<number>("syncCursor")).toBe(9);
+    expect(summary.pulled).toBe(2);
+    // pending 行仍留在 outbox，推送时由乐观锁处理
+    const outbox = await repo.listOutbox();
+    expect(outbox.some((r) => r.entityId === "p-local")).toBe(true);
   });
 });

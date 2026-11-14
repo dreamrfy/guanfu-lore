@@ -438,6 +438,8 @@ export const useStore = create<Store>((set, get) => {
       const doc = (await repo.getDoc(id)) ?? [];
       await repo.putPage(copy);
       await repo.putDoc(copy.id, doc);
+      // 副本是新页面，也要入队推上去（blocks 从库里读的，本来就是 asset:// 形态）
+      queue({ entity: "page", entityId: copy.id, op: "upsert", payload: { page: copy, blocks: doc } });
 
       const resolved = await resolveAssetRefs(doc);
       set((s) => ({
@@ -455,6 +457,8 @@ export const useStore = create<Store>((set, get) => {
       await repo.putDoc(row.id, raw);
       set((s) => ({ pages: [...s.pages, row], docs: { ...s.docs, [row.id]: blocks } }));
       get().openTab(row.id);
+      // 新页面入队推上去（payload 用落库形态：asset:// 引用）
+      queue({ entity: "page", entityId: row.id, op: "upsert", payload: { page: row, blocks: raw } });
       return row.id;
     },
 
@@ -728,9 +732,15 @@ export const useStore = create<Store>((set, get) => {
           const pages = s.pages.some((p) => p.id === entityId)
             ? s.pages.map((p) => (p.id === entityId ? page : p))
             : [...s.pages, page];
-          const docs = data?.blocks ? { ...s.docs, [entityId]: data.blocks } : s.docs;
-          return { pages, docs };
+          return { pages, docs: s.docs };
         });
+        // 远端 payload 里的正文是 asset:// 形态，进内存前要换成可显示地址，
+        // 否则同步拉来的页面在编辑器里全是破图（S04 端到端实测踩到）
+        if (data?.blocks) {
+          void resolveAssetRefs(data.blocks).then((blocks) =>
+            set((s) => ({ docs: { ...s.docs, [entityId]: blocks } }))
+          );
+        }
         return;
       }
       if (entity === "collection") {
@@ -884,7 +894,9 @@ export const useStore = create<Store>((set, get) => {
         const next = { ...row, updatedAt: Date.now() };
         set((s) => ({ pages: s.pages.map((p) => (p.id === id ? next : p)) }));
         // 正文在防抖里落，元信息这里跟着落一次即可（避免每次敲键都写 pages）
-        queue({ entity: "page", entityId: id, op: "upsert", payload: { page: next, blocks } });
+        // 同步 payload 必须和写库同一规矩：blob: 地址换回 asset://，否则
+        // 别的设备收到的是本会话才有效的 blob 地址（破图），附件也永远传不出去
+        queue({ entity: "page", entityId: id, op: "upsert", payload: { page: next, blocks: unresolveAssetRefs(blocks) } });
       }
     },
 
