@@ -26,6 +26,13 @@ class MainActivity : Activity() {
             textSize = 22f
             setTextColor(0xFF0B57D0.toInt())
         }
+        val settingsButton = android.widget.Button(this).apply {
+            text = getString(R.string.settings)
+            setOnClickListener {
+                startActivity(android.content.Intent(this@MainActivity, SettingsActivity::class.java))
+            }
+        }
+        root.addView(settingsButton)
         root.addView(statusView)
         root.addView(urlView)
         setContentView(root)
@@ -64,10 +71,11 @@ class MainActivity : Activity() {
         if (url == lastClippedUrl) return
         lastClippedUrl = url
         statusView.text = getString(R.string.clipping)
+        val prefs = getSharedPreferences(SettingsActivity.PREFS, MODE_PRIVATE)
         Thread {
             val result = ClipClient.clip(
-                BuildConfig.DEFAULT_CLIP_BASE_URL,
-                BuildConfig.DEFAULT_CLIP_TOKEN,
+                SettingsActivity.effectiveUrl(prefs),
+                SettingsActivity.effectiveToken(prefs),
                 url,
             )
             runOnUiThread {

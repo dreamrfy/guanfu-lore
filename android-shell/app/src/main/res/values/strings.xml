@@ -7,4 +7,10 @@
     <string name="clipping">正在剪藏…</string>
     <string name="clip_ok">✔ 剪藏成功，已入库</string>
     <string name="clip_fail">✘ 剪藏失败：%1$s</string>
+    <string name="settings">设置</string>
+    <string name="testing">正在测试连接…</string>
+    <string name="test_ok">✔ 连接正常（鉴权通过）</string>
+    <string name="test_fail">✘ 连接失败：%1$s</string>
+    <string name="testing_failed_toast">连接失败</string>
+    <string name="saved">已保存</string>
 </resources>

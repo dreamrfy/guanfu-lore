@@ -72,6 +72,43 @@ object ClipClient {
         }
     }
 
+    /** 「测试连接」：GET /api/clips 带 Bearer（只读接口，不产生记录）；200=鉴权与服务都通 */
+    fun checkAuth(
+        baseUrl: String,
+        token: String,
+        connectTimeoutMs: Int = 10_000,
+        readTimeoutMs: Int = 20_000,
+    ): Result {
+        val endpoint = baseUrl.trimEnd('/') + "/api/clips"
+        val conn = URL(endpoint).openConnection() as HttpURLConnection
+        try {
+            conn.requestMethod = "GET"
+            conn.connectTimeout = connectTimeoutMs
+            conn.readTimeout = readTimeoutMs
+            conn.setRequestProperty("Authorization", "Bearer $token")
+            val code = conn.responseCode
+            val body = (if (code in 200..299) conn.inputStream else conn.errorStream)
+                ?.readBytes()?.toString(Charsets.UTF_8) ?: ""
+            return parseClipsResponse(code, body)
+        } catch (e: SocketTimeoutException) {
+            return Result(false, 0, "请求超时")
+        } catch (e: IOException) {
+            return Result(false, 0, e.message ?: "网络错误")
+        } finally {
+            conn.disconnect()
+        }
+    }
+
+    /** /api/clips 响应解析独立出来便于单测 */
+    fun parseClipsResponse(httpCode: Int, body: String): Result {
+        return if (httpCode in 200..299) {
+            val count = Regex("\"count\"\\s*:\\s*(\\d+)").find(body)?.groupValues?.get(1)
+            Result(true, httpCode, count?.let { "连接正常，剪藏箱现有 $it 条" } ?: "连接正常")
+        } else {
+            parseResult(httpCode, body)
+        }
+    }
+
     /** body 构造独立出来便于单测：url 必带；html 非空时走服务端"客户端提交正文"路（不走抓取管线） */
     fun clipRequestBody(url: String, html: String? = null): String = buildString {
         append("{\"url\":\"")

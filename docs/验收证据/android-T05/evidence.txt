@@ -1,0 +1,17 @@
+T05 证据汇总（2026-11-15 04:16）
+
+== 全量单测 ==
+TEST-app.guanfu.shell.CheckAuthTest: tests="3" skipped="0" failures="0" errors="0"
+TEST-app.guanfu.shell.ClipClientTest: tests="6" skipped="0" failures="0" errors="0"
+TEST-app.guanfu.shell.ClipRealServiceTest: tests="2" skipped="0" failures="0" errors="0"
+TEST-app.guanfu.shell.ExtractUrlTest: tests="9" skipped="0" failures="0" errors="0"
+
+== 实现内容 ==
+- SettingsActivity：服务地址 + Token 输入框（默认预填 BuildConfig 值，留空回落内置）；
+  SharedPreferences 持久化；「测试连接」= GET /api/clips 带 Bearer（只读，回显剪藏箱条数）；「保存并返回」
+- MainActivity 加「设置」按钮；剪藏提交读 SettingsActivity.effectiveUrl/effectiveToken（设置页值优先）
+- checkAuth/parseClipsResponse 纯函数拆分 + CheckAuthTest 3 例（count 回显/401 透传/垃圾响应不崩）
+
+== APK ==
+- app/build/outputs/apk/debug/app-debug.apk（含设置页，SettingsActivity 未导出）
+- 真机 UI 实测顺延 T08（备用机待解锁）
