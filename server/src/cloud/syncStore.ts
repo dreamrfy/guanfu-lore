@@ -8,6 +8,7 @@
 // 为什么不用"最后写入胜出"就完事：那样会静默丢用户的编辑。
 // 我们的做法是：能安全合并就合并（同一行没被别人动过），不能就留副本，绝不假装没冲突。
 import { DatabaseSync } from "node:sqlite";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { DATA_DIR } from "../config.ts";
@@ -107,6 +108,16 @@ function getDb(): DatabaseSync {
       created_at INTEGER NOT NULL
     );
     CREATE INDEX IF NOT EXISTS change_log_entity ON change_log (entity, entity_id);
+    CREATE TABLE IF NOT EXISTS highlights (
+      id TEXT PRIMARY KEY,
+      page_url TEXT NOT NULL,
+      title TEXT NOT NULL DEFAULT '',
+      quote_exact TEXT NOT NULL,
+      quote_prefix TEXT NOT NULL DEFAULT '',
+      quote_suffix TEXT NOT NULL DEFAULT '',
+      created_at INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS highlights_page_url ON highlights (page_url);
   `);
   return db;
 }
@@ -184,6 +195,140 @@ export function getAssetIndex(assetId: string): AssetIndexRow | null {
     actor: String(r.actor),
     createdAt: Number(r.created_at),
   };
+}
+
+/* ---- 划线（H02：网页划线高亮，按页面 URL 存取）----
+ * 契约来自 H01（extension/content.js 上报）：
+ *   { pageUrl, title, quote: { exact, prefix, suffix } }
+ * 存储键 id = 页面 URL + 三件套引文的哈希 → 同一处重复划线天然幂等（重报不重记）。
+ */
+
+export type HighlightRow = {
+  id: string;
+  pageUrl: string;
+  title: string;
+  quote: { exact: string; prefix: string; suffix: string };
+  createdAt: number;
+};
+
+/** 长度上限：exact 与 extension/locator.js 的选区上限（2000）对齐；引文两端 locator 只发 32，留一倍余量 */
+export const HIGHLIGHT_LIMITS = {
+  maxPageUrl: 2048,
+  maxTitle: 300,
+  maxExact: 2000,
+  maxQuoteSide: 64,
+} as const;
+
+export function highlightId(pageUrl: string, exact: string, prefix: string, suffix: string): string {
+  return crypto
+    .createHash("sha256")
+    .update(pageUrl + "\u0000" + exact + "\u0000" + prefix + "\u0000" + suffix, "utf8")
+    .digest("hex")
+    .slice(0, 16);
+}
+
+export type ValidHighlight = {
+  pageUrl: string;
+  title: string;
+  quote: { exact: string; prefix: string; suffix: string };
+};
+
+export function validateHighlightInput(
+  raw: unknown
+): { ok: true; value: ValidHighlight } | { ok: false; code: string; error: string } {
+  if (typeof raw !== "object" || raw === null) {
+    return { ok: false, code: "bad_payload", error: "请求体必须是 JSON 对象" };
+  }
+  const o = raw as Record<string, unknown>;
+  const pageUrl = typeof o.pageUrl === "string" ? o.pageUrl.trim() : "";
+  if (!pageUrl) return { ok: false, code: "missing_page_url", error: "缺少 pageUrl（划线所在的页面地址）" };
+  if (pageUrl.length > HIGHLIGHT_LIMITS.maxPageUrl) {
+    return { ok: false, code: "page_url_too_long", error: `pageUrl 超过 ${HIGHLIGHT_LIMITS.maxPageUrl} 字` };
+  }
+  const q =
+    typeof o.quote === "object" && o.quote !== null ? (o.quote as Record<string, unknown>) : null;
+  const exact = q && typeof q.exact === "string" ? q.exact : "";
+  if (!exact.trim()) return { ok: false, code: "missing_quote", error: "缺少 quote.exact（选中的原文）" };
+  if (exact.length > HIGHLIGHT_LIMITS.maxExact) {
+    return {
+      ok: false,
+      code: "quote_too_long",
+      error: `quote.exact 超过 ${HIGHLIGHT_LIMITS.maxExact} 字（防误选整页）`,
+    };
+  }
+  const prefix = q && typeof q.prefix === "string" ? q.prefix : "";
+  const suffix = q && typeof q.suffix === "string" ? q.suffix : "";
+  if (prefix.length > HIGHLIGHT_LIMITS.maxQuoteSide || suffix.length > HIGHLIGHT_LIMITS.maxQuoteSide) {
+    return {
+      ok: false,
+      code: "quote_side_too_long",
+      error: `quote.prefix/suffix 超过 ${HIGHLIGHT_LIMITS.maxQuoteSide} 字`,
+    };
+  }
+  const title = typeof o.title === "string" ? o.title.trim().slice(0, HIGHLIGHT_LIMITS.maxTitle) : "";
+  return { ok: true, value: { pageUrl, title, quote: { exact, prefix, suffix } } };
+}
+
+function rowToHighlight(r: Record<string, unknown>): HighlightRow {
+  return {
+    id: String(r.id),
+    pageUrl: String(r.page_url),
+    title: String(r.title),
+    quote: {
+      exact: String(r.quote_exact),
+      prefix: String(r.quote_prefix),
+      suffix: String(r.quote_suffix),
+    },
+    createdAt: Number(r.created_at),
+  };
+}
+
+/** 落一条划线；同一处（id 相同）重复上报不重记，返回 created=false 和已存的记录 */
+export function saveHighlight(value: ValidHighlight): { id: string; created: boolean; row: HighlightRow } {
+  const id = highlightId(
+    value.pageUrl,
+    value.quote.exact,
+    value.quote.prefix,
+    value.quote.suffix
+  );
+  const existing = getHighlight(id);
+  if (existing) return { id, created: false, row: existing };
+  const createdAt = nowMs();
+  getDb()
+    .prepare(
+      `INSERT INTO highlights (id, page_url, title, quote_exact, quote_prefix, quote_suffix, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
+    )
+    .run(id, value.pageUrl, value.title, value.quote.exact, value.quote.prefix, value.quote.suffix, createdAt);
+  return {
+    id,
+    created: true,
+    row: {
+      id,
+      pageUrl: value.pageUrl,
+      title: value.title,
+      quote: { ...value.quote },
+      createdAt,
+    },
+  };
+}
+
+export function getHighlight(id: string): HighlightRow | null {
+  const r = getDb()
+    .prepare(`SELECT id, page_url, title, quote_exact, quote_prefix, quote_suffix, created_at FROM highlights WHERE id = ?`)
+    .get(id) as Record<string, unknown> | undefined;
+  return r ? rowToHighlight(r) : null;
+}
+
+/** 按页面地址取全部划线（按划的先后顺序，客户端渲染用） */
+export function listHighlightsByUrl(pageUrl: string, limit = 200): HighlightRow[] {
+  const rows = getDb()
+    .prepare(
+      `SELECT id, page_url, title, quote_exact, quote_prefix, quote_suffix, created_at
+       FROM highlights WHERE page_url = ? ORDER BY created_at ASC, id ASC LIMIT ?`
+    )
+    .all(pageUrl, limit) as Record<string, unknown>[];
+  return rows.map(rowToHighlight);
 }
 
 function nowMs(): number {

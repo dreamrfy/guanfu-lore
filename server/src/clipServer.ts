@@ -24,6 +24,9 @@ import {
   resolveConflict,
   upsertAssetIndex,
   getAssetIndex,
+  validateHighlightInput,
+  saveHighlight,
+  listHighlightsByUrl,
   type PushChangeInput,
 } from "./cloud/syncStore.ts";
 import { getServerClip, listServerClips } from "./cloud/clipApi.ts";
@@ -205,7 +208,9 @@ export function createClipServer(): http.Server {
       (req.method === "POST" && url === "/api/sync/assets") ||
       (req.method === "GET" && url.startsWith("/api/sync/assets/")) ||
       (req.method === "GET" && url === "/api/sync/row") ||
-      (req.method === "GET" && url === "/api/sync/conflicts");
+      (req.method === "GET" && url === "/api/sync/conflicts") ||
+      (req.method === "POST" && url === "/api/highlights") ||
+      (req.method === "GET" && url === "/api/highlights");
     if (!known) {
       sendJson(
         res,
@@ -280,6 +285,42 @@ export function createClipServer(): http.Server {
       } catch (e) {
         sendJson(res, 500, { ok: false, code: "internal", error: String((e as Error)?.message ?? e).slice(0, 120) }, cors);
       }
+      return;
+    }
+
+    // 网页划线（H01 扩展上报 / H03 客户端按页面读取）：引文三件套存 SQLite
+    if (req.method === "POST" && url === "/api/highlights") {
+      let body: string;
+      try {
+        body = await readBody(req);
+      } catch {
+        sendJson(res, 413, { ok: false, code: "body_too_large", error: "请求体过大" }, cors);
+        return;
+      }
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(body);
+      } catch {
+        sendJson(res, 400, { ok: false, code: "bad_json", error: "请求体不是合法 JSON" }, cors);
+        return;
+      }
+      const v = validateHighlightInput(parsed);
+      if (!v.ok) {
+        sendJson(res, 400, { ok: false, code: v.code, error: v.error }, cors);
+        return;
+      }
+      const result = saveHighlight(v.value);
+      sendJson(res, 200, { ok: true, id: result.id, created: result.created, highlight: result.row }, cors);
+      return;
+    }
+    if (req.method === "GET" && url === "/api/highlights") {
+      const pageUrl = new URL(req.url ?? "http://x", "http://x").searchParams.get("pageUrl") ?? "";
+      if (!pageUrl.trim()) {
+        sendJson(res, 400, { ok: false, code: "missing_page_url", error: "缺少 pageUrl 参数" }, cors);
+        return;
+      }
+      const items = listHighlightsByUrl(pageUrl);
+      sendJson(res, 200, { ok: true, pageUrl, items }, cors);
       return;
     }
 
