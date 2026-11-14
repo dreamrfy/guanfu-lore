@@ -1867,6 +1867,35 @@ html[data-theme="dark"] .modal__ok {
   align-items: center;
 }
 
+/* 网页划线（H03）：详情页里的划线摘录 */
+.record__marks {
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.record__marks-label {
+  margin-bottom: 6px;
+  color: var(--text-tertiary);
+}
+
+.record__mark {
+  margin: 0 0 8px;
+  padding: 6px 10px;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+.record__mark mark {
+  padding: 0 2px;
+  border-radius: 3px;
+  background: rgba(250, 204, 21, 0.45);
+  color: inherit;
+}
+
 /* 选区 AI 弹窗 */
 
 .selai {

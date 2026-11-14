@@ -5,6 +5,7 @@ import { assetUrl } from "../data/assets";
 import type { CollectionRow, PageRow, RecordRow } from "../data/db";
 import { asText } from "../data/collections";
 import { extractBlocksText } from "../data/search";
+import { fetchHighlights, highlightExcerpts, type MarkedExcerpt } from "../data/highlights";
 import { AppIcon } from "../design/icons";
 import { PageEditor } from "../editor/PageEditor";
 import { AiPanel } from "./AiPanel";
@@ -87,6 +88,26 @@ function RecordPanel({ collection, record }: { collection: CollectionRow; record
     .map((block) => block.text)
     .join("\n");
 
+  // 网页划线（H03）：按「原文链接」取服务器上的划线，定位到正文里渲染成摘录。
+  // 服务器没部署（H05）/没划线/正文改了字 → 摘录为空，整块不显示，不弹错。
+  const [marks, setMarks] = useState<MarkedExcerpt[]>([]);
+  useEffect(() => {
+    let alive = true;
+    const linkField = collection.fields.find((f) => f.name === "原文链接");
+    const pageUrl = linkField ? asText(record.values[linkField.id]).trim() : "";
+    setMarks([]);
+    if (!pageUrl) return;
+    void (async () => {
+      const items = await fetchHighlights(pageUrl);
+      if (!alive) return;
+      setMarks(highlightExcerpts(recordText, items));
+    })();
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [record.id, recordText, collection.id]);
+
   return (
     <>
       <div className="panel__header">
@@ -134,6 +155,19 @@ function RecordPanel({ collection, record }: { collection: CollectionRow; record
             <a className="btn btn--sm" href={snapshotUrl} target="_blank" rel="noreferrer">
               打开快照
             </a>
+          </div>
+        )}
+
+        {marks.length > 0 && (
+          <div className="record__marks">
+            <div className="record__marks-label">🖍 划线（{marks.length}）</div>
+            {marks.map((m) => (
+              <div className="record__mark" key={m.id}>
+                {m.before}
+                <mark>{m.mark}</mark>
+                {m.after}
+              </div>
+            ))}
           </div>
         )}
 
