@@ -56,6 +56,24 @@
       "result": "BLOCKED·等用户",
       "finishedAt": "2026-11-15T04:46:00+08:00",
       "note": "备用机锁屏挡安装弹窗（3次实测）；解锁+开USB安装后改回TODO自动执行"
+    },
+    {
+      "task": "S01-deploy",
+      "result": "BLOCKED",
+      "finishedAt": "2026-11-15T05:55:00+08:00",
+      "note": "VPS 部署三关走到第二步被权限分类器拦（Remote Shell Writes）；/tmp 暂存已就位，等用户放行"
+    },
+    {
+      "task": "S02",
+      "result": "DONE",
+      "finishedAt": "2026-11-15T06:00:00+08:00",
+      "commit": "413afa5"
+    },
+    {
+      "task": "S03",
+      "result": "DONE",
+      "finishedAt": "2026-11-15T06:15:00+08:00",
+      "commit": "1c09d70"
     }
   ],
   "notes": "看门狗第 5 版：30 分钟断停、断点尾重试、单会话 3 任务。停止方式：仓库根建 ops/STOP。"
