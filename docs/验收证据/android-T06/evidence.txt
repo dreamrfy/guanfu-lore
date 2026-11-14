@@ -1,0 +1,23 @@
+T06 证据汇总（2026-11-15 04:33）
+
+== keystore ==
+- E:/credentials/android-shell.keystore（别名 guanfu-shell，RSA 2048，validity 10950 天=30年）
+- 密码：E:/credentials/android-shell-signing.properties（storePassword=keyPassword，随机生成，值不落本文件）
+- 证书 SHA-256: F1:A4:CB:D7:12:51:06:FD:B4:39:A4:0F:D1:B3:40:94:AC:6E:40:59:27:21:C2:F7:0C:70:90:02:46:B1:83:D4
+- 已登记 E:/credentials/README.md 文件清单（并入索引）
+
+== release 构建 ==
+- ./gradlew assembleRelease --no-daemon → BUILD SUCCESSFUL in 55s（48 tasks）
+- APK: android-shell/app/build/outputs/apk/release/app-release.apk（690,512 B）
+- sha256: b37cca8b7f64d1ad94906a0bf5cb7144f735b1fea5a01a9f45a740510b0c7abe
+
+== 签名验证（apksigner verify --print-certs）==
+- Signer #1 certificate DN: CN=Guanfu Shell, O=Guanfu, C=CN
+- Signer #1 certificate SHA-256 digest: f1a4cbd7125106fdb439a40fd1b34094ac6e40592721c2f70c70900246b183d4（与 keystore 一致）
+
+== adb 安装 ==
+- 备用机仍锁屏：adb install 卡 'Performing Streamed Install'，90s timeout 杀掉（REAL_EXIT=124）
+- 与 T03 同因：华为安装确认弹窗无法在锁屏显示；安装+启动验证归 T08（用户解锁+开USB安装后）
+
+== Gradle 接入 ==
+- signingPropsFile 存在才启用 release 签名；仓库内 build.gradle.kts 不含任何密码

@@ -1,4 +1,5 @@
 import java.io.File
+import java.util.Properties
 
 plugins {
     id("com.android.application")
@@ -10,6 +11,9 @@ val clipTokenFile = File("E:/credentials/clip.token")
 val clipToken = clipTokenFile.takeIf { it.isFile }
     ?.readText(Charsets.UTF_8)?.trim().orEmpty()
     .replace("\\", "\\\\").replace("\"", "\\\"")
+
+// release 签名配置从凭证目录读（防丢：keystore 与密码都在 E:/credentials，不进仓库）
+val signingPropsFile = File("E:/credentials/android-shell-signing.properties")
 
 android {
     namespace = "app.guanfu.shell"
@@ -33,6 +37,17 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            if (signingPropsFile.isFile) {
+                val props = Properties().apply {
+                    signingPropsFile.inputStream().use { load(it) }
+                }
+                signingConfig = signingConfigs.create("release") {
+                    storeFile = File(props.getProperty("storeFile"))
+                    storePassword = props.getProperty("storePassword")
+                    keyAlias = props.getProperty("keyAlias")
+                    keyPassword = props.getProperty("keyPassword")
+                }
+            }
         }
     }
 
