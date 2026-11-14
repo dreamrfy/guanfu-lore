@@ -90,6 +90,97 @@
     }
   }
 
+
+  /* ---------------- 划线高亮（H01）：选中文字 → 浮出按钮 → 上报 ---------------- */
+
+  const HL_BTN_ID = "biji-hl-btn";
+  let hlRange = null; // 最近一次有效选区的副本
+
+  function buildSelector(range) {
+    const locator = window.kfTextLocator;
+    if (!locator) return null;
+    return locator.buildTextQuoteSelector(document.body, range);
+  }
+
+  function reportHighlight() {
+    if (!hlRange) return;
+    void (async () => {
+      const { server, token } = await getConfig();
+      if (!server) {
+        tip("先在扩展里填服务地址", false);
+        return;
+      }
+      const sel = buildSelector(hlRange);
+      if (!sel) {
+        tip("划线失败：选区拿不到文本", false);
+        return;
+      }
+      try {
+        const res = await fetch(server.replace(/\/+$/, "") + "/api/highlights", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: "Bearer " + token } : {}),
+          },
+          body: JSON.stringify({
+            pageUrl: location.href,
+            title: document.title,
+            quote: sel,
+          }),
+        });
+        const data = await res.json().catch(() => null);
+        if (data && data.ok) {
+          tip("已划线", true);
+          window.getSelection().removeAllRanges();
+        } else {
+          tip("划线失败：" + (data?.error || "HTTP " + res.status), false);
+        }
+      } catch (e) {
+        tip("划线失败：" + (e && e.message ? e.message : "连不上服务"), false);
+      } finally {
+        document.getElementById(HL_BTN_ID)?.remove();
+        hlRange = null;
+      }
+    })();
+  }
+
+  function showHlButton(rect) {
+    let btn = document.getElementById(HL_BTN_ID);
+    if (!btn) {
+      btn = document.createElement("button");
+      btn.id = HL_BTN_ID;
+      btn.textContent = "🖍 划线";
+      btn.addEventListener("mousedown", (e) => e.stopPropagation()); // 别把选区弄没了
+      btn.addEventListener("click", reportHighlight);
+      document.body.appendChild(btn);
+    }
+    const top = Math.max(8, Math.min(window.innerHeight - 44, rect.top - 40));
+    const left = Math.max(8, Math.min(window.innerWidth - 120, rect.left));
+    btn.style.cssText =
+      "position:fixed;z-index:2147483647;padding:6px 12px;border-radius:999px;border:1px solid #d8d8d8;" +
+      "background:#fff;color:#37352f;font-size:13px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.16);" +
+      "top:" + top + "px;left:" + left + "px";
+  }
+
+  function checkSelection() {
+    const sel = window.getSelection();
+    const text = sel ? sel.toString().trim() : "";
+    if (!text || !sel.rangeCount || !document.body) {
+      document.getElementById(HL_BTN_ID)?.remove();
+      return;
+    }
+    hlRange = sel.getRangeAt(0).cloneRange();
+    showHlButton(hlRange.getBoundingClientRect());
+  }
+
+  // 选完鼠标抬起稍等一下再检查（让浏览器把选区定住）；点空白处按钮消失
+  document.addEventListener("mouseup", () => setTimeout(checkSelection, 10));
+  document.addEventListener("mousedown", (e) => {
+    if (e.target instanceof Element && e.target.id !== HL_BTN_ID) {
+      document.getElementById(HL_BTN_ID)?.remove();
+    }
+  });
+
   function mountButton() {
     if (!document.body || document.getElementById(BTN_ID)) return;
     const btn = document.createElement("button");
