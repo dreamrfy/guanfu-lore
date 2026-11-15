@@ -31,6 +31,8 @@ export type PageRow = {
   deletedAt: number | null;
   /** 预留：同级排序 */
   sortKey: number;
+  /** 页面标签（M02）。可选字段：老数据没有它，读侧一律 ?? [] */
+  tags?: string[];
 };
 
 /**

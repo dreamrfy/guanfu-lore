@@ -204,3 +204,24 @@ describe("页面层级（拖拽移动）", () => {
     expect(s().pages.find((p) => p.id === a)?.parentId).toBeNull(); // 一个都没改成功
   });
 });
+
+describe("setPageTags（M02）", () => {
+  it("归一去重保序、写库、更新 updatedAt；重复打同一标签只留一次", async () => {
+    await s().hydrate();
+    const id = s().pages[0].id;
+    const before = s().pages.find((p) => p.id === id)!.updatedAt;
+
+    s().setPageTags(id, ["  工作 ", " 工作", "", "项目"]);
+
+    const row = s().pages.find((p) => p.id === id)!;
+    expect(row.tags).toEqual(["工作", "项目"]);
+    expect(row.updatedAt).toBeGreaterThanOrEqual(before);
+
+    await sleep(50);
+    expect((await repo.listPages()).find((p) => p.id === id)?.tags).toEqual(["工作", "项目"]);
+
+    // 整体覆盖语义：传空数组 = 清空
+    s().setPageTags(id, []);
+    expect(s().pages.find((p) => p.id === id)!.tags).toEqual([]);
+  });
+});

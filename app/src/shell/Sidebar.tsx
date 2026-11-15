@@ -5,6 +5,7 @@ import { clipReadState, unreadClipCount } from "../data/clipBox";
 import { searchAll, setPendingBlockFocus, type SearchResult } from "../data/search";
 import { AppIcon } from "../design/icons";
 import { ClipButton } from "./ClipDialog";
+import { TagPanel } from "./TagPanel";
 import { TemplateMenu } from "./TemplateMenu";
 
 /** 命中处加亮 */
@@ -349,6 +350,7 @@ export function Sidebar() {
 
         <ClipButton />
 
+        <TagPanel />
         <TemplateMenu />
 
         <button

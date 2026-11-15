@@ -8,6 +8,7 @@ import { Backlinks } from "./Backlinks";
 import { CollectionView } from "./CollectionView";
 import { RightPanel } from "./RightPanel";
 import { Sidebar } from "./Sidebar";
+import { TagBar } from "./TagBar";
 import { TabBar } from "./TabBar";
 import { TopToolbar } from "./TopToolbar";
 
@@ -177,6 +178,8 @@ export function AppShell() {
                   placeholder="无标题"
                   onChange={(e) => renamePage(page.id, e.target.value)}
                 />
+
+                <TagBar pageId={page.id} />
 
                 <div className="page__meta">
                   最后修改 {new Date(page.updatedAt).toLocaleString("zh-CN", { hour12: false })}

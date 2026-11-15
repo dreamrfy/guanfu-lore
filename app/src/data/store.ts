@@ -24,6 +24,7 @@ import {
   type ViewDef,
 } from "./db";
 import { makeCollection, makeField, makeRecord } from "./collections";
+import { normalizeTag } from "./pageTags";
 import { AI_STATUS_FIELD, AI_STATUS_OPTIONS, AI_SUMMARY_FIELD } from "./aiFields";
 import type { AiCommand } from "./aiCommands";
 import { enqueueChange, conflictList, pendingCount, resolveLocalConflict, runSync, type SyncSummary } from "./sync";
@@ -265,6 +266,8 @@ type Store = {
   createPage: (parentId?: string | null, initialBlocks?: PartialBlock[]) => Promise<string>;
   renamePage: (id: string, title: string) => void;
   setPageIcon: (id: string, icon: string | null) => void;
+  /** 整体设置页面标签（M02）；输入会归一去重 */
+  setPageTags: (id: string, tags: string[]) => void;
   /** 设置封面（传 null 表示移除封面） */
   setCover: (pageId: string, coverAssetId: string | null) => void;
   /** 存一个附件并拿到可显示地址（编辑器的图片上传走这里） */
@@ -412,6 +415,26 @@ export const useStore = create<Store>((set, get) => {
       const row = get().pages.find((p) => p.id === id);
       if (!row) return;
       const next = { ...row, icon, updatedAt: Date.now() };
+      set((s) => ({ pages: s.pages.map((p) => (p.id === id ? next : p)) }));
+      persist(next);
+      void enqueueChange({
+        entity: "page",
+        entityId: id,
+        op: "upsert",
+        payload: { page: next },
+      }).catch(() => {});
+    },
+
+    setPageTags: (id, tags) => {
+      const row = get().pages.find((p) => p.id === id);
+      if (!row) return;
+      // 归一 + 去重保序：重复打同一标签只留一次，空白标签丢弃
+      const cleaned: string[] = [];
+      for (const t of tags) {
+        const v = normalizeTag(t);
+        if (v && !cleaned.includes(v)) cleaned.push(v);
+      }
+      const next = { ...row, tags: cleaned, updatedAt: Date.now() };
       set((s) => ({ pages: s.pages.map((p) => (p.id === id ? next : p)) }));
       persist(next);
       void enqueueChange({
