@@ -122,6 +122,18 @@
    "result": "DONE",
    "finishedAt": "2026-11-15T10:25:00+08:00",
    "note": "真机走查3截图；顺手修下拉/复选框/日期提交后编辑态不收起（存量）+ useMemo-after-return 首屏崩（本次引入，未提交前逮到）"
+  },
+  {
+   "task": "V02",
+   "result": "DONE",
+   "finishedAt": "2026-11-15T10:50:00+08:00",
+   "note": "summarizeRecords + tfoot 汇总行；单测246/246；真机冒烟归 V03"
+  },
+  {
+   "task": "V03",
+   "result": "DONE",
+   "finishedAt": "2026-11-15T11:00:00+08:00",
+   "note": "真机合走查（分组+汇总共存）2 截图；模块 V 封箱"
   }
  ],
  "notes": "看门狗第 5 版：30 分钟断停、断点尾重试、单会话 3 任务。停止方式：仓库根建 ops/STOP。"
