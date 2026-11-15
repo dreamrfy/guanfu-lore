@@ -1,7 +1,7 @@
 [package]
-name = "bijiapp"
+name = "guanfu-lore"
 version = "0.1.0"
-description = "个人知识库 · 桌面壳"
+description = "观复 · Lore · 桌面壳"
 edition = "2021"
 rust-version = "1.77"
 
