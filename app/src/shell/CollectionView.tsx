@@ -1,8 +1,9 @@
-import { type PointerEvent as ReactPointerEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type PointerEvent as ReactPointerEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import type { CollectionRow, FieldDef, FieldType, RecordRow } from "../data/db";
 import { OPTION_COLORS } from "../data/db";
 import {
   applyView,
+  groupRecords,
   asChecked,
   asDateMs,
   asNumber,
@@ -341,6 +342,11 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
     () => (collection ? applyView(records, collection, view) : []),
     [collection, records, view]
   );
+  // 分组（V01）：筛选、排序照旧先生效，这里只在结果上分桶展示。
+  // useMemo 必须在提前 return 之前调用（hook 顺序不能随 collection 有无而变化）。
+  const groupField =
+    view?.groupById ? collection?.fields.find((f) => f.id === view.groupById) : undefined;
+  const groups = useMemo(() => (groupField ? groupRecords(rows, groupField) : null), [rows, groupField]);
 
   if (!collection) return <div className="empty-state">这张表不见了</div>;
 
@@ -450,7 +456,9 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((rec, i) => (
+            {(() => {
+              // 行号语义：不分组用全局序；分组时在组内重新计
+              const renderRow = (rec: RecordRow, i: number) => (
               <tr
                 key={rec.id}
                 className={
@@ -492,8 +500,8 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
                           record={rec}
                           onCommit={(value) => {
                             setCell(collection.id, rec.id, f.id, value);
-                            // 复选框/下拉不需要一直开着编辑态
-                            if (f.type === "text" || f.type === "number" || f.type === "url" || f.type === "email" || f.type === "phone") {
+                            // 复选框/下拉不需要一直开着编辑态；多选例外（要连着勾多个）
+                            if (f.type !== "multiSelect") {
                               setEditingCell(null);
                             }
                           }}
@@ -517,7 +525,26 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
                   </button>
                 </td>
               </tr>
-            ))}
+              );
+              const items: ReactNode[] = [];
+              if (groups) {
+                for (const g of groups) {
+                  items.push(
+                    <tr key={"g:" + g.key} className="grid__group">
+                      <td colSpan={collection.fields.length + 2} className="grid__group-cell">
+                        {g.label}
+                        <span className="grid__group-count">{g.records.length}</span>
+                      </td>
+                    </tr>
+                  );
+                  let n = 0;
+                  for (const rec of g.records) items.push(renderRow(rec, n++));
+                }
+              } else {
+                rows.forEach((rec, i) => items.push(renderRow(rec, i)));
+              }
+              return items;
+            })()}
             {rows.length === 0 && (
               <tr>
                 <td colSpan={collection.fields.length + 2} className="grid__empty">

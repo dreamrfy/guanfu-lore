@@ -115,6 +115,8 @@ export type ViewDef = {
   filterOp: "and" | "or";
   filters: FilterCondition[];
   sorts: SortDef[];
+  /** 分组字段（V01）。缺省/undefined = 不分组；老数据没有这个字段 */
+  groupById?: string | null;
 };
 
 export type CollectionRow = {

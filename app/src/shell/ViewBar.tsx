@@ -305,7 +305,7 @@ function SortPanel({ collection, view, onClose }: PanelProps) {
 }
 
 export function ViewBar({ collection, view }: { collection: CollectionRow; view: ViewDef }) {
-  const [open, setOpen] = useState<"filter" | "sort" | null>(null);
+  const [open, setOpen] = useState<"filter" | "sort" | "group" | null>(null);
   const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -333,6 +333,14 @@ export function ViewBar({ collection, view }: { collection: CollectionRow; view:
       >
         排序{view.sorts.length ? ` · ${view.sorts.length}` : ""}
       </button>
+      <button
+        className={`viewbar__btn${view.groupById ? " viewbar__btn--on" : ""}`}
+        onClick={() => setOpen((o) => (o === "group" ? null : "group"))}
+      >
+        分组{view.groupById
+          ? ` · ${(collection.fields.find((f) => f.id === view.groupById) ?? { name: "?" }).name}`
+          : ""}
+      </button>
       {activeCount > 0 && (
         <span className="viewbar__state">
           视图生效中：{view.filters.length ? `${view.filters.length} 个筛选` : "无筛选"}
@@ -343,7 +351,40 @@ export function ViewBar({ collection, view }: { collection: CollectionRow; view:
       {open === "filter" && (
         <FilterPanel collection={collection} view={view} onClose={() => setOpen(null)} />
       )}
+      {open === "group" && <GroupPanel collection={collection} view={view} onClose={() => setOpen(null)} />}
       {open === "sort" && <SortPanel collection={collection} view={view} onClose={() => setOpen(null)} />}
+    </div>
+  );
+}
+
+
+/** 分组（V01）：选一个字段按它的值分桶展示；（空）垫底。与筛选/排序叠加共存 */
+function GroupPanel({ collection, view }: PanelProps) {
+  const updateView = useStore((s) => s.updateView);
+  const patch = (p: Partial<ViewDef>) => updateView(collection.id, view.id, p);
+
+  return (
+    <div className="viewpop">
+      <div className="viewpop__head">
+        <span className="viewpop__title">分组</span>
+        <span className="viewpop__hint">组头显示计数，组内保持排序</span>
+      </div>
+
+      <button
+        className="btn btn--sm viewpop__choice"
+        onClick={() => patch({ groupById: null })}
+      >
+        {view.groupById ? "" : "✓ "}不分组
+      </button>
+      {collection.fields.map((f) => (
+        <button
+          key={f.id}
+          className="btn btn--sm viewpop__choice"
+          onClick={() => patch({ groupById: f.id })}
+        >
+          {view.groupById === f.id ? "✓ " : ""}按「{f.name}」分组
+        </button>
+      ))}
     </div>
   );
 }

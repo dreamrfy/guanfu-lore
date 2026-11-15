@@ -2539,3 +2539,35 @@ html[data-theme="dark"] .modal__ok {
   color: var(--text-tertiary);
   padding: 6px 2px;
 }
+
+/* ---------- 分组视图（V01） ---------- */
+
+.grid__group-cell {
+  position: sticky;
+  left: 0;
+  padding: 4px 10px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: left;
+}
+
+.grid__group-count {
+  display: inline-block;
+  min-width: 18px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--bg-hover);
+  text-align: center;
+  font-weight: 400;
+}
+
+.viewpop__choice {
+  width: 100%;
+  margin-bottom: 4px;
+  justify-content: flex-start;
+  text-align: left;
+}

@@ -246,6 +246,90 @@ export function applyView(records: RecordRow[], collection: CollectionRow, view:
   return rows;
 }
 
+/* ---------------- 分组（V01） ----------------
+ *
+ * 分组只是"展示层"：筛选、排序照旧先生效，groupRecords 在结果上把行分桶。
+ * 组内保持传入顺序（= 排序结果），组间顺序：单选/多选按选项序、勾选框已勾在前、
+ * 其余按中文序，（空）永远垫底。多选一条可以进多个组（同 Notion 语义）。
+ */
+
+export type RecordGroup = { key: string; label: string; records: RecordRow[] };
+
+export function groupRecords(records: RecordRow[], field: FieldDef): RecordGroup[] {
+  const EMPTY_KEY = "__empty";
+  const EMPTY_LABEL = "（空）";
+  const buckets = new Map<string, { key: string; label: string; records: RecordRow[] }>();
+  const put = (key: string, label: string, rec: RecordRow) => {
+    let b = buckets.get(key);
+    if (!b) {
+      b = { key, label, records: [] };
+      buckets.set(key, b);
+    }
+    b.records.push(rec);
+  };
+  const optionById = new Map((field.options ?? []).map((o) => [o.id, o]));
+
+  for (const rec of records) {
+    const raw = rec.values[field.id];
+    if (field.type === "select") {
+      const opt = optionById.get(String(raw ?? ""));
+      if (opt) put(opt.id, opt.name, rec);
+      else if (!isBlank(raw)) put("x:" + asText(raw), asText(raw), rec); // 老数据可能存名字而非 id
+      else put(EMPTY_KEY, EMPTY_LABEL, rec);
+    } else if (field.type === "multiSelect") {
+      const ids = asStringList(raw);
+      if (ids.length === 0) put(EMPTY_KEY, EMPTY_LABEL, rec);
+      else
+        for (const id of ids) {
+          const opt = optionById.get(id) ?? optionById.get(asText(id));
+          put(opt ? opt.id : "x:" + id, opt ? opt.name : asText(id), rec);
+        }
+    } else if (field.type === "checkbox") {
+      put(asChecked(raw) ? "1" : "0", asChecked(raw) ? "已勾选" : "未勾选", rec);
+    } else if (field.type === "number") {
+      const n = asNumber(raw);
+      if (n === null) put(EMPTY_KEY, EMPTY_LABEL, rec);
+      else put("n:" + n, String(n), rec);
+    } else if (field.type === "date") {
+      const ms = asDateMs(raw);
+      if (ms === null) put(EMPTY_KEY, EMPTY_LABEL, rec);
+      else {
+        const d = new Date(ms);
+        const label =
+          d.getFullYear() +
+          "-" +
+          String(d.getMonth() + 1).padStart(2, "0") +
+          "-" +
+          String(d.getDate()).padStart(2, "0");
+        put("d:" + label, label, rec);
+      }
+    } else {
+      const t = asText(raw);
+      if (t.trim() === "") put(EMPTY_KEY, EMPTY_LABEL, rec);
+      else put("t:" + t, t, rec);
+    }
+  }
+
+  const optionCount = field.options?.length ?? 0;
+  const orderOf = (key: string, label: string): number => {
+    if (key === EMPTY_KEY) return Number.MAX_SAFE_INTEGER;
+    if (field.type === "select" || field.type === "multiSelect") {
+      const idx = (field.options ?? []).findIndex((o) => o.id === key || o.name === label);
+      return idx === -1 ? optionCount : idx;
+    }
+    if (field.type === "checkbox") return key === "1" ? 0 : 1;
+    return 0;
+  };
+
+  return [...buckets.values()].sort((a, b) => {
+    const oa = orderOf(a.key, a.label);
+    const ob = orderOf(b.key, b.label);
+    if (oa !== ob) return oa - ob;
+    if (oa !== Number.MAX_SAFE_INTEGER) return CN_COLLATOR.compare(a.label, b.label);
+    return 0;
+  });
+}
+
 /* ---------------- 筛选/排序的界面辅助 ----------------
  *
  * 界面只负责"摆控件"，哪些运算符对哪种字段有意义仍然由这里说了算。
