@@ -1,0 +1,11 @@
+D03 全链路验证 2026-11-15 23:15
+================================
+1. latest.json 端点（releases/latest/download/latest.json，匿名 HTTP）: HTTP 200, 875 bytes
+   version=0.1.0, platform=windows-x86_64, url 指向 v0.1.0 资产
+2. 签名比对: 远端 latest.json 内嵌 signature 与本地 .sig 逐字节一致（diff 仅行尾换行差异）
+3. 安装包下载对账: exe HTTP 200, 3646457 bytes,
+   sha256=099f834c7080781e5509e9e57a0b52bc80e540770c9a7bd8dd339d9f34e84e52 与本地构建完全一致
+4. Release v0.1.0 打在 main 最新提交 9e1e2b0，含 3 个上传资产 + 2 个自动源码包，已标 Latest
+5. 桌面更新器冒烟：新装包 v0.1.0 即当前最新版，无更新可提示（update.available=false 静默为预期）；
+   下一版本 v0.1.1 发布时同端点自动生效
+结论: 更新链路 latest.json→下载→签名 三环全部实测通过
