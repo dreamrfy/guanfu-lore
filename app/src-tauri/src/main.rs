@@ -7,6 +7,7 @@
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .run(tauri::generate_context!())
         .expect("启动桌面壳失败");
 }

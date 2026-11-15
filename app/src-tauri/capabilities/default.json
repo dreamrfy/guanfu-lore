@@ -3,5 +3,5 @@
   "identifier": "default",
   "description": "桌面壳默认权限（第一版只包网页，不需要额外系统能力）",
   "windows": ["main"],
-  "permissions": ["core:default"]
+  "permissions": ["core:default", "updater:default"]
 }
