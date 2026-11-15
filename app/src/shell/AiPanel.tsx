@@ -36,6 +36,7 @@ import {
 } from "../data/aiSkills";
 import { extractBlocksText } from "../data/search";
 import { useActiveDoc, useActivePage, useStore } from "../data/store";
+import { useLang } from "../i18n";
 import { askKnowledgeBase } from "../data/rag";
 import type { Citation } from "../data/ragAsk";
 import {
@@ -81,6 +82,7 @@ export function AiPanel({
 } = {}) {
   const page = useActivePage();
   const doc = useActiveDoc();
+  const { t } = useLang();
   const [config, setConfig] = useState<AiConfig | null>(null);
   const [editingConfig, setEditingConfig] = useState(false);
   const [draft, setDraft] = useState<AiConfig>(DEFAULT_AI_CONFIG);
@@ -189,7 +191,7 @@ export function AiPanel({
     if (!result.ok) setError(result.error);
     else
       setOutput({
-        label: blockId ? "改写本段" : AI_ACTIONS.rewrite.label,
+        label: blockId ? t("aiRewrite") : AI_ACTIONS.rewrite.label,
         text: result.text,
         selection: blockId ? undefined : text,
         blockId,
@@ -487,10 +489,10 @@ export function AiPanel({
         <div className="ai__tabs">
           {(
             [
-              ["actions", "操作"],
-              ["chat", "对话"],
-              ["ask", "问答"],
-              ["skills", "技能"],
+              ["actions", t("aiTabActions")],
+              ["chat", t("aiTabChat")],
+              ["ask", t("aiTabAsk")],
+              ["skills", t("aiTabSkills")],
               ["mcp", "MCP"],
             ] as Array<[Tab, string]>
           ).map(([key, label]) => (
@@ -518,14 +520,14 @@ export function AiPanel({
                 disabled={busy !== null}
                 onClick={() => void runAction(action)}
               >
-                {busy === action ? "处理中…" : AI_ACTIONS[action].label}
+                {busy === action ? t("aiProcessing") : AI_ACTIONS[action].label}
               </button>
             ))}
           </div>
           <input
             className="clip-input ai__instruction"
             value={instruction}
-            placeholder="可选：改写要求（如「更口语一点」）"
+            placeholder={t("aiRewritePlaceholder")}
             onChange={(e) => setInstruction(e.target.value)}
           />
         </>
@@ -556,7 +558,7 @@ export function AiPanel({
             <input
               className="clip-input"
               value={chatInput}
-              placeholder="问点什么…"
+              placeholder={t("aiAskPlaceholder")}
               onChange={(e) => setChatInput(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
@@ -602,7 +604,7 @@ export function AiPanel({
             <input
               className="clip-input"
               value={askInput}
-              placeholder="问点什么…"
+              placeholder={t("aiAskPlaceholder")}
               onChange={(e) => setAskInput(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {

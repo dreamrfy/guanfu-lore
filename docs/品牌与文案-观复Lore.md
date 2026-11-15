@@ -75,15 +75,22 @@
 | 模块 | 位置 | 中文 | 英文 |
 | --- | --- | --- | --- |
 | 剪藏 | 入口 | 快速剪藏 | Quick clip |
+| 剪藏 | 动作按钮 | 剪藏 | Clip |
 | 剪藏 | 进行中 | 抓取中… | Fetching… |
 | 剪藏 | 成功 | 已收进库。 | Saved to your library. |
 | 剪藏 | 失败 | 对方删了，你这里还在——但这次没抓到。 | Gone there, kept here — but this one didn't come through. |
 | 剪藏 | 原文备份 | 原文备份 | Original copy |
 | 剪藏 | 快照动作 | 下载 HTML / 打开快照 | Save HTML / Open snapshot |
 | AI | 面板标题 | AI | AI |
+| AI | 操作标签 | 操作 | Actions |
+| AI | 对话标签 | 对话 | Chat |
+| AI | 问答标签 | 问答 | Ask |
+| AI | 提问占位 | 问点什么… | Ask something… |
+| AI | 处理中 | 处理中… | Working… |
 | AI | 总结本页 | 总结本页 | Summarize |
 | AI | 提炼要点 | 提炼要点 | Distill |
 | AI | 改写本段 | 改写本段 | Rewrite |
+| AI | 改写要求占位 | 可选：改写要求（如「更口语一点」） | Optional: rewrite notes (e.g. "more casual") |
 | AI | 对话 | 和这一页聊聊 | Talk with this page |
 | AI | 技能 | 技能 | Skills |
 | AI | 批量 | 一篇一篇，慢慢读完。 | One by one, until it's read. |

@@ -4,6 +4,7 @@ import type { PageRow } from "../data/db";
 import { clipReadState, unreadClipCount } from "../data/clipBox";
 import { searchAll, setPendingBlockFocus, type SearchResult } from "../data/search";
 import { AppIcon } from "../design/icons";
+import { useLang } from "../i18n";
 import { ClipButton } from "./ClipDialog";
 import { TagPanel } from "./TagPanel";
 import { TemplateMenu } from "./TemplateMenu";
@@ -65,6 +66,7 @@ export function Sidebar() {
   const trash = useStore((s) => s.trash);
   const activeTabId = useStore((s) => s.activeTabId);
   const iconSet = useStore((s) => s.iconSet);
+  const { lang, setLang, t } = useLang();
   const openTab = useStore((s) => s.openTab);
   const createPage = useStore((s) => s.createPage);
   const moveToTrash = useStore((s) => s.moveToTrash);
@@ -143,7 +145,7 @@ export function Sidebar() {
   return (
     <>
       <div className="sidebar__header">
-        <span className="sidebar__title">个人知识库</span>
+        <span className="sidebar__title">{t("brandTitle")}</span>
         <button className="icon-btn" title="收起侧栏" onClick={toggleSidebar}>
           <AppIcon name="panelLeft" set={iconSet} />
         </button>
@@ -151,7 +153,7 @@ export function Sidebar() {
 
       <label className="sidebar__search">
         <AppIcon name="search" set={iconSet} size={14} />
-        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="搜索页面标题" />
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("searchPlaceholder")} />
       </label>
 
       <div className="sidebar__list">
@@ -169,16 +171,16 @@ export function Sidebar() {
           }}
           title="把页面拖到这里 = 移到最外层"
         >
-          页面
+          {t("groupPages")}
         </div>
 
         {!query.trim() && (
           <>
             <div className="sidebar__group-label">
-              <span>表格</span>
+              <span>{t("groupTables")}</span>
               <button
                 className="icon-btn"
-                title="新建表格"
+                title={t("newTable")}
                 onClick={(e) => {
                   e.stopPropagation();
                   void createCollection();
@@ -187,7 +189,7 @@ export function Sidebar() {
                 <AppIcon name="plus" set={iconSet} size={13} />
               </button>
             </div>
-            {collections.length === 0 && <div className="sidebar__hint">还没有表格。剪藏库将来也放在这里。</div>}
+            {collections.length === 0 && <div className="sidebar__hint">{t("emptyTables")}</div>}
             {collections.map((c) => {
               const unread = unreadClipCount(c, records[c.id]);
               return (
@@ -213,7 +215,7 @@ export function Sidebar() {
         {query.trim() ? (
           <>
             {searching && <div className="empty-state">搜索中…</div>}
-            {!searching && results.length === 0 && <div className="empty-state">没有找到</div>}
+            {!searching && results.length === 0 && <div className="empty-state">{t("searchNoResult")}</div>}
             {results.map((r) => {
               const bodyHits = r.hits.filter((h) => h.blockId);
               return (
@@ -234,7 +236,7 @@ export function Sidebar() {
           </>
         ) : (
           <>
-            {tree.length === 0 && <div className="empty-state">还没有页面</div>}
+            {tree.length === 0 && <div className="empty-state">{t("emptyPages")}</div>}
 
             {tree.map((node) => (
           <div
@@ -310,7 +312,7 @@ export function Sidebar() {
 
         {trashOpen && (
           <div className="trash">
-            {trash.length === 0 && <div className="trash__empty">回收站是空的</div>}
+            {trash.length === 0 && <div className="trash__empty">{t("trashEmpty")}</div>}
             {trash.map((row) => (
               <div key={row.id} className="trash__item">
                 <span
@@ -359,7 +361,17 @@ export function Sidebar() {
           onClick={() => void createPage(null)}
         >
           <AppIcon name="plus" set={iconSet} />
-          新建页面
+          {t("newPage")}
+        </button>
+
+        <button
+          className="icon-btn"
+          style={{ width: "100%", justifyContent: "flex-start" }}
+          title="切换语言 / Switch language"
+          onClick={() => setLang(lang === "zh" ? "en" : "zh")}
+        >
+          <span style={{ fontSize: 12, letterSpacing: 2 }}>{lang === "zh" ? "EN" : "中"}</span>
+          {lang === "zh" ? "English" : "中文"}
         </button>
       </div>
     </>

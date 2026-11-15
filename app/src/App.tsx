@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { flushDocs, useStore } from "./data/store";
 import { fontStackOf } from "./design/fonts";
+import { useLang } from "./i18n";
 import { AppShell } from "./shell/AppShell";
 
 export function App() {
@@ -10,6 +11,12 @@ export function App() {
   const theme = useStore((s) => s.theme);
   const fontTheme = useStore((s) => s.fontTheme);
   const iconSet = useStore((s) => s.iconSet);
+  const { lang, t } = useLang();
+
+  // 窗口/标签页标题跟着语言走（《品牌与文案》§1：观复 / Lore）
+  useEffect(() => {
+    document.title = t("windowTitle");
+  }, [lang, t]);
 
   // 主题 / 字体 / 图标风格挂在 <html> 上，样式统一走 CSS 变量
   useEffect(() => {
@@ -59,17 +66,20 @@ export function App() {
   }, []);
 
   if (!ready) {
-    return <div className="boot">正在打开知识库…</div>;
+    return <div className="boot">{t("bootLoading")}</div>;
   }
 
   if (bootError) {
     return (
       <div className="boot boot--error">
         <div>
-          <div style={{ fontSize: 15, marginBottom: 8 }}>本地数据库打不开</div>
-          <div style={{ marginBottom: 12 }}>{bootError}</div>
+          <div style={{ fontSize: 15, marginBottom: 8 }}>{t("bootErrorTitle")}</div>
+          <div style={{ marginBottom: 12 }}>
+            {t("bootErrorBody")}
+            <div style={{ marginTop: 6, opacity: 0.7 }}>{bootError}</div>
+          </div>
           <button className="icon-btn" onClick={() => window.location.reload()}>
-            重新载入
+            {t("bootReload")}
           </button>
         </div>
       </div>

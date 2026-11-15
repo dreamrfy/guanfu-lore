@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLang } from "../i18n";
 import {
   DEFAULT_CLIP_SERVER,
   loadClipServerUrl,
@@ -29,6 +30,7 @@ import { AppIcon } from "../design/icons";
 export function ClipButton() {
   const [open, setOpen] = useState(false);
   const iconSet = useStore((s) => s.iconSet);
+  const { t } = useLang();
 
   return (
     <>
@@ -38,7 +40,7 @@ export function ClipButton() {
         onClick={() => setOpen(true)}
       >
         <AppIcon name="inbox" set={iconSet} />
-        快速剪藏
+        {t("clipEntry")}
       </button>
       {open && <ClipDialog onClose={() => setOpen(false)} />}
     </>
@@ -46,6 +48,7 @@ export function ClipButton() {
 }
 
 function ClipDialog({ onClose }: { onClose: () => void }) {
+  const { t } = useLang();
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -123,7 +126,7 @@ function ClipDialog({ onClose }: { onClose: () => void }) {
     <div className="modal" role="dialog" aria-modal="true" onMouseDown={() => !busy && onClose()}>
       <div className="modal__card" onMouseDown={(e) => e.stopPropagation()}>
         <div className="modal__head">
-          <b>快速剪藏</b>
+          <b>{t("clipEntry")}</b>
           <button className="icon-btn" title="关闭" onClick={onClose} disabled={busy}>
             ×
           </button>
@@ -147,7 +150,7 @@ function ClipDialog({ onClose }: { onClose: () => void }) {
               disabled={busy}
             />
             <button className="btn" onClick={() => void submit()} disabled={busy || !url.trim()}>
-              {busy ? "抓取中…" : "剪藏"}
+              {busy ? t("clipFetching") : t("clipButton")}
             </button>
           </div>
 

@@ -17,6 +17,7 @@ import {
 import { CLIP_COLLECTION_NAME, useStore } from "../data/store";
 import { clipReadState, isClipUnread } from "../data/clipBox";
 import { AppIcon } from "../design/icons";
+import { useLang } from "../i18n";
 import { AiBatchDialog } from "./AiBatchDialog";
 import { ViewBar } from "./ViewBar";
 
@@ -321,6 +322,7 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
    * 如果 pointermove 里直接 updateField，每移动 1px 就往 IndexedDB 写一次整张表。
    */
   const [drag, setDrag] = useState<{ id: string; width: number } | null>(null);
+  const { t } = useLang();
   /**
    * 单击行 = 打开记录详情，双击单元格 = 原地编辑。
    * 单击必须等 220ms 再开面板：否则双击的第一下就把面板打开、布局一挪，第二下就点偏了。
@@ -354,7 +356,7 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
     [collection, rows]
   );
 
-  if (!collection) return <div className="empty-state">这张表不见了</div>;
+  if (!collection) return <EmptyCollectionState />;
 
   const filtered = rows.length !== records.length;
   const widthOf = (f: FieldDef) => drag?.id === f.id ? drag.width : f.width ?? DEFAULT_COL_WIDTH;
@@ -392,7 +394,7 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
           {filtered ? `${rows.length} / ${records.length} 条` : `${records.length} 条`}
         </span>
         <button className="btn" onClick={() => void addRecord(collection.id)}>
-          ＋ 新建记录
+          ＋ {t("newRecord")}
         </button>
         {collection.name === CLIP_COLLECTION_NAME && (
           <button className="btn" onClick={() => setBatchOpen(true)}>
@@ -554,7 +556,7 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
             {rows.length === 0 && (
               <tr>
                 <td colSpan={collection.fields.length + 2} className="grid__empty">
-                  还没有记录，点右上「新建记录」开始
+                  {t("emptyRecords")}
                 </td>
               </tr>
             )}
@@ -580,4 +582,10 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
       )}
     </div>
   );
+}
+
+/** 表被删掉（或还没同步进来）时的占位 —— 单独小组件，好在早退分支里用语言上下文 */
+function EmptyCollectionState() {
+  const { t } = useLang();
+  return <div className="empty-state">{t("tableGone")}</div>;
 }

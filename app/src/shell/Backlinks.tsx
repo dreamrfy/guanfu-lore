@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { findBacklinks, type Backlink } from "../data/backlinks";
 import { useStore } from "../data/store";
+import { useLang } from "../i18n";
 
 /**
  * 正文底部的「引用了本页」条目。
@@ -9,6 +10,7 @@ import { useStore } from "../data/store";
 export function Backlinks({ pageId }: { pageId: string }) {
   const docs = useStore((s) => s.docs);
   const openTab = useStore((s) => s.openTab);
+  const { t } = useLang();
   const [links, setLinks] = useState<Backlink[]>([]);
 
   useEffect(() => {
@@ -29,7 +31,7 @@ export function Backlinks({ pageId }: { pageId: string }) {
   return (
     <section className="backlinks">
       <div className="backlinks__title">
-        引用了本页 <span className="backlinks__count">{links.length}</span>
+        {t("backlinksTitle")} <span className="backlinks__count">{links.length}</span>
       </div>
       {links.map((link) => (
         <button key={link.pageId} className="backlinks__item" onClick={() => openTab(link.pageId)}>
