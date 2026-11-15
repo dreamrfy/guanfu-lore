@@ -5,7 +5,7 @@
   "homepage": "https://github.com/dreamrfy/guanfu-lore",
   "license": "MIT",
   "url": "https://github.com/dreamrfy/guanfu-lore/releases/download/v0.1.0/guanfu-lore_0.1.0_x64-setup.exe",
-  "hash": "0f11b1dcdffd7294a3e5a50be6fc49d5d669b837696cc249da5335db2e5fd189",
+  "hash": "099f834c7080781e5509e9e57a0b52bc80e540770c9a7bd8dd339d9f34e84e52",
   "architecture": "x64",
   "installer": {
     "args": [
@@ -23,6 +23,6 @@
   "checkver": "https://github.com/dreamrfy/guanfu-lore/releases/latest",
   "autoupdate": {
     "url": "https://github.com/dreamrfy/guanfu-lore/releases/download/v$version/guanfu-lore_$version_x64-setup.exe",
-    "hash": "0f11b1dcdffd7294a3e5a50be6fc49d5d669b837696cc249da5335db2e5fd189"
+    "hash": "099f834c7080781e5509e9e57a0b52bc80e540770c9a7bd8dd339d9f34e84e52"
   }
 }
