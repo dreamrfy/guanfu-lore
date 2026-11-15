@@ -39,7 +39,7 @@
   "plugins": {
     "updater": {
       "endpoints": [
-        "https://github.com/OWNER/REPO/releases/latest/download/latest.json"
+        "https://github.com/dreamrfy/guanfu-lore/releases/latest/download/latest.json"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDAzMkVENkQxOEY0RjQwMDUKUldRRlFFK1AwZFl1QXdWTVZCRnBHYUJhclgza3gvdHZ4bEtnVktzRkVadG1zbm51YXRFdDZzYlQK"
     }

@@ -11,7 +11,7 @@
 ## 清单文件
 
 - `bijiapp.json` —— Scoop 的 bucket 清单（一个 bucket = 一个 Git 仓库里的若干 json）。
-  目前 `OWNER` / `hash` 是占位符，**第一次发版后必须替换**。
+  `OWNER` 已填 dreamrfy/guanfu-lore；`hash` 在第一次发版后必须用真实 sha256 回填。
 
 ## 发版流程（第一次）
 
@@ -31,15 +31,15 @@
 3. 把 exe 传到 GitHub Release，文件名与清单里的 `url` 对齐：
 
    ```
-   https://github.com/OWNER/bijiapp/releases/download/v0.1.0/bijiapp_0.1.0_x64-setup.exe
+   https://github.com/dreamrfy/guanfu-lore/releases/download/v0.1.0/guanfu-lore_0.1.0_x64-setup.exe
    ```
 
-4. 把清单里的 `OWNER` 换成真实仓库、`hash` 换成上一步的 sha256，提交这个 bucket 仓库。
+4. 清单里 `OWNER` 已填真实仓库；`hash` 换成上一步的 sha256，提交这个 bucket 仓库。
 
 ## 用户怎么装
 
 ```bash
-scoop bucket add bijiapp https://github.com/OWNER/bijiapp-scoop
+scoop bucket add bijiapp https://github.com/dreamrfy/guanfu-lore-scoop
 scoop install bijiapp
 ```
 
