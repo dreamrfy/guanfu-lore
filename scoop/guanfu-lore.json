@@ -5,18 +5,24 @@
   "homepage": "https://github.com/OWNER/REPO",
   "license": "MIT",
   "url": "https://github.com/OWNER/REPO/releases/download/v0.1.0/guanfu-lore_0.1.0_x64-setup.exe",
-  "hash": "REPLACE_WITH_SHA256_OF_THE_INSTALLER",
+  "hash": "0f11b1dcdffd7294a3e5a50be6fc49d5d669b837696cc249da5335db2e5fd189",
   "architecture": "x64",
+  "installer": {
+    "args": [
+      "/S",
+      "/D=$dir"
+    ]
+  },
   "shortcuts": [
-    {
-      "name": "观复 · Lore",
-      "url": "$dir\\guanfu-lore.exe",
-      "icon": "$dir\\guanfu-lore.exe"
-    }
+    [
+      "guanfu-lore.exe",
+      "观复 · Lore",
+      "guanfu-lore.exe"
+    ]
   ],
   "checkver": "https://github.com/OWNER/REPO/releases/latest",
   "autoupdate": {
     "url": "https://github.com/OWNER/REPO/releases/download/v$version/guanfu-lore_$version_x64-setup.exe",
-    "hash": "REPLACE_WITH_SHA256_OF_THE_INSTALLER"
+    "hash": "0f11b1dcdffd7294a3e5a50be6fc49d5d669b837696cc249da5335db2e5fd189"
   }
 }

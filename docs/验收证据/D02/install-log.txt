@@ -1,0 +1,48 @@
+﻿方法调用失败，因为 [System.Management.Automation.PSCustomObject] 不包含名为“item”的方法。
+所在位置 C:\Users\12589\scoop\apps\scoop\current\lib\shortcuts.ps1:65 字符: 9
++         $name = $_.item(1)
++         ~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidOperation: (item:String) []，RuntimeException
+    + FullyQualifiedErrorId : MethodNotFound
+ 
+--- reinstall (fresh, hash must pass) ---
+Installing 'guanfu-lore' (0.1.0) [64bit] from 'guanfu-local' bucket
+方法调用失败，因为 [System.Management.Automation.PSCustomObject] 不包含名为“item”的方法。
+所在位置 C:\Users\12589\scoop\apps\scoop\current\lib\shortcuts.ps1:5 字符: 9
++         $target = [System.IO.Path]::Combine($dir, $_.item(0))
++         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidOperation: (item:String) []，RuntimeException
+    + FullyQualifiedErrorId : MethodNotFound
+ 
+New-Object : 找不到构造函数。找不到类型 System.IO.FileInfo 的相应构造函数。
+所在位置 C:\Users\12589\scoop\apps\scoop\current\lib\shortcuts.ps1:6 字符: 19
++         $target = New-Object System.IO.FileInfo($target)
++                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (:) [New-Object], PSArgumentException
+    + FullyQualifiedErrorId : CannotFindAppropriateCtor,Microsoft.PowerShell.Commands.NewObjectCommand
+ 
+方法调用失败，因为 [System.Management.Automation.PSCustomObject] 不包含名为“item”的方法。
+所在位置 C:\Users\12589\scoop\apps\scoop\current\lib\shortcuts.ps1:7 字符: 9
++         $name = $_.item(1)
++         ~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidOperation: (item:String) []，RuntimeException
+    + FullyQualifiedErrorId : MethodNotFound
+ 
+Split-Path : 无法将参数绑定到参数“Path”，因为该参数是空值。
+所在位置 C:\Users\12589\scoop\apps\scoop\current\lib\core.ps1:618 字符: 36
++ function fname($path) { Split-Path $path -Leaf }
++                                    ~~~~~
+    + CategoryInfo          : InvalidData: (:) [Split-Path]，ParameterBindingValidationException
+    + FullyQualifiedErrorId : ParameterArgumentValidationErrorNullNotAllowed,Microsoft.PowerShell.Commands.SplitPathCo 
+   mmand
+ 
+--- installed files ---
+
+Name                             Length
+----                             ------
+guanfu-lore_0.1.0_x64-setup.exe 3646340
+scoop-install.json                   66
+scoop-manifest.json                 935
+
+
+
