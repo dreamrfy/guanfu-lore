@@ -1,98 +1,104 @@
 {
-  "version": "v4",
-  "startedAt": "2026-11-15T02:30:00+08:00",
-  "taskTable": "开发任务表-v3.3-云端批.md",
-  "maxConcurrent": 2,
-  "running": [],
-  "history": [
-    {
-      "task": "T00",
-      "result": "DONE",
-      "finishedAt": "2026-11-15T02:47:00+08:00",
-      "commit": "ff7f147"
-    },
-    {
-      "task": "T01",
-      "result": "DONE",
-      "finishedAt": "2026-11-15T03:02:00+08:00"
-    },
-    {
-      "task": "T02",
-      "result": "DONE",
-      "finishedAt": "2026-11-15T03:10:00+08:00"
-    },
-    {
-      "task": "T03",
-      "result": "DONE·部分",
-      "finishedAt": "2026-11-15T03:26:00+08:00",
-      "note": "真机意图验证顺延T08（备用机锁屏阻塞安装，等用户解锁）"
-    },
-    {
-      "task": "T04",
-      "result": "DONE",
-      "finishedAt": "2026-11-15T04:01:00+08:00",
-      "note": "单测17/17绿；真实服务422/401契约验证"
-    },
-    {
-      "task": "T05",
-      "result": "DONE",
-      "finishedAt": "2026-11-15T04:17:00+08:00",
-      "note": "设置页+测试连接；单测20/20绿"
-    },
-    {
-      "task": "T06",
-      "result": "DONE·部分",
-      "finishedAt": "2026-11-15T04:34:00+08:00",
-      "note": "keystore+签名+出包完成；adb安装被备用机锁屏挡，归T08"
-    },
-    {
-      "task": "T07",
-      "result": "DONE",
-      "finishedAt": "2026-11-15T04:40:00+08:00",
-      "note": "模块自验文档+打包路径；微信实测BLOCKED·等用户"
-    },
-    {
-      "task": "T08",
-      "result": "BLOCKED·等用户",
-      "finishedAt": "2026-11-15T04:46:00+08:00",
-      "note": "备用机锁屏挡安装弹窗（3次实测）；解锁+开USB安装后改回TODO自动执行"
-    },
-    {
-      "task": "S01-deploy",
-      "result": "BLOCKED",
-      "finishedAt": "2026-11-15T05:55:00+08:00",
-      "note": "VPS 部署三关走到第二步被权限分类器拦（Remote Shell Writes）；/tmp 暂存已就位，等用户放行"
-    },
-    {
-      "task": "S02",
-      "result": "DONE",
-      "finishedAt": "2026-11-15T06:00:00+08:00",
-      "commit": "413afa5"
-    },
-    {
-      "task": "S03",
-      "result": "DONE",
-      "finishedAt": "2026-11-15T06:15:00+08:00",
-      "commit": "1c09d70"
-    },
-    {
-      "task": "S04",
-      "result": "DONE",
-      "finishedAt": "2026-11-15T06:45:00+08:00",
-      "note": "两份本地库端到端全通；逮到并修复3个真bug（blob泄漏/自回声覆盖/内存未解析）"
-    },
-    {
-      "task": "H02",
-      "result": "DONE·部分",
-      "finishedAt": "2026-11-15 06:23+08:00",
-      "note": "自测17/17+全套件30/30绿；部署被分类器拦拆H05"
-    },
-    {
-      "task": "H03",
-      "result": "DONE",
-      "finishedAt": "2026-11-15 06:41+08:00",
-      "note": "228/228绿；locator.js 三形态加载兜底；预览部署被拦归用户放行"
-    }
-  ],
-  "notes": "看门狗第 5 版：30 分钟断停、断点尾重试、单会话 3 任务。停止方式：仓库根建 ops/STOP。"
+ "version": "v4",
+ "startedAt": "2026-11-15T02:30:00+08:00",
+ "taskTable": "开发任务表-v3.3-云端批.md",
+ "maxConcurrent": 2,
+ "running": [],
+ "history": [
+  {
+   "task": "T00",
+   "result": "DONE",
+   "finishedAt": "2026-11-15T02:47:00+08:00",
+   "commit": "ff7f147"
+  },
+  {
+   "task": "T01",
+   "result": "DONE",
+   "finishedAt": "2026-11-15T03:02:00+08:00"
+  },
+  {
+   "task": "T02",
+   "result": "DONE",
+   "finishedAt": "2026-11-15T03:10:00+08:00"
+  },
+  {
+   "task": "T03",
+   "result": "DONE·部分",
+   "finishedAt": "2026-11-15T03:26:00+08:00",
+   "note": "真机意图验证顺延T08（备用机锁屏阻塞安装，等用户解锁）"
+  },
+  {
+   "task": "T04",
+   "result": "DONE",
+   "finishedAt": "2026-11-15T04:01:00+08:00",
+   "note": "单测17/17绿；真实服务422/401契约验证"
+  },
+  {
+   "task": "T05",
+   "result": "DONE",
+   "finishedAt": "2026-11-15T04:17:00+08:00",
+   "note": "设置页+测试连接；单测20/20绿"
+  },
+  {
+   "task": "T06",
+   "result": "DONE·部分",
+   "finishedAt": "2026-11-15T04:34:00+08:00",
+   "note": "keystore+签名+出包完成；adb安装被备用机锁屏挡，归T08"
+  },
+  {
+   "task": "T07",
+   "result": "DONE",
+   "finishedAt": "2026-11-15T04:40:00+08:00",
+   "note": "模块自验文档+打包路径；微信实测BLOCKED·等用户"
+  },
+  {
+   "task": "T08",
+   "result": "BLOCKED·等用户",
+   "finishedAt": "2026-11-15T04:46:00+08:00",
+   "note": "备用机锁屏挡安装弹窗（3次实测）；解锁+开USB安装后改回TODO自动执行"
+  },
+  {
+   "task": "S01-deploy",
+   "result": "BLOCKED",
+   "finishedAt": "2026-11-15T05:55:00+08:00",
+   "note": "VPS 部署三关走到第二步被权限分类器拦（Remote Shell Writes）；/tmp 暂存已就位，等用户放行"
+  },
+  {
+   "task": "S02",
+   "result": "DONE",
+   "finishedAt": "2026-11-15T06:00:00+08:00",
+   "commit": "413afa5"
+  },
+  {
+   "task": "S03",
+   "result": "DONE",
+   "finishedAt": "2026-11-15T06:15:00+08:00",
+   "commit": "1c09d70"
+  },
+  {
+   "task": "S04",
+   "result": "DONE",
+   "finishedAt": "2026-11-15T06:45:00+08:00",
+   "note": "两份本地库端到端全通；逮到并修复3个真bug（blob泄漏/自回声覆盖/内存未解析）"
+  },
+  {
+   "task": "H02",
+   "result": "DONE·部分",
+   "finishedAt": "2026-11-15 06:23+08:00",
+   "note": "自测17/17+全套件30/30绿；部署被分类器拦拆H05"
+  },
+  {
+   "task": "H03",
+   "result": "DONE",
+   "finishedAt": "2026-11-15 06:41+08:00",
+   "note": "228/228绿；locator.js 三形态加载兜底；预览部署被拦归用户放行"
+  },
+  {
+   "task": "H04",
+   "result": "DONE",
+   "finishedAt": "2026-11-15T08:25:00+08:00",
+   "note": "真浏览器+真扩展全链4截图；服务端按H02契约mock，换真服务复验归H05"
+  }
+ ],
+ "notes": "看门狗第 5 版：30 分钟断停、断点尾重试、单会话 3 任务。停止方式：仓库根建 ops/STOP。"
 }
