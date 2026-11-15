@@ -134,6 +134,18 @@
    "result": "DONE",
    "finishedAt": "2026-11-15T11:00:00+08:00",
    "note": "真机合走查（分组+汇总共存）2 截图；模块 V 封箱"
+  },
+  {
+   "task": "R01",
+   "result": "DONE",
+   "finishedAt": "2026-11-15T11:20:00+08:00",
+   "note": "RecordRow.thoughts + setRecordThoughts + PageEditor readOnly；单测247/247；真机走查归 R02"
+  },
+  {
+   "task": "R02",
+   "result": "DONE",
+   "finishedAt": "2026-11-15T11:30:00+08:00",
+   "note": "真机走查 2 截图（只读原文+想法可写+持久化）；模块 R 封箱"
   }
  ],
  "notes": "看门狗第 5 版：30 分钟断停、断点尾重试、单会话 3 任务。停止方式：仓库根建 ops/STOP。"
