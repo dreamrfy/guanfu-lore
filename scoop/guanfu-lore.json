@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ScoopInstaller/Scoop/master/schema/bucket.json",
+  "version": "0.1.0",
+  "description": "观复 · Lore · AI 原生的块式个人知识库（网页 + 桌面壳）",
+  "homepage": "https://github.com/OWNER/REPO",
+  "license": "MIT",
+  "url": "https://github.com/OWNER/REPO/releases/download/v0.1.0/guanfu-lore_0.1.0_x64-setup.exe",
+  "hash": "REPLACE_WITH_SHA256_OF_THE_INSTALLER",
+  "architecture": "x64",
+  "shortcuts": [
+    {
+      "name": "观复 · Lore",
+      "url": "$dir\\guanfu-lore.exe",
+      "icon": "$dir\\guanfu-lore.exe"
+    }
+  ],
+  "checkver": "https://github.com/OWNER/REPO/releases/latest",
+  "autoupdate": {
+    "url": "https://github.com/OWNER/REPO/releases/download/v$version/guanfu-lore_$version_x64-setup.exe",
+    "hash": "REPLACE_WITH_SHA256_OF_THE_INSTALLER"
+  }
+}

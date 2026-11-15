@@ -1,9 +1,9 @@
 {
-  "name": "bijiapp-server",
+  "name": "guanfu-lore-server",
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "description": "bijiapp 服务端（阶段一 · 本地原型）。Node 24 原生直跑 .ts；运行时只依赖 HTML 清洗库。",
+  "description": "观复 · Lore 服务端（阶段一 · 本地原型）。Node 24 原生直跑 .ts；运行时只依赖 HTML 清洗库。",
   "scripts": {
     "help": "node src/cli.ts --help",
     "test": "bash tests/run-all.sh",

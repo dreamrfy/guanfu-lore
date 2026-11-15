@@ -1,4 +1,4 @@
-# bijiapp 服务端（阶段一 · 本地原型）
+# 观复 · Lore 服务端（阶段一 · 本地原型）
 
 **Node >= 24 原生直跑 TypeScript**（type stripping），无需构建。
 运行时依赖：`sanitize-html`（正文白名单清洗）+ `htmlparser2`/`domutils`/`dom-serializer`/`domhandler`（离线快照的 DOM 审计与加固）；其余用 Node 内置模块。
