@@ -1,0 +1,8 @@
+{
+ "version": "v5",
+ "startedAt": "2026-11-15T21:00:00+08:00",
+ "taskTable": "开发任务表-v3.4-全功能批.md",
+ "maxConcurrent": 2,
+ "running": [],
+ "history": []
+}
