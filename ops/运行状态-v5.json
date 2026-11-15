@@ -34,6 +34,11 @@
    "taskId": "A01",
    "status": "DONE",
    "finishedAt": "2026-11-15T17:38:00+08:00"
+  },
+  {
+   "taskId": "A02",
+   "status": "DONE",
+   "finishedAt": "2026-11-15T21:30:00+08:00"
   }
  ]
 }

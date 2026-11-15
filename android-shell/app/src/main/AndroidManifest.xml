@@ -34,6 +34,10 @@
             android:name=".SettingsActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".SettingsComposeActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

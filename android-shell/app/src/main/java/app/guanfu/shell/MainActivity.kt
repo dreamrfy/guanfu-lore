@@ -29,7 +29,9 @@ class MainActivity : Activity() {
         val settingsButton = android.widget.Button(this).apply {
             text = getString(R.string.settings)
             setOnClickListener {
-                startActivity(android.content.Intent(this@MainActivity, SettingsActivity::class.java))
+                // A02 起：设置入口切到 Compose 版（EncryptedSharedPreferences 凭证层）；
+                // 旧 View 版 SettingsActivity 保留一个过渡版本，后续任务移除
+                startActivity(android.content.Intent(this@MainActivity, SettingsComposeActivity::class.java))
             }
         }
         root.addView(settingsButton)
@@ -71,11 +73,11 @@ class MainActivity : Activity() {
         if (url == lastClippedUrl) return
         lastClippedUrl = url
         statusView.text = getString(R.string.clipping)
-        val prefs = getSharedPreferences(SettingsActivity.PREFS, MODE_PRIVATE)
+        val config = Credentials.load(this)
         Thread {
             val result = ClipClient.clip(
-                SettingsActivity.effectiveUrl(prefs),
-                SettingsActivity.effectiveToken(prefs),
+                config.serverUrl,
+                config.token,
                 url,
             )
             runOnUiThread {
