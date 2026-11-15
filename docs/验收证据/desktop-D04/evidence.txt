@@ -1,0 +1,60 @@
+# D04 自验原始输出（2026-11-15 11:15~11:30，看门狗 v5）
+
+## 1. cargo check（修复前基线）
+
+```
+$ cargo --version
+cargo 1.100.0 (3acc79c0c 2026-11-05)
+
+$ cargo check
+cargo check (269 crates compiled)
+Finished `dev` profile [unoptimized + debuginfo] target(s) in 1m 13s
+```
+
+## 2. npm test（vitest，修复后复跑同绿）
+
+```
+RUN  v5.1.0 E:/VBcoding/bijiapp/app
+
+ Test Files  32 passed (32)
+      Tests  247 passed (247)
+   Start at  11:17:13
+   Duration  5.15s
+```
+
+## 3. tsc + vite build
+
+```
+$ npx tsc --noEmit        # 0 错误（无输出）
+$ npm run build
+✓ built in 1.00s
+（仅 chunk 体积提示与 INEFFECTIVE_DYNAMIC_IMPORT 警告，均为既有现象，非本轮引入）
+```
+
+## 4. 修复后 cargo check（补 tauri-plugin-process 接线）
+
+```
+$ cargo check
+cargo check (2 crates compiled)
+Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.18s
+```
+
+## 5. 真浏览器探针（localhost:5173，Chrome）
+
+```json
+{
+  "tauriInternals": "undefined",
+  "appRoot": true,
+  "title": "个人知识库"
+}
+```
+
+- `__TAURI_INTERNALS__` 不存在 → `initDesktopUpdater()` 首行守卫直接 return，网页端零更新器开销 ✅
+- 控制台错误定性：189 条 ERR_CONNECTION_REFUSED 全部指向 `http://127.0.0.1:8787/api/sync/pull`、
+  `/api/clips` 等——应用对本地同步/剪藏服务的正常轮询（本探针未起服务端），无更新器相关错误 ✅
+
+## 6. 修复接线核对（修复对象）
+
+- `app/src-tauri/Cargo.toml`：新增 `tauri-plugin-process = "2"`
+- `app/src-tauri/src/main.rs`：新增 `.plugin(tauri_plugin_process::init())`
+- `app/src-tauri/capabilities/default.json`：permissions = ["core:default", "updater:default", "process:allow-restart"]

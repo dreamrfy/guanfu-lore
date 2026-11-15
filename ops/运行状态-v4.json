@@ -164,6 +164,13 @@
    "result": "BLOCKED·等用户",
    "finishedAt": "2026-11-15T10:55:00+08:00",
    "note": "BLOCKED·等用户：Scoop 未装（自动装被安全策略拒）+ 等 D01"
+  },
+  {
+   "task": "D04",
+   "result": "DONE",
+   "finishedAt": "2026-11-15T03:21:40.788Z",
+   "commit": "(见git)",
+   "note": "自验修复更新后不重启（补tauri-plugin-process接线）"
   }
  ],
  "notes": "看门狗第 5 版：30 分钟断停、断点尾重试、单会话 3 任务。停止方式：仓库根建 ops/STOP。"
