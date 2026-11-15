@@ -146,6 +146,24 @@
    "result": "DONE",
    "finishedAt": "2026-11-15T11:30:00+08:00",
    "note": "真机走查 2 截图（只读原文+想法可写+持久化）；模块 R 封箱"
+  },
+  {
+   "task": "D03",
+   "result": "DONE·部分",
+   "finishedAt": "2026-11-15T10:55:00+08:00",
+   "note": "updater 可准备部分全落地（密钥/配置/插件注册/JS接线）；发布环节等用户建仓"
+  },
+  {
+   "task": "D01",
+   "result": "BLOCKED·等用户",
+   "finishedAt": "2026-11-15T10:55:00+08:00",
+   "note": "BLOCKED·等用户：NSIS 下载被墙（GitHub release CDN 不可达，本机无代理）"
+  },
+  {
+   "task": "D02",
+   "result": "BLOCKED·等用户",
+   "finishedAt": "2026-11-15T10:55:00+08:00",
+   "note": "BLOCKED·等用户：Scoop 未装（自动装被安全策略拒）+ 等 D01"
   }
  ],
  "notes": "看门狗第 5 版：30 分钟断停、断点尾重试、单会话 3 任务。停止方式：仓库根建 ops/STOP。"
