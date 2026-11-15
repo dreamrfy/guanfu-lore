@@ -4,5 +4,11 @@
  "taskTable": "开发任务表-v3.4-全功能批.md",
  "maxConcurrent": 2,
  "running": [],
- "history": []
+ "history": [
+  {
+   "taskId": "S01-v34",
+   "status": "DONE",
+   "finishedAt": "2026-11-15T16:15:00+08:00"
+  }
+ ]
 }
