@@ -1,0 +1,12 @@
+List of devices attached
+8BF4C20819011732	device
+emulator-5554	device
+
+test1
+OK
+14
+
+注：本文件为 A01 模拟器验收证据。
+- 17:14 冷启动 AVD test1（emulator -avd test1 -no-snapshot），Boot completed in 58052 ms
+- adb devices 可见 emulator-5554（Android 14 / API 34 / google_apis x86_64, pixel_6）
+- 证据生成时间：2026-11-15 17:15 左右（看门狗 v6 第 4 轮 · A01）
