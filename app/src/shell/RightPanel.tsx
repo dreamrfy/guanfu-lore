@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { PartialBlock } from "@blocknote/core";
-import { useStore, useActiveDoc } from "../data/store";
+import { useStore, useActiveDoc, CLIP_COLLECTION_NAME } from "../data/store";
 import { assetUrl } from "../data/assets";
 import type { CollectionRow, PageRow, RecordRow } from "../data/db";
 import { asText } from "../data/collections";
@@ -57,6 +57,7 @@ const EMPTY_RECORDS: RecordRow[] = [];
 function RecordPanel({ collection, record }: { collection: CollectionRow; record: RecordRow }) {
   const setCell = useStore((s) => s.setCell);
   const setRecordDoc = useStore((s) => s.setRecordDoc);
+  const setRecordThoughts = useStore((s) => s.setRecordThoughts);
   const closeRecord = useStore((s) => s.closeRecord);
   const theme = useStore((s) => s.theme);
   const uploadFile = useStore((s) => s.uploadFile);
@@ -81,6 +82,8 @@ function RecordPanel({ collection, record }: { collection: CollectionRow; record
   // 第一个文本字段当标题列（和表格里的粗体标题列一致），属性区里不再重复列一次
   const titleField = collection.fields.find((f) => f.type === "text") ?? null;
   const propFields = titleField ? collection.fields.filter((f) => f.id !== titleField.id) : collection.fields;
+  // 剪藏来源的记录（R01）：原文只读，想法写在单独的「想法」分区（落库分离）
+  const isClip = collection.name === CLIP_COLLECTION_NAME;
 
   // 记录页的 AI 上下文：标题 + 正文（剪藏文章的总结/提炼就靠它）
   const recordTitle = titleField ? asText(record.values[titleField.id]) : "记录";
@@ -172,15 +175,28 @@ function RecordPanel({ collection, record }: { collection: CollectionRow; record
         )}
 
         <div className="record__body">
-          <div className="record__body-label">正文</div>
+          <div className="record__body-label">{isClip ? "原文（只读）" : "正文"}</div>
           <PageEditor
             key={record.id}
             initialBlocks={(record.doc as PartialBlock[]) ?? []}
             theme={theme}
+            readOnly={isClip}
             onChange={(blocks) => setRecordDoc(collection.id, record.id, blocks)}
             uploadFile={(file) => uploadFile(file, "image", null)}
           />
         </div>
+        {isClip && (
+          <div className="record__body record__thoughts">
+            <div className="record__body-label">💡 想法</div>
+            <PageEditor
+              key={`${record.id}:thoughts`}
+              initialBlocks={(record.thoughts as PartialBlock[]) ?? []}
+              theme={theme}
+              onChange={(blocks) => setRecordThoughts(collection.id, record.id, blocks)}
+              uploadFile={(file) => uploadFile(file, "image", null)}
+            />
+          </div>
+        )}
 
         <AiPanel context={{ title: recordTitle, text: recordText }} contextKey={record.id} />
       </div>

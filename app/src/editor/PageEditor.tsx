@@ -43,9 +43,11 @@ type Props = {
   onChange: (blocks: PartialBlock[]) => void;
   /** 图片/文件上传：存进本地附件库，返回可显示的地址 */
   uploadFile?: (file: File) => Promise<string>;
+  /** 只读（R01）：剪藏记录的原文区不可编辑，想法写在单独的分区 */
+  readOnly?: boolean;
 };
 
-export function PageEditor({ initialBlocks, theme, onChange, uploadFile }: Props) {
+export function PageEditor({ initialBlocks, theme, onChange, uploadFile, readOnly }: Props) {
   const dispatchAiCommand = useStore((s) => s.dispatchAiCommand);
   const editor = useCreateBlockNote({
     schema,
@@ -199,6 +201,7 @@ export function PageEditor({ initialBlocks, theme, onChange, uploadFile }: Props
       <BlockNoteView
         editor={editor}
         theme={theme}
+        editable={!readOnly}
         slashMenu={false}
         // 关掉默认工具条：下面用 FormattingToolbarController 换成"默认项 + AI"
         formattingToolbar={false}

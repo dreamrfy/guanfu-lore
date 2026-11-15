@@ -137,6 +137,8 @@ export type RecordRow = {
   values: Record<string, unknown>;
   /** 记录正文（BlockNote 块数组）。记录详情页的笔记体，与单元格值分开存 */
   doc?: unknown[];
+  /** 想法区（R01，剪藏记录专用）：用户自己的批注，与原文 doc 分开存——原文只读，想法随便写 */
+  thoughts?: unknown[];
   /** 剪藏记录的「原文离线快照」附件 id（自包含 HTML，图片已内联） */
   snapshotAssetId?: string | null;
   createdAt: number;

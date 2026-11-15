@@ -174,6 +174,26 @@ describe("多维表格：记录详情", () => {
     await s().deleteCollection(collectionId);
     expect(s().openRecordRef).toBeNull();
   });
+
+  it("想法区（R01）：与正文 doc 分开落库，写想法不动正文", async () => {
+    await s().hydrate();
+    const collectionId = await s().createCollection("剪藏库");
+    await s().addRecord(collectionId);
+    const rec = s().records[collectionId][0];
+
+    const doc = [{ type: "paragraph", content: "文章原文" }];
+    s().setRecordDoc(collectionId, rec.id, doc);
+    const thoughts = [{ type: "paragraph", content: "我的想法" }];
+    s().setRecordThoughts(collectionId, rec.id, thoughts);
+
+    expect(s().records[collectionId][0].thoughts).toEqual(thoughts); // 内存立刻可读
+    expect(s().records[collectionId][0].doc).toEqual(doc); // 正文没被想法覆盖
+
+    await sleep(400);
+    const rows = await repo.listRecords(collectionId);
+    expect(rows[0].thoughts).toEqual(thoughts); // 库里分字段存
+    expect(rows[0].doc).toEqual(doc);
+  });
 });
 
 describe("页面层级（拖拽移动）", () => {

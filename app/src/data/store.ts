@@ -145,7 +145,12 @@ const recordTimers = new Map<string, number>();
 function writeRecord(collectionId: string, recordId: string): Promise<void> {
   const row = (useStore.getState().records[collectionId] ?? []).find((r) => r.id === recordId);
   if (!row) return Promise.resolve();
-  return repo.putRecord({ ...row, doc: unresolveAssetRefs(row.doc ?? []) as unknown[] });
+  const strip = (blocks?: unknown[]) => (blocks ? (unresolveAssetRefs(blocks) as unknown[]) : undefined);
+  return repo.putRecord({
+    ...row,
+    doc: unresolveAssetRefs(row.doc ?? []) as unknown[],
+    thoughts: strip(row.thoughts),
+  });
 }
 
 function scheduleRecordSave(collectionId: string, recordId: string): void {
@@ -235,6 +240,8 @@ type Store = {
   closeRecord: () => void;
   /** 记录正文（BlockNote 块数组），防抖落库 */
   setRecordDoc: (collectionId: string, recordId: string, blocks: unknown[]) => void;
+  /** 想法区（R01）：剪藏记录的用户批注，与原文 doc 分开存 */
+  setRecordThoughts: (collectionId: string, recordId: string, blocks: unknown[]) => void;
 
   theme: ThemeMode;
   iconSet: IconSetId;
@@ -521,13 +528,14 @@ export const useStore = create<Store>((set, get) => {
     ensureRecords: async (collectionId) => {
       if (get().records[collectionId]) return;
       const rows = await repo.listRecords(collectionId);
-      // 记录正文里的 asset:// 也要换成可显示地址（和页面正文同一套规则）
+      // 记录正文和想法区里的 asset:// 都要换成可显示地址（和页面正文同一套规则）
       const resolved = await Promise.all(
-        rows.map(async (row) =>
-          row.doc
-            ? { ...row, doc: (await resolveAssetRefs(row.doc)) as unknown[] }
-            : row
-        )
+        rows.map(async (row) => {
+          const next = { ...row };
+          if (row.doc) next.doc = (await resolveAssetRefs(row.doc)) as unknown[];
+          if (row.thoughts) next.thoughts = (await resolveAssetRefs(row.thoughts)) as unknown[];
+          return next;
+        })
       );
       set((s) => ({ records: { ...s.records, [collectionId]: resolved } }));
     },
@@ -899,6 +907,29 @@ export const useStore = create<Store>((set, get) => {
           payload: { record: { ...next, doc: unresolveAssetRefs(blocks) } },
         })
       );
+    },
+
+    // 想法区（R01）：与原文 doc 同一套落库/同步管线，只是存的字段不同——
+    // 原文只读，想法随便写，两边互不覆盖
+    setRecordThoughts: (collectionId, recordId, blocks) => {
+      const list = get().records[collectionId] ?? [];
+      const row = list.find((r) => r.id === recordId);
+      if (!row) return;
+      const next = { ...row, thoughts: blocks, updatedAt: Date.now() };
+      set((s) => ({
+        records: { ...s.records, [collectionId]: list.map((r) => (r.id === recordId ? next : r)) },
+      }));
+      scheduleRecordSave(collectionId, recordId);
+      void repo
+        .putRecord({ ...next, thoughts: unresolveAssetRefs(blocks) as unknown[] })
+        .then(() =>
+          queue({
+            entity: "record",
+            entityId: recordId,
+            op: "upsert",
+            payload: { record: { ...next, thoughts: unresolveAssetRefs(blocks) } },
+          })
+        );
     },
 
     moveToTrash: async (id) => {

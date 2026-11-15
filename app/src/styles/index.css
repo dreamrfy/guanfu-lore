@@ -1415,6 +1415,11 @@ html[data-theme="dark"] .hit__snippet mark {
   border-top: 1px solid var(--border);
 }
 
+/* 想法区（R01）：与原文区并列，稍弱的分隔线以示「这是你自己的批注」 */
+.record__thoughts {
+  border-top-style: dashed;
+}
+
 .record__body-label {
   margin-bottom: 6px;
   font-size: 12px;
