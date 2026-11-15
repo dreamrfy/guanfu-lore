@@ -4,6 +4,7 @@ import { OPTION_COLORS } from "../data/db";
 import {
   applyView,
   groupRecords,
+  summarizeRecords,
   asChecked,
   asDateMs,
   asNumber,
@@ -347,6 +348,11 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
   const groupField =
     view?.groupById ? collection?.fields.find((f) => f.id === view.groupById) : undefined;
   const groups = useMemo(() => (groupField ? groupRecords(rows, groupField) : null), [rows, groupField]);
+  // 汇总（V02）：对筛选/排序后的行算列尾汇总，与分组无关（分组只改摆放，总量不变）
+  const summaries = useMemo(
+    () => (collection ? collection.fields.map((f) => summarizeRecords(rows, f)) : null),
+    [collection, rows]
+  );
 
   if (!collection) return <div className="empty-state">这张表不见了</div>;
 
@@ -553,6 +559,19 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
               </tr>
             )}
           </tbody>
+          {summaries && summaries.some((s) => s) && (
+            <tfoot>
+              <tr>
+                <td className="grid__foot" />
+                {collection.fields.map((f, i) => (
+                  <td key={f.id} className="grid__foot">
+                    {summaries[i]?.label ?? ""}
+                  </td>
+                ))}
+                <td className="grid__foot" />
+              </tr>
+            </tfoot>
+          )}
         </table>
       </div>
 

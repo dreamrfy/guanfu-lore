@@ -330,6 +330,35 @@ export function groupRecords(records: RecordRow[], field: FieldDef): RecordGroup
   });
 }
 
+/* ---------------- 汇总（V02） ----------------
+ *
+ * 和分组一样是"展示层"：对筛选/排序后的行算列尾汇总。空值不进求和/均值；
+ * number 给 求和+均值+计数，date 时间戳求和没意义只给计数，其余列不出汇总。
+ * 浮点显示统一收两位小数（0.1+0.2 显示 0.3，不显示 0.30000000000000004）。
+ */
+
+export type FieldSummary = { count: number; sum: number | null; avg: number | null; label: string };
+
+const fmtNum = (n: number) => String(Math.round(n * 100) / 100);
+
+export function summarizeRecords(records: RecordRow[], field: FieldDef): FieldSummary | null {
+  if (field.type === "number") {
+    const nums = records
+      .map((r) => asNumber(r.values[field.id]))
+      .filter((n): n is number => n !== null);
+    const sum = nums.reduce((a, b) => a + b, 0);
+    const avg = nums.length > 0 ? sum / nums.length : null;
+    const label =
+      nums.length === 0 ? "空" : `计数 ${nums.length} · 求和 ${fmtNum(sum)} · 均值 ${fmtNum(avg!)}`;
+    return { count: nums.length, sum, avg, label };
+  }
+  if (field.type === "date") {
+    const count = records.filter((r) => asDateMs(r.values[field.id]) !== null).length;
+    return { count, sum: null, avg: null, label: count === 0 ? "空" : `已填 ${count}` };
+  }
+  return null;
+}
+
 /* ---------------- 筛选/排序的界面辅助 ----------------
  *
  * 界面只负责"摆控件"，哪些运算符对哪种字段有意义仍然由这里说了算。

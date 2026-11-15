@@ -513,6 +513,15 @@ body {
   padding: 28px;
 }
 
+/* 列尾汇总（V02）：数字列 计数/求和/均值，日期列 已填计数 */
+.grid__foot {
+  border-top: 1px solid var(--border);
+  color: var(--text-tertiary);
+  font-size: 12px;
+  padding: 6px 8px;
+  white-space: nowrap;
+}
+
 .cell-input {
   width: 100%;
   padding: 4px 6px;
