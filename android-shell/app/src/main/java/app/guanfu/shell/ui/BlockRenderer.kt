@@ -67,6 +67,12 @@ fun BlockListView(blocks: List<BlockNode>, modifier: Modifier = Modifier) {
     }
 }
 
+/** 单块只读渲染（A06 编辑器里给"不可编辑的块"用：内容照旧能看见） */
+@Composable
+fun SingleBlockView(node: BlockNode) {
+    BlockView(node, numberedIndex = 1, depth = 0)
+}
+
 @Composable
 private fun BlockView(node: BlockNode, numberedIndex: Int, depth: Int) {
     Column(

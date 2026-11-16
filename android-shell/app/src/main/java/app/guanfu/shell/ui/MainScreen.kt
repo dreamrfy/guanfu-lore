@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.sp
 import app.guanfu.shell.SyncContainer
 import app.guanfu.shell.db.AppDatabase
 import app.guanfu.shell.db.PageEntity
+import app.guanfu.shell.sync.SyncWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -202,10 +203,15 @@ fun MainScreen(clipMessage: String?, onOpenSettings: () -> Unit) {
                             emptyText = "没有带这个标签的页面",
                             onPick = { selection = Selection.Page(it.id) },
                         )
-                        is Selection.Page -> PageDetail(snap, selected.id) { selection = Selection.Page(it) }
+                        is Selection.Page -> PageDetail(
+                            snapshot = snap,
+                            pageId = selected.id,
+                            onPickChild = { selection = Selection.Page(it) },
+                            onChanged = { reloadTick += 1 },
+                        )
                         Selection.AllNotes -> PageList(
                             pages = snap.pages,
-                            emptyText = "还没有页面。先同步一次，或等 A05/A06 接入新建与编辑。",
+                            emptyText = "还没有页面。先同步一次，新页面在 A10 的收集箱接入后也会出现在这里。",
                             onPick = { selection = Selection.Page(it.id) },
                         )
                     }
@@ -398,12 +404,37 @@ private fun ClipBoxList(box: ClipBoxState?) {
     }
 }
 
-/** 页面详情（A05）：只读块渲染 + 子页入口。正文可滚动，子页在最下方。 */
+/** 页面详情（A05 只读渲染 / A06 就地编辑）+ 子页入口。 */
 @Composable
-private fun PageDetail(snapshot: NotesSnapshot, pageId: String, onPickChild: (String) -> Unit) {
+private fun PageDetail(
+    snapshot: NotesSnapshot,
+    pageId: String,
+    onPickChild: (String) -> Unit,
+    onChanged: () -> Unit,
+) {
+    val context = LocalContext.current
+    var editing by remember(pageId) { mutableStateOf(false) }
     val page = snapshot.pages.firstOrNull { it.id == pageId }
     if (page == null) {
         CenterHint("页面不在本地（可能已被删除或尚未同步）")
+        return
+    }
+
+    if (editing) {
+        val saver = remember { PageSaver(AppDatabase.get(context), SyncContainer.engine(context)) }
+        PageEditorView(
+            page = page,
+            initialBlocksJson = snapshot.docsByPage[pageId],
+            onSave = { blocksJson ->
+                saver.save(page, blocksJson)
+                // 改动立刻推一次（同步箱已入队，这里只是尽快发车）
+                SyncWorker.enqueueNow(context)
+            },
+            onExit = {
+                editing = false
+                onChanged()
+            },
+        )
         return
     }
     val children = snapshot.pages.filter { it.parentId == pageId }
@@ -417,7 +448,15 @@ private fun PageDetail(snapshot: NotesSnapshot, pageId: String, onPickChild: (St
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
     ) {
-        Text((page.icon?.let { "$it " } ?: "") + pageTitle(page), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                (page.icon?.let { "$it " } ?: "") + pageTitle(page),
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(onClick = { editing = true }) { Text("编辑") }
+        }
         Text("更新于 ${formatTime(page.updatedAt)}", fontSize = 12.sp, color = MaterialTheme.colorScheme.outline)
         val tags = parseTags(page.tags)
         if (tags.isNotEmpty()) {

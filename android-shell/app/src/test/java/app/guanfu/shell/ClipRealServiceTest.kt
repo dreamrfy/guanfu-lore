@@ -20,9 +20,21 @@ class ClipRealServiceTest {
 
     private val tokenFile = File("E:/credentials/clip.token")
 
+    /**
+     * 服务可达性预检（A06 补）：本机访问 clip.guanfu.app 需要代理/隧道，
+     * 网络不通时这两条契约测试的正确行为是「跳过」，而不是把环境问题报成测试失败。
+     */
+    private fun serviceReachable(): Boolean = runCatching {
+        java.net.Socket().use { socket ->
+            socket.connect(java.net.InetSocketAddress("clip.guanfu.app", 443), 3000)
+        }
+        true
+    }.getOrDefault(false)
+
     @Test
     fun `real service accepts our auth and answers contract`() {
         assumeTrue("本机无 clip.token，跳过真实服务测试", tokenFile.isFile)
+        assumeTrue("clip.guanfu.app 不可达（需代理/隧道），跳过真实服务测试", serviceReachable())
         val token = tokenFile.readText(Charsets.UTF_8).trim()
         assertTrue("clip.token 为空", token.isNotEmpty())
 
@@ -37,6 +49,7 @@ class ClipRealServiceTest {
     @Test
     fun `real service rejects wrong token with 401`() {
         assumeTrue("本机无 clip.token，跳过真实服务测试", tokenFile.isFile)
+        assumeTrue("clip.guanfu.app 不可达（需代理/隧道），跳过真实服务测试", serviceReachable())
 
         val r = ClipClient.clip("https://clip.guanfu.app", "definitely-wrong-token", "https://example.com")
         assertEquals("错误 token 应回 401", 401, r.httpCode)
