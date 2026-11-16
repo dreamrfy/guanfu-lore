@@ -50,3 +50,9 @@ tools/font_compare/
 .dev.vars*
 !.dev.vars.example
 !.env.example
+
+# FlowUs 观测证据（截图/控件树/录屏）只留本地；仓库只放我们自己的文字规格与观测工具
+ops/观测/*
+!ops/观测/_tools
+ops/shots/
+ops/tmp/
