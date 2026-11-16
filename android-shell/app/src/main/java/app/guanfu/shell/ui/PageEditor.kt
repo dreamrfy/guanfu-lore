@@ -1,6 +1,7 @@
 package app.guanfu.shell.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,7 +25,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -33,8 +36,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,17 +51,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * 块编辑器一期（A06）：进入编辑 / 块增删 / 类型切换 / 键盘适配 / 自动保存。
+ * 块编辑器（A06 一期 / A07 二期）：进入编辑 / 块增删 / 类型切换 / 键盘适配 / 自动保存，
+ * A07 追加：**树形缩进（→/←）**、**长按拖拽排序**、**`/` 命令面板**。
  *
- * 刻意**不自研富文本引擎**（架构 §4）：每块一个输入框 + 外层 Column 滚动。
- *  - 增：每块下方的「+」（在其后插入）与末尾「+ 添加块」（追加）
- *  - 删：「✕」
- *  - 类型：左侧 glyph 按钮弹出菜单（正文/标题 1-3/无序/有序/待办/引用/代码/分割线）
- *  - 键盘：Activity 已设 adjustResize，这里再加 imePadding，光标行不会被输入法顶住
- *  - 保存：改动后 400ms 防抖，交给 PageSaver 写库 + 出同步箱（web setBlocks 同语义）
- *
- * `/` 命令面板、拖拽排序、富行内编辑（加粗/链接）属于 A07；这类块在编辑器里保持只读并提示原因，
- * 不用「编辑一次就把样式抹掉」的方式换功能。
+ * 不自研富文本引擎（架构 §4）：每块一个输入框 + 外层 Column 滚动。
+ *  - 树：views() 深度优先摊平，子块缩进渲染；父块详情不再提示"子块稍后接入"
+ *  - 拖拽：长按左侧「≡」上下拖，落到哪一行就插到那一行前/后（可跨层级）
+ *  - 缩进：→ 变成上一个兄弟的子块；← 从父块里提出来
+ *  - `/`：输入框里以 `/` 开头时弹出块类型菜单，选中后清掉斜杠并切类型
+ *  - 保存：改动后 400ms 防抖；「完成」退出前强制落一次盘
  */
 @Composable
 fun PageEditorView(
@@ -67,9 +73,12 @@ fun PageEditorView(
     var dirty by remember { mutableStateOf(false) }
     var focusId by remember { mutableStateOf<String?>(null) }
     var lastSavedAt by remember { mutableStateOf<Long?>(null) }
+    var dragKey by remember { mutableStateOf<String?>(null) }
+    var dragDelta by remember { mutableFloatStateOf(0f) }
+    val rowBounds = remember { mutableStateMapOf<String, Rect>() }
     val scope = rememberCoroutineScope()
 
-    // 防抖保存：每次改动重启计时，停下来 400ms 才写库（对齐 web 的 300ms 节流思路）
+    // 防抖保存：每次改动重启计时，停下来 400ms 才写库
     LaunchedEffect(tick) {
         if (!dirty) return@LaunchedEffect
         delay(400)
@@ -114,16 +123,39 @@ fun PageEditorView(
                 key(block.id) {
                     EditorRow(
                         block = block,
+                        dragging = dragKey == block.pathKey,
                         focusId = focusId,
                         onFocusHandled = { focusId = null },
-                        onText = { text -> editor.setText(block.index, text); touched() },
-                        onKind = { kind -> editor.setKind(block.index, kind); touched() },
-                        onToggleCheck = { editor.toggleCheck(block.index); touched() },
+                        onPositioned = { rowBounds[block.pathKey] = it },
+                        onDragStart = { dragKey = block.pathKey; dragDelta = 0f },
+                        onDrag = { dragDelta += it },
+                        onDragEnd = {
+                            val startY = rowBounds[block.pathKey]?.center?.y
+                            val endY = startY?.plus(dragDelta)
+                            if (startY != null && endY != null) {
+                                val target = rowBounds.entries
+                                    .filter { it.key != block.pathKey }
+                                    .firstOrNull { endY in it.value.top..it.value.bottom }
+                                if (target != null) {
+                                    val from = block.path
+                                    val to = target.key.split(".").map { it.toInt() }
+                                    if (editor.moveTo(from, to, after = endY > target.value.center.y)) touched()
+                                }
+                            }
+                            dragKey = null
+                            dragDelta = 0f
+                        },
+                        onDragCancel = { dragKey = null; dragDelta = 0f },
+                        onText = { text -> editor.setText(block.path, text); touched() },
+                        onKind = { kind -> editor.setKind(block.path, kind); touched() },
+                        onToggleCheck = { editor.toggleCheck(block.path); touched() },
                         onInsertAfter = {
-                            focusId = editor.insertAfter(block.index)
+                            focusId = editor.insertAfter(block.path)
                             touched()
                         },
-                        onDelete = { editor.delete(block.index); touched() },
+                        onIndent = { if (editor.indent(block.path)) touched() },
+                        onOutdent = { if (editor.outdent(block.path)) touched() },
+                        onDelete = { editor.delete(block.path); touched() },
                     )
                 }
             }
@@ -133,7 +165,7 @@ fun PageEditorView(
             }) { Text("+ 添加块") }
             if (editor.size == 0) {
                 Text(
-                    "这一页还没有正文，点上面「+ 添加块」开始写。",
+                    "这一页还没有正文，点上面「+ 添加块」开始写。输入 / 可以调出块类型菜单。",
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.outline,
                     modifier = Modifier.padding(8.dp),
@@ -146,15 +178,24 @@ fun PageEditorView(
 @Composable
 private fun EditorRow(
     block: EditBlock,
+    dragging: Boolean,
     focusId: String?,
     onFocusHandled: () -> Unit,
+    onPositioned: (Rect) -> Unit,
+    onDragStart: () -> Unit,
+    onDrag: (Float) -> Unit,
+    onDragEnd: () -> Unit,
+    onDragCancel: () -> Unit,
     onText: (String) -> Unit,
     onKind: (BlockKind) -> Unit,
     onToggleCheck: () -> Unit,
     onInsertAfter: () -> Unit,
+    onIndent: () -> Unit,
+    onOutdent: () -> Unit,
     onDelete: () -> Unit,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
+    var slashOpen by remember { mutableStateOf(false) }
     var text by remember(block.id) { mutableStateOf(block.text) }
     val focusRequester = remember(block.id) { FocusRequester() }
 
@@ -165,10 +206,37 @@ private fun EditorRow(
         }
     }
 
-    Column(Modifier.fillMaxWidth()) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(start = (block.depth * 16).dp)
+            .background(if (dragging) MaterialTheme.colorScheme.secondaryContainer else androidx.compose.ui.graphics.Color.Transparent)
+            .onGloballyPositioned { onPositioned(it.boundsInWindow()) },
+    ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+            // 长按拖拽手柄
+            Text(
+                "≡",
+                fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.outline,
+                modifier = Modifier
+                    .width(28.dp)
+                    .padding(top = 12.dp)
+                    .pointerInput(block.pathKey) {
+                        detectDragGesturesAfterLongPress(
+                            onDragStart = { onDragStart() },
+                            onDrag = { change, amount ->
+                                change.consume()
+                                onDrag(amount.y)
+                            },
+                            onDragEnd = { onDragEnd() },
+                            onDragCancel = { onDragCancel() },
+                        )
+                    },
+            )
+
             Box {
-                TextButton(onClick = { menuOpen = true }, modifier = Modifier.width(56.dp)) {
+                TextButton(onClick = { menuOpen = true }, modifier = Modifier.width(52.dp)) {
                     Text(block.kind?.glyph ?: "?", fontSize = 13.sp)
                 }
                 DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
@@ -194,32 +262,50 @@ private fun EditorRow(
                     BlockKind.Heading2 -> TextStyle(fontSize = 19.sp, fontWeight = FontWeight.Bold)
                     BlockKind.Heading3 -> TextStyle(fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
                     BlockKind.Code -> TextStyle(fontFamily = FontFamily.Monospace, fontSize = 13.sp)
-                    BlockKind.Quote -> TextStyle(fontSize = 15.sp, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic)
+                    BlockKind.Quote -> TextStyle(fontSize = 15.sp, fontStyle = FontStyle.Italic)
                     else -> TextStyle(fontSize = 15.sp)
                 }
-                BasicTextField(
-                    value = text,
-                    onValueChange = {
-                        text = it
-                        onText(it)
-                    },
-                    textStyle = textStyle.copy(color = MaterialTheme.colorScheme.onSurface),
-                    modifier = Modifier
-                        .weight(1f)
-                        .focusRequester(focusRequester)
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(vertical = 10.dp, horizontal = 4.dp),
-                    decorationBox = { inner ->
-                        if (text.isEmpty()) {
-                            Text(
-                                "（空块，点这里输入）",
-                                fontSize = textStyle.fontSize,
-                                color = MaterialTheme.colorScheme.outline,
+                Box(Modifier.weight(1f)) {
+                    BasicTextField(
+                        value = text,
+                        onValueChange = {
+                            text = it
+                            onText(it)
+                            // `/` 命令面板：以斜杠开头时弹出，删掉斜杠就收起
+                            slashOpen = it.startsWith("/")
+                        },
+                        textStyle = textStyle.copy(color = MaterialTheme.colorScheme.onSurface),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(focusRequester)
+                            .background(MaterialTheme.colorScheme.surface)
+                            .padding(vertical = 10.dp, horizontal = 4.dp),
+                        decorationBox = { inner ->
+                            if (text.isEmpty()) {
+                                Text(
+                                    "输入内容，或 / 调出块类型",
+                                    fontSize = textStyle.fontSize,
+                                    color = MaterialTheme.colorScheme.outline,
+                                )
+                            }
+                            inner()
+                        },
+                    )
+                    DropdownMenu(expanded = slashOpen, onDismissRequest = { slashOpen = false }) {
+                        for (kind in BlockKind.entries) {
+                            DropdownMenuItem(
+                                text = { Text("${kind.glyph}  ${kind.label}") },
+                                onClick = {
+                                    // 清掉斜杠再切类型，避免把 "/" 留在正文里
+                                    text = ""
+                                    onText("")
+                                    onKind(kind)
+                                    slashOpen = false
+                                },
                             )
                         }
-                        inner()
-                    },
-                )
+                    }
+                }
             } else {
                 Column(Modifier.weight(1f).padding(vertical = 6.dp)) {
                     block.node?.let { SingleBlockView(it) }
@@ -239,13 +325,19 @@ private fun EditorRow(
             }
         }
 
-        Row(Modifier.padding(start = 56.dp)) {
+        Row(Modifier.padding(start = 28.dp)) {
             TextButton(onClick = onInsertAfter) {
                 Text("+", fontSize = 15.sp, color = MaterialTheme.colorScheme.outline)
             }
+            TextButton(onClick = onIndent, enabled = block.path.lastOrNull() != 0) {
+                Text("→", fontSize = 14.sp, color = MaterialTheme.colorScheme.outline)
+            }
+            TextButton(onClick = onOutdent, enabled = block.depth > 0) {
+                Text("←", fontSize = 14.sp, color = MaterialTheme.colorScheme.outline)
+            }
             if (block.hasChildren) {
                 Text(
-                    "（含子块，子块编辑在 A07 接入）",
+                    "含子块（长按 ≡ 拖拽；→/← 调整层级）",
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.outline,
                     modifier = Modifier.padding(top = 14.dp),

@@ -43,7 +43,7 @@ class DocEditorTest {
         val e = editor(doc(rich))
         val view = e.view(0)
         assertFalse(view.editable)
-        assertTrue(view.hint!!.contains("A07"))
+        assertTrue(view.hint!!.contains("后续任务"))
         assertFalse(e.setText(0, "改"))
         // 拒绝之后内容必须还是原来的
         assertTrue(e.toJson().contains("加粗"))
