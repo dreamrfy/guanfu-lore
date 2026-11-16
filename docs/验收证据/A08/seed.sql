@@ -1,0 +1,5 @@
+DELETE FROM docs WHERE pageId='page-a08-table';
+DELETE FROM pages WHERE id='page-a08-table';
+INSERT INTO pages (id,parentId,title,icon,coverAssetId,createdAt,updatedAt,deletedAt,sortKey,tags)
+VALUES ('page-a08-table',NULL,'A08 表格验收','▦',NULL,1760000000000,1760000000000,NULL,1.0,'["A08","表格"]');
+INSERT INTO docs (pageId,blocks,updatedAt) VALUES ('page-a08-table','[{"id":"b-h1","type":"heading","props":{"level":1},"content":[{"type":"text","text":"A08 表格验收","styles":{}}],"children":[]},{"id":"b-t1","type":"table","props":{},"content":{"type":"tableContent","headerRows":1,"headerCols":1,"columnWidths":[120,90],"rows":[{"cells":[[{"type":"text","text":"姓名","styles":{}}],[{"type":"text","text":"年龄","styles":{}}]]},{"cells":[{"type":"tableCell","content":[{"type":"text","text":"张三","styles":{"bold":true}}],"props":{"textColor":"red"}},[{"type":"text","text":"18","styles":{}}]]},{"cells":[[{"type":"text","text":"李四","styles":{}}],[{"type":"text","text":"20","styles":{}}]]}]},"children":[]},{"id":"b-p1","type":"paragraph","props":{},"content":[{"type":"text","text":"表格下方的普通段落（验证编辑表格不影响其他块）","styles":{}}],"children":[]}]',1760000000000);

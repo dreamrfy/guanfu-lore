@@ -3,8 +3,10 @@ package app.guanfu.shell.ui
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.intOrNull
 import java.util.UUID
 
 /**
@@ -59,9 +61,32 @@ data class EditBlock(
     val hasChildren: Boolean,
     /** 只读渲染用（不可编辑的块直接画出来，用户仍能看见内容） */
     val node: BlockNode?,
+    /** 表格块的行列视图（A08）；非表格为 null */
+    val table: TableView? = null,
 ) {
     /** 拖拽/记录行位置时用的稳定 key */
     val pathKey: String get() = path.joinToString(".")
+}
+
+/**
+ * 表格块里一个单元格的展示态（A08）。
+ * editable=false 表示单元格里是链接/提及/多段混排，只读显示，不静默改掉。
+ */
+data class TableCellView(
+    val text: String,
+    val editable: Boolean,
+)
+
+/** 表格块的行列视图；shape 一变就说明结构变了，界面上的单元格输入态要重建 */
+data class TableView(
+    val headerRows: Int,
+    val headerCols: Int,
+    val columnCount: Int,
+    val rows: List<List<TableCellView>>,
+) {
+    val rowCount: Int get() = rows.size
+    val hasReadOnlyCell: Boolean get() = rows.any { row -> row.any { !it.editable } }
+    val shape: String get() = "$headerRows:$headerCols:${rows.size}:$columnCount"
 }
 
 class DocEditor(
@@ -232,9 +257,188 @@ class DocEditor(
         return true
     }
 
+    /* ---------------- 表格（A08） ----------------
+     * 结构以 BlockNote 的 tableContent 为准：
+     *   content = { type:"tableContent", headerRows, headerCols?, columnWidths?, rows:[{cells:[…]}] }
+     * 每个 cell 可能是 InlineContent[] 简写，也可能是 { type:"tableCell", content, props }。
+     * 所有操作只改「文字 / 行列结构」，未触碰的行、cells 对象里的 props、columnWidths 原样保留。
+     */
+
+    /**
+     * 改单元格文字。
+     * 只有「空单元格」或「单个纯文本 run（可带样式）」才允许改；链接/提及/多段样式一律拒绝，
+     * 免得把单元格里的结构悄悄压平。
+     */
+    fun setCellText(path: List<Int>, row: Int, col: Int, text: String): Boolean {
+        val block = blockAt(path) ?: return false
+        val table = block["content"] as? JsonObject ?: return false
+        val cells = ((table["rows"] as? JsonArray)?.getOrNull(row) as? JsonObject)?.get("cells") as? JsonArray ?: return false
+        val cell = cells.getOrNull(col) ?: return false
+        if (!cellEditable(cell)) return false
+
+        val run = textRun(text, cellStyles(cell))
+        val newCell: JsonElement =
+            if (cell is JsonObject) cell.with("content", JsonArray(listOf(run))) else JsonArray(listOf(run))
+        update(path) { current ->
+            val content = current["content"] as? JsonObject ?: return@update current
+            val rows = content["rows"] as? JsonArray ?: return@update current
+            val liveRow = rows.getOrNull(row) as? JsonObject ?: return@update current
+            val liveCells = liveRow["cells"] as? JsonArray ?: return@update current
+            current.with(
+                "content",
+                content.with("rows", rows.replaceAt(row, liveRow.with("cells", liveCells.replaceAt(col, newCell)))),
+            )
+        }
+        return true
+    }
+
+    /** 在 afterRow 之后插一个空行（null = 追加到末尾）；空表格按 1 列建行 */
+    fun addRow(path: List<Int>, afterRow: Int? = null): Boolean {
+        val block = blockAt(path) ?: return false
+        val table = block["content"] as? JsonObject ?: return false
+        val size = (table["rows"] as? JsonArray)?.size ?: 0
+        val at = (afterRow?.plus(1) ?: size).coerceIn(0, size)
+        update(path) { current ->
+            val content = current["content"] as? JsonObject ?: return@update current
+            val rows = content["rows"] as? JsonArray ?: JsonArray(emptyList())
+            val emptyCells = JsonArray(List(columnCount(content).coerceAtLeast(1)) { JsonArray(emptyList()) })
+            val next = rows.toMutableList().apply {
+                add(at.coerceIn(0, rows.size), JsonObject(mapOf("cells" to emptyCells)))
+            }
+            val withHeader = if (content.containsKey("headerRows")) content else content.with("headerRows", JsonPrimitive(1))
+            current.with("content", withHeader.with("rows", JsonArray(next)))
+        }
+        return true
+    }
+
+    /** 删一行；删到表头行时 headerRows 跟着减 1（至少剩一行才让删） */
+    fun deleteRow(path: List<Int>, row: Int): Boolean {
+        val block = blockAt(path) ?: return false
+        val table = block["content"] as? JsonObject ?: return false
+        val rows = table["rows"] as? JsonArray ?: return false
+        if (rows.size <= 1 || row !in rows.indices) return false
+        update(path) { current ->
+            val content = current["content"] as? JsonObject ?: return@update current
+            val liveRows = content["rows"] as? JsonArray ?: return@update current
+            if (liveRows.size <= 1 || row !in liveRows.indices) return@update current
+            var updated = content.with("rows", JsonArray(liveRows.toMutableList().apply { removeAt(row) }))
+            if (updated.containsKey("headerRows")) {
+                val headerRows = updated.int("headerRows")
+                if (row < headerRows) updated = updated.with("headerRows", JsonPrimitive(headerRows - 1))
+            }
+            current.with("content", updated)
+        }
+        return true
+    }
+
+    /** 末尾加一列：短行先补空单元格再补新列，保证每行列数一致；columnWidths 同步追加 */
+    fun addColumn(path: List<Int>): Boolean {
+        val block = blockAt(path) ?: return false
+        val table = block["content"] as? JsonObject ?: return false
+        update(path) { current ->
+            val content = current["content"] as? JsonObject ?: return@update current
+            val liveRows = content["rows"] as? JsonArray ?: JsonArray(emptyList())
+            val target = columnCount(content) + 1
+            val next = JsonArray(
+                liveRows.map { row ->
+                    val obj = row as? JsonObject ?: return@map row
+                    val cells = (obj["cells"] as? JsonArray)?.toMutableList() ?: mutableListOf()
+                    while (cells.size < target - 1) cells.add(JsonArray(emptyList()))
+                    cells.add(JsonArray(emptyList()))
+                    obj.with("cells", JsonArray(cells))
+                },
+            )
+            var updated = content.with("rows", next)
+            val widths = content["columnWidths"] as? JsonArray
+            if (widths != null) updated = updated.with("columnWidths", JsonArray(widths.toList() + JsonNull))
+            current.with("content", updated)
+        }
+        return true
+    }
+
+    /** 删一列：每行删同一位置；删到表头列时 headerCols 跟着减 1，columnWidths 同步删（至少剩一列） */
+    fun deleteColumn(path: List<Int>, col: Int): Boolean {
+        val block = blockAt(path) ?: return false
+        val table = block["content"] as? JsonObject ?: return false
+        if (col < 0 || columnCount(table) <= 1) return false
+        update(path) { current ->
+            val content = current["content"] as? JsonObject ?: return@update current
+            if (columnCount(content) <= 1) return@update current
+            val liveRows = content["rows"] as? JsonArray ?: JsonArray(emptyList())
+            val next = JsonArray(
+                liveRows.map { row ->
+                    val obj = row as? JsonObject ?: return@map row
+                    val cells = (obj["cells"] as? JsonArray)?.toMutableList() ?: return@map row
+                    if (col in cells.indices) cells.removeAt(col)
+                    obj.with("cells", JsonArray(cells))
+                },
+            )
+            var updated = content.with("rows", next)
+            if (updated.containsKey("headerCols")) {
+                val headerCols = updated.int("headerCols")
+                if (col < headerCols) updated = updated.with("headerCols", JsonPrimitive(headerCols - 1))
+            }
+            val widths = content["columnWidths"] as? JsonArray
+            if (widths != null && col in widths.indices) {
+                updated = updated.with("columnWidths", JsonArray(widths.toMutableList().apply { removeAt(col) }))
+            }
+            current.with("content", updated)
+        }
+        return true
+    }
+
     fun toJson(): String = JsonArray(items.toList()).toString()
 
     /* ---------------- 内部 ---------------- */
+
+    /* ---- 表格读取辅助（A08） ---- */
+
+    private fun readTableView(block: JsonObject): TableView {
+        val table = block["content"] as? JsonObject ?: return TableView(0, 0, 0, emptyList())
+        val headerRows = table.int("headerRows")
+        val headerCols = table.int("headerCols")
+        val cols = columnCount(table)
+        val rows = (table["rows"] as? JsonArray).orEmpty().mapNotNull { row ->
+            (row as? JsonObject)?.let { obj ->
+                val cells = (obj["cells"] as? JsonArray) ?: JsonArray(emptyList())
+                (0 until cols).map { index ->
+                    val cell = cells.getOrNull(index)
+                    TableCellView(text = cellText(cell), editable = cellEditable(cell))
+                }
+            }
+        }
+        return TableView(headerRows, headerCols, cols, rows)
+    }
+
+    /** 单元格的字面内容：{type:"tableCell",content:[…]} 取 content，普通数组直接用 */
+    private fun cellContent(cell: JsonElement?): JsonElement? = when (cell) {
+        is JsonObject -> cell["content"]
+        else -> cell
+    }
+
+    private fun cellText(cell: JsonElement?): String = inlineText(parseInline(cellContent(cell)))
+
+    /** 空单元格或单 run 纯文本才可编辑；链接/提及/多段样式只读（不静默丢样式） */
+    private fun cellEditable(cell: JsonElement?): Boolean {
+        val spans = parseInline(cellContent(cell))
+        return spans.size <= 1 && spans.all { it is InlineSpan.Text }
+    }
+
+    private fun cellStyles(cell: JsonElement?): JsonObject = singleRunStyles(cellContent(cell))
+
+    /** 列宽：行里的最大单元格数，和 columnWidths 取大（两者可能不同步） */
+    private fun columnCount(table: JsonObject): Int {
+        val fromRows = (table["rows"] as? JsonArray)?.maxOfOrNull { row ->
+            ((row as? JsonObject)?.get("cells") as? JsonArray)?.size ?: 0
+        } ?: 0
+        val fromWidths = (table["columnWidths"] as? JsonArray)?.size ?: 0
+        return maxOf(fromRows, fromWidths)
+    }
+
+    private fun JsonObject.int(key: String): Int = (this[key] as? JsonPrimitive)?.intOrNull ?: 0
+
+    private fun JsonArray.replaceAt(index: Int, element: JsonElement): JsonArray =
+        JsonArray(toMutableList().apply { if (index in indices) this[index] = element })
 
     private fun viewOf(block: JsonObject, path: List<Int>, depth: Int): EditBlock {
         val type = block.str("type").orEmpty()
@@ -254,6 +458,7 @@ class DocEditor(
             hint = editability.second,
             hasChildren = children > 0,
             node = parseBlock(block),
+            table = if (type == "table") readTableView(block) else null,
         )
     }
 

@@ -1,6 +1,7 @@
 package app.guanfu.shell.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -156,6 +157,11 @@ fun PageEditorView(
                         onIndent = { if (editor.indent(block.path)) touched() },
                         onOutdent = { if (editor.outdent(block.path)) touched() },
                         onDelete = { editor.delete(block.path); touched() },
+                        onCell = { row, col, text -> if (editor.setCellText(block.path, row, col, text)) touched() },
+                        onAddRow = { if (editor.addRow(block.path)) touched() },
+                        onAddColumn = { if (editor.addColumn(block.path)) touched() },
+                        onDeleteRow = { row -> if (editor.deleteRow(block.path, row)) touched() },
+                        onDeleteColumn = { col -> if (editor.deleteColumn(block.path, col)) touched() },
                     )
                 }
             }
@@ -193,6 +199,11 @@ private fun EditorRow(
     onIndent: () -> Unit,
     onOutdent: () -> Unit,
     onDelete: () -> Unit,
+    onCell: (row: Int, col: Int, text: String) -> Unit,
+    onAddRow: () -> Unit,
+    onAddColumn: () -> Unit,
+    onDeleteRow: (row: Int) -> Unit,
+    onDeleteColumn: (col: Int) -> Unit,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
     var slashOpen by remember { mutableStateOf(false) }
@@ -235,20 +246,27 @@ private fun EditorRow(
                     },
             )
 
-            Box {
-                TextButton(onClick = { menuOpen = true }, modifier = Modifier.width(52.dp)) {
-                    Text(block.kind?.glyph ?: "?", fontSize = 13.sp)
-                }
-                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                    for (kind in BlockKind.entries) {
-                        DropdownMenuItem(
-                            text = { Text("${kind.glyph}  ${kind.label}") },
-                            onClick = {
-                                onKind(kind)
-                                menuOpen = false
-                            },
-                        )
+            if (block.table == null) {
+                Box {
+                    TextButton(onClick = { menuOpen = true }, modifier = Modifier.width(52.dp)) {
+                        Text(block.kind?.glyph ?: "?", fontSize = 13.sp)
                     }
+                    DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                        for (kind in BlockKind.entries) {
+                            DropdownMenuItem(
+                                text = { Text("${kind.glyph}  ${kind.label}") },
+                                onClick = {
+                                    onKind(kind)
+                                    menuOpen = false
+                                },
+                            )
+                        }
+                    }
+                }
+            } else {
+                // 表格块不给类型菜单：把 tableContent 改成 paragraph 会把整张表压成一行字
+                Box(Modifier.width(52.dp).padding(top = 12.dp)) {
+                    Text("▦", fontSize = 13.sp, color = MaterialTheme.colorScheme.outline)
                 }
             }
 
@@ -256,7 +274,17 @@ private fun EditorRow(
                 Checkbox(checked = block.checked, onCheckedChange = { onToggleCheck() })
             }
 
-            if (block.editable) {
+            val table = block.table
+            if (table != null) {
+                TableEditor(
+                    table = table,
+                    onCell = onCell,
+                    onAddRow = onAddRow,
+                    onAddColumn = onAddColumn,
+                    onDeleteRow = onDeleteRow,
+                    onDeleteColumn = onDeleteColumn,
+                )
+            } else if (block.editable) {
                 val textStyle = when (block.kind) {
                     BlockKind.Heading1 -> TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Bold)
                     BlockKind.Heading2 -> TextStyle(fontSize = 19.sp, fontWeight = FontWeight.Bold)
@@ -343,6 +371,128 @@ private fun EditorRow(
                     modifier = Modifier.padding(top = 14.dp),
                 )
             }
+        }
+    }
+}
+
+/**
+ * 表格编辑器（A08）：每格一个输入框；行首 ✕ 删行，顶部每列 ✕ 删列，底部「＋ 行 / ＋ 列」。
+ * 只改文字与行列结构，未涉及的 JSON 字段（props / columnWidths / 未知字段）由 DocEditor 原样保留。
+ */
+@Composable
+private fun TableEditor(
+    table: TableView,
+    onCell: (row: Int, col: Int, text: String) -> Unit,
+    onAddRow: () -> Unit,
+    onAddColumn: () -> Unit,
+    onDeleteRow: (row: Int) -> Unit,
+    onDeleteColumn: (col: Int) -> Unit,
+) {
+    Column(Modifier.fillMaxWidth().padding(top = 4.dp)) {
+        if (table.columnCount > 1) {
+            Row(Modifier.fillMaxWidth().padding(start = 28.dp)) {
+                for (col in 0 until table.columnCount) {
+                    Text(
+                        "✕",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.outline,
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { onDeleteColumn(col) }
+                            .padding(vertical = 6.dp),
+                    )
+                }
+                // 对齐行首的删行按钮栏
+                Box(Modifier.width(28.dp))
+            }
+        }
+
+        for (rowIndex in 0 until table.rowCount) {
+            val row = table.rows[rowIndex]
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    if (table.rowCount > 1) "✕" else " ",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.outline,
+                    modifier = Modifier
+                        .width(28.dp)
+                        .clickable(enabled = table.rowCount > 1) { onDeleteRow(rowIndex) }
+                        .padding(vertical = 12.dp),
+                )
+                for (col in 0 until table.columnCount) {
+                    val cell = row.getOrNull(col) ?: TableCellView("", true)
+                    key(table.shape, rowIndex, col) {
+                        TableCellField(
+                            cell = cell,
+                            header = rowIndex < table.headerRows || col < table.headerCols,
+                            modifier = Modifier.weight(1f),
+                            onChange = { onCell(rowIndex, col, it) },
+                        )
+                    }
+                }
+                // 右侧留白，跟顶部列删除行对齐
+                Box(Modifier.width(28.dp))
+            }
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        }
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            TextButton(onClick = onAddRow) { Text("＋ 行", fontSize = 13.sp) }
+            TextButton(onClick = onAddColumn) { Text("＋ 列", fontSize = 13.sp) }
+            if (table.hasReadOnlyCell) {
+                Text(
+                    "含链接或样式的单元格：只读",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.outline,
+                )
+            }
+        }
+    }
+}
+
+/** 一格：可编辑的画输入框，不可编辑的直接显示文字（并标出为什么不能改的理由在表格底部） */
+@Composable
+private fun TableCellField(
+    cell: TableCellView,
+    header: Boolean,
+    modifier: Modifier = Modifier,
+    onChange: (String) -> Unit,
+) {
+    var text by remember(cell.text) { mutableStateOf(cell.text) }
+    val style = TextStyle(
+        fontSize = 13.sp,
+        fontWeight = if (header) FontWeight.Bold else FontWeight.Normal,
+        color = MaterialTheme.colorScheme.onSurface,
+    )
+    Box(
+        modifier
+            .padding(1.dp)
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
+            .padding(horizontal = 6.dp, vertical = 9.dp),
+    ) {
+        if (cell.editable) {
+            BasicTextField(
+                value = text,
+                onValueChange = {
+                    text = it
+                    onChange(it)
+                },
+                singleLine = true,
+                textStyle = style,
+                modifier = Modifier.fillMaxWidth(),
+                decorationBox = { inner ->
+                    if (text.isEmpty()) {
+                        Text(
+                            if (header) "表头" else "空",
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.outlineVariant,
+                        )
+                    }
+                    inner()
+                },
+            )
+        } else {
+            Text(cell.text.ifEmpty { "…" }, style = style)
         }
     }
 }
