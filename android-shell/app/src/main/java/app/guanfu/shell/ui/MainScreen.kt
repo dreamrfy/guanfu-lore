@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -396,6 +398,7 @@ private fun ClipBoxList(box: ClipBoxState?) {
     }
 }
 
+/** 页面详情（A05）：只读块渲染 + 子页入口。正文可滚动，子页在最下方。 */
 @Composable
 private fun PageDetail(snapshot: NotesSnapshot, pageId: String, onPickChild: (String) -> Unit) {
     val page = snapshot.pages.firstOrNull { it.id == pageId }
@@ -404,35 +407,54 @@ private fun PageDetail(snapshot: NotesSnapshot, pageId: String, onPickChild: (St
         return
     }
     val children = snapshot.pages.filter { it.parentId == pageId }
-    Column(Modifier.fillMaxSize().padding(16.dp)) {
+    val blocks = remember(pageId, snapshot.docsByPage[pageId]) {
+        parseBlocks(snapshot.docsByPage[pageId])
+    }
+
+    Column(
+        Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+    ) {
         Text((page.icon?.let { "$it " } ?: "") + pageTitle(page), fontSize = 24.sp, fontWeight = FontWeight.Bold)
         Text("更新于 ${formatTime(page.updatedAt)}", fontSize = 12.sp, color = MaterialTheme.colorScheme.outline)
         val tags = parseTags(page.tags)
         if (tags.isNotEmpty()) {
             Text(tags.joinToString("  ") { "#$it" }, fontSize = 13.sp, color = MaterialTheme.colorScheme.primary)
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(12.dp))
+
+        if (blocks.isEmpty()) {
+            Text(
+                "这一页还没有正文（或正文尚未同步到本地）。",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.outline,
+            )
+        } else {
+            BlockListView(blocks)
+        }
+
         if (children.isNotEmpty()) {
-            Text("子页（${children.size}）", fontSize = 13.sp, fontWeight = FontWeight.Bold)
-            LazyColumn(Modifier.height(200.dp)) {
-                items(children, key = { it.id }) { child ->
-                    Text(
-                        "↳ " + pageTitle(child),
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onPickChild(child.id) }
-                            .padding(vertical = 8.dp),
-                    )
-                }
+            Spacer(Modifier.height(24.dp))
+            HorizontalDivider()
+            Text(
+                "子页（${children.size}）",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 12.dp),
+            )
+            for (child in children) {
+                Text(
+                    "↳ " + pageTitle(child),
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onPickChild(child.id) }
+                        .padding(vertical = 8.dp),
+                )
             }
         }
-        Spacer(Modifier.height(16.dp))
-        Text(
-            "正文查看器在 A05 接入（块渲染），编辑器在 A06/A07。",
-            fontSize = 13.sp,
-            color = MaterialTheme.colorScheme.outline,
-        )
     }
 }
 
