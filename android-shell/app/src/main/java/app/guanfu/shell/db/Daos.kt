@@ -20,11 +20,24 @@ interface PageDao {
     @Query("SELECT * FROM pages ORDER BY sortKey")
     suspend fun listAll(): List<PageEntity>
 
+    /** A04 列表/树：软删页不进侧栏（回收站单独查） */
+    @Query("SELECT * FROM pages WHERE deletedAt IS NULL ORDER BY sortKey")
+    suspend fun listActive(): List<PageEntity>
+
+    @Query("SELECT * FROM pages WHERE deletedAt IS NOT NULL ORDER BY deletedAt DESC")
+    suspend fun listDeleted(): List<PageEntity>
+
     @Query("SELECT * FROM pages WHERE id = :id")
     suspend fun byId(id: String): PageEntity?
 
     @Query("SELECT count(*) FROM pages")
     suspend fun count(): Int
+
+    @Query("SELECT count(*) FROM pages WHERE deletedAt IS NULL")
+    suspend fun countActive(): Int
+
+    @Query("SELECT count(*) FROM pages WHERE deletedAt IS NOT NULL")
+    suspend fun countDeleted(): Int
 }
 
 @Dao
@@ -34,6 +47,10 @@ interface DocDao {
 
     @Query("SELECT * FROM docs WHERE pageId = :pageId")
     suspend fun byPageId(pageId: String): DocEntity?
+
+    /** A04 搜索语料：一次取全（个人库量级；大了再改按需/分页） */
+    @Query("SELECT * FROM docs")
+    suspend fun listAll(): List<DocEntity>
 
     @Query("DELETE FROM docs WHERE pageId = :pageId")
     suspend fun deleteByPageId(pageId: String)
