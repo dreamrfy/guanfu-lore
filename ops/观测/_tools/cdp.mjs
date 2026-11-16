@@ -73,6 +73,20 @@ try {
     const r = await cdp.send('Page.captureScreenshot', { format: 'png' });
     await writeFile(args[0], Buffer.from(r.data, 'base64'));
     console.log(`saved ${args[0]}`);
+  } else if (cmd === 'rclick') {
+    const x = Number(args[0]); const y = Number(args[1]);
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'right', clickCount: 1 });
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button: 'right', clickCount: 1 });
+    console.log(`rclicked ${x},${y}`);
+  } else if (cmd === 'dblclick') {
+    const x = Number(args[0]); const y = Number(args[1]);
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'left', clickCount: 2 });
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button: 'left', clickCount: 2 });
+    console.log(`dblclicked ${x},${y}`);
+  } else if (cmd === 'move') {
+    const x = Number(args[0]); const y = Number(args[1]);
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y });
+    console.log(`moved ${x},${y}`);
   } else if (cmd === 'click') {
     const x = Number(args[0]); const y = Number(args[1]);
     await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'left', clickCount: 1 });
