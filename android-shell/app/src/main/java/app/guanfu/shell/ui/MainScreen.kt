@@ -31,6 +31,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -425,6 +426,7 @@ private fun PageDetail(
         PageEditorView(
             page = page,
             initialBlocksJson = snapshot.docsByPage[pageId],
+            pages = snapshot.pages,
             onSave = { blocksJson ->
                 saver.save(page, blocksJson)
                 // 改动立刻推一次（同步箱已入队，这里只是尽快发车）
@@ -440,6 +442,10 @@ private fun PageDetail(
     val children = snapshot.pages.filter { it.parentId == pageId }
     val blocks = remember(pageId, snapshot.docsByPage[pageId]) {
         parseBlocks(snapshot.docsByPage[pageId])
+    }
+    // 反向链接（A09）：扫本机所有正文，看谁 @ 了本页（对齐 web findBacklinks 语义）
+    val backlinks = remember(pageId, snapshot.docsByPage) {
+        findBacklinks(pageId, snapshot.pages, snapshot.docsByPage)
     }
 
     Column(
@@ -471,7 +477,10 @@ private fun PageDetail(
                 color = MaterialTheme.colorScheme.outline,
             )
         } else {
-            BlockListView(blocks)
+            // 正文里的 @提及 可点：点它跳到被提及的页面（A09）
+            CompositionLocalProvider(LocalPageOpener provides { onPickChild(it) }) {
+                BlockListView(blocks)
+            }
         }
 
         if (children.isNotEmpty()) {
@@ -492,6 +501,39 @@ private fun PageDetail(
                         .clickable { onPickChild(child.id) }
                         .padding(vertical = 8.dp),
                 )
+            }
+        }
+
+        // 页尾「引用了本页」：谁在正文里 @ 了我（A09，语义对齐 web Backlinks 面板）
+        if (backlinks.isNotEmpty()) {
+            Spacer(Modifier.height(24.dp))
+            HorizontalDivider()
+            Row(Modifier.padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text("引用了本页", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    "  ${backlinks.size}",
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.outline,
+                )
+            }
+            for (link in backlinks) {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable { onPickChild(link.pageId) }
+                        .padding(vertical = 8.dp),
+                ) {
+                    Text("📄 ${link.title}", fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
+                    if (link.snippet.isNotBlank()) {
+                        Text(
+                            link.snippet,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.outline,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
             }
         }
     }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,6 +22,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -30,15 +32,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.guanfu.shell.db.AppDatabase
@@ -115,12 +120,61 @@ private fun BlockText(spans: List<InlineSpan>, modifier: Modifier = Modifier, co
         Spacer(Modifier.height(8.dp))
         return
     }
-    Text(
-        text = spans.toAnnotated(),
+    SpansText(
+        spans = spans,
+        modifier = modifier,
         fontSize = 15.sp,
         lineHeight = 24.sp,
         color = color ?: MaterialTheme.colorScheme.onSurface,
-        modifier = modifier,
+    )
+}
+
+/**
+ * 「@页面提及」点击（A09）：渲染层不想要回调时就退化成普通文本。
+ * 用 CompositionLocal 传回调，省得把 onOpenPage 一路穿过十来个块渲染函数。
+ */
+val LocalPageOpener = compositionLocalOf<((String) -> Unit)?> { null }
+
+/** 带内联样式的文本；若处在 [LocalPageOpener] 里，点中提到的那段文字会打开对应页面 */
+@Composable
+private fun SpansText(
+    spans: List<InlineSpan>,
+    modifier: Modifier = Modifier,
+    fontSize: TextUnit,
+    lineHeight: TextUnit? = null,
+    fontWeight: FontWeight? = null,
+    fontStyle: FontStyle? = null,
+    color: Color? = null,
+    textDecoration: TextDecoration? = null,
+) {
+    val annotated = spans.toAnnotated()
+    val opener = LocalPageOpener.current
+    var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
+    Text(
+        text = annotated,
+        modifier = modifier
+            .then(
+                if (opener == null) {
+                    Modifier
+                } else {
+                    Modifier.pointerInput(annotated) {
+                        detectTapGestures { position ->
+                            val result = layout ?: return@detectTapGestures
+                            val offset = result.getOffsetForPosition(position)
+                            annotated.getStringAnnotations("mention", offset, offset)
+                                .firstOrNull()
+                                ?.let { opener(it.item) }
+                        }
+                    }
+                },
+            ),
+        fontSize = fontSize,
+        lineHeight = lineHeight ?: TextUnit.Unspecified,
+        fontWeight = fontWeight,
+        fontStyle = fontStyle,
+        color = color ?: Color.Unspecified,
+        textDecoration = textDecoration,
+        onTextLayout = { layout = it },
     )
 }
 
@@ -131,11 +185,11 @@ private fun Heading(level: Int, spans: List<InlineSpan>) {
         2 -> 20.sp to FontWeight.Bold
         else -> 17.sp to FontWeight.SemiBold
     }
-    Text(
-        text = spans.toAnnotated(),
+    SpansText(
+        spans = spans,
+        modifier = Modifier.padding(top = 12.dp, bottom = 4.dp),
         fontSize = size,
         fontWeight = weight,
-        modifier = Modifier.padding(top = 12.dp, bottom = 4.dp),
     )
 }
 
@@ -151,13 +205,13 @@ private fun MarkerRow(marker: String, spans: List<InlineSpan>) {
 private fun CheckRow(node: CheckNode) {
     Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.Top) {
         Text(if (node.checked) "☑" else "☐", fontSize = 15.sp, modifier = Modifier.width(24.dp))
-        Text(
-            text = node.spans.toAnnotated(),
+        SpansText(
+            spans = node.spans,
+            modifier = Modifier.weight(1f),
             fontSize = 15.sp,
             lineHeight = 24.sp,
             textDecoration = if (node.checked) TextDecoration.LineThrough else null,
             color = if (node.checked) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f),
         )
     }
 }
@@ -172,13 +226,13 @@ private fun QuoteRow(spans: List<InlineSpan>) {
                 .background(MaterialTheme.colorScheme.primary),
         )
         Spacer(Modifier.width(10.dp))
-        Text(
-            text = spans.toAnnotated(),
+        SpansText(
+            spans = spans,
+            modifier = Modifier.weight(1f),
             fontSize = 15.sp,
             lineHeight = 24.sp,
             fontStyle = FontStyle.Italic,
             color = MaterialTheme.colorScheme.outline,
-            modifier = Modifier.weight(1f),
         )
     }
 }
@@ -414,6 +468,8 @@ fun List<InlineSpan>.toAnnotated(): AnnotatedString = buildAnnotatedString {
                     start,
                     length,
                 )
+                // A09：留一条「可点」注解，点击时按字符偏移把 @提及 命中出来
+                addStringAnnotation("mention", span.pageId, start, length)
             }
         }
     }

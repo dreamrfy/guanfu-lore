@@ -66,6 +66,8 @@ import kotlinx.coroutines.launch
 fun PageEditorView(
     page: PageEntity,
     initialBlocksJson: String?,
+    /** 可被 @ 提及的候选页（A09）：来自当前快照的存活页 */
+    pages: List<PageEntity> = emptyList(),
     onSave: suspend (blocksJson: String) -> Unit,
     onExit: () -> Unit,
 ) {
@@ -162,6 +164,10 @@ fun PageEditorView(
                         onAddColumn = { if (editor.addColumn(block.path)) touched() },
                         onDeleteRow = { row -> if (editor.deleteRow(block.path, row)) touched() },
                         onDeleteColumn = { col -> if (editor.deleteColumn(block.path, col)) touched() },
+                        mentionCandidates = pages,
+                        onMention = { pageId, title ->
+                            if (editor.appendMention(block.path, pageId, title)) touched()
+                        },
                     )
                 }
             }
@@ -204,9 +210,14 @@ private fun EditorRow(
     onAddColumn: () -> Unit,
     onDeleteRow: (row: Int) -> Unit,
     onDeleteColumn: (col: Int) -> Unit,
+    mentionCandidates: List<PageEntity>,
+    onMention: (pageId: String, title: String) -> Unit,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
     var slashOpen by remember { mutableStateOf(false) }
+    var mentionOpen by remember { mutableStateOf(false) }
+    var mentionQuery by remember { mutableStateOf("") }
+    var mentionStart by remember { mutableIntStateOf(0) }
     var text by remember(block.id) { mutableStateOf(block.text) }
     val focusRequester = remember(block.id) { FocusRequester() }
 
@@ -296,11 +307,20 @@ private fun EditorRow(
                 Box(Modifier.weight(1f)) {
                     BasicTextField(
                         value = text,
-                        onValueChange = {
-                            text = it
-                            onText(it)
+                        onValueChange = { typed ->
+                            text = typed
+                            onText(typed)
                             // `/` 命令面板：以斜杠开头时弹出，删掉斜杠就收起
-                            slashOpen = it.startsWith("/")
+                            slashOpen = typed.startsWith("/")
+                            // `@` / `[[` 页面提及（A09）：命中就弹候选页，否则收起
+                            val trigger = detectMentionTrigger(typed)
+                            if (trigger == null) {
+                                mentionOpen = false
+                            } else {
+                                mentionQuery = trigger.query
+                                mentionStart = trigger.start
+                                mentionOpen = true
+                            }
                         },
                         textStyle = textStyle.copy(color = MaterialTheme.colorScheme.onSurface),
                         modifier = Modifier
@@ -319,6 +339,29 @@ private fun EditorRow(
                             inner()
                         },
                     )
+                    val candidates = mentionCandidates.filter { candidate ->
+                        candidate.id != block.id &&
+                            (mentionQuery.isBlank() ||
+                                pageTitle(candidate).lowercase().contains(mentionQuery.trim().lowercase()))
+                    }.take(8)
+                    DropdownMenu(
+                        expanded = mentionOpen && candidates.isNotEmpty(),
+                        onDismissRequest = { mentionOpen = false },
+                    ) {
+                        for (candidate in candidates) {
+                            DropdownMenuItem(
+                                text = { Text("@" + pageTitle(candidate), fontSize = 13.sp) },
+                                onClick = {
+                                    // 触发器（@ 或 [[）连同已输入的关键词一起去掉，再插入提及节点
+                                    val stripped = text.substring(0, mentionStart.coerceIn(0, text.length))
+                                    text = stripped
+                                    onText(stripped)
+                                    onMention(candidate.id, pageTitle(candidate))
+                                    mentionOpen = false
+                                },
+                            )
+                        }
+                    }
                     DropdownMenu(expanded = slashOpen, onDismissRequest = { slashOpen = false }) {
                         for (kind in BlockKind.entries) {
                             DropdownMenuItem(
@@ -495,4 +538,22 @@ private fun TableCellField(
             Text(cell.text.ifEmpty { "…" }, style = style)
         }
     }
+}
+
+/** `@` 或 `[[` 触发页面提及（A09）：给出触发位置、触发符长度与已输入的关键词 */
+private data class MentionTrigger(val start: Int, val triggerLength: Int, val query: String)
+
+/**
+ * 触发规则（避免误伤普通文字）：
+ *  - `@` / `[[` 必须出现在行首或空白之后（邮箱地址里的 @ 不会弹菜单）
+ *  - 关键词里不能换行，最长 24 字符（再长就当普通文字，不再打扰）
+ */
+private fun detectMentionTrigger(text: String): MentionTrigger? {
+    val start = maxOf(text.lastIndexOf('@'), text.lastIndexOf("[["))
+    if (start < 0) return null
+    if (start > 0 && !text[start - 1].isWhitespace()) return null
+    val triggerLength = if (text.startsWith("[[", start)) 2 else 1
+    val query = text.substring(start + triggerLength)
+    if (query.contains('\n') || query.length > 24) return null
+    return MentionTrigger(start, triggerLength, query)
 }

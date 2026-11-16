@@ -32,6 +32,9 @@ private val EDITABLE_TYPES = setOf(
     "checkListItem", "quote", "codeBlock", "callout",
 )
 
+/** 能接收「@页面提及」的块型（A09）：正文是 inline 的那些；代码块不收，表格/图片本就没有 inline */
+private val MENTION_HOST_TYPES = EDITABLE_TYPES - "codeBlock"
+
 enum class BlockKind(val wire: String, val label: String, val glyph: String, val level: Int = 0) {
     Paragraph("paragraph", "正文", "¶"),
     Heading1("heading", "标题 1", "H1", level = 1),
@@ -384,6 +387,31 @@ class DocEditor(
             }
             current.with("content", updated)
         }
+        return true
+    }
+
+    /**
+     * 在块正文末尾追加一个「@页面提及」（A09）。
+     * 只加不改：已有的 runs、样式、未知字段原样保留；只有正文在 content 里的块型接受提及
+     * （代码块、表格、图片等直接拒绝）。
+     * 节点形状对齐 web 的 pageMention spec：{type:"pageMention", props:{pageId,title}}（无 content 键）。
+     */
+    fun appendMention(path: List<Int>, pageId: String, title: String): Boolean {
+        val block = blockAt(path) ?: return false
+        if (block.str("type").orEmpty() !in MENTION_HOST_TYPES) return false
+        val existing = block["content"] as? JsonArray ?: JsonArray(emptyList())
+        val mention = JsonObject(
+            mapOf(
+                "type" to JsonPrimitive("pageMention"),
+                "props" to JsonObject(
+                    mapOf(
+                        "pageId" to JsonPrimitive(pageId),
+                        "title" to JsonPrimitive(title),
+                    ),
+                ),
+            ),
+        )
+        update(path) { it.with("content", JsonArray(existing + mention)) }
         return true
     }
 
