@@ -32,6 +32,7 @@ import { AUTO_SYNC_TICK_MS, shouldAutoSync } from "./syncAuto";
 import { resolveAssetRefs, unresolveAssetRefs, uploadAsset } from "./assets";
 import { DEFAULT_FONT_THEME } from "../design/fonts";
 import { DEFAULT_ICON_SET, type IconSetId } from "../design/icons";
+import { autoImportServerClips } from "./clipBox";
 
 export type ThemeMode = "light" | "dark";
 
@@ -44,7 +45,8 @@ export const CLIP_COLLECTION_NAME = "剪藏库";
 
 // 服务器每 5 分钟收一批微信转发的文章，客户端用同样的节奏核对；
 // 导入本体在 clipBox.ts（幂等，按原链判重），这里只管「什么时候跑」。
-// 动态引入是为了避免 store ↔ clipBox 的静态循环依赖（它要用 useStore）。
+// 静态引入（体检 R2）：clipBox 只在函数体内用 useStore，模块求值期不读取，
+// 循环依赖不会踩 TDZ；动态 import 反而让 Vite 报 INEFFECTIVE_DYNAMIC_IMPORT。
 let clipImportBusy = false;
 let lastClipImportAt = 0;
 const CLIP_IMPORT_INTERVAL_MS = 5 * 60_000;
@@ -55,7 +57,6 @@ async function maybeAutoImportClips(): Promise<void> {
   clipImportBusy = true;
   lastClipImportAt = Date.now();
   try {
-    const { autoImportServerClips } = await import("./clipBox");
     await autoImportServerClips();
   } catch {
     /* 剪藏箱没连上不影响页面同步等其他功能 */
