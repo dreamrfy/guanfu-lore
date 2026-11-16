@@ -1,0 +1,7 @@
+[mock] listening on http://0.0.0.0:8787 (emulator uses http://10.0.2.2:8787)
+[mock] 401 OPTIONS /api/sync/pull -> {"ok":false,"error":"unauthorized"}
+[mock] auth=Bearer devt***
+[mock] 200 POST /api/sync/pull -> {"ok":true,"changes":[],"nextSeq":1}
+[mock] auth=Bearer devt***
+[mock] push body={"changes":[{"entity":"page","entityId":"page-a03-push","op":"upsert","payload":{"page":{"id":"page-a03-push","parentId":null,"title":"A03 推送冒烟页","icon":"PUSH","coverAssetId":null,"createdAt":17947955
+[mock] 200 POST /api/sync/push -> {"ok":true,"results":[{"entityId":"page-a03-push","status":"applied","seq":2},{"entityId":"page-a03-conflict","status":"

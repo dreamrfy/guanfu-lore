@@ -1,0 +1,8 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+      debug 专属：允许对本机回环（模拟器宿主 10.0.2.2）明文 HTTP，
+      让「模拟器 → 本地契约服务端」的同步冒烟跑得起来。
+      release 包不含本文件，线上仍强制 HTTPS（A03 冒烟证据 README 有说明）。
+    -->
+    <application android:networkSecurityConfig="@xml/network_security_config_debug" />
+</manifest>

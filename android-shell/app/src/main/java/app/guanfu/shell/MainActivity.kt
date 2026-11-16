@@ -16,6 +16,8 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // A03 起：App 活着就周期同步（15 分钟 + 有网）；WorkManager 在进程被杀后仍会兜底
+        app.guanfu.shell.sync.SyncWorker.schedulePeriodic(this)
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
@@ -34,11 +36,38 @@ class MainActivity : Activity() {
                 startActivity(android.content.Intent(this@MainActivity, SettingsComposeActivity::class.java))
             }
         }
+        val syncButton = android.widget.Button(this).apply {
+            text = "立即同步（自检）"
+            setOnClickListener { runSyncSelfCheck() }
+        }
         root.addView(settingsButton)
+        root.addView(syncButton)
         root.addView(statusView)
         root.addView(urlView)
         setContentView(root)
         handleIntent(intent)
+    }
+
+    /**
+     * A03 自检入口：立刻跑一次同步引擎并把结果写到状态栏。
+     * 为什么要它：WorkManager 的 CONNECTED 约束在无外网的模拟器上永不满足，
+     * 无法验证「Room 写库 + 拉/推协议」在设备上真跑得通；这个按钮给出确定性触发点。
+     * A04 起有真正的同步状态 UI 后，可降级为隐藏入口。
+     */
+    private fun runSyncSelfCheck() {
+        statusView.text = "同步中…（引擎在后台线程跑，不阻塞界面）"
+        Thread {
+            val summary = kotlinx.coroutines.runBlocking {
+                app.guanfu.shell.SyncContainer.engine(applicationContext).run()
+            }
+            runOnUiThread {
+                statusView.text = if (summary.error != null) {
+                    "同步失败：${summary.error}（拉取 ${summary.pulled} · 推送 ${summary.pushed}）"
+                } else {
+                    "同步完成（ok=${summary.ok}）：拉取 ${summary.pulled} · 推送 ${summary.pushed} · 冲突 ${summary.conflicts}"
+                }
+            }
+        }.start()
     }
 
     override fun onNewIntent(intent: Intent) {

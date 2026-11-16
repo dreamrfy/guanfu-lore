@@ -1,0 +1,12 @@
+[mock] listening on http://0.0.0.0:8787 (emulator uses http://10.0.2.2:8787)
+[mock] 401 OPTIONS /api/sync/pull -> {"ok":false,"error":"unauthorized"}
+[mock] 401 OPTIONS /api/sync/pull -> {"ok":false,"error":"unauthorized"}
+[mock] 401 OPTIONS /api/sync/pull -> {"ok":false,"error":"unauthorized"}
+[mock] 401 OPTIONS /api/sync/pull -> {"ok":false,"error":"unauthorized"}
+[mock] auth=Bearer devt***
+[mock] 200 POST /api/sync/pull -> {"ok":true,"changes":[{"seq":1,"entity":"page","entityId":"page-a03-smoke","op":"upsert","payload":"{\"page\":{\"id\":\"
+[mock] 401 OPTIONS /api/sync/pull -> {"ok":false,"error":"unauthorized"}
+[mock] auth=Bearer devt***
+[mock] 200 POST /api/sync/pull -> {"ok":true,"changes":[],"nextSeq":1}
+
+[exited with code 1]

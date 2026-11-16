@@ -1,0 +1,7 @@
+== 设备内 Room 库（真机取证：adb exec-out run-as app.guanfu.shell cat databases/guanfu.db）==
+表: android_metadata, assets, collections, docs, key_values, outbox, pages, records, room_master_table, sqlite_sequence, sync_conflicts
+pages: [('page-a03-smoke', 'A03 同步冒烟页', None, 1.5, '["A03","冒烟"]')]
+docs: [('page-a03-smoke', 136)]
+key_values: [('syncSeqs', '{"page:page-a03-smoke":"1","page:page-a03-push":"2"}'), ('syncCursor', '1')]
+outbox: [(0,)]
+sync_conflicts: [('page', 'page-a03-conflict', 3, '{"page": {"id": "page-a03-conflict", "parentId": null, "title": "A03 冲突冒烟页", "icon": "X", "coverAssetId": null, "created')]

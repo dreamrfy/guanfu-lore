@@ -6,6 +6,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose") version "2.4.0"
     id("org.jetbrains.kotlin.plugin.serialization") version "2.4.0"
+    id("com.google.devtools.ksp")
 }
 
 // 默认 Token 从凭证目录读取（不进仓库；文件缺失时空串，运行时服务端会回 401）
@@ -76,6 +77,14 @@ dependencies {
     // 网络（A03 同步引擎用；本任务只用 OkHttp 传 checkAuth 之外的探测）+ JSON
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+
+    // 数据层（A03：Room 1:1 复刻 web Dexie 表模型，架构 §2）
+    implementation("androidx.room:room-runtime:2.8.5")
+    implementation("androidx.room:room-ktx:2.8.5")
+    ksp("androidx.room:room-compiler:2.8.5")
+
+    // 后台调度（架构 §3：WorkManager 周期+即时同步）
+    implementation("androidx.work:work-runtime-ktx:2.12.0")
 
     // 单测（沿用 shell 既有 JVM 单测模式）
     testImplementation("junit:junit:4.13.2")
