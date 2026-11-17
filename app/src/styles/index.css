@@ -2626,3 +2626,40 @@ html[data-theme="dark"] .modal__ok {
   justify-content: flex-start;
   text-align: left;
 }
+
+/* ---------- 窗口控制钮（手册 §1：46×38 @右端，decorations:false 自绘标题栏） ---------- */
+
+.tabbar__win {
+  margin-left: auto;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: stretch;
+}
+
+.winbtn {
+  width: 46px;
+  height: 38px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  padding: 0;
+}
+
+.winbtn:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.winbtn--close:hover {
+  background: #e81123;
+  color: #ffffff;
+}
+
+html[data-theme="dark"] .winbtn--close:hover {
+  background: #e81123;
+  color: #ffffff;
+}
