@@ -17,7 +17,8 @@
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
-    "shot": "node tools/shot.mjs"
+    "shot": "node tools/shot.mjs",
+    "theme-shot": "node tools/theme-shot.mjs"
   },
   "keywords": [],
   "author": "",
