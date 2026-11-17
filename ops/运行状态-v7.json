@@ -9,12 +9,18 @@
   "stallMinutes": 30,
   "tasksPerSession": 3,
   "running": [],
-  "doneTasks": ["W01", "W02", "W03", "W10"],
-  "nextTask": "W11",
-  "doneCount": 4,
+  "doneTasks": [
+    "W01",
+    "W02",
+    "W03",
+    "W10",
+    "W11"
+  ],
+  "nextTask": "W12",
+  "doneCount": 5,
   "totalCount": 88,
   "testBaseline": "cd app && npm test = 250/250 绿（勿退化）",
-  "devServer": "后台任务 b8ctfassm 在 5173 跑着（新会话可直接复用；挂了就重起）",
+  "devServer": "npm run dev 起在 5173（后台任务 bjlvotyrx；挂了重起即可）",
   "envNotes": [
     "今晚无人值守：Edit 工具改已有文件、直接跑 node/chrome.exe/curl/netstat 会触发权限确认超时",
     "放行路径：Write 新文件/覆盖、npm 系（npm run/test/build/i/shot）、git、sed/printf/ls/grep/常规 bash",
@@ -34,6 +40,10 @@
     {
       "time": "2026-11-17T20:56:00Z",
       "event": "会话#2(cron) 完成 W03（深浅双主题确认，切换+刷新保持 PASS）cc69354、W10（页签栏骨架重排，交互点验 PASS）180a5bd；下一任务 W11 窗口控制钮（Tauri decorations:false，注意浏览器端降级）"
+    },
+    {
+      "time": "2026-11-18T05:33:00Z",
+      "event": "会话#3(cron) 完成 W11（窗口控制三钮：Tauri decorations:false + 真运行时点验最大化/最小化/还原/关闭全 PASS）278ca8b；排坑三条已记对照文档：CDP 断开即退出→验证单会话、EBWebView 损坏秒退→已清修复、9222 被用户 FlowUs 占用→CDP 用 9223/9224；下一任务 W12 导航钮区（.tabbar__nav 228px 内后退/前进/主页/刷新 disabled 态）"
     }
   ]
 }
