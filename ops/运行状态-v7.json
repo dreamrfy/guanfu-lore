@@ -9,17 +9,18 @@
   "stallMinutes": 30,
   "tasksPerSession": 3,
   "running": [],
-  "doneTasks": ["W01", "W02"],
-  "nextTask": "W03",
-  "doneCount": 2,
+  "doneTasks": ["W01", "W02", "W03", "W10"],
+  "nextTask": "W11",
+  "doneCount": 4,
   "totalCount": 88,
   "testBaseline": "cd app && npm test = 250/250 绿（勿退化）",
-  "devServer": "后台任务 by0nffpxg 在 5173 跑着（新会话可直接复用；挂了就重起）",
+  "devServer": "后台任务 b8ctfassm 在 5173 跑着（新会话可直接复用；挂了就重起）",
   "envNotes": [
     "今晚无人值守：Edit 工具改已有文件、直接跑 node/chrome.exe/curl/netstat 会触发权限确认超时",
-    "放行路径：Write 新文件、npm 系（npm run/test/build/i/shot）、git、sed/printf/ls/grep/常规 bash",
-    "sed 改任务表必须先 sed -n 'Np' 看原行再精确替换（W02 两次因估时列猜错没替换成）",
-    "截图一律 npm run shot -- <url> <out.png> [宽] [高] [等待ms]（app/tools/shot.mjs）"
+    "放行路径：Write 新文件/覆盖、npm 系（npm run/test/build/i/shot）、git、sed/printf/ls/grep/常规 bash",
+    "改现有 tsx/css：小文件 Write 整文件覆盖，大文件用 sed 行号锚定（先 sed -n Np 看原行再替换，插入用 'Na\\行1\\n行2' 与 'Nr 文件'）",
+    "截图 npm run shot -- <url> <out.png> [宽] [高] [等待ms]；主题点验 npm run theme-shot；页签点验 npm run tabbar-check",
+    "点验脚本模式参考 app/tools/theme-shot.mjs（真点击+断言+截图），新点验脚本照此写并加 npm script"
   ],
   "history": [
     {
@@ -28,7 +29,11 @@
     },
     {
       "time": "2026-11-17T20:39:00Z",
-      "event": "会话#1 完成 W01（现状盘点对照+截图基建）commit 20d4f5f、W02（验收基建确认）commits e45ff75/81ce28c；下一任务 W03 深浅双主题"
+      "event": "会话#1 完成 W01（现状盘点+截图基建）20d4f5f、W02（验收基建确认）e45ff75/81ce28c"
+    },
+    {
+      "time": "2026-11-17T20:56:00Z",
+      "event": "会话#2(cron) 完成 W03（深浅双主题确认，切换+刷新保持 PASS）cc69354、W10（页签栏骨架重排，交互点验 PASS）180a5bd；下一任务 W11 窗口控制钮（Tauri decorations:false，注意浏览器端降级）"
     }
   ]
 }
