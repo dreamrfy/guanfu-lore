@@ -9,3 +9,5 @@ dist-ssr/
 # 测试与缓存
 coverage/
 .vite/
+
+.webview2-test-profile/
