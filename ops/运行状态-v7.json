@@ -1,0 +1,18 @@
+{
+  "version": "v7",
+  "batch": "重做批（Web+桌面，88 任务）",
+  "promptFile": "ops/看门狗-v7提示词.md",
+  "taskTable": "开发任务表-v3.5-重做批.md",
+  "reportFile": "ops/执行报告-v7.md",
+  "startedAt": "2026-11-17T20:13:24Z",
+  "maxConcurrent": 1,
+  "stallMinutes": 30,
+  "tasksPerSession": 3,
+  "running": [],
+  "history": [
+    {
+      "time": "2026-11-17T20:13:24Z",
+      "event": "看门狗 v7 由主会话创建（用户 2026-11-18 凌晨最高权限指令：重做批无人值守，做完或次日人工干预）"
+    }
+  ]
+}
