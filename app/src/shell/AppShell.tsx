@@ -148,12 +148,13 @@ export function AppShell() {
 
   return (
     <div className="shell">
+      <TabBar />
+      <div className="shell__body">
       <aside className={`shell__sidebar${sidebarCollapsed ? " shell__sidebar--collapsed" : ""}`}>
         <Sidebar />
       </aside>
 
       <main className="shell__main">
-        <TabBar />
         <TopToolbar />
 
         {activeCollectionId ? (
@@ -210,6 +211,7 @@ export function AppShell() {
           <RightPanel page={page} />
         </aside>
       )}
+      </div>
     </div>
   );
 }

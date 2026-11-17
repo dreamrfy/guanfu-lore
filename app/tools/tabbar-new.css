@@ -1,0 +1,85 @@
+/* ---------- 标签条（手册 §1：高 38、左导航区 228 连体、页签 180×38、关闭常显） ---------- */
+
+.tabbar {
+  height: var(--tabbar-height);
+  flex: 0 0 auto;
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.tabbar__nav {
+  width: var(--sidebar-width);
+  flex: 0 0 auto;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+}
+
+.tabbar__tabs {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.tab {
+  width: 180px;
+  flex: 0 0 auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  border-right: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.tab--active {
+  color: var(--text);
+  background: var(--bg);
+  box-shadow: inset 0 -2px 0 var(--primary);
+}
+
+.tab__icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.tab__label {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.tab__close {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+}
+
+.tab__close:hover {
+  opacity: 1;
+}
+
+.tabbar__new {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  margin: 5px 0 5px 4px;
+  align-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
