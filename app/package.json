@@ -50,7 +50,8 @@
     "cover-check": "node tools/cover-check.mjs",
     "pageheadbar-check": "node tools/pageheadbar-check.mjs",
     "mention-check": "node tools/mention-check.mjs",
-    "pagemenu-check": "node tools/pagemenu-check.mjs"
+    "pagemenu-check": "node tools/pagemenu-check.mjs",
+    "narrow-check": "node tools/narrow-check.mjs"
   },
   "keywords": [],
   "author": "",

@@ -168,8 +168,30 @@ export function AppShell() {
   }, [page?.id]);
   const docReady = doc !== null;
 
+  // W47 窄口（Web <768）：侧栏改抽屉（默认收起，☰ 打开），桌面形态完全不受影响
+  const [narrow, setNarrow] = useState(false);
+  const [narrowOpen, setNarrowOpen] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const sync = () => {
+      setNarrow(mq.matches);
+      if (!mq.matches) setNarrowOpen(false);
+    };
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
   return (
-    <div className="shell">
+    <div className={`shell${narrow ? " shell--narrow" : ""}${narrow && narrowOpen ? " shell--narrow-open" : ""}`}>
+      {narrow && (
+        <button className="narrow-menu" title="打开侧栏" onClick={() => setNarrowOpen((o) => !o)}>
+          <AppIcon name="panelLeft" set={iconSet} size={16} />
+        </button>
+      )}
+      {narrow && narrowOpen && (
+        <div className="narrow-scrim" onClick={() => setNarrowOpen(false)} />
+      )}
       <TabBar />
       <div className="shell__body">
       <aside className={`shell__sidebar${sidebarCollapsed ? " shell__sidebar--collapsed" : ""}`}>
