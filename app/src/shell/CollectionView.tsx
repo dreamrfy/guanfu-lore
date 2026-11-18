@@ -222,57 +222,30 @@ export function CellEditor({
 
   if (field.type === "select") {
     return (
-      <select
-        className="cell-input"
+      <SelectPanel
+        field={field}
+        collection={collection}
         value={asText(v)}
-        onChange={(e) => onCommit(e.target.value)}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <option value="">（空）</option>
-        {(field.options ?? []).map((o) => (
-          <option key={o.id} value={o.id}>
-            {o.name}
-          </option>
-        ))}
-      </select>
+        multiple={false}
+        onCommit={onCommit}
+      />
     );
   }
 
   if (field.type === "multiSelect") {
-    const chosen = new Set(asStringList(v));
     return (
-      <div className="cell-multi" onClick={(e) => e.stopPropagation()}>
-        {(field.options ?? []).map((o) => (
-          <label key={o.id} className="cell-multi__item">
-            <input
-              type="checkbox"
-              checked={chosen.has(o.id)}
-              onChange={(e) => {
-                const next = new Set(chosen);
-                if (e.target.checked) next.add(o.id);
-                else next.delete(o.id);
-                onCommit([...next]);
-              }}
-            />
-            {o.name}
-          </label>
-        ))}
-        {(field.options ?? []).length === 0 && <span className="cell-empty">先在列头里加选项</span>}
-      </div>
+      <SelectPanel
+        field={field}
+        collection={collection}
+        value={asStringList(v)}
+        multiple
+        onCommit={onCommit}
+      />
     );
   }
 
   if (field.type === "date") {
-    const ms = asDateMs(v);
-    return (
-      <input
-        type="date"
-        className="cell-input"
-        value={ms ? new Date(ms).toISOString().slice(0, 10) : ""}
-        onChange={(e) => onCommit(e.target.value ? Date.parse(e.target.value) : null)}
-        onClick={(e) => e.stopPropagation()}
-      />
-    );
+    return <MonthCalendar ms={asDateMs(v)} onCommit={onCommit} />;
   }
 
   if (field.type === "number") {
@@ -928,4 +901,164 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
 function EmptyCollectionState() {
   const { t } = useLang();
   return <div className="empty-state">{t("tableGone")}</div>;
+}
+
+
+/** W65 单选/多选编辑面板：已选 chips + 「选择或创建一个选项」+ 选项列表（04 §3） */
+function SelectPanel({
+  field,
+  collection,
+  value,
+  multiple,
+  onCommit,
+}: {
+  field: FieldDef;
+  collection?: CollectionRow;
+  value: string | string[];
+  multiple: boolean;
+  onCommit: (v: unknown) => void;
+}) {
+  const updateField = useStore((s) => s.updateField);
+  const [q, setQ] = useState("");
+  const chosen = new Set(multiple ? (value as string[]) : value ? [value as string] : []);
+  const options = field.options ?? [];
+  const filtered = options.filter((o) => !q.trim() || o.name.toLowerCase().includes(q.trim().toLowerCase()));
+
+  const toggle = (id: string) => {
+    if (!multiple) {
+      onCommit(id);
+      return;
+    }
+    const next = new Set(chosen);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    onCommit([...next]);
+  };
+
+  const createOption = (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed || !collection) return;
+    const palette = Object.keys(OPTION_COLORS);
+    const opt = {
+      id: crypto.randomUUID(),
+      name: trimmed,
+      color: palette[options.length % palette.length],
+    };
+    updateField(collection.id, field.id, { options: [...options, opt] });
+    toggle(opt.id);
+    setQ("");
+  };
+
+  return (
+    <div className="cell-select" onClick={(e) => e.stopPropagation()}>
+      {chosen.size > 0 && (
+        <div className="cell-select__chips">
+          {[...chosen].map((id) => {
+            const o = options.find((x) => x.id === id);
+            if (!o) return null;
+            return (
+              <span key={id} className="cell-select__chip">
+                {o.name}
+                <button
+                  className="cell-select__x"
+                  onClick={() => toggle(id)}
+                  title="移除"
+                >
+                  ×
+                </button>
+              </span>
+            );
+          })}
+        </div>
+      )}
+      <input
+        className="cell-select__input"
+        value={q}
+        placeholder="选择或创建一个选项"
+        onChange={(e) => setQ(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key !== "Enter") return;
+          e.preventDefault();
+          if (filtered.length > 0) toggle(filtered[0].id);
+          else createOption(q);
+        }}
+      />
+      <div className="cell-select__list">
+        {filtered.map((o) => (
+          <button
+            key={o.id}
+            className={`cell-select__opt${chosen.has(o.id) ? " cell-select__opt--on" : ""}`}
+            onClick={() => toggle(o.id)}
+          >
+            {o.name}
+            {chosen.has(o.id) && <span className="cell-select__check">✓</span>}
+          </button>
+        ))}
+        {filtered.length === 0 && q.trim() !== "" && (
+          <button className="cell-select__opt cell-select__opt--create" onClick={() => createOption(q)}>
+            ＋ 创建「{q.trim()}」
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** W65 日期月历面板（04 §3：年月 + 星期表头 + 日期网格） */
+function MonthCalendar({ ms, onCommit }: { ms: number | null; onCommit: (v: unknown) => void }) {
+  const base = ms ? new Date(ms) : new Date();
+  const [cursor, setCursor] = useState(new Date(base.getFullYear(), base.getMonth(), 1));
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const y = cursor.getFullYear();
+  const m = cursor.getMonth();
+  const firstDay = new Date(y, m, 1).getDay(); // 0=周日
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  // 一~日 打头（04 §3）：周日排到最后 → 映射 offset
+  const offset = (firstDay + 6) % 7;
+  const cells: (number | null)[] = [
+    ...Array.from({ length: offset }, () => null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+  ];
+
+  return (
+    <div className="cell-cal" onClick={(e) => e.stopPropagation()}>
+      <div className="cell-cal__head">
+        <button className="cell-cal__nav" onClick={() => setCursor(new Date(y, m - 1, 1))}>
+          ‹
+        </button>
+        <span className="cell-cal__title">
+          {y}年{m + 1}月
+        </span>
+        <button className="cell-cal__nav" onClick={() => setCursor(new Date(y, m + 1, 1))}>
+          ›
+        </button>
+      </div>
+      <div className="cell-cal__week">
+        {["一", "二", "三", "四", "五", "六", "日"].map((w) => (
+          <span key={w} className="cell-cal__wd">
+            {w}
+          </span>
+        ))}
+      </div>
+      <div className="cell-cal__grid">
+        {cells.map((d, i) =>
+          d === null ? (
+            <span key={`e${i}`} className="cell-cal__cell cell-cal__cell--empty" />
+          ) : (
+            <button
+              key={d}
+              className={`cell-cal__cell${
+                ms && new Date(ms).getFullYear() === y && new Date(ms).getMonth() === m && new Date(ms).getDate() === d
+                  ? " cell-cal__cell--on"
+                  : ""
+              }`}
+              onClick={() => onCommit(Date.parse(`${y}-${pad(m + 1)}-${pad(d)}T00:00:00`))}
+            >
+              {d}
+            </button>
+          ),
+        )}
+      </div>
+    </div>
+  );
 }

@@ -3983,3 +3983,173 @@ html[data-theme="dark"] .grid tbody tr:nth-child(odd) .grid__cell {
 .grid__add {
   width: 48px; /* 04 §3：列尾「＋ 新建列」48px */
 }
+
+/* ---------- 单元格编辑器面板（W65：单选/多选 320×292、日期月历 282×291） ---------- */
+
+.cell-select {
+  width: 320px;
+  max-height: 292px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
+}
+
+.cell-select__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.cell-select__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--bg-hover);
+  font-size: 12px;
+  color: var(--text);
+}
+
+.cell-select__x {
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+}
+
+.cell-select__input {
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0 8px;
+  font-size: 12px;
+  color: var(--text);
+  background: var(--bg);
+  outline: none;
+}
+
+.cell-select__list {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.cell-select__opt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 28px;
+  padding: 0 8px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cell-select__opt:hover {
+  background: var(--bg-hover);
+}
+
+.cell-select__opt--on {
+  background: var(--bg-hover);
+}
+
+.cell-select__check {
+  color: var(--primary);
+  font-size: 12px;
+}
+
+.cell-select__opt--create {
+  color: var(--primary);
+}
+
+.cell-cal {
+  width: 282px;
+  padding: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
+}
+
+.cell-cal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 4px 8px;
+}
+
+.cell-cal__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.cell-cal__nav {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.cell-cal__nav:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.cell-cal__week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding-bottom: 4px;
+}
+
+.cell-cal__wd {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.cell-cal__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+}
+
+.cell-cal__cell {
+  height: 30px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.cell-cal__cell:hover {
+  background: var(--bg-hover);
+}
+
+.cell-cal__cell--empty {
+  cursor: default;
+}
+
+.cell-cal__cell--on {
+  background: var(--primary);
+  color: #ffffff;
+}
