@@ -459,6 +459,19 @@ export function Sidebar() {
               <span className="tree-item__label">{node.title || "无标题"}</span>
             )}
             <span className="tree-item__actions">
+              {/* W24 行「…」菜单：与右键菜单同一份定义（语义与文案一致） */}
+              <button
+                className="icon-btn"
+                title="更多"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  setRowCtx({ id: node.id, x: r.left, y: r.bottom + 4 });
+                  setMovePick(false);
+                }}
+              >
+                <AppIcon name="more" set={iconSet} size={14} />
+              </button>
               <button
                 className="icon-btn"
                 title="新建子页面"

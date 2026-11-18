@@ -36,7 +36,8 @@
     "sidebar-check": "node tools/sidebar-check.mjs",
     "iconrow-check": "node tools/iconrow-check.mjs",
     "tree-row-check": "node tools/tree-row-check.mjs",
-    "rowctx-check": "node tools/rowctx-check.mjs"
+    "rowctx-check": "node tools/rowctx-check.mjs",
+    "rowmore-check": "node tools/rowmore-check.mjs"
   },
   "keywords": [],
   "author": "",
