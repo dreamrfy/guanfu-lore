@@ -14,10 +14,11 @@
     "W02",
     "W03",
     "W10",
-    "W11"
+    "W11",
+    "W12"
   ],
-  "nextTask": "W12",
-  "doneCount": 5,
+  "nextTask": "W13",
+  "doneCount": 6,
   "totalCount": 88,
   "testBaseline": "cd app && npm test = 250/250 绿（勿退化）",
   "devServer": "npm run dev 起在 5173（后台任务 bjlvotyrx；挂了重起即可）",
@@ -44,6 +45,10 @@
     {
       "time": "2026-11-18T05:33:00Z",
       "event": "会话#3(cron) 完成 W11（窗口控制三钮：Tauri decorations:false + 真运行时点验最大化/最小化/还原/关闭全 PASS）278ca8b；排坑三条已记对照文档：CDP 断开即退出→验证单会话、EBWebView 损坏秒退→已清修复、9222 被用户 FlowUs 占用→CDP 用 9223/9224；下一任务 W12 导航钮区（.tabbar__nav 228px 内后退/前进/主页/刷新 disabled 态）"
+    },
+    {
+      "time": "2026-11-18T08:10:00Z",
+      "event": "会话#4(cron) 完成 W12（导航钮区：后退/前进/主页/刷新，历史栈+6 单测+真点击 PASS）f2a1d4f；新发现：编辑器挂载触碰 updatedAt（待评估是否修）；下一任务 W13 页签本体（favicon 16/关闭 20 常显已在 W10 做，本任务核规格细节）"
     }
   ]
 }
