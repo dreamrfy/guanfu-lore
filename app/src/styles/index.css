@@ -3266,3 +3266,68 @@ html[data-theme="dark"] .winbtn--close:hover {
   font-size: 12px;
   color: var(--text-secondary);
 }
+
+/* ---------- 页尾引用区（W29：常驻一行三段；展开为反链列表） ---------- */
+
+.pageref {
+  margin: 28px 0 40px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.pageref__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pageref__seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.pageref__seg:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.pageref__seg--off {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.pageref__seg--off:hover {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.pageref__count {
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+}
+
+.pageref__list {
+  margin-top: 6px;
+}
+
+.pageref__empty {
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}

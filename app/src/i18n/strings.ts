@@ -54,6 +54,7 @@ export const STRINGS = {
   aiDistill: { zh: "提炼要点", en: "Distill" },
   aiProcessing: { zh: "处理中…", en: "Working…" },
   backlinksTitle: { zh: "引用了本页", en: "Pages that point here" },
+  backlinksNone: { zh: "还没有页面引用本页", en: "No pages reference this one yet" },
   newPage: { zh: "新建页面", en: "New page" },
   newTable: { zh: "新建表格", en: "New table" },
   newRecord: { zh: "新建记录", en: "New record" },

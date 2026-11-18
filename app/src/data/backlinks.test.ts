@@ -46,3 +46,24 @@ describe("反向链接：找提及块", () => {
     expect(findBlockWithMention(undefined, "p2")).toBeNull();
   });
 });
+
+describe("反向链接：全库扫描（W29）", () => {
+  it("页面 B 正文提及 A → A 的反链里有 B；A 自己不计入", async () => {
+    const { findBacklinks } = await import("./backlinks");
+    const { useStore } = await import("./store");
+    const row = (id: string, title: string) =>
+      ({ id, parentId: null, title, icon: null, createdAt: 1, updatedAt: 1, deletedAt: null, sortKey: 1 }) as never;
+    useStore.setState({
+      pages: [row("a", "甲页"), row("b", "乙页")] as never,
+      docs: {
+        a: [{ id: "a1", type: "paragraph", content: [mention("a", "甲页")] }],
+        b: [{ id: "b1", type: "paragraph", content: [{ type: "text", text: "见 " }, mention("a", "甲页")] }],
+      } as never,
+    });
+
+    const out = await findBacklinks("a");
+    expect(out.map((x) => x.pageId)).toEqual(["b"]);
+    expect(out[0].title).toBe("乙页");
+    expect(out[0].snippet).toContain("@甲页");
+  });
+});
