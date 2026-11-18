@@ -62,10 +62,11 @@
     "W68",
     "W69",
     "W70",
-    "W71"
+    "W71",
+    "W72"
   ],
-  "nextTask": "W72",
-  "doneCount": 53,
+  "nextTask": "W73",
+  "doneCount": 54,
   "totalCount": 88,
   "testBaseline": "cd app && npm test = 272/272 绿（36 个文件，勿退化）",
   "devServer": "npm run dev 起在 5173（后台任务 bjlvotyrx；挂了重起即可）",
@@ -252,6 +253,10 @@
     {
       "time": "2026-11-18T23:30:00Z",
       "event": "完成 W71（看板视图：分列/列头计数/列底建记录/拖卡换列/类型改名随动）38bea5b；复验时修 kanban-check 选择器未限定面板导致的超时；测试 36/272；下一任务 W72 画廊视图"
+    },
+    {
+      "time": "2026-11-19T00:40:00Z",
+      "event": "完成 W72（画廊视图：卡片 220 宽/封面 16:9/标题条/真图片封面/点开记录）——新增 GalleryView.tsx + image 语义图标；视图类型下拉画廊项由置灰改为可选；测试 36/272、build 通过、check-icons 112 条全过、gallery-check PASS；下一任务 W73 目录视图"
     }
   ],
   "modulesDone": [

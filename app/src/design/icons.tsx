@@ -41,6 +41,7 @@ export const ICONS = {
   sun: { lucide: "sun", mingcute: "sun-line", ph: "sun", tabler: "sun" },
   moon: { lucide: "moon", mingcute: "moon-line", ph: "moon", tabler: "moon" },
   file: { lucide: "file-text", mingcute: "file-line", ph: "file-text", tabler: "file-text" },
+  image: { lucide: "image", mingcute: "album-line", ph: "image", tabler: "photo" },
   chevronRight: { lucide: "chevron-right", mingcute: "right-line", ph: "caret-right", tabler: "chevron-right" },
   chevronDown: { lucide: "chevron-down", mingcute: "down-line", ph: "caret-down", tabler: "chevron-down" },
   close: { lucide: "x", mingcute: "close-line", ph: "x", tabler: "x" },

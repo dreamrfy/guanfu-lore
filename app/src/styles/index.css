@@ -4491,3 +4491,72 @@ html[data-theme="dark"] .grid tbody tr:nth-child(odd) .grid__cell {
   background: var(--bg-hover);
   color: var(--text);
 }
+
+/* ---------- 画廊视图（W72，04 §1.1 卡片网格 / 22 §3.5 卡片 220、封面 16:9） ---------- */
+
+.gallery {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px;
+  display: grid;
+  /* 卡片 220（22 §3.5）：固定 220 宽列，列数随容器宽自适应 */
+  grid-template-columns: repeat(auto-fill, 220px);
+  gap: 12px;
+  align-content: start;
+}
+
+.gallery--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.gallery__card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
+}
+
+.gallery__card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.gallery__cover {
+  /* 封面 16:9 */
+  aspect-ratio: 16 / 9;
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.gallery__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery__placeholder {
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+
+.gallery__title {
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
