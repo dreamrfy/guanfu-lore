@@ -6,7 +6,8 @@
  *  - back/forward 内部切页时打 navigating 标记，避免订阅器把程序化跳转再记一次历史。
  *  - 页签关闭时剪掉栈里的死条目（否则后退会翻到已关页）。
  *  - 主页【暂定】= 打开最近修改的第一页（桌面主页的 AI chat 形态在 W94 落位）。
- *  - 刷新 = 从 Dexie 强制重读当前页正文 + bump tick，AppShell 用 tick 参与 PageEditor 的 key 触发重挂载。
+ *  - 刷新 = 从 Dexie 强制重读正文 + bump tick，AppShell 用 tick 参与 PageEditor 的 key 触发重挂载；
+ *    refreshTab(id) 是通用版（W14 页签右键菜单也用它刷新非激活页签）。
  */
 import { create } from "zustand";
 import { useStore } from "./store";
@@ -24,6 +25,7 @@ type NavState = {
   forward: () => void;
   goHome: () => void;
   refresh: () => Promise<void>;
+  refreshTab: (pageId: string) => Promise<void>;
 };
 
 let navigating = false;
@@ -67,13 +69,17 @@ export const useNavHistory = create<NavState>((set, get) => ({
     useStore.getState().openTab(first.id);
   },
 
-  refresh: async () => {
+  refresh: () => {
     const id = useStore.getState().activeTabId;
-    if (!id) return;
-    const raw = await repo.getDoc(id);
+    if (!id) return Promise.resolve();
+    return get().refreshTab(id);
+  },
+
+  refreshTab: async (pageId) => {
+    const raw = await repo.getDoc(pageId);
     const blocks = raw ? await resolveAssetRefs(raw) : [];
-    useStore.setState((s) => ({ docs: { ...s.docs, [id]: blocks } }));
-    set((s) => ({ tick: s.tick + 1 }));
+    useStore.setState((s) => ({ docs: { ...s.docs, [pageId]: blocks } }));
+    if (useStore.getState().activeTabId === pageId) set((s) => ({ tick: s.tick + 1 }));
   },
 }));
 

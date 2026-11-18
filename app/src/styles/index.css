@@ -2732,3 +2732,41 @@ html[data-theme="dark"] .winbtn--close:hover {
 .navbtn--refresh {
   left: 122px;
 }
+
+/* ---------- 页签右键菜单（手册 §1：8 项 + 无左侧页签灰置） ---------- */
+
+.tabctx {
+  position: fixed;
+  z-index: 1000;
+  min-width: 184px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
+  padding: 4px;
+}
+
+.tabctx__item {
+  height: 28px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  border-radius: 4px;
+  user-select: none;
+}
+
+.tabctx__item:hover {
+  background: var(--bg-hover);
+}
+
+.tabctx__item--off {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.tabctx__item--off:hover {
+  background: transparent;
+}

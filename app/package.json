@@ -25,7 +25,8 @@
     "run-app-fresh": "node tools/run-app-fresh.mjs",
     "win-final-check": "node tools/win-final-check.mjs",
     "nav-check": "node tools/nav-check.mjs",
-    "tab-size-check": "node tools/tab-size-check.mjs"
+    "tab-size-check": "node tools/tab-size-check.mjs",
+    "tabctx-check": "node tools/tabctx-check.mjs"
   },
   "keywords": [],
   "author": "",
