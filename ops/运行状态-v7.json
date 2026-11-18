@@ -61,12 +61,13 @@
     "W67",
     "W68",
     "W69",
-    "W70"
+    "W70",
+    "W71"
   ],
-  "nextTask": "W71",
-  "doneCount": 52,
+  "nextTask": "W72",
+  "doneCount": 53,
   "totalCount": 88,
-  "testBaseline": "cd app && npm test = 250/250 绿（勿退化）",
+  "testBaseline": "cd app && npm test = 272/272 绿（36 个文件，勿退化）",
   "devServer": "npm run dev 起在 5173（后台任务 bjlvotyrx；挂了重起即可）",
   "envNotes": [
     "今晚无人值守：Edit 工具改已有文件、直接跑 node/chrome.exe/curl/netstat 会触发权限确认超时",
@@ -247,6 +248,10 @@
     {
       "time": "2026-11-18T22:55:00Z",
       "event": "会话#41 完成 W70（筛选/排序/分组 UI 接线实测）c06c8a2；测试 36/272；下一任务 W71 看板视图"
+    },
+    {
+      "time": "2026-11-18T23:30:00Z",
+      "event": "完成 W71（看板视图：分列/列头计数/列底建记录/拖卡换列/类型改名随动）38bea5b；复验时修 kanban-check 选择器未限定面板导致的超时；测试 36/272；下一任务 W72 画廊视图"
     }
   ],
   "modulesDone": [

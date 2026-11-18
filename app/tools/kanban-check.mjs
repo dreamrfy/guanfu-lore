@@ -40,15 +40,17 @@ const statusCell = page.locator(".grid tbody tr").first().locator("td.grid__cell
 await statusCell.click();
 await page.waitForTimeout(500);
 console.log("单元格类 =", await statusCell.getAttribute("class"), "| 面板数 =", await page.locator(".cell-select").count(), "| 输入数 =", await page.locator(".cell-select__input").count(), "| 记录详情 =", await page.locator(".shell__right").count());
-const input = page.locator(".cell-select__input");
-await input.fill("进行中");
-await input.press("Enter");
+const panel = page.locator(".grid__cell--editing .cell-select").first();
+console.log("面板内输入数 =", await panel.locator(".cell-select__input").count());
+await panel.locator(".cell-select__input").fill("进行中");
+await panel.locator(".cell-select__input").press("Enter");
 await page.waitForTimeout(600);
 // 单选提交后编辑态关闭 → 建第二个选项要重新点开单元格
 await statusCell.click();
 await page.waitForTimeout(500);
-await page.locator(".cell-select__input").fill("已完成");
-await page.locator(".cell-select__input").press("Enter");
+const panel2 = page.locator(".grid__cell--editing .cell-select").first();
+await panel2.locator(".cell-select__input").fill("已完成");
+await panel2.locator(".cell-select__input").press("Enter");
 await page.waitForTimeout(600);
 await page.keyboard.press("Escape");
 await page.waitForTimeout(300);
