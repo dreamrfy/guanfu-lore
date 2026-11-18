@@ -28,7 +28,8 @@
     "tab-size-check": "node tools/tab-size-check.mjs",
     "tabctx-check": "node tools/tabctx-check.mjs",
     "tab-isolation-check": "node tools/tab-isolation-check.mjs",
-    "tab-more-check": "node tools/tab-more-check.mjs"
+    "tab-more-check": "node tools/tab-more-check.mjs",
+    "tab-boundary-check": "node tools/tab-boundary-check.mjs"
   },
   "keywords": [],
   "author": "",
