@@ -3723,3 +3723,17 @@ html[data-theme="dark"] .winbtn--close:hover {
   font-size: 12px;
   padding: 0 6px;
 }
+
+/* ---------- 块右键菜单（W54） ---------- */
+
+.blockmenu {
+  position: fixed;
+  z-index: 1200;
+  min-width: 200px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.tabctx__item--on {
+  font-weight: 600;
+}

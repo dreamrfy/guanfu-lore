@@ -17,6 +17,7 @@ import { schema } from "./schema";
 import { SelectionAiButton } from "./SelectionAi";
 import { AiAskBox } from "./AiAskBox";
 import { useStore } from "../data/store";
+import { BlockContextMenu } from "../shell/BlockContextMenu";
 
 /** 取块内联内容的纯文本（AI 命令要用） */
 function inlineText(content: unknown): string {
@@ -324,6 +325,7 @@ export function PageEditor({ initialBlocks, theme, onChange, uploadFile, readOnl
       {ask && (
         <AiAskBox position={{ top: ask.top, left: ask.left }} onAnswer={insertAnswer} onClose={() => setAsk(null)} />
       )}
+      <BlockContextMenu editor={editor} />
     </div>
   );
 }
