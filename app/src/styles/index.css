@@ -83,6 +83,10 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  /* W30 收起/展开动画：观测未取具体时长（03 §8 未采项）→ 160ms ease【暂定】 */
+  transition:
+    width 160ms ease,
+    border-right-color 160ms ease;
 }
 
 .shell__sidebar--collapsed {
