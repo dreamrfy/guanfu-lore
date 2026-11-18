@@ -542,11 +542,18 @@ body {
 
 .grid th,
 .grid td {
-  height: 36px;
   padding: 0;
   border-bottom: 1px solid var(--border);
   border-right: 1px solid var(--border);
   text-align: left;
+}
+
+.grid th {
+  height: 37px; /* 04 §1：桌面表头 37px 吸顶 */
+}
+
+.grid td {
+  height: 38px; /* 04 §1：数据行 38px */
 }
 
 .grid thead th {
@@ -559,7 +566,7 @@ body {
 }
 
 .grid__idx {
-  width: 48px;
+  width: 66px; /* 04 §1 列宽表：No. 66 */
   text-align: center !important;
   color: var(--text-tertiary);
   font-size: 12px;
@@ -609,7 +616,7 @@ body {
 
 .grid__rowmenu,
 .grid__add {
-  width: 40px;
+  width: 30px;
   text-align: center !important;
 }
 
@@ -3926,4 +3933,38 @@ html[data-theme="dark"] .winbtn--close:hover {
 
 .cell-relation__item:hover {
   background: var(--bg-hover);
+}
+
+/* ---------- 网格斑马纹（W63；色值照录 15-颜色体系 §表格斑马纹） ---------- */
+
+.grid tbody tr:nth-child(odd) .grid__cell {
+  background: #fbfaf7;
+}
+
+html[data-theme="dark"] .grid tbody tr:nth-child(odd) .grid__cell {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.grid tbody tr:nth-child(odd) .grid__cell:hover,
+.grid tbody tr:nth-child(even) .grid__cell:hover {
+  background: var(--bg-hover);
+}
+
+/* W63：表头 37px 内塞下「名称 + 类型」两行（否则内容会把 th 撑到 44） */
+.grid__th-btn {
+  height: 36px; /* th 37 = 36 内容 + 1px 下边框 */
+  box-sizing: border-box;
+  padding: 2px 8px;
+  gap: 0;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.grid__th-name {
+  line-height: 17px;
+}
+
+.grid__th-type {
+  line-height: 14px;
+  font-size: 11px;
 }

@@ -59,7 +59,8 @@
     "convertpanel-check": "node tools/convertpanel-check.mjs",
     "drag-check": "node tools/drag-check.mjs",
     "fields61-check": "node tools/fields61-check.mjs",
-    "advfields-check": "node tools/advfields-check.mjs"
+    "advfields-check": "node tools/advfields-check.mjs",
+    "grid-check": "node tools/grid-check.mjs"
   },
   "keywords": [],
   "author": "",
