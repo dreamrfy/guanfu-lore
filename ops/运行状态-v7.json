@@ -18,10 +18,11 @@
     "W12",
     "W13",
     "W14",
-    "W15"
+    "W15",
+    "W16"
   ],
-  "nextTask": "W16",
-  "doneCount": 9,
+  "nextTask": "W17",
+  "doneCount": 10,
   "totalCount": 88,
   "testBaseline": "cd app && npm test = 250/250 绿（勿退化）",
   "devServer": "npm run dev 起在 5173（后台任务 bjlvotyrx；挂了重起即可）",
@@ -64,6 +65,10 @@
     {
       "time": "2026-11-18T08:50:00Z",
       "event": "会话#7 完成 W15（页签=独立实例【暂定】同窗口隔离：滚动记忆+内容隔离点验 PASS；Tauri 多窗口核验结论入对照文档）481c2f5；下一任务 W16 页签栏 ⋯ 钮（观复自家入口【暂定】）"
+    },
+    {
+      "time": "2026-11-18T09:02:00Z",
+      "event": "会话#8(cron) 完成 W16（⋯ 钮 32×26 + 观复入口 4 项真实现，tab-more-check 全过）；下一任务 W17 中键与页签边界行为（中键不做/溢出边界【暂定】）"
     }
   ]
 }
