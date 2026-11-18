@@ -109,6 +109,8 @@ export type FieldDef = {
   rollupOp?: "count" | "sum";
   /** W62 公式：形如 {单价} * {数量} */
   formula?: string;
+  /** W66 列头菜单「隐藏」：隐藏后网格不渲染该列，但数据保留 */
+  hidden?: boolean;
 };
 
 export type SortDef = {
@@ -134,6 +136,8 @@ export type ViewDef = {
   sorts: SortDef[];
   /** 分组字段（V01）。缺省/undefined = 不分组；老数据没有这个字段 */
   groupById?: string | null;
+  /** W66 列头菜单「冻结列」：冻结的列（含首列）横向滚动时固定 */
+  frozenFieldIds?: string[];
 };
 
 export type CollectionRow = {

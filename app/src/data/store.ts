@@ -209,6 +209,10 @@ type Store = {
   renameCollection: (id: string, name: string) => void;
   deleteCollection: (id: string) => Promise<void>;
   addField: (collectionId: string, type: FieldType) => Promise<void>;
+  /** W66 列头「在左侧/右侧插入」：在指定字段前/后插入一个新字段 */
+  insertFieldAt: (collectionId: string, type: FieldType, index: number) => Promise<void>;
+  /** W66 列头「拷贝副本」：复制字段定义（不含数据）并插到原字段后面 */
+  duplicateField: (collectionId: string, fieldId: string) => Promise<void>;
   updateField: (collectionId: string, fieldId: string, patch: Partial<FieldDef>) => void;
   removeField: (collectionId: string, fieldId: string) => void;
   addRecord: (collectionId: string) => Promise<void>;
@@ -594,6 +598,38 @@ export const useStore = create<Store>((set, get) => {
       if (!row) return;
       const field = makeField(type);
       const next = { ...row, fields: [...row.fields, field], updatedAt: Date.now() };
+      set((s) => ({ collections: s.collections.map((c) => (c.id === collectionId ? next : c)) }));
+      await repo.putCollection(next);
+      queue({ entity: "collection", entityId: collectionId, op: "upsert", payload: { collection: next } });
+    },
+
+    insertFieldAt: async (collectionId, type, index) => {
+      const row = get().collections.find((c) => c.id === collectionId);
+      if (!row) return;
+      const field = makeField(type);
+      const fields = [...row.fields];
+      fields.splice(Math.max(0, Math.min(index, fields.length)), 0, field);
+      const next = { ...row, fields, updatedAt: Date.now() };
+      set((s) => ({ collections: s.collections.map((c) => (c.id === collectionId ? next : c)) }));
+      await repo.putCollection(next);
+      queue({ entity: "collection", entityId: collectionId, op: "upsert", payload: { collection: next } });
+    },
+
+    duplicateField: async (collectionId, fieldId) => {
+      const row = get().collections.find((c) => c.id === collectionId);
+      if (!row) return;
+      const src = row.fields.find((f) => f.id === fieldId);
+      if (!src) return;
+      const copy = {
+        ...src,
+        id: newId(),
+        name: `${src.name} 副本`,
+        options: src.options ? src.options.map((o) => ({ ...o, id: newId() })) : undefined,
+      };
+      const idx = row.fields.findIndex((f) => f.id === fieldId);
+      const fields = [...row.fields];
+      fields.splice(idx + 1, 0, copy);
+      const next = { ...row, fields, updatedAt: Date.now() };
       set((s) => ({ collections: s.collections.map((c) => (c.id === collectionId ? next : c)) }));
       await repo.putCollection(next);
       queue({ entity: "collection", entityId: collectionId, op: "upsert", payload: { collection: next } });

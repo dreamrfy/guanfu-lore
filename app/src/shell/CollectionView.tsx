@@ -16,6 +16,7 @@ import {
   asText,
   DEFAULT_COL_WIDTH,
   FIELD_TYPE_LABEL,
+  operatorsFor,
   TITLE_COL_WIDTH,
 } from "../data/collections";
 import { CLIP_COLLECTION_NAME, useStore } from "../data/store";
@@ -368,6 +369,8 @@ function ColumnMenu({
   const updateField = useStore((s) => s.updateField);
   const removeField = useStore((s) => s.removeField);
   const updateView = useStore((s) => s.updateView);
+  const insertFieldAt = useStore((s) => s.insertFieldAt);
+  const duplicateField = useStore((s) => s.duplicateField);
   const collections = useStore((s) => s.collections);
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -555,6 +558,67 @@ function ColumnMenu({
       )}
 
       <div className="menu-sep" />
+      {/* W66：04 §3 列头菜单 11 项的其余项 */}
+      <button
+        className="menu-item"
+        onClick={() => {
+          const idx = collection.fields.findIndex((f) => f.id === field.id);
+          void insertFieldAt(collection.id, "text", idx);
+          onClose();
+        }}
+      >
+        在左侧插入
+      </button>
+      <button
+        className="menu-item"
+        onClick={() => {
+          const idx = collection.fields.findIndex((f) => f.id === field.id);
+          void insertFieldAt(collection.id, "text", idx + 1);
+          onClose();
+        }}
+      >
+        在右侧插入
+      </button>
+      <button
+        className="menu-item"
+        onClick={() => {
+          const v = collection.views[0];
+          if (v) {
+            const op = operatorsFor(field.type)[0];
+            updateView(collection.id, v.id, {
+              filters: [...v.filters, { id: crypto.randomUUID(), fieldId: field.id, operator: op }],
+            });
+          }
+          onClose();
+        }}
+      >
+        筛选
+      </button>
+      <button
+        className="menu-item"
+        onClick={() => {
+          updateField(collection.id, field.id, { hidden: true });
+          onClose();
+        }}
+      >
+        隐藏
+      </button>
+      {/* W66：冻结列——浏览器对表格 td 横向 sticky 支持不稳定，实测无法固定，先诚实置灰 */}
+      <div className="menu-item menu-item--muted" title="表格单元格横向 sticky 在浏览器里不稳定，待专项（【暂定】）">
+        <span>冻结列</span>
+        <span className="menu-tag">待专项</span>
+      </div>
+
+      <button
+        className="menu-item"
+        onClick={() => {
+          void duplicateField(collection.id, field.id);
+          onClose();
+        }}
+      >
+        拷贝副本
+      </button>
+      <div className="menu-sep" />
       <button
         className="menu-item"
         onClick={() => {
@@ -659,6 +723,19 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
   const filtered = rows.length !== records.length;
   const widthOf = (f: FieldDef) => drag?.id === f.id ? drag.width : f.width ?? DEFAULT_COL_WIDTH;
   const gridWidth = 48 + collection.fields.reduce((sum, f) => sum + widthOf(f), 0) + 40;
+  // W66：隐藏列不进网格；冻结列（首列恒冻结）按累计宽度给出 sticky left
+  const visibleFields = collection.fields.filter((f) => !f.hidden);
+  const frozenIds = collection.views[0]?.frozenFieldIds ?? [];
+  const frozenLeft = new Map<string, number>();
+  {
+    let left = 66; // No. 列宽
+    for (const f of visibleFields) {
+      const isFrozen = f.id === visibleFields[0]?.id || frozenIds.includes(f.id);
+      if (!isFrozen) continue;
+      frozenLeft.set(f.id, left);
+      left += widthOf(f);
+    }
+  }
 
   /** 拖动列头右边缘改列宽：移动时只更新本地状态，松手才落库 */
   const startResize = (e: ReactPointerEvent, f: FieldDef) => {
@@ -708,11 +785,11 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
           <thead>
             <tr>
               <th className="grid__idx grid__idx--head">#</th>
-              {collection.fields.map((f, colIdx) => (
+              {visibleFields.map((f, colIdx) => (
                 <th
+                  className={frozenLeft.has(f.id) ? "grid__th--frozen" : undefined}
+                  style={frozenLeft.has(f.id) ? { position: "sticky", left: frozenLeft.get(f.id), zIndex: 3, width: widthOf(f) } : { width: widthOf(f) }}
                   key={f.id}
-                  className={colIdx === 0 ? "grid__frozen" : undefined}
-                  style={{ width: widthOf(f) }}
                 >
                   <div className="grid__th">
                     <button className="grid__th-btn" onClick={() => setMenuFieldId(f.id)} title="列设置">
@@ -787,15 +864,16 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
                 <td className="grid__idx">
                   {isClipUnread(collection, rec) ? <span className="unread-dot" title="未读" /> : i + 1}
                 </td>
-                {collection.fields.map((f, colIdx) => {
+                {visibleFields.map((f, colIdx) => {
                   const key = `${rec.id}:${f.id}`;
                   const editing = editingCell === key;
                   return (
                     <td
                       key={f.id}
-                      className={`grid__cell${colIdx === 0 ? " grid__frozen" : ""}${
+                      className={`grid__cell${frozenLeft.has(f.id) ? " grid__frozen" : ""}${
                         selectedCell === key ? " grid__cell--selected" : ""
                       }${editing ? " grid__cell--editing" : ""}`}
+                      style={frozenLeft.has(f.id) ? { position: "sticky", left: frozenLeft.get(f.id) } : undefined}
                       onClick={(e) => {
                         // 单选/多选：单击直接开编辑面板（04 §3）；其它类型单击=选中
                         if (f.type === "select" || f.type === "multiSelect") {

@@ -4153,3 +4153,8 @@ html[data-theme="dark"] .grid tbody tr:nth-child(odd) .grid__cell {
   background: var(--primary);
   color: #ffffff;
 }
+
+/* W66：冻结列表头（多列冻结时表头也要固定） */
+.grid__th--frozen {
+  background: var(--bg-secondary);
+}
