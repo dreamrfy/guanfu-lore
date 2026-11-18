@@ -7,6 +7,7 @@ import {
   summarizeRecords,
   asChecked,
   asDateMs,
+  asFiles,
   asNumber,
   asStringList,
   asText,
@@ -15,6 +16,7 @@ import {
   TITLE_COL_WIDTH,
 } from "../data/collections";
 import { CLIP_COLLECTION_NAME, useStore } from "../data/store";
+import { uploadAsset } from "../data/assets";
 import { clipReadState, isClipUnread } from "../data/clipBox";
 import { AppIcon } from "../design/icons";
 import { useLang } from "../i18n";
@@ -61,7 +63,16 @@ function CellValue({ field, record }: { field: FieldDef; record: RecordRow }) {
 
   if (field.type === "date") {
     const ms = asDateMs(v);
-    return <span>{ms ? new Date(ms).toLocaleDateString("zh-CN") : ""}</span>;
+    if (!ms) return <span />;
+    const d = new Date(ms);
+    // W61：按字段显示格式（仅日期 / 日期+时间）
+    return (
+      <span>
+        {field.dateFormat === "datetime"
+          ? d.toLocaleString("zh-CN", { hour12: false })
+          : d.toLocaleDateString("zh-CN")}
+      </span>
+    );
   }
 
   if (field.type === "number") {
@@ -78,6 +89,47 @@ function CellValue({ field, record }: { field: FieldDef; record: RecordRow }) {
     );
   }
   // 第一列（文本）加粗一点，当作"标题列"
+  // W61 新类型（只读派生 + 人员 + 文件媒体）
+  if (field.type === "createdTime") {
+    const ms = record.createdAt;
+    if (!ms) return <span className="cell-empty" />;
+    const d = new Date(ms);
+    const s =
+      field.dateFormat === "datetime"
+        ? d.toLocaleString("zh-CN", { hour12: false })
+        : d.toLocaleDateString("zh-CN");
+    return <span className="cell-derive">{s}</span>;
+  }
+
+  if (field.type === "createdBy") {
+    return <span className="cell-derive">本地用户</span>;
+  }
+
+  if (field.type === "person") {
+    const name = asText(v);
+    if (!name) return <span className="cell-empty" />;
+    return (
+      <span className="cell-person">
+        <span className="cell-person__avatar">{name.slice(0, 1)}</span>
+        {name}
+      </span>
+    );
+  }
+
+  if (field.type === "files") {
+    const list = asFiles(v);
+    if (list.length === 0) return <span className="cell-empty" />;
+    return (
+      <span className="pill-row">
+        {list.map((f) => (
+          <span key={f.assetId} className="pill pill--file" title={f.name}>
+            📎 {f.name}
+          </span>
+        ))}
+      </span>
+    );
+  }
+
   return <span className={field.type === "text" ? "cell-title" : undefined}>{text}</span>;
 }
 
@@ -171,6 +223,57 @@ export function CellEditor({
     );
   }
 
+  // W61 新类型编辑器
+  if (field.type === "createdTime" || field.type === "createdBy") {
+    return <span className="cell-derive">系统生成（只读）</span>;
+  }
+
+  if (field.type === "person") {
+    return (
+      <input
+        className="cell-input"
+        defaultValue={asText(v)}
+        placeholder="填成员名"
+        onBlur={(e) => onCommit(e.target.value)}
+        onClick={(e) => e.stopPropagation()}
+      />
+    );
+  }
+
+  if (field.type === "files") {
+    const list = asFiles(v);
+    return (
+      <div className="cell-files" onClick={(e) => e.stopPropagation()}>
+        {list.map((f) => (
+          <span key={f.assetId} className="cell-files__chip" title={f.name}>
+            📎 {f.name}
+            <button
+              className="cell-files__x"
+              onClick={() => onCommit(list.filter((x) => x.assetId !== f.assetId))}
+              title="移除附件"
+            >
+              ×
+            </button>
+          </span>
+        ))}
+        <label className="cell-files__add">
+          ＋ 上传
+          <input
+            type="file"
+            style={{ display: "none" }}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (!file) return;
+              const { assetId } = await uploadAsset(file, null, "record");
+              onCommit([...list, { assetId, name: file.name }]);
+            }}
+          />
+        </label>
+      </div>
+    );
+  }
+
   return (
     <input
       className="cell-input"
@@ -194,6 +297,7 @@ function ColumnMenu({
 }) {
   const updateField = useStore((s) => s.updateField);
   const removeField = useStore((s) => s.removeField);
+  const updateView = useStore((s) => s.updateView);
   const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -228,6 +332,48 @@ function ColumnMenu({
             </option>
           ))}
         </select>
+      </div>
+
+      {/* W61：日期显示格式（04 §2 记录页属性菜单里的「日期格式」，这里先在列头提供） */}
+      {field.type === "date" && (
+        <div className="col-menu__section">
+          <label className="col-menu__label">日期格式</label>
+          <select
+            className="cell-input"
+            value={field.dateFormat ?? "date"}
+            onChange={(e) =>
+              updateField(collection.id, field.id, { dateFormat: e.target.value as "date" | "datetime" })
+            }
+          >
+            <option value="date">仅日期</option>
+            <option value="datetime">日期 + 时间</option>
+          </select>
+        </div>
+      )}
+
+      {/* W61：04 §2「编辑属性面板带升序/降序」——按此字段排序的快捷入口 */}
+      <div className="col-menu__section">
+        <label className="col-menu__label">排序</label>
+        <div style={{ display: "flex", gap: 6 }}>
+          <button
+            className="menu-item"
+            onClick={() => {
+              const v = collection.views[0];
+              if (v) updateView(collection.id, v.id, { sorts: [{ fieldId: field.id, direction: "asc" }] });
+            }}
+          >
+            升序
+          </button>
+          <button
+            className="menu-item"
+            onClick={() => {
+              const v = collection.views[0];
+              if (v) updateView(collection.id, v.id, { sorts: [{ fieldId: field.id, direction: "desc" }] });
+            }}
+          >
+            降序
+          </button>
+        </div>
       </div>
 
       {(field.type === "select" || field.type === "multiSelect") && (

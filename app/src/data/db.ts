@@ -65,7 +65,7 @@ export type MetaRow = {
 
 /* ---------------- 多维表格 ---------------- */
 
-/** 第一批先做这 9 种字段；公式/关联/汇总/人员/附件放到后面（见需求清单 M2-11~M2-14） */
+/** W61：在 9 种基础上补 人员/文件媒体/创建时间/创建人；公式/关联/汇总留 W62 */
 export type FieldType =
   | "text"
   | "number"
@@ -75,7 +75,11 @@ export type FieldType =
   | "checkbox"
   | "url"
   | "email"
-  | "phone";
+  | "phone"
+  | "person"
+  | "files"
+  | "createdTime"
+  | "createdBy";
 
 export type SelectOption = {
   id: string;
@@ -92,6 +96,8 @@ export type FieldDef = {
   options?: SelectOption[];
   /** 列宽（像素）；缺省用默认值 */
   width?: number;
+  /** 日期显示格式（W61）：仅日期 / 日期+时间 */
+  dateFormat?: "date" | "datetime";
 };
 
 export type SortDef = {

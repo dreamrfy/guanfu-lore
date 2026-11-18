@@ -3814,3 +3814,86 @@ html[data-theme="dark"] .winbtn--close:hover {
   font-size: 11px;
   color: var(--primary);
 }
+
+/* ---------- 多维表新字段型（W61：人员/文件媒体/创建时间/创建人） ---------- */
+
+.cell-derive {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.cell-person {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.cell-person__avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary);
+  color: #fff;
+  font-size: 11px;
+}
+
+.pill--file {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cell-files {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+}
+
+.cell-files__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  font-size: 12px;
+  max-width: 180px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.cell-files__x {
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0 2px;
+}
+
+.cell-files__add {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.cell-files__add:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}

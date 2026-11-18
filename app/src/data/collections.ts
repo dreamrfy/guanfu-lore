@@ -25,7 +25,23 @@ export const FIELD_TYPE_LABEL: Record<FieldType, string> = {
   url: "网址",
   email: "邮箱",
   phone: "电话",
+  person: "人员",
+  files: "文件媒体",
+  createdTime: "创建时间",
+  createdBy: "创建人",
 };
+
+/** W61 文件媒体字段的值：附件 id + 文件名（原始文件存 assets 表） */
+export type FileRef = { assetId: string; name: string };
+
+/** 把任意存值收窄成文件列表（老数据/脏数据返回空数组） */
+export function asFiles(v: unknown): FileRef[] {
+  if (!Array.isArray(v)) return [];
+  return v.filter(
+    (x): x is FileRef =>
+      Boolean(x) && typeof x === "object" && typeof (x as FileRef).assetId === "string" && typeof (x as FileRef).name === "string",
+  );
+}
 
 export const DEFAULT_COL_WIDTH = 180;
 export const TITLE_COL_WIDTH = 260;
@@ -390,6 +406,13 @@ export function operatorsFor(type: FieldType): FilterCondition["operator"][] {
       return ["is", "isNot", "isEmpty", "isNotEmpty"];
     case "checkbox":
       return ["is"];
+    case "person":
+    case "createdBy":
+      return ["is", "isNot", "isEmpty", "isNotEmpty"];
+    case "files":
+      return ["isEmpty", "isNotEmpty"];
+    case "createdTime":
+      return ["before", "after", "isEmpty", "isNotEmpty"];
     default:
       return ["contains", "is", "isNot", "isEmpty", "isNotEmpty"];
   }
