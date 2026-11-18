@@ -56,7 +56,8 @@
     "media-check": "node tools/media-check.mjs",
     "pageblock-check": "node tools/pageblock-check.mjs",
     "blockmenu-check": "node tools/blockmenu-check.mjs",
-    "convertpanel-check": "node tools/convertpanel-check.mjs"
+    "convertpanel-check": "node tools/convertpanel-check.mjs",
+    "drag-check": "node tools/drag-check.mjs"
   },
   "keywords": [],
   "author": "",
