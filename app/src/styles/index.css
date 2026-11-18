@@ -3527,3 +3527,37 @@ html[data-theme="dark"] .winbtn--close:hover {
   font-size: 12px;
   color: var(--text-secondary);
 }
+
+/* ---------- 页头 hover 浮条（W44：添加图标/封面/评论，hover 才现） ---------- */
+
+.pagehead-add {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0 12px;
+}
+
+.page:hover .pagehead-add {
+  display: flex;
+}
+
+.pagehead-add__chip {
+  height: 26px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.pagehead-add__chip:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.pagehead-add__chip:disabled {
+  opacity: 0.4;
+  cursor: default;
+}

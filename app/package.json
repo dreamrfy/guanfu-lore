@@ -47,7 +47,8 @@
     "toolbar-check": "node tools/toolbar-check.mjs",
     "pagehead-check": "node tools/pagehead-check.mjs",
     "iconpicker-check": "node tools/iconpicker-check.mjs",
-    "cover-check": "node tools/cover-check.mjs"
+    "cover-check": "node tools/cover-check.mjs",
+    "pageheadbar-check": "node tools/pageheadbar-check.mjs"
   },
   "keywords": [],
   "author": "",

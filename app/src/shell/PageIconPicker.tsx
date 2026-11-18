@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { IconSetId } from "../design/icons";
 import {
   EMOJI_CATEGORIES,
@@ -31,6 +31,13 @@ export function PageIconPicker({
   const [tab, setTab] = useState<"emoji" | "icons">("emoji");
   const [cat, setCat] = useState(EMOJI_CATEGORIES[0].id);
   const [q, setQ] = useState("");
+
+  // W44：页头 hover 浮条的「添加图标」通过事件打开本选择器
+  useEffect(() => {
+    const open = () => setOpen(true);
+    window.addEventListener("guanfu:open-icon-picker", open);
+    return () => window.removeEventListener("guanfu:open-icon-picker", open);
+  }, []);
 
   const parsed = parsePageIcon(value);
   const allEmojis = useMemo(() => EMOJI_CATEGORIES.flatMap((c) => c.emojis), []);

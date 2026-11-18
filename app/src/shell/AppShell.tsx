@@ -55,6 +55,13 @@ function PageCover({ pageId, coverAssetId }: { pageId: string; coverAssetId: str
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [busy, setBusy] = useState(false);
 
+  // W44：页头 hover 浮条的「添加封面」通过事件打开文件框
+  useEffect(() => {
+    const add = () => fileRef.current?.click();
+    window.addEventListener("guanfu:add-cover", add);
+    return () => window.removeEventListener("guanfu:add-cover", add);
+  }, []);
+
   const pick = async (file: File) => {
     setBusy(true);
     try {
@@ -187,6 +194,29 @@ export function AppShell() {
             ) : (
               <>
                 <PageIconPicker value={page.icon} onChange={(v) => setPageIcon(page.id, v)} iconSet={iconSet} />
+
+                {/* W44 页头 hover 浮条（07 §4：添加图标 / 添加封面 / 添加评论；评论待专项置灰） */}
+                <div className="pagehead-add">
+                  {!page.icon && (
+                    <button
+                      className="pagehead-add__chip"
+                      onClick={() => window.dispatchEvent(new CustomEvent("guanfu:open-icon-picker"))}
+                    >
+                      ＋ 添加图标
+                    </button>
+                  )}
+                  {!page.coverAssetId && (
+                    <button
+                      className="pagehead-add__chip"
+                      onClick={() => window.dispatchEvent(new CustomEvent("guanfu:add-cover"))}
+                    >
+                      🖼 添加封面
+                    </button>
+                  )}
+                  <button className="pagehead-add__chip" disabled title="评论体系待专项（【暂定】）">
+                    💬 添加评论
+                  </button>
+                </div>
 
                 <input
                   className="page__title"
