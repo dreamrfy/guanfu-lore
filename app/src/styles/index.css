@@ -2893,3 +2893,37 @@ html[data-theme="dark"] .winbtn--close:hover {
 .tree-item__chev--none {
   cursor: default;
 }
+
+/* ---------- 行右键菜单（W23：8 项 + 移动到二级；在既有菜单样式上扩展） ---------- */
+
+.ctx-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: transparent;
+}
+
+.tabctx--row {
+  z-index: 1000;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.tabctx__item--head {
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+
+.tree-item__rename {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 22px;
+  border: 1px solid var(--primary);
+  border-radius: 4px;
+  padding: 0 6px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  outline: none;
+}

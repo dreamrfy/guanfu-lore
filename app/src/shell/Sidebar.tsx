@@ -87,6 +87,8 @@ export function Sidebar() {
   const purgeFromTrash = useStore((s) => s.purgeFromTrash);
   const toggleSidebar = useStore((s) => s.toggleSidebar);
   const setParent = useStore((s) => s.setParent);
+  const duplicatePage = useStore((s) => s.duplicatePage);
+  const renamePage = useStore((s) => s.renamePage);
   const collections = useStore((s) => s.collections);
   const activeCollectionId = useStore((s) => s.activeCollectionId);
   const openCollection = useStore((s) => s.openCollection);
@@ -95,6 +97,39 @@ export function Sidebar() {
   const ensureRecords = useStore((s) => s.ensureRecords);
 
   const searchRef = useRef<HTMLInputElement | null>(null);
+
+/** W23 右键菜单辅助：页面深链 / 在侧栏定位 / 新窗口打开 */
+  const pageLink = (origin: string, path: string, id: string) => `${origin}${path}?page=${id}`;
+  const revealRow = (id: string) => {
+    if (useStore.getState().sidebarCollapsed) toggleSidebar();
+    setTimeout(() => {
+      document.querySelector(`[data-page-id="${id}"]`)?.scrollIntoView({ block: "center" });
+    }, 120);
+  };
+  const openInNewWindow = (id: string) => {
+    const url = pageLink(location.origin, location.pathname, id);
+    const tauri = (
+      window as unknown as {
+        __TAURI__?: {
+          webviewWindow?: { WebviewWindow?: new (l: string, o: Record<string, unknown>) => unknown };
+        };
+      }
+    ).__TAURI__;
+    if (tauri?.webviewWindow?.WebviewWindow) {
+      try {
+        new tauri.webviewWindow.WebviewWindow(`page-${id.slice(0, 8)}-${Date.now()}`, {
+          url,
+          width: 1200,
+          height: 800,
+          title: "观复 · Lore",
+        });
+        return;
+      } catch {
+        /* 权限未开时退回浏览器弹窗 */
+      }
+    }
+    window.open(url, "_blank", "width=1200,height=800");
+  };
   const goHome = useNavHistory((s) => s.goHome);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -103,6 +138,17 @@ export function Sidebar() {
   const [dragging, setDragging] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<string | "root" | null>(null);
   const [hint, setHint] = useState<string | null>(null);
+  // W23 行右键菜单 / 重命名 / 快速访问
+  const [rowCtx, setRowCtx] = useState<{ id: string; x: number; y: number } | null>(null);
+  const [movePick, setMovePick] = useState(false);
+  const [renaming, setRenaming] = useState<string | null>(null);
+  const [starred, setStarred] = useState<Set<string>>(() => {
+    try {
+      return new Set(JSON.parse(localStorage.getItem("guanfu.starred") ?? "[]") as string[]);
+    } catch {
+      return new Set();
+    }
+  });
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
   const withKids = useMemo(
@@ -204,6 +250,31 @@ export function Sidebar() {
       </label>
 
       <div className="sidebar__list">
+        {starred.size > 0 && (
+                  <>
+                    <div className="sidebar__group-label">
+                      <span>快速访问</span>
+                    </div>
+                    {pages
+                      .filter((p) => starred.has(p.id))
+                      .map((p) => (
+                        <div
+                          key={`star-${p.id}`}
+                          className={`tree-item tree-item--starred${p.id === activeTabId ? " tree-item--active" : ""}`}
+                          data-page-id={p.id}
+                          style={{ paddingLeft: 8 }}
+                          onClick={() => openTab(p.id)}
+                          title={p.title || "无标题"}
+                        >
+                          <span className="tree-item__chev tree-item__chev--none" />
+                          <span style={{ fontSize: 14 }}>{p.icon ?? ""}</span>
+                          <AppIcon name="star" set={iconSet} size={14} />
+                          <span className="tree-item__label">{p.title || "无标题"}</span>
+                        </div>
+                      ))}
+                  </>
+                )}
+
         <div
           className={`sidebar__group-label${dropTarget === "root" ? " sidebar__group-label--drop" : ""}`}
           onDragOver={(e) => {
@@ -315,7 +386,14 @@ export function Sidebar() {
               .filter(Boolean)
               .join(" ")}
             style={{ paddingLeft: 8 + node.depth * 14 }}
+            data-page-id={node.id}
             onClick={() => openTab(node.id)}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setRowCtx({ id: node.id, x: e.clientX, y: e.clientY });
+              setMovePick(false);
+            }}
             title={node.title || "无标题"}
             draggable
             onDragStart={(e) => {
@@ -362,7 +440,24 @@ export function Sidebar() {
             )}
             <span style={{ fontSize: 14 }}>{node.icon ?? ""}</span>
             <AppIcon name="file" set={iconSet} size={14} />
-            <span className="tree-item__label">{node.title || "无标题"}</span>
+            {renaming === node.id ? (
+              <input
+                className="tree-item__rename"
+                defaultValue={node.title}
+                autoFocus
+                onClick={(e) => e.stopPropagation()}
+                onBlur={(e) => {
+                  renamePage(node.id, e.target.value);
+                  setRenaming(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                  if (e.key === "Escape") setRenaming(null);
+                }}
+              />
+            ) : (
+              <span className="tree-item__label">{node.title || "无标题"}</span>
+            )}
             <span className="tree-item__actions">
               <button
                 className="icon-btn"
@@ -390,6 +485,115 @@ export function Sidebar() {
           </>
         )}
       </div>
+
+      {rowCtx && (
+              <>
+                <div
+                  className="ctx-backdrop"
+                  onMouseDown={() => {
+                    setRowCtx(null);
+                    setMovePick(false);
+                  }}
+                />
+                <div className="tabctx tabctx--row" style={{ left: rowCtx.x, top: rowCtx.y }}>
+                  {movePick ? (
+                    <>
+                      <div
+                        className="tabctx__item tabctx__item--head"
+                        onMouseDown={(e) => {
+                          e.stopPropagation();
+                          setMovePick(false);
+                        }}
+                      >
+                        ← 返回
+                      </div>
+                      <div
+                        className="tabctx__item"
+                        onMouseDown={(e) => {
+                          e.stopPropagation();
+                          if (setParent(rowCtx.id, null)) flash("已移到顶层");
+                          setRowCtx(null);
+                          setMovePick(false);
+                        }}
+                      >
+                        顶层
+                      </div>
+                      {pages
+                        .filter((p) => p.id !== rowCtx.id)
+                        .slice(0, 20)
+                        .map((p) => (
+                          <div
+                            key={p.id}
+                            className="tabctx__item"
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                              if (!setParent(rowCtx.id, p.id)) flash("不能移到自己或自己的子页面下");
+                              setRowCtx(null);
+                              setMovePick(false);
+                            }}
+                          >
+                            {p.title || "无标题"}
+                          </div>
+                        ))}
+                    </>
+                  ) : (
+                    [
+                      {
+                        label: starred.has(rowCtx.id) ? "从快速访问移除" : "添加到快速访问",
+                        run: () => {
+                          const next = new Set(starred);
+                          if (next.has(rowCtx.id)) next.delete(rowCtx.id);
+                          else next.add(rowCtx.id);
+                          setStarred(next);
+                          try {
+                            localStorage.setItem("guanfu.starred", JSON.stringify([...next]));
+                          } catch {
+                            /* 忽略 */
+                          }
+                        },
+                      },
+                      { label: "拷贝副本", run: () => void duplicatePage(rowCtx.id) },
+                      {
+                        label: "复制页面链接",
+                        run: () =>
+                          void navigator.clipboard
+                            .writeText(pageLink(location.origin, location.pathname, rowCtx.id))
+                            .catch(() => {}),
+                      },
+                      { label: "重命名", run: () => setRenaming(rowCtx.id) },
+                      { label: "移动到…", run: null },
+                      { label: "删除", run: () => void moveToTrash(rowCtx.id) },
+                      {
+                        label: "在侧边栏打开",
+                        run: () => revealRow(rowCtx.id),
+                      },
+                      {
+                        label: "在新窗口打开",
+                        run: () => openInNewWindow(rowCtx.id),
+                      },
+                    ].map((item, i) => (
+                      <div
+                        key={i}
+                        className="tabctx__item"
+                        onMouseDown={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          if (!item.run) {
+                            setMovePick(true);
+                            return;
+                          }
+                          item.run();
+                          // 延后一 tick 关菜单：否则同一次点击的 click 会落到下面的行上，把重命名输入框 blur 掉
+                          setTimeout(() => setRowCtx(null), 0);
+                        }}
+                      >
+                        {item.label}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
 
       <div className="sidebar__footer">
         {hint && <div className="sidebar__hint">{hint}</div>}
