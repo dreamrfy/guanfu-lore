@@ -3,6 +3,7 @@ import { useStore } from "../data/store";
 import { savePrefs } from "../data/store";
 import { useNavHistory } from "../data/navHistory";
 import { AppIcon } from "../design/icons";
+import type { IconSetId } from "../design/icons";
 
 /**
  * 页签栏（手册 §1）：横贯整窗，高 38px。
@@ -10,6 +11,8 @@ import { AppIcon } from "../design/icons";
  * 主页/刷新 32×32 @(82,3)/(122,3)（W12）；
  * 页签固定 180×38（favicon 16、标题 120×20、关闭 20×20 常显、新建 28×28，W13）；
  * 页签右键菜单 8 项 + 边界灰置（W14；第 8 项观测未取到 → 【暂定】观复自有「关闭标签页」）；
+ * ⋯ 钮 32×26 @1030,6 → 观复自家入口【暂定】：立即同步/新建页面/主题切换/图标风格（W16，
+ *   观测原项为 Electron 下载管理器/网络设置，观复不需要）；
  * 右端窗口控制三钮 46×38（Tauri decorations:false 自绘标题栏，W11）。
  */
 
@@ -81,6 +84,8 @@ function copyTabUrl(tabId: string) {
   void navigator.clipboard.writeText(`${location.origin}/?page=${tabId}`).catch(() => {});
 }
 
+const ICON_SETS: IconSetId[] = ["lucide", "mingcute", "ph", "tabler"];
+
 export function TabBar() {
   const tabs = useStore((s) => s.tabs);
   const pages = useStore((s) => s.pages);
@@ -89,6 +94,10 @@ export function TabBar() {
   const closeTab = useStore((s) => s.closeTab);
   const createPage = useStore((s) => s.createPage);
   const iconSet = useStore((s) => s.iconSet);
+  const setIconSet = useStore((s) => s.setIconSet);
+  const theme = useStore((s) => s.theme);
+  const toggleTheme = useStore((s) => s.toggleTheme);
+  const runSyncNow = useStore((s) => s.runSyncNow);
 
   const canBack = useNavHistory((s) => s.canBack());
   const canForward = useNavHistory((s) => s.canForward());
@@ -100,13 +109,21 @@ export function TabBar() {
 
   /** 右键菜单状态：锚点页签 + 弹出坐标 */
   const [ctx, setCtx] = useState<{ tabId: string; x: number; y: number } | null>(null);
+  /** ⋯ 菜单（观复自家入口【暂定】） */
+  const [moreOpen, setMoreOpen] = useState(false);
 
-  // 菜单开着时：点击别处 / Esc 关闭
+  // 任一菜单开着时：点击别处 / Esc 关闭
   useEffect(() => {
-    if (!ctx) return;
-    const onDown = () => setCtx(null);
+    if (!ctx && !moreOpen) return;
+    const onDown = () => {
+      setCtx(null);
+      setMoreOpen(false);
+    };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setCtx(null);
+      if (e.key === "Escape") {
+        setCtx(null);
+        setMoreOpen(false);
+      }
     };
     window.addEventListener("mousedown", onDown);
     window.addEventListener("keydown", onKey);
@@ -114,7 +131,7 @@ export function TabBar() {
       window.removeEventListener("mousedown", onDown);
       window.removeEventListener("keydown", onKey);
     };
-  }, [ctx]);
+  }, [ctx, moreOpen]);
 
   const ctxIdx = ctx ? tabs.indexOf(ctx.tabId) : -1;
   const ctxItems = ctx
@@ -137,6 +154,21 @@ export function TabBar() {
         { label: "关闭标签页", disabled: false, run: () => closeTab(ctx.tabId) },
       ]
     : [];
+
+  const moreItems = [
+    { label: "立即同步", run: () => void runSyncNow().catch(() => {}) },
+    { label: "新建页面", run: () => createPage(null) },
+    { label: theme === "light" ? "切换到深色主题" : "切换到浅色主题", run: toggleTheme },
+    {
+      label: "切换图标风格",
+      run: () => setIconSet(ICON_SETS[(ICON_SETS.indexOf(iconSet) + 1) % ICON_SETS.length]),
+    },
+  ];
+
+  const closeMenus = () => {
+    setCtx(null);
+    setMoreOpen(false);
+  };
 
   return (
     <div className="tabbar">
@@ -189,17 +221,34 @@ export function TabBar() {
           <AppIcon name="plus" set={iconSet} size={14} />
         </div>
       </div>
-      <div className="tabbar__win">
-        <button className="winbtn" title="最小化" onClick={() => winOp("minimize")}>
-          <WinGlyph kind="min" />
-        </button>
-        <button className="winbtn" title="最大化" onClick={() => winOp("toggleMaximize")}>
-          <WinGlyph kind="max" />
-        </button>
-        <button className="winbtn winbtn--close" title="关闭" onClick={() => winOp("close")}>
-          <WinGlyph kind="close" />
-        </button>
-      </div>
+      <button
+        className="tabbar__more"
+        title="更多"
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          setCtx(null);
+          setMoreOpen((o) => !o);
+        }}
+      >
+        <AppIcon name="more" set={iconSet} size={14} />
+      </button>
+      {moreOpen && (
+        <div className="tabctx tabctx--more">
+          {moreItems.map((item) => (
+            <div
+              key={item.label}
+              className="tabctx__item"
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                closeMenus();
+                item.run();
+              }}
+            >
+              {item.label}
+            </div>
+          ))}
+        </div>
+      )}
       {ctx && (
         <div className="tabctx" style={{ left: ctx.x, top: ctx.y }}>
           {ctxItems.map((item) => (
@@ -218,6 +267,17 @@ export function TabBar() {
           ))}
         </div>
       )}
+      <div className="tabbar__win">
+        <button className="winbtn" title="最小化" onClick={() => winOp("minimize")}>
+          <WinGlyph kind="min" />
+        </button>
+        <button className="winbtn" title="最大化" onClick={() => winOp("toggleMaximize")}>
+          <WinGlyph kind="max" />
+        </button>
+        <button className="winbtn winbtn--close" title="关闭" onClick={() => winOp("close")}>
+          <WinGlyph kind="close" />
+        </button>
+      </div>
     </div>
   );
 }

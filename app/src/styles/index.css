@@ -2770,3 +2770,34 @@ html[data-theme="dark"] .winbtn--close:hover {
 .tabctx__item--off:hover {
   background: transparent;
 }
+
+/* ---------- 页签栏 ⋯ 钮（手册 §1：32×26 @1030,6；观复自家入口【暂定】） ---------- */
+
+.tabbar__more {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 26px;
+  margin: 6px 0;
+  align-self: flex-start;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 4px;
+}
+
+.tabbar__more:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.tabctx--more {
+  position: fixed;
+  right: 138px; /* 46×3 窗口控制左缘前 */
+  top: 34px;
+  left: auto;
+}

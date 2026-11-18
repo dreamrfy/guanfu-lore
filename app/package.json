@@ -27,7 +27,8 @@
     "nav-check": "node tools/nav-check.mjs",
     "tab-size-check": "node tools/tab-size-check.mjs",
     "tabctx-check": "node tools/tabctx-check.mjs",
-    "tab-isolation-check": "node tools/tab-isolation-check.mjs"
+    "tab-isolation-check": "node tools/tab-isolation-check.mjs",
+    "tab-more-check": "node tools/tab-more-check.mjs"
   },
   "keywords": [],
   "author": "",
