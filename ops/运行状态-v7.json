@@ -38,10 +38,11 @@
     "W41",
     "W42",
     "W43",
-    "W44"
+    "W44",
+    "W45"
   ],
-  "nextTask": "W45",
-  "doneCount": 30,
+  "nextTask": "W46",
+  "doneCount": 31,
   "totalCount": 88,
   "testBaseline": "cd app && npm test = 250/250 绿（勿退化）",
   "devServer": "npm run dev 起在 5173（后台任务 bjlvotyrx；挂了重起即可）",
@@ -136,6 +137,10 @@
     {
       "time": "2026-11-18T13:18:00Z",
       "event": "会话#20 完成 W43（封面设置：渐变预设/真上传/移除）fe531b9、W44（页头 hover 浮条三格真实联动）b79df9b；测试 35/265；下一任务 W45 @ 提及菜单"
+    },
+    {
+      "time": "2026-11-18T13:30:00Z",
+      "event": "会话#21 完成 W45（@ 提及全链实测 + 修 PageEditor 格式）1d204dc；测试 35/265；下一任务 W46 页面 ⋯ 菜单"
     }
   ],
   "modulesDone": [
