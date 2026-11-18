@@ -3561,3 +3561,22 @@ html[data-theme="dark"] .winbtn--close:hover {
   opacity: 0.4;
   cursor: default;
 }
+
+/* ---------- 页面 ⋯ 菜单（W46：03 §4 三组 17 项） ---------- */
+
+.pagemenu {
+  min-width: 232px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.menu-item--back {
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+
+.menu-item__caret {
+  margin-left: auto;
+  color: var(--text-secondary);
+}

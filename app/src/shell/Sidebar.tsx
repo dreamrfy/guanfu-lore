@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavHistory } from "../data/navHistory";
+import { useStarred } from "../data/starred";
 import { PageIconGlyph } from "../design/pageIcons";
 import { createPageFromTemplate, listTemplates, type PageTemplate } from "../data/templates";
 import { useStore } from "../data/store";
@@ -152,13 +153,10 @@ export function Sidebar() {
   const syncStatus = useStore((s) => s.syncStatus);
   const runSyncNow = useStore((s) => s.runSyncNow);
   const [tplPick, setTplPick] = useState<PageTemplate[] | null>(null);
-  const [starred, setStarred] = useState<Set<string>>(() => {
-    try {
-      return new Set(JSON.parse(localStorage.getItem("guanfu.starred") ?? "[]") as string[]);
-    } catch {
-      return new Set();
-    }
-  });
+  // 快速访问集合（W46 抽到共享 store，页面 ⋯ 菜单也能勾选）
+  const starredIds = useStarred((s) => s.ids);
+  const toggleStar = useStarred((s) => s.toggle);
+  const starred = useMemo(() => new Set(starredIds), [starredIds]);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
   // 剪藏未读总数（通知面板角标/条目都用它）
@@ -670,17 +668,7 @@ export function Sidebar() {
                     [
                       {
                         label: starred.has(rowCtx.id) ? "从快速访问移除" : "添加到快速访问",
-                        run: () => {
-                          const next = new Set(starred);
-                          if (next.has(rowCtx.id)) next.delete(rowCtx.id);
-                          else next.add(rowCtx.id);
-                          setStarred(next);
-                          try {
-                            localStorage.setItem("guanfu.starred", JSON.stringify([...next]));
-                          } catch {
-                            /* 忽略 */
-                          }
-                        },
+                        run: () => toggleStar(rowCtx.id),
                       },
                       { label: "拷贝副本", run: () => void duplicatePage(rowCtx.id) },
                       {

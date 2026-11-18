@@ -63,10 +63,13 @@ export function TopToolbar() {
     const onOpenAi = () => setChatOpen(true);
     const onImport = () => mdRef.current?.click();
     window.addEventListener("guanfu:open-ai", onOpenAi);
+    const onAppearance = () => setOpenMenu("appearance");
     window.addEventListener("guanfu:import-file", onImport);
+    window.addEventListener("guanfu:open-appearance", onAppearance);
     return () => {
       window.removeEventListener("guanfu:open-ai", onOpenAi);
       window.removeEventListener("guanfu:import-file", onImport);
+      window.removeEventListener("guanfu:open-appearance", onAppearance);
     };
   }, []);
 
