@@ -618,6 +618,27 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
   const openRecordRef = useStore((s) => s.openRecordRef);
 
   const [editingCell, setEditingCell] = useState<string | null>(null);
+  // W64 单元格语义：单击选中（蓝框）/ 双击编辑；ESC 取消选中与编辑（取消时不吃掉本次提交）
+  const [selectedCell, setSelectedCell] = useState<string | null>(null);
+  const cancelCommitRef = useRef(false);
+  // W64：ESC 取消编辑（不吃掉本次提交）或取消选中
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (editingCell) {
+        cancelCommitRef.current = true;
+        setEditingCell(null);
+        window.setTimeout(() => {
+          cancelCommitRef.current = false;
+        }, 0);
+      } else {
+        setSelectedCell(null);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [editingCell]);
+
   const [menuFieldId, setMenuFieldId] = useState<string | null>(null);
   const [addFieldOpen, setAddFieldOpen] = useState(false);
   const [batchOpen, setBatchOpen] = useState(false);
@@ -799,7 +820,20 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
                   return (
                     <td
                       key={f.id}
-                      className={`grid__cell${colIdx === 0 ? " grid__frozen" : ""}`}
+                      className={`grid__cell${colIdx === 0 ? " grid__frozen" : ""}${
+                        selectedCell === key ? " grid__cell--selected" : ""
+                      }${editing ? " grid__cell--editing" : ""}`}
+                      onClick={(e) => {
+                        // 单选/多选：单击直接开编辑面板（04 §3）；其它类型单击=选中
+                        if (f.type === "select" || f.type === "multiSelect") {
+                          e.stopPropagation();
+                          cancelOpen();
+                          setSelectedCell(key);
+                          setEditingCell(key);
+                          return;
+                        }
+                        setSelectedCell(key);
+                      }}
                       onDoubleClick={() => {
                         cancelOpen();
                         setEditingCell(key);
@@ -812,6 +846,7 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
                           record={rec}
                           collection={collection}
                           onCommit={(value) => {
+                            if (cancelCommitRef.current) return;
                             setCell(collection.id, rec.id, f.id, value);
                             // 复选框/下拉不需要一直开着编辑态；多选例外（要连着勾多个）
                             if (f.type !== "multiSelect") {

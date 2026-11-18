@@ -3968,3 +3968,18 @@ html[data-theme="dark"] .grid tbody tr:nth-child(odd) .grid__cell {
   line-height: 14px;
   font-size: 11px;
 }
+
+/* ---------- 单元格选中 / 编辑语义（W64） ---------- */
+
+.grid__cell--selected {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.grid td.grid__cell--editing {
+  height: 60px; /* 04 §3：文本双击编辑时行高 37→60 */
+}
+
+.grid__add {
+  width: 48px; /* 04 §3：列尾「＋ 新建列」48px */
+}

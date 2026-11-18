@@ -60,7 +60,8 @@
     "drag-check": "node tools/drag-check.mjs",
     "fields61-check": "node tools/fields61-check.mjs",
     "advfields-check": "node tools/advfields-check.mjs",
-    "grid-check": "node tools/grid-check.mjs"
+    "grid-check": "node tools/grid-check.mjs",
+    "cell-semantics-check": "node tools/cell-semantics-check.mjs"
   },
   "keywords": [],
   "author": "",
