@@ -51,7 +51,9 @@
     "pageheadbar-check": "node tools/pageheadbar-check.mjs",
     "mention-check": "node tools/mention-check.mjs",
     "pagemenu-check": "node tools/pagemenu-check.mjs",
-    "narrow-check": "node tools/narrow-check.mjs"
+    "narrow-check": "node tools/narrow-check.mjs",
+    "blocks-check": "node tools/blocks-check.mjs",
+    "media-check": "node tools/media-check.mjs"
   },
   "keywords": [],
   "author": "",
