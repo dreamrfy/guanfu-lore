@@ -65,10 +65,11 @@
     "W71",
     "W72",
     "W73",
-    "W74"
+    "W74",
+    "W75"
   ],
-  "nextTask": "W75",
-  "doneCount": 56,
+  "nextTask": "W76",
+  "doneCount": 57,
   "totalCount": 88,
   "testBaseline": "cd app && npm test = 272/272 绿（36 个文件，勿退化）",
   "devServer": "npm run dev 起在 5173（后台任务 bjlvotyrx；挂了重起即可）",
@@ -267,6 +268,10 @@
     {
       "time": "2026-11-19T02:10:00Z",
       "event": "完成 W74（时间轴视图：顶部年月/月单位/今天、日期刻度+今天红线、左侧记录面板折叠、记录按日期定位、自动滚到今天）——新增 TimelineView.tsx；视图类型下拉时间轴项由置灰改为可选；测试 36/272、build 通过、tsc 无错、timeline-check PASS；下一任务 W75 日历视图"
+    },
+    {
+      "time": "2026-11-19T02:50:00Z",
+      "event": "完成 W75（日历视图：年月+今天、星期表头一~日、42 格 7 列、今天红标、跨月灰显、事件落格、翻月）——新增 CalendarView.tsx；6 种视图全部可切换；测试 36/272、build 通过、tsc 无错、calendar-check PASS；下一任务 W76 记录页"
     }
   ],
   "modulesDone": [

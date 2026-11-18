@@ -71,7 +71,8 @@
     "kanban-check": "node tools/kanban-check.mjs",
     "gallery-check": "node tools/gallery-check.mjs",
     "catalog-check": "node tools/catalog-check.mjs",
-    "timeline-check": "node tools/timeline-check.mjs"
+    "timeline-check": "node tools/timeline-check.mjs",
+    "calendar-check": "node tools/calendar-check.mjs"
   },
   "keywords": [],
   "author": "",

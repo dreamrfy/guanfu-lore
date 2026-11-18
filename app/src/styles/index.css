@@ -4903,3 +4903,156 @@ html[data-theme="dark"] .grid tbody tr:nth-child(odd) .grid__cell {
   font-size: 13px;
 }
 
+/* ---------- 日历视图（W75，04 §1.1 + 65 号观测） ---------- */
+
+.cal {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cal--empty {
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.cal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  flex: 0 0 auto;
+}
+
+.cal__ym {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.cal__nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cal__nav-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.cal__nav-btn:hover {
+  color: var(--text);
+}
+
+.cal__now {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.cal__now:hover {
+  color: var(--text);
+}
+
+/* 星期表头（一~日，周一起）+ 下面的分隔线 */
+.cal__week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  flex: 0 0 auto;
+  padding: 0 8px;
+}
+
+.cal__wd {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 6px 0;
+}
+
+.cal__line {
+  height: 1px;
+  background: var(--border);
+  margin: 0 8px;
+  flex: 0 0 auto;
+}
+
+/* 日期格 */
+.cal__grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: minmax(56px, 1fr);
+  padding: 0 8px 8px;
+  gap: 1px;
+}
+
+.cal__cell {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 0;
+}
+
+/* 跨月日期灰显 */
+.cal__cell--out {
+  background: var(--bg-secondary);
+}
+
+.cal__cell--out .cal__day {
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+
+.cal__day {
+  align-self: flex-start;
+  font-size: 13px;
+  color: var(--text);
+  min-width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 今天：红底圆标 */
+.cal__day--today {
+  background: #e5484d;
+  color: #fff;
+  border-radius: 50%;
+}
+
+.cal__event {
+  font-size: 11px;
+  color: var(--text);
+  background: var(--bg-hover);
+  border-radius: 3px;
+  padding: 1px 4px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cal__event:hover {
+  background: var(--primary);
+  color: #fff;
+}
+

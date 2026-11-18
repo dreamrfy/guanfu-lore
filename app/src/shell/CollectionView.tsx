@@ -30,6 +30,7 @@ import { KanbanView } from "./KanbanView";
 import { GalleryView } from "./GalleryView";
 import { CatalogView } from "./CatalogView";
 import { TimelineView } from "./TimelineView";
+import { CalendarView } from "./CalendarView";
 
 /** 按字段类型渲染只读值 */
 function recordTitle(collection: CollectionRow | undefined, record: RecordRow): string {
@@ -806,6 +807,8 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
         <CatalogView collection={collection} view={view} rows={rows} />
       ) : view?.type === "timeline" ? (
         <TimelineView collection={collection} view={view} rows={rows} />
+      ) : view?.type === "calendar" ? (
+        <CalendarView collection={collection} view={view} rows={rows} />
       ) : (
       <div className="collection__scroll">
         <table className={`grid${view?.autoRowHeight ? " grid--auto-row" : ""}`} style={{ width: gridWidth, tableLayout: "fixed" }}>
@@ -1334,7 +1337,7 @@ function ViewTabs({ collection, view }: { collection: CollectionRow; view: ViewD
                       <option value="gallery">画廊</option>
                       <option value="catalog">目录</option>
                       <option value="timeline">时间轴</option>
-                      <option disabled>日历（待 W75）</option>
+                      <option value="calendar">日历</option>
                     </select>
                   </label>
                   <label className="vs-row">
