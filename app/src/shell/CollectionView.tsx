@@ -7,6 +7,9 @@ import {
   summarizeRecords,
   asChecked,
   asDateMs,
+  evaluateFormula,
+  computeRollup,
+  numericValueOf,
   asFiles,
   asNumber,
   asStringList,
@@ -24,7 +27,13 @@ import { AiBatchDialog } from "./AiBatchDialog";
 import { ViewBar } from "./ViewBar";
 
 /** 按字段类型渲染只读值 */
-function CellValue({ field, record }: { field: FieldDef; record: RecordRow }) {
+function recordTitle(collection: CollectionRow | undefined, record: RecordRow): string {
+  const first = collection?.fields.find((f) => f.type === "text");
+  const t = first ? asText(record.values[first.id]) : "";
+  return t || "无标题记录";
+}
+
+function CellValue({ field, record, collection }: { field: FieldDef; record: RecordRow; collection: CollectionRow }) {
   const v = record.values[field.id];
 
   if (field.type === "checkbox") {
@@ -130,6 +139,59 @@ function CellValue({ field, record }: { field: FieldDef; record: RecordRow }) {
     );
   }
 
+  // W62 高级型：关联 / 汇总 / 公式
+  const collections = useStore((s) => s.collections);
+  const recordsMap = useStore((s) => s.records);
+  const ensureRecords = useStore((s) => s.ensureRecords);
+  const relCol = field.relationCollectionId
+    ? collections.find((c) => c.id === field.relationCollectionId)
+    : undefined;
+
+  useEffect(() => {
+    if (relCol) void ensureRecords(relCol.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [relCol?.id]);
+
+  if (field.type === "relation") {
+    const ids = asStringList(v);
+    if (ids.length === 0) return <span className="cell-empty" />;
+    const rows = recordsMap[relCol?.id ?? ""] ?? [];
+    return (
+      <span className="pill-row">
+        {ids.map((id) => {
+          const r = rows.find((x) => x.id === id);
+          return (
+            <span key={id} className="pill" title={r ? recordTitle(relCol, r) : "记录已不存在"}>
+              🔗 {r ? recordTitle(relCol, r) : "已删除"}
+            </span>
+          );
+        })}
+      </span>
+    );
+  }
+
+  if (field.type === "rollup") {
+    const srcIds = asStringList(record.values[field.rollupSourceFieldId ?? ""]);
+    const rows = recordsMap[relCol?.id ?? ""] ?? [];
+    const total = computeRollup({
+      sourceIds: srcIds,
+      rows,
+      op: field.rollupOp ?? "count",
+      targetFieldId: field.rollupTargetFieldId,
+    });
+    return <span>{total}</span>;
+  }
+
+  if (field.type === "formula") {
+    const expr = field.formula ?? "";
+    if (!expr.trim()) return <span className="cell-empty" />;
+    const result = evaluateFormula(expr, (name) => {
+      const f = collection.fields.find((x) => x.name === name);
+      return f ? numericValueOf(record.values, f.id) : null;
+    });
+    return <span className="cell-derive">{result === null ? "—" : String(Math.round(result * 100) / 100)}</span>;
+  }
+
   return <span className={field.type === "text" ? "cell-title" : undefined}>{text}</span>;
 }
 
@@ -137,10 +199,12 @@ function CellValue({ field, record }: { field: FieldDef; record: RecordRow }) {
 export function CellEditor({
   field,
   record,
+  collection,
   onCommit,
 }: {
   field: FieldDef;
   record: RecordRow;
+  collection?: CollectionRow;
   onCommit: (value: unknown) => void;
 }) {
   const v = record.values[field.id];
@@ -223,6 +287,39 @@ export function CellEditor({
     );
   }
 
+  // W62 高级型
+  if (field.type === "formula" || field.type === "rollup") {
+    return <span className="cell-derive">自动计算（只读）</span>;
+  }
+
+  if (field.type === "relation") {
+    const ids = asStringList(v);
+    const relCol = collection
+      ? useStore.getState().collections.find((c) => c.id === field.relationCollectionId)
+      : undefined;
+    const rows = relCol ? useStore.getState().records[relCol.id] ?? [] : [];
+    return (
+      <div className="cell-relation" onClick={(e) => e.stopPropagation()}>
+        {rows.length === 0 && <span className="cell-empty">先在关联表里建记录</span>}
+        {rows.slice(0, 12).map((r) => {
+          const checked = ids.includes(r.id);
+          return (
+            <label key={r.id} className="cell-relation__item">
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={() =>
+                  onCommit(checked ? ids.filter((x) => x !== r.id) : [...ids, r.id])
+                }
+              />
+              {recordTitle(relCol, r)}
+            </label>
+          );
+        })}
+      </div>
+    );
+  }
+
   // W61 新类型编辑器
   if (field.type === "createdTime" || field.type === "createdBy") {
     return <span className="cell-derive">系统生成（只读）</span>;
@@ -298,6 +395,7 @@ function ColumnMenu({
   const updateField = useStore((s) => s.updateField);
   const removeField = useStore((s) => s.removeField);
   const updateView = useStore((s) => s.updateView);
+  const collections = useStore((s) => s.collections);
   const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -375,6 +473,66 @@ function ColumnMenu({
           </button>
         </div>
       </div>
+
+      {/* W62 关联：选目标表 */}
+      {field.type === "relation" && (
+        <div className="col-menu__section">
+          <label className="col-menu__label">关联表</label>
+          <select
+            className="cell-input"
+            value={field.relationCollectionId ?? ""}
+            onChange={(e) => updateField(collection.id, field.id, { relationCollectionId: e.target.value || undefined })}
+          >
+            <option value="">选择表…</option>
+            {collections.filter((c) => c.id !== collection.id).map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* W62 汇总：来源关联字段 / 目标字段 / 运算 */}
+      {field.type === "rollup" && (
+        <div className="col-menu__section">
+          <label className="col-menu__label">汇总</label>
+          <select
+            className="cell-input"
+            value={field.rollupSourceFieldId ?? ""}
+            onChange={(e) => updateField(collection.id, field.id, { rollupSourceFieldId: e.target.value || undefined })}
+          >
+            <option value="">来源关联字段…</option>
+            {collection.fields.filter((f) => f.type === "relation").map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.name}
+              </option>
+            ))}
+          </select>
+          <select
+            className="cell-input"
+            value={field.rollupOp ?? "count"}
+            onChange={(e) => updateField(collection.id, field.id, { rollupOp: e.target.value as "count" | "sum" })}
+          >
+            <option value="count">计数</option>
+            <option value="sum">求和</option>
+          </select>
+        </div>
+      )}
+
+      {/* W62 公式：写 {字段名} 表达式 */}
+      {field.type === "formula" && (
+        <div className="col-menu__section">
+          <label className="col-menu__label">{"公式（如 {单价} * {数量}）"}</label>
+          <input
+            className="cell-input"
+            defaultValue={field.formula ?? ""}
+            placeholder={"{单价} * {数量}"}
+            onBlur={(e) => updateField(collection.id, field.id, { formula: e.target.value })}
+          />
+        </div>
+      )}
+
 
       {(field.type === "select" || field.type === "multiSelect") && (
         <div className="col-menu__section">
@@ -652,6 +810,7 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
                         <CellEditor
                           field={f}
                           record={rec}
+                          collection={collection}
                           onCommit={(value) => {
                             setCell(collection.id, rec.id, f.id, value);
                             // 复选框/下拉不需要一直开着编辑态；多选例外（要连着勾多个）
@@ -661,7 +820,7 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
                           }}
                         />
                       ) : (
-                        <CellValue field={f} record={rec} />
+                        <CellValue field={f} record={rec} collection={collection} />
                       )}
                     </td>
                   );

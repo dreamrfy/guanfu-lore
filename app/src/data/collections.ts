@@ -29,6 +29,9 @@ export const FIELD_TYPE_LABEL: Record<FieldType, string> = {
   files: "文件媒体",
   createdTime: "创建时间",
   createdBy: "创建人",
+  relation: "关联",
+  rollup: "汇总",
+  formula: "公式",
 };
 
 /** W61 文件媒体字段的值：附件 id + 文件名（原始文件存 assets 表） */
@@ -413,6 +416,11 @@ export function operatorsFor(type: FieldType): FilterCondition["operator"][] {
       return ["isEmpty", "isNotEmpty"];
     case "createdTime":
       return ["before", "after", "isEmpty", "isNotEmpty"];
+    case "rollup":
+    case "formula":
+      return ["is", "gt", "lt", "gte", "lte", "isEmpty", "isNotEmpty"];
+    case "relation":
+      return ["isEmpty", "isNotEmpty"];
     default:
       return ["contains", "is", "isNot", "isEmpty", "isNotEmpty"];
   }
@@ -453,4 +461,127 @@ export function makeFilter(field: FieldDef): FilterCondition {
 
 export function makeSort(fieldId: string, direction: SortDef["direction"] = "asc"): SortDef {
   return { fieldId, direction };
+}
+
+/* ---------------- W62 高级字段型：关联 / 汇总 / 公式 ---------------- */
+
+/**
+ * 公式求值（最小可用版）：支持 数字、{字段名}、+ - * / ( )、一元负号。
+ * 不引入 eval/Function（用户输入不该有执行能力），用递归下降手写。
+ * 字段值为空或不是数字时按 0 处理（与表格里"空当零"的直觉一致）。
+ */
+export function evaluateFormula(
+  expr: string,
+  getNumber: (fieldName: string) => number | null,
+): number | null {
+  const tokens: (number | string)[] = [];
+  let i = 0;
+  while (i < expr.length) {
+    const c = expr[i];
+    if (/\s/.test(c)) {
+      i++;
+      continue;
+    }
+    if ("+-*/()".includes(c)) {
+      tokens.push(c);
+      i++;
+      continue;
+    }
+    if (c === "{") {
+      const end = expr.indexOf("}", i);
+      if (end < 0) return null;
+      tokens.push("{" + expr.slice(i + 1, end) + "}");
+      i = end + 1;
+      continue;
+    }
+    if (/[0-9.]/.test(c)) {
+      let j = i;
+      while (j < expr.length && /[0-9.]/.test(expr[j])) j++;
+      tokens.push(Number(expr.slice(i, j)));
+      i = j;
+      continue;
+    }
+    return null;
+  }
+  let pos = 0;
+  const peek = () => tokens[pos];
+  const eat = () => tokens[pos++];
+
+  const factor = (): number => {
+    const t = peek();
+    if (t === undefined) throw new Error("eof");
+    if (typeof t === "number") {
+      eat();
+      return t;
+    }
+    if (t === "-") {
+      eat();
+      return -factor();
+    }
+    if (t === "(") {
+      eat();
+      const v = expr2();
+      if (eat() !== ")") throw new Error("paren");
+      return v;
+    }
+    if (typeof t === "string" && t.startsWith("{")) {
+      eat();
+      const name = t.slice(1, -1);
+      return getNumber(name) ?? 0;
+    }
+    throw new Error("token");
+  };
+  const term = (): number => {
+    let v = factor();
+    while (peek() === "*" || peek() === "/") {
+      const op = eat();
+      const r = factor();
+      v = op === "*" ? v * r : r === 0 ? 0 : v / r;
+    }
+    return v;
+  };
+  const expr2 = (): number => {
+    let v = term();
+    while (peek() === "+" || peek() === "-") {
+      const op = eat();
+      const r = term();
+      v = op === "+" ? v + r : v - r;
+    }
+    return v;
+  };
+
+  try {
+    const v = expr2();
+    if (pos !== tokens.length) return null;
+    return Number.isFinite(v) ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+/** 把记录里某个字段收窄成数字（数字型取数、其他能转就转） */
+export function numericValueOf(values: Record<string, unknown>, fieldId: string): number | null {
+  const v = values[fieldId];
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string" && v.trim() !== "") {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
+/** W62 汇总计算（纯函数）：sourceIds 是关联字段里的记录 id；count/sum 两种运算 */
+export function computeRollup(opts: {
+  sourceIds: string[];
+  rows: { id: string; values: Record<string, unknown> }[];
+  op: "count" | "sum";
+  targetFieldId?: string;
+}): number {
+  if (opts.op === "count") return opts.sourceIds.length;
+  const tf = opts.targetFieldId;
+  if (!tf) return 0;
+  return opts.sourceIds.reduce((sum, id) => {
+    const row = opts.rows.find((r) => r.id === id);
+    return sum + (row ? numericValueOf(row.values, tf) ?? 0 : 0);
+  }, 0);
 }

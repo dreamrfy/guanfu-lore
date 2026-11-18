@@ -58,7 +58,8 @@
     "blockmenu-check": "node tools/blockmenu-check.mjs",
     "convertpanel-check": "node tools/convertpanel-check.mjs",
     "drag-check": "node tools/drag-check.mjs",
-    "fields61-check": "node tools/fields61-check.mjs"
+    "fields61-check": "node tools/fields61-check.mjs",
+    "advfields-check": "node tools/advfields-check.mjs"
   },
   "keywords": [],
   "author": "",

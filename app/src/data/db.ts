@@ -79,7 +79,10 @@ export type FieldType =
   | "person"
   | "files"
   | "createdTime"
-  | "createdBy";
+  | "createdBy"
+  | "relation"
+  | "rollup"
+  | "formula";
 
 export type SelectOption = {
   id: string;
@@ -98,6 +101,14 @@ export type FieldDef = {
   width?: number;
   /** 日期显示格式（W61）：仅日期 / 日期+时间 */
   dateFormat?: "date" | "datetime";
+  /** W62 关联字段：指向哪张表 */
+  relationCollectionId?: string;
+  /** W62 汇总：来源关联字段 id + 被汇总字段 id + 运算 */
+  rollupSourceFieldId?: string;
+  rollupTargetFieldId?: string;
+  rollupOp?: "count" | "sum";
+  /** W62 公式：形如 {单价} * {数量} */
+  formula?: string;
 };
 
 export type SortDef = {

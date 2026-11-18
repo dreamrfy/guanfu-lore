@@ -247,3 +247,45 @@ describe("视图应用（筛选 + 排序）", () => {
     expect(out.map((r) => r.values[title.id])).toEqual(["别的", "磷矿", "正极材料"]);
   });
 });
+
+describe("W62 公式求值", async () => {
+  const { evaluateFormula } = await import("./collections");
+  const get = (name: string) =>
+    ({ 单价: 12.5, 数量: 4, 空: null } as Record<string, number | null>)[name] ?? null;
+
+  it("四则与字段引用", () => {
+    expect(evaluateFormula("{单价} * {数量}", get)).toBe(50);
+    expect(evaluateFormula("({单价} + 1) / 2", get)).toBe(6.75);
+    expect(evaluateFormula("-{数量} + 10", get)).toBe(6);
+  });
+
+  it("空字段按 0 处理；除零返回 0；非法表达式返回 null", () => {
+    expect(evaluateFormula("{空} + 3", get)).toBe(3);
+    expect(evaluateFormula("5 / 0", get)).toBe(0);
+    expect(evaluateFormula("{单价} +", get)).toBeNull();
+    expect(evaluateFormula("abc", get)).toBeNull();
+  });
+});
+
+describe("W62 汇总计算", async () => {
+  const { computeRollup, numericValueOf } = await import("./collections");
+  const rows = [
+    { id: "r1", values: { n: 3 } },
+    { id: "r2", values: { n: 4.5 } },
+    { id: "r3", values: { n: "2" } },
+  ];
+
+  it("计数 = 关联记录数", () => {
+    expect(computeRollup({ sourceIds: ["r1", "r2", "r3"], rows, op: "count" })).toBe(3);
+  });
+
+  it("求和 = 目标字段数值相加（字符串数字也算）", () => {
+    expect(computeRollup({ sourceIds: ["r1", "r2", "r3"], rows, op: "sum", targetFieldId: "n" })).toBe(9.5);
+  });
+
+  it("缺失记录/缺目标字段不报错", () => {
+    expect(computeRollup({ sourceIds: ["r1", "zz"], rows, op: "sum", targetFieldId: "n" })).toBe(3);
+    expect(computeRollup({ sourceIds: ["r1"], rows, op: "sum" })).toBe(0);
+    expect(numericValueOf({ x: "abc" }, "x")).toBeNull();
+  });
+});
