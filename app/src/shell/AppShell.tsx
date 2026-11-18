@@ -140,12 +140,27 @@ export function AppShell() {
   const recordOpen = useStore((s) => s.openRecordRef !== null);
   const page = useActivePage();
   const doc = useActiveDoc();
-
-  // 切页面时把滚动位置拉回顶部
+  // 切页面时按页签记忆恢复滚动（W15 页签=独立实例【暂定】：同窗口隔离实现；
+  // Tauri 2 多窗口核验结论见对照文档——真·每页签独立 webview 留架构专项）
+  const scrollMemo = useRef<Map<string, number>>(new Map());
+  // 滚动时实时记忆当前页位置（切页后 DOM 已换内容，effect 里读不到旧位置）
   useEffect(() => {
-    document.querySelector(".page")?.scrollTo({ top: 0 });
+    const el = document.querySelector(".page");
+    if (!el) return;
+    const onScroll = () => {
+      if (page?.id) scrollMemo.current.set(page.id, el.scrollTop);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
   }, [page?.id]);
-
+  // 切页后恢复目标页的记忆滚动（等编辑器渲染一帧）
+  useEffect(() => {
+    const el = document.querySelector(".page");
+    if (!el) return;
+    const target = scrollMemo.current.get(page?.id ?? "") ?? 0;
+    const t = setTimeout(() => el.scrollTo({ top: target }), 60);
+    return () => clearTimeout(t);
+  }, [page?.id]);
   const docReady = doc !== null;
 
   return (

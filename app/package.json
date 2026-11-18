@@ -26,7 +26,8 @@
     "win-final-check": "node tools/win-final-check.mjs",
     "nav-check": "node tools/nav-check.mjs",
     "tab-size-check": "node tools/tab-size-check.mjs",
-    "tabctx-check": "node tools/tabctx-check.mjs"
+    "tabctx-check": "node tools/tabctx-check.mjs",
+    "tab-isolation-check": "node tools/tab-isolation-check.mjs"
   },
   "keywords": [],
   "author": "",
