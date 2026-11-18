@@ -39,10 +39,11 @@
     "W42",
     "W43",
     "W44",
-    "W45"
+    "W45",
+    "W46"
   ],
-  "nextTask": "W46",
-  "doneCount": 31,
+  "nextTask": "W47",
+  "doneCount": 32,
   "totalCount": 88,
   "testBaseline": "cd app && npm test = 250/250 绿（勿退化）",
   "devServer": "npm run dev 起在 5173（后台任务 bjlvotyrx；挂了重起即可）",
@@ -141,6 +142,10 @@
     {
       "time": "2026-11-18T13:30:00Z",
       "event": "会话#21 完成 W45（@ 提及全链实测 + 修 PageEditor 格式）1d204dc；测试 35/265；下一任务 W46 页面 ⋯ 菜单"
+    },
+    {
+      "time": "2026-11-18T13:50:00Z",
+      "event": "会话#22 完成 W46（页面 ⋯ 菜单 17 项重排 + 快速访问共享 store）21e977b；测试 36/267；下一任务 W47 窄口适配"
     }
   ],
   "modulesDone": [
