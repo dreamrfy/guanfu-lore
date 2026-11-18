@@ -198,6 +198,51 @@ export function PageEditor({ initialBlocks, theme, onChange, uploadFile, readOnl
       }));
   };
 
+  /**
+   * W51 基础块文案照录（07 §1）：把 BlockNote 默认项改成观测到的中文名 + 规格快捷码别名。
+   * 只改名/加别名，不改行为——插入、渲染、快捷键仍由 BlockNote 自带实现负责。
+   */
+  const TITLE_MAP: Record<string, string> = {
+    段落: "正文",
+    一级标题: "标题1",
+    二级标题: "标题2",
+    三级标题: "标题3",
+    四级标题: "标题4",
+    可折叠一级标题: "折叠标题1",
+    可折叠二级标题: "折叠标题2",
+    可折叠三级标题: "折叠标题3",
+    无序列表: "项目列表",
+    有序列表: "编号列表",
+    检查清单: "待办列表",
+    可折叠列表: "折叠列表",
+    引用: "引述文字",
+    代码块: "代码片段",
+    表格: "简单表格",
+    分隔线: "分割线",
+    表情符号: "Emoji",
+  };
+  const ALIAS_MAP: Record<string, string[]> = {
+    段落: ["zw", "zhenwen"],
+    一级标题: ["h1", "bt1"],
+    二级标题: ["h2", "bt2"],
+    三级标题: ["h3", "bt3"],
+    四级标题: ["h4", "bt4"],
+    可折叠一级标题: ["zdbt1"],
+    可折叠二级标题: ["zdbt2"],
+    可折叠三级标题: ["zdbt3"],
+    无序列表: ["xmlb"],
+    有序列表: ["bhlb"],
+    检查清单: ["dblb"],
+    可折叠列表: ["zdlb"],
+    引用: ["yswz"],
+    代码块: ["dmpd"],
+    表格: ["jdbg"],
+    分隔线: ["fgx"],
+    表情符号: ["Emoji"],
+  };
+  // 规格只有标题1~4；五级/六级不出现在菜单里（不做假入口）
+  const HIDDEN_TITLES = new Set(["五级标题", "六级标题"]);
+
   return (
     <div className="editor-host" onKeyDown={onEditorKeyDown}>
       <BlockNoteView
@@ -215,7 +260,16 @@ export function PageEditor({ initialBlocks, theme, onChange, uploadFile, readOnl
           // 默认块 + 我们的着重文字块，一起交给筛选器
           filterSuggestionItems(
             [
-              ...(getDefaultReactSlashMenuItems(editor as never) as never[]),
+              ...(getDefaultReactSlashMenuItems(editor as never) as {
+                title: string;
+                aliases?: string[];
+              }[])
+                .filter((it) => !HIDDEN_TITLES.has(it.title))
+                .map((it) => ({
+                  ...it,
+                  title: TITLE_MAP[it.title] ?? it.title,
+                  aliases: [...(it.aliases ?? []), ...(ALIAS_MAP[it.title] ?? [])],
+                })),
               calloutSlashItem,
               bookmarkSlashItem,
               collectionSlashItem,
