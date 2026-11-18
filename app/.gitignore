@@ -11,3 +11,5 @@ coverage/
 .vite/
 
 .webview2-test-profile/
+
+.webview2-installed-profile/

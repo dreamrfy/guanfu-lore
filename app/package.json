@@ -29,7 +29,10 @@
     "tabctx-check": "node tools/tabctx-check.mjs",
     "tab-isolation-check": "node tools/tab-isolation-check.mjs",
     "tab-more-check": "node tools/tab-more-check.mjs",
-    "tab-boundary-check": "node tools/tab-boundary-check.mjs"
+    "tab-boundary-check": "node tools/tab-boundary-check.mjs",
+    "install-app": "node tools/install-app.mjs",
+    "installed-smoke": "node tools/installed-smoke.mjs",
+    "run-installed": "node tools/run-installed.mjs"
   },
   "keywords": [],
   "author": "",
