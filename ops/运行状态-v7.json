@@ -20,10 +20,11 @@
     "W14",
     "W15",
     "W16",
-    "W17"
+    "W17",
+    "W18"
   ],
-  "nextTask": "W18",
-  "doneCount": 11,
+  "nextTask": "W20",
+  "doneCount": 12,
   "totalCount": 88,
   "testBaseline": "cd app && npm test = 250/250 绿（勿退化）",
   "devServer": "npm run dev 起在 5173（后台任务 bjlvotyrx；挂了重起即可）",
@@ -74,6 +75,13 @@
     {
       "time": "2026-11-18T09:10:00Z",
       "event": "会话#8 完成 W17（中键/溢出/末签边界点验 PASS，无需改码）；下一任务 W18 外壳整体走查 + Tauri 冒烟 = 模块 W1 收口（📦 待验收）"
+    },
+    {
+      "time": "2026-11-18T09:35:00Z",
+      "event": "会话#9 完成 W18 → 📦 模块 W1 应用外壳收口（走查 16/16 + 安装包真装冒烟 6/6）e6a207d；下一任务 W20 侧栏容器规格（模块 W2 开始）"
     }
+  ],
+  "modulesDone": [
+    "W1"
   ]
 }
