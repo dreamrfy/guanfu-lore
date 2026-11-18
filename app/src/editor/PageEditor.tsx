@@ -177,7 +177,9 @@ export function PageEditor({ initialBlocks, theme, onChange, uploadFile, readOnl
     },
   ];
 
-  /** @ 页面提及：列表直接取当前知识库里的页面，输入即筛 */  const mentionItems = async (query: string) => {    const q = query.trim().toLowerCase();
+  /** @ 页面提及：列表直接取当前知识库里的页面，输入即筛 */
+  const mentionItems = async (query: string) => {
+    const q = query.trim().toLowerCase();
     return useStore
       .getState()
       .pages.filter((p) => !q || (p.title || "无标题").toLowerCase().includes(q))
