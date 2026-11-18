@@ -4626,3 +4626,280 @@ html[data-theme="dark"] .grid tbody tr:nth-child(odd) .grid__cell {
   color: var(--text);
 }
 
+/* ---------- 时间轴视图（W74，04 §1.1 + 49/64 号观测） ---------- */
+
+.timeline {
+  --timeline-tick-w: 56px;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.timeline--empty {
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* 顶部一行：2026年11月 + 月 ⌄ + ‹ 今天 › */
+.timeline__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  flex: 0 0 auto;
+}
+
+.timeline__date {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.timeline__head-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.timeline__unit-wrap {
+  position: relative;
+}
+
+.timeline__unit {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+.timeline__unit:hover {
+  color: var(--text);
+}
+
+.timeline__unit-pop {
+  top: 28px;
+  left: 0;
+  right: auto;
+  z-index: 20;
+}
+
+.timeline__nav {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.timeline__nav:hover {
+  color: var(--text);
+}
+
+.timeline__now {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.timeline__now:hover {
+  color: var(--text);
+}
+
+/* 主体：左侧记录列表 + 右侧泳道 */
+.timeline__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+}
+
+.timeline__panel {
+  flex: 0 0 auto;
+  width: 220px;
+  border-right: 1px solid var(--border);
+  position: relative;
+  display: flex;
+  min-height: 0;
+}
+
+.timeline__panel--closed {
+  width: 28px;
+}
+
+.timeline__collapse {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 6px;
+  flex: 0 0 auto;
+  /* 不跟着面板拉高——固定在面板顶部 */
+  align-self: flex-start;
+}
+
+.timeline__collapse:hover {
+  color: var(--text);
+}
+
+.timeline__panel-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 4px 8px 4px 0;
+}
+
+.timeline__panel-row {
+  padding: 6px 4px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  border-radius: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeline__panel-row:hover {
+  background: var(--bg-hover);
+}
+
+.timeline__panel-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+
+.timeline__panel-empty {
+  color: var(--text-secondary);
+  font-size: 12px;
+  padding: 4px;
+}
+
+.timeline__lane-wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 日期刻度条 */
+.timeline__ruler {
+  display: flex;
+  flex: 0 0 auto;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+}
+
+.timeline__tick {
+  flex: 0 0 var(--timeline-tick-w);
+  width: var(--timeline-tick-w);
+  text-align: center;
+  padding: 6px 0;
+  position: relative;
+}
+
+.timeline__tick-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* 今天：红底圆标 */
+.timeline__tick--today .timeline__tick-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #e5484d;
+  color: #fff;
+}
+
+/* 泳道 */
+.timeline__lane {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+}
+
+.timeline__col {
+  flex: 0 0 var(--timeline-tick-w);
+  width: var(--timeline-tick-w);
+  min-height: 120px;
+  border-right: 1px solid var(--border);
+  padding: 4px 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  /* 不设 z-index：否则会自成层叠上下文，把溢出块的层级困在本格里 */
+  position: relative;
+}
+
+/* 记录块：横向可超出本格（标题才读得出来），但不超过一格 */
+.timeline__block {
+  background: var(--bg);
+  border: 1px solid var(--primary);
+  border-left-width: 3px;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 12px;
+  color: var(--text);
+  cursor: pointer;
+  overflow: hidden;
+  /* 记录块比刻度格宽一点，标题不被截成「时…」 */
+  width: calc(var(--timeline-tick-w) * 2);
+  max-width: calc(var(--timeline-tick-w) * 2);
+  /* 溢出格子的块要盖在相邻格之上，否则点不到 */
+  position: relative;
+  z-index: 1;
+}
+
+.timeline__block:hover {
+  background: var(--bg-hover);
+}
+
+.timeline__block-title {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 今天红线：从刻度条贯穿泳道（在记录块之下，不挡点击） */
+.timeline__now-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #e5484d;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.timeline__lane-empty {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
