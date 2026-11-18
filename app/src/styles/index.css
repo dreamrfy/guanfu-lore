@@ -3654,3 +3654,72 @@ html[data-theme="dark"] .winbtn--close:hover {
     background: rgba(0, 0, 0, 0.28);
   }
 }
+
+/* ---------- 页面块 / 引用页面块（W53） ---------- */
+
+.pageblock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  cursor: pointer;
+}
+
+.pageblock:hover {
+  background: var(--bg-hover);
+}
+
+.pageblock--empty {
+  cursor: default;
+  background: var(--bg-secondary);
+}
+
+.pageblock__icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.pageblock__title {
+  flex: 1 1 auto;
+  font-size: 14px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pageblock__hint {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.pageblock__btn {
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.pageblock__btn:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.pageblock__select {
+  height: 26px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 12px;
+  padding: 0 6px;
+}

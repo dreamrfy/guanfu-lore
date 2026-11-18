@@ -53,7 +53,8 @@
     "pagemenu-check": "node tools/pagemenu-check.mjs",
     "narrow-check": "node tools/narrow-check.mjs",
     "blocks-check": "node tools/blocks-check.mjs",
-    "media-check": "node tools/media-check.mjs"
+    "media-check": "node tools/media-check.mjs",
+    "pageblock-check": "node tools/pageblock-check.mjs"
   },
   "keywords": [],
   "author": "",

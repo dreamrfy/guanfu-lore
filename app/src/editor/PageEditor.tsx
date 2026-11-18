@@ -129,6 +129,34 @@ export function PageEditor({ initialBlocks, theme, onChange, uploadFile, readOnl
   };
 
   /** 多维表块：正文里放一张已有多维表的入口 */
+  /** W53 页面块：在当前位置建子页面并显示为卡片 */
+  const pageSlashItem = {
+    title: "页面",
+    subtext: "新建子页面并插入卡片",
+    aliases: ["ym", "page", "yemian"],
+    group: "基础块",
+    icon: <span style={{ fontSize: 16 }}>📄</span>,
+    onItemClick: () => {
+      const current = editor.getTextCursorPosition().block;
+      editor.updateBlock(current, { type: "pageBlock" as never, props: { mode: "new" } as never });
+      editor.focus();
+    },
+  };
+
+  /** W53 引用页面块：从现有页面里挑一个，显示为可点击卡片 */
+  const pageRefSlashItem = {
+    title: "引用页面",
+    subtext: "引用已有页面",
+    aliases: ["yyym", "pageref", "yinyong"],
+    group: "基础块",
+    icon: <span style={{ fontSize: 16 }}>🔗</span>,
+    onItemClick: () => {
+      const current = editor.getTextCursorPosition().block;
+      editor.updateBlock(current, { type: "pageBlock" as never, props: { mode: "ref" } as never });
+      editor.focus();
+    },
+  };
+
   const collectionSlashItem = {
     title: "多维表",
     subtext: "在正文里嵌入一张表",
@@ -272,6 +300,8 @@ export function PageEditor({ initialBlocks, theme, onChange, uploadFile, readOnl
                 })),
               calloutSlashItem,
               bookmarkSlashItem,
+              pageSlashItem,
+              pageRefSlashItem,
               collectionSlashItem,
               ...aiSlashItems,
             ] as never,

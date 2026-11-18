@@ -10,12 +10,14 @@ import { BookmarkBlock } from "./blocks/bookmark";
 import { CalloutBlock } from "./blocks/callout";
 import { CollectionBlock } from "./blocks/collectionBlock";
 import { PageMention } from "./blocks/pageMention";
+import { PageBlock } from "./blocks/pageBlock";
 
 export const schema = BlockNoteSchema.create({
   blockSpecs: {
     ...defaultBlockSpecs,
     callout: CalloutBlock(),
     bookmark: BookmarkBlock(),
+    pageBlock: PageBlock(),
     collectionBlock: CollectionBlock(),
   },
   inlineContentSpecs: {
@@ -29,4 +31,5 @@ export const CUSTOM_BLOCK_LABELS: Record<string, string> = {
   callout: "着重文字",
   bookmark: "书签",
   collectionBlock: "多维表",
+  pageBlock: "页面",
 };

@@ -271,7 +271,12 @@ type Store = {
    * 必须在 openTab 之前把正文放进内存，否则编辑器会先按空文档挂载，
    * 之后再把正文塞进去它也不会重读（PageEditor 只在挂载时取 initialBlocks）。
    */
-  createPage: (parentId?: string | null, initialBlocks?: PartialBlock[]) => Promise<string>;
+  /** opts.open=false：只建页不切过去（页面块在正文里建子页时用，否则编辑器会被切走） */
+  createPage: (
+    parentId?: string | null,
+    initialBlocks?: PartialBlock[],
+    opts?: { open?: boolean },
+  ) => Promise<string>;
   renamePage: (id: string, title: string) => void;
   setPageIcon: (id: string, icon: string | null) => void;
   /** 整体设置页面标签（M02）；输入会归一去重 */
@@ -393,11 +398,11 @@ export const useStore = create<Store>((set, get) => {
       persist(next);
     },
 
-    createPage: async (parentId = null, initialBlocks = []) => {
+    createPage: async (parentId = null, initialBlocks = [], opts) => {
       const row = makePageRow(parentId, "");
       await repo.putPage(row);
       set((s) => ({ pages: [...s.pages, row], docs: { ...s.docs, [row.id]: initialBlocks } }));
-      get().openTab(row.id);
+      if (opts?.open !== false) get().openTab(row.id);
       if (initialBlocks.length > 0) scheduleDocSave(row.id, initialBlocks);
       // 同步层：新建的页面也要排队推上去
       void enqueueChange({
