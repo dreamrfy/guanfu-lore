@@ -10,6 +10,7 @@ import { RightPanel } from "./RightPanel";
 import { Sidebar } from "./Sidebar";
 import { TagBar } from "./TagBar";
 import { TabBar } from "./TabBar";
+import { useNavHistory } from "../data/navHistory";
 import { TopToolbar } from "./TopToolbar";
 
 const ICON_CHOICES = ["📄", "📝", "📚", "🧪", "⚗️", "🔬", "🧠", "💡", "📊", "🗂️", "⭐", "🌱", "🔧", "🧩", "🍀", "🔥"];
@@ -128,6 +129,7 @@ export function AppShell() {
   const sidebarCollapsed = useStore((s) => s.sidebarCollapsed);
   const rightPanelOpen = useStore((s) => s.rightPanelOpen);
   const theme = useStore((s) => s.theme);
+  const navTick = useNavHistory((s) => s.tick);
   const iconSet = useStore((s) => s.iconSet);
   const renamePage = useStore((s) => s.renamePage);
   const setBlocks = useStore((s) => s.setBlocks);
@@ -188,7 +190,7 @@ export function AppShell() {
 
                 {docReady ? (
                   <PageEditor
-                    key={page.id}
+                    key={`p${page.id}r${navTick}`}
                     initialBlocks={doc as PartialBlock[]}
                     theme={theme}
                     onChange={(blocks) => setBlocks(page.id, blocks)}

@@ -1,9 +1,11 @@
 import { useStore } from "../data/store";
+import { useNavHistory } from "../data/navHistory";
 import { AppIcon } from "../design/icons";
 
 /**
  * 页签栏（手册 §1）：横贯整窗，高 38px。
- * 左区导航钮区宽 228（=侧栏宽，视觉连体；按钮 W12 落位），
+ * 左区导航钮区宽 228（=侧栏宽，视觉连体）：后退/前进 32×26 @(8,6)/(42,6) 无历史 disabled，
+ * 主页/刷新 32×32 @(82,3)/(122,3)（W12）；
  * 页签固定 180×38，关闭钮 20×20 常显，新建钮 28×28，
  * 右端窗口控制三钮 46×38（Tauri decorations:false 自绘标题栏，W11）。
  */
@@ -56,9 +58,29 @@ export function TabBar() {
   const createPage = useStore((s) => s.createPage);
   const iconSet = useStore((s) => s.iconSet);
 
+  const canBack = useNavHistory((s) => s.canBack());
+  const canForward = useNavHistory((s) => s.canForward());
+  const back = useNavHistory((s) => s.back);
+  const forward = useNavHistory((s) => s.forward);
+  const goHome = useNavHistory((s) => s.goHome);
+  const refresh = useNavHistory((s) => s.refresh);
+
   return (
     <div className="tabbar">
-      <div className="tabbar__nav" />
+      <div className="tabbar__nav">
+        <button className="navbtn navbtn--back" title="后退" disabled={!canBack} onClick={back}>
+          <AppIcon name="arrowLeft" set={iconSet} size={14} />
+        </button>
+        <button className="navbtn navbtn--fwd" title="前进" disabled={!canForward} onClick={forward}>
+          <AppIcon name="arrowRight" set={iconSet} size={14} />
+        </button>
+        <button className="navbtn navbtn--home" title="主页" onClick={goHome}>
+          <AppIcon name="home" set={iconSet} size={14} />
+        </button>
+        <button className="navbtn navbtn--refresh" title="刷新" onClick={() => void refresh()}>
+          <AppIcon name="refresh" set={iconSet} size={14} />
+        </button>
+      </div>
       <div className="tabbar__tabs">
         {tabs.map((id) => {
           const page = pages.find((p) => p.id === id);

@@ -2663,3 +2663,66 @@ html[data-theme="dark"] .winbtn--close:hover {
   background: #e81123;
   color: #ffffff;
 }
+
+/* ---------- 导航钮区（手册 §1：后退/前进 32×26 @(8,6)/(42,6)，主页/刷新 32×32 @(82,3)/(122,3)） ---------- */
+
+.tabbar__nav {
+  position: relative;
+  width: var(--sidebar-width);
+  flex: 0 0 auto;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+}
+
+.navbtn {
+  position: absolute;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 4px;
+}
+
+.navbtn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.navbtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.navbtn--back,
+.navbtn--fwd {
+  top: 6px;
+  width: 32px;
+  height: 26px;
+}
+
+.navbtn--home,
+.navbtn--refresh {
+  top: 3px;
+  width: 32px;
+  height: 32px;
+}
+
+.navbtn--back {
+  left: 8px;
+}
+
+.navbtn--fwd {
+  left: 42px;
+}
+
+.navbtn--home {
+  left: 82px;
+}
+
+.navbtn--refresh {
+  left: 122px;
+}
