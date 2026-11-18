@@ -60,10 +60,11 @@
     "W66",
     "W67",
     "W68",
-    "W69"
+    "W69",
+    "W70"
   ],
-  "nextTask": "W70",
-  "doneCount": 51,
+  "nextTask": "W71",
+  "doneCount": 52,
   "totalCount": 88,
   "testBaseline": "cd app && npm test = 250/250 绿（勿退化）",
   "devServer": "npm run dev 起在 5173（后台任务 bjlvotyrx；挂了重起即可）",
@@ -242,6 +243,10 @@
     {
       "time": "2026-11-18T22:30:00Z",
       "event": "会话#40 完成 W69 DONE·部分（视图设置浮层 400×482、视图页签 8 项真实现、其余 5 页签占位待 W70）672ee19；测试 36/272；下一任务 W70 筛选排序分组对齐"
+    },
+    {
+      "time": "2026-11-18T22:55:00Z",
+      "event": "会话#41 完成 W70（筛选/排序/分组 UI 接线实测）c06c8a2；测试 36/272；下一任务 W71 看板视图"
     }
   ],
   "modulesDone": [
