@@ -136,6 +136,11 @@ export function AppShell() {
   const setPageIcon = useStore((s) => s.setPageIcon);
   const uploadFile = useStore((s) => s.uploadFile);
   const activeCollectionId = useStore((s) => s.activeCollectionId);
+  // W26 删除红幅（手册 §2：无确认弹窗 + 红幅「恢复/彻底删除」）
+  const trashBanner = useStore((s) => s.trashBanner);
+  const restoreFromTrash = useStore((s) => s.restoreFromTrash);
+  const purgeFromTrash = useStore((s) => s.purgeFromTrash);
+  const clearTrashBanner = useStore((s) => s.clearTrashBanner);
   // 记录详情里要放正文编辑器，窄面板不够用
   const recordOpen = useStore((s) => s.openRecordRef !== null);
   const page = useActivePage();
@@ -229,6 +234,30 @@ export function AppShell() {
         </aside>
       )}
       </div>
+
+      {trashBanner && (
+        <div className="trashbar" role="status">
+          <span className="trashbar__text">
+            🗑 {trashBanner.title || "无标题"} 已删除
+            {trashBanner.ids.length > 1 ? `（含 ${trashBanner.ids.length - 1} 个子页）` : ""}
+          </span>
+          <button className="trashbar__btn" onClick={() => void restoreFromTrash(trashBanner.ids[0])}>
+            恢复
+          </button>
+          <button
+            className="trashbar__btn trashbar__btn--danger"
+            onClick={() => {
+              for (const id of trashBanner.ids) void purgeFromTrash(id);
+              clearTrashBanner();
+            }}
+          >
+            彻底删除
+          </button>
+          <button className="trashbar__close" title="关闭" onClick={clearTrashBanner}>
+            ×
+          </button>
+        </div>
+      )}
     </div>
   );
 }

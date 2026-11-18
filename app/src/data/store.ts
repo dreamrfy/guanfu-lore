@@ -289,6 +289,9 @@ type Store = {
   moveToTrash: (id: string) => Promise<void>;
   restoreFromTrash: (id: string) => Promise<void>;
   purgeFromTrash: (id: string) => Promise<void>;
+  /** W26 删除红幅：刚被删掉的整棵子树（title 为空表示空标题页） */
+  trashBanner: { ids: string[]; title: string } | null;
+  clearTrashBanner: () => void;
 
   setBlocks: (id: string, blocks: PartialBlock[]) => void;
 
@@ -319,6 +322,7 @@ export const useStore = create<Store>((set, get) => {
     bootError: null,
     pages: [],
     trash: [],
+    trashBanner: null,
     docs: {},
     tabs: prefs.tabs,
     activeTabId: prefs.activeTabId,
@@ -934,22 +938,40 @@ export const useStore = create<Store>((set, get) => {
     },
 
     moveToTrash: async (id) => {
-      await repo.softDeletePage(id);
-      const row = get().pages.find((p) => p.id === id);
-      const rest = get().pages.filter((p) => p.id !== id);
-      let pages = rest;
+      // W26 手册 §2：删除页面 = 整棵子树连带删除（无确认弹窗直接进回收站）
+      const all = get().pages;
+      const doomedIds = new Set<string>([id]);
+      let grew = true;
+      while (grew) {
+        grew = false;
+        for (const p of all) {
+          if (p.parentId && doomedIds.has(p.parentId) && !doomedIds.has(p.id)) {
+            doomedIds.add(p.id);
+            grew = true;
+          }
+        }
+      }
+      const doomed = all.filter((p) => doomedIds.has(p.id));
+      for (const p of doomed) await repo.softDeletePage(p.id);
+
+      const row = all.find((p) => p.id === id);
+      let pages = all.filter((p) => !doomedIds.has(p.id));
       if (pages.length === 0) {
         const fresh = makePageRow(null, "");
         await repo.putPage(fresh);
         pages = [fresh];
       }
-      const tabs = get().tabs.filter((t) => t !== id);
+
+      const tabs = get().tabs.filter((t) => !doomedIds.has(t));
       const nextTabs = tabs.length ? tabs : [pages[0].id];
       set((s) => ({
         pages,
-        trash: row ? [{ ...row, deletedAt: Date.now() }, ...s.trash] : s.trash,
+        trash: [...doomed.map((p) => ({ ...p, deletedAt: Date.now() })), ...s.trash],
         tabs: nextTabs,
-        activeTabId: s.activeTabId === id ? nextTabs[nextTabs.length - 1] : s.activeTabId,
+        activeTabId:
+          s.activeTabId && doomedIds.has(s.activeTabId) ? nextTabs[nextTabs.length - 1] : s.activeTabId,
+        // 红幅：标题 + 连带删除的整棵子树 id（恢复时整棵回来）
+        trashBanner: { ids: [...doomedIds], title: row?.title ?? "" },
       }));
       savePrefs({ tabs: nextTabs, activeTabId: get().activeTabId });
     },
@@ -958,11 +980,29 @@ export const useStore = create<Store>((set, get) => {
       await repo.restorePage(id);
       const row = get().trash.find((p) => p.id === id);
       if (!row) return;
+      // 连带恢复：同一次删除带走的子树也跟着回来
+      const restoring = new Set<string>([id]);
+      const trash = get().trash;
+      let grew = true;
+      while (grew) {
+        grew = false;
+        for (const p of trash) {
+          if (p.parentId && restoring.has(p.parentId) && !restoring.has(p.id)) {
+            restoring.add(p.id);
+            grew = true;
+          }
+        }
+      }
+      const back = trash.filter((p) => restoring.has(p.id) && p.id !== id);
+      for (const p of back) await repo.restorePage(p.id);
       set((s) => ({
-        pages: [...s.pages, { ...row, deletedAt: null }],
-        trash: s.trash.filter((p) => p.id !== id),
+        pages: [...s.pages, { ...row, deletedAt: null }, ...back.map((p) => ({ ...p, deletedAt: null }))],
+        trash: s.trash.filter((p) => !restoring.has(p.id)),
+        trashBanner: null,
       }));
     },
+
+    clearTrashBanner: () => set({ trashBanner: null }),
 
     purgeFromTrash: async (id) => {
       await repo.purgePage(id);

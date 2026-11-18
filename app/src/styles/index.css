@@ -3001,3 +3001,67 @@ html[data-theme="dark"] .winbtn--close:hover {
   font-size: 11px;
   color: var(--text-secondary);
 }
+
+/* ---------- 删除红幅（W26：手册 §2 删除页面 → 无确认弹窗 + 红幅撤销） ---------- */
+
+.trashbar {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 560px;
+  padding: 8px 10px 8px 12px;
+  border-radius: 6px;
+  background: #e5484d;
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.24);
+  font-size: 13px;
+}
+
+.trashbar__text {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trashbar__btn {
+  flex: 0 0 auto;
+  height: 24px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: transparent;
+  color: #ffffff;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.trashbar__btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.trashbar__btn--danger {
+  border-color: rgba(255, 255, 255, 0.35);
+  opacity: 0.9;
+}
+
+.trashbar__close {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.trashbar__close:hover {
+  opacity: 1;
+}

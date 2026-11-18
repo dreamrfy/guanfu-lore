@@ -38,7 +38,8 @@
     "tree-row-check": "node tools/tree-row-check.mjs",
     "rowctx-check": "node tools/rowctx-check.mjs",
     "rowmore-check": "node tools/rowmore-check.mjs",
-    "newchild-check": "node tools/newchild-check.mjs"
+    "newchild-check": "node tools/newchild-check.mjs",
+    "trashbar-check": "node tools/trashbar-check.mjs"
   },
   "keywords": [],
   "author": "",

@@ -245,3 +245,40 @@ describe("setPageTags（M02）", () => {
     expect(s().pages.find((p) => p.id === id)!.tags).toEqual([]);
   });
 });
+
+describe("删除页语义（W26：子树连带 + 红幅）", () => {
+  it("删除父页 = 整棵子树连带进回收站，红幅记录整棵 id", async () => {
+    await s().hydrate();
+    const root = s().pages[0].id;
+    const child = await s().createPage(root);
+    const grand = await s().createPage(child);
+    expect(s().pages).toHaveLength(3);
+
+    await s().moveToTrash(root);
+
+    const ids = new Set([root, child, grand]);
+    expect(s().pages.filter((p) => ids.has(p.id))).toHaveLength(0);
+    expect(s().trash.map((p) => p.id).sort()).toEqual([...ids].sort());
+    expect(s().trashBanner?.ids.sort()).toEqual([...ids].sort());
+    expect(s().tabs.some((t) => ids.has(t))).toBe(false);
+  });
+
+  it("恢复父页 = 整棵子树一起回来，正文块完好", async () => {
+    await s().hydrate();
+    const root = s().pages[0].id;
+    const child = await s().createPage(root);
+    void s().ensureDoc(child);
+    s().setBlocks(child, [{ type: "paragraph" }, { type: "paragraph" }]);
+    await flushDocs();
+
+    await s().moveToTrash(root);
+    await s().restoreFromTrash(root);
+
+    expect(s().pages.map((p) => p.id)).toContain(child);
+    expect(s().trash).toHaveLength(0);
+    expect(s().trashBanner).toBeNull();
+    expect(await repo.getDoc(child)).toHaveLength(2);
+    // 父子关系没丢
+    expect(s().pages.find((p) => p.id === child)?.parentId).toBe(root);
+  });
+});
