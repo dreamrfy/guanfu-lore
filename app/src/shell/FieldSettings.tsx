@@ -33,6 +33,8 @@ export function FieldSettings({
         <input
           className="cell-input"
           defaultValue={field.name}
+          /* 点外面时菜单先卸载输入框、blur 不触发，所以 onChange 也提交一次 */
+          onChange={(e) => updateField(collection.id, field.id, { name: e.target.value || "未命名" })}
           onBlur={(e) => updateField(collection.id, field.id, { name: e.target.value || "未命名" })}
         />
       </div>

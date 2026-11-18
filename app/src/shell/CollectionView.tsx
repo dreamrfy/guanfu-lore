@@ -394,6 +394,9 @@ function ColumnMenu({
         <input
           className="cell-input"
           defaultValue={field.name}
+          /* 点外面会先触发菜单的 mousedown 关闭 → 输入框被卸载 → blur 不触发，
+             改名就丢了。所以这里 onChange 也提交一次（onBlur 保留，处理按回车不改的情况）。 */
+          onChange={(e) => updateField(collection.id, field.id, { name: e.target.value || "未命名" })}
           onBlur={(e) => updateField(collection.id, field.id, { name: e.target.value || "未命名" })}
         />
       </div>

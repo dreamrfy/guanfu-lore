@@ -73,7 +73,8 @@
     "catalog-check": "node tools/catalog-check.mjs",
     "timeline-check": "node tools/timeline-check.mjs",
     "calendar-check": "node tools/calendar-check.mjs",
-    "recordpage-check": "node tools/recordpage-check.mjs"
+    "recordpage-check": "node tools/recordpage-check.mjs",
+    "table-walkthrough": "node tools/table-walkthrough.mjs"
   },
   "keywords": [],
   "author": "",
