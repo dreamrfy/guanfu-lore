@@ -144,6 +144,7 @@ export function Sidebar() {
   const [movePick, setMovePick] = useState(false);
   const [renaming, setRenaming] = useState<string | null>(null);
   const [newChild, setNewChild] = useState<{ parentId: string; x: number; y: number } | null>(null);
+  const [wsMenu, setWsMenu] = useState(false);
   const [tplPick, setTplPick] = useState<PageTemplate[] | null>(null);
   const [starred, setStarred] = useState<Set<string>>(() => {
     try {
@@ -215,9 +216,19 @@ export function Sidebar() {
   return (
     <>
       <div className="sidebar__header">
-        <span className="sidebar__title">{t("brandTitle")}</span>
-        <button className="icon-btn" title="收起侧栏" onClick={toggleSidebar}>
-          <AppIcon name="panelLeft" set={iconSet} />
+        {/* W27 工作区行（手册 §2：211×38 @(8,8) 圆角 6；头像 26×26 圆角 4；⌄ 开空间切换菜单）
+            观复只有本地空间，菜单项按【暂定】自有实现；收起侧栏并入本菜单（顶部工具条也有同样入口） */}
+        <button
+          className="wsrow"
+          title="空间切换"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            setWsMenu((o) => !o);
+          }}
+        >
+          <span className="wsrow__avatar">观</span>
+          <span className="wsrow__name">{t("brandTitle")}</span>
+          <span className="wsrow__caret">⌄</span>
         </button>
       </div>
 
@@ -611,6 +622,31 @@ export function Sidebar() {
                 </div>
               </>
             )}
+
+      {wsMenu && (
+        <>
+          <div className="ctx-backdrop" onMouseDown={() => setWsMenu(false)} />
+          <div className="tabctx tabctx--ws">
+            <div className="tabctx__item tabctx__item--head" onMouseDown={(e) => e.stopPropagation()}>
+              工作空间
+            </div>
+            <div className="tabctx__item tabctx__item--off">本地空间（当前）</div>
+            <div className="tabctx__item tabctx__item--off" title="待 W100 设置弹层">
+              空间管理【待 W100】
+            </div>
+            <div
+              className="tabctx__item"
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                setWsMenu(false);
+                toggleSidebar();
+              }}
+            >
+              收起侧栏
+            </div>
+          </div>
+        </>
+      )}
 
       {newChild && (
               <>

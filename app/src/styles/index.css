@@ -111,12 +111,62 @@ body {
 /* ---------- 侧栏 ---------- */
 
 .sidebar__header {
-  height: var(--toolbar-height);
+  /* W27 手册 §2：工作区行 211×38 @(8,8) → 头部高 8+38+8=54，行由 margin 定位 */
+  height: 54px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 0 10px;
+  padding: 0;
   border-bottom: 1px solid var(--border);
+}
+
+/* 工作区行：211×38 圆角 6；头像 26×26 圆角 4；⌄ 空间切换 */
+.wsrow {
+  width: 211px;
+  height: 38px;
+  margin: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 6px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.wsrow:hover {
+  background: var(--bg-hover);
+}
+
+.wsrow__avatar {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: var(--primary);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.wsrow__name {
+  flex: 1 1 auto;
+  font-size: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wsrow__caret {
+  flex: 0 0 auto;
+  color: var(--text-secondary);
+  font-size: 12px;
 }
 
 .sidebar__title {
@@ -3064,4 +3114,12 @@ html[data-theme="dark"] .winbtn--close:hover {
 
 .trashbar__close:hover {
   opacity: 1;
+}
+
+/* ---------- 空间切换菜单（W27：⌄ 打开；观复本地空间【暂定】） ---------- */
+
+.tabctx--ws {
+  position: fixed;
+  left: 8px;
+  top: 54px;
 }

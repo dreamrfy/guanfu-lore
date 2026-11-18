@@ -39,7 +39,8 @@
     "rowctx-check": "node tools/rowctx-check.mjs",
     "rowmore-check": "node tools/rowmore-check.mjs",
     "newchild-check": "node tools/newchild-check.mjs",
-    "trashbar-check": "node tools/trashbar-check.mjs"
+    "trashbar-check": "node tools/trashbar-check.mjs",
+    "wsrow-check": "node tools/wsrow-check.mjs"
   },
   "keywords": [],
   "author": "",
