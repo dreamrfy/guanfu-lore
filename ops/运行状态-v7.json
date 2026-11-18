@@ -57,10 +57,11 @@
     "W63",
     "W64",
     "W65",
-    "W66"
+    "W66",
+    "W67"
   ],
-  "nextTask": "W67",
-  "doneCount": 50,
+  "nextTask": "W68",
+  "doneCount": 51,
   "totalCount": 88,
   "testBaseline": "cd app && npm test = 250/250 绿（勿退化）",
   "devServer": "npm run dev 起在 5173（后台任务 bjlvotyrx；挂了重起即可）",
@@ -223,6 +224,10 @@
     {
       "time": "2026-11-18T21:20:00Z",
       "event": "会话#37 完成 W66 DONE·部分（列头菜单 10 项真实现，冻结列实测不可行→置灰）ce34550；测试 36/272；下一任务 W67 列头右键"
+    },
+    {
+      "time": "2026-11-18T21:35:00Z",
+      "event": "会话#38 完成 W67（列头右键同一套菜单，隐藏实测生效）5726cfe；测试 36/272；下一任务 W68 视图标签栏"
     }
   ],
   "modulesDone": [
