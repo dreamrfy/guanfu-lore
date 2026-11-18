@@ -3,6 +3,7 @@ import { useStore } from "../data/store";
 import { savePrefs } from "../data/store";
 import { useNavHistory } from "../data/navHistory";
 import { AppIcon } from "../design/icons";
+import { PageIconGlyph } from "../design/pageIcons";
 import type { IconSetId } from "../design/icons";
 
 /**
@@ -202,7 +203,11 @@ export function TabBar() {
               }}
               title={page.title}
             >
-              {page.icon && <span className="tab__icon">{page.icon}</span>}
+              {page.icon && (
+                <span className="tab__icon">
+                  <PageIconGlyph icon={page.icon} size={16} set={iconSet} />
+                </span>
+              )}
               <span className="tab__label">{page.title || "无标题"}</span>
               <span
                 className="tab__close"

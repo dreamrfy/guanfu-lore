@@ -12,8 +12,7 @@ import { TagBar } from "./TagBar";
 import { TabBar } from "./TabBar";
 import { useNavHistory } from "../data/navHistory";
 import { TopToolbar } from "./TopToolbar";
-
-const ICON_CHOICES = ["📄", "📝", "📚", "🧪", "⚗️", "🔬", "🧠", "💡", "📊", "🗂️", "⭐", "🌱", "🔧", "🧩", "🍀", "🔥"];
+import { PageIconPicker } from "./PageIconPicker";
 
 /** 把附件 id 解析成可显示的地址（异步，解析期间先给 null） */
 function useAssetUrl(assetId: string | null | undefined): string | null {
@@ -34,43 +33,6 @@ function useAssetUrl(assetId: string | null | undefined): string | null {
   return url;
 }
 
-function PageIconPicker({ value, onChange }: { value: string | null; onChange: (v: string | null) => void }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div style={{ position: "relative" }}>
-      <div className="page__icon" onClick={() => setOpen((o) => !o)} title="设置页面图标">
-        {value ?? <span style={{ fontSize: 20, color: "var(--text-tertiary)" }}>＋ 图标</span>}
-      </div>
-      {open && (
-        <div className="popover popover--grid">
-          {ICON_CHOICES.map((emoji) => (
-            <button
-              key={emoji}
-              className="icon-btn"
-              style={{ fontSize: 16 }}
-              onClick={() => {
-                onChange(emoji);
-                setOpen(false);
-              }}
-            >
-              {emoji}
-            </button>
-          ))}
-          <button
-            className="icon-btn"
-            style={{ gridColumn: "span 8", fontSize: 12 }}
-            onClick={() => {
-              onChange(null);
-              setOpen(false);
-            }}
-          >
-            移除图标
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
 
 /** 页面封面：顶部横幅 + 悬停时出现「更换 / 移除」 */
 function PageCover({ pageId, coverAssetId }: { pageId: string; coverAssetId: string | null | undefined }) {
@@ -193,7 +155,7 @@ export function AppShell() {
               </div>
             ) : (
               <>
-                <PageIconPicker value={page.icon} onChange={(v) => setPageIcon(page.id, v)} />
+                <PageIconPicker value={page.icon} onChange={(v) => setPageIcon(page.id, v)} iconSet={iconSet} />
 
                 <input
                   className="page__title"

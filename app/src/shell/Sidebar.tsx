@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavHistory } from "../data/navHistory";
+import { PageIconGlyph } from "../design/pageIcons";
 import { createPageFromTemplate, listTemplates, type PageTemplate } from "../data/templates";
 import { useStore } from "../data/store";
 import type { PageRow } from "../data/db";
@@ -382,7 +383,7 @@ export function Sidebar() {
                           title={p.title || "无标题"}
                         >
                           <span className="tree-item__chev tree-item__chev--none" />
-                          <span style={{ fontSize: 14 }}>{p.icon ?? ""}</span>
+                          <PageIconGlyph icon={p.icon} size={14} set={iconSet} />
                           <AppIcon name="star" set={iconSet} size={14} />
                           <span className="tree-item__label">{p.title || "无标题"}</span>
                         </div>
@@ -553,7 +554,7 @@ export function Sidebar() {
             ) : (
               <span className="tree-item__chev tree-item__chev--none" />
             )}
-            <span style={{ fontSize: 14 }}>{node.icon ?? ""}</span>
+            <PageIconGlyph icon={node.icon} size={14} set={iconSet} />
             <AppIcon name="file" set={iconSet} size={14} />
             {renaming === node.id ? (
               <input
