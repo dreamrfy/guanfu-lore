@@ -3,13 +3,15 @@ import type { PartialBlock } from "@blocknote/core";
 import { useStore, useActiveDoc, CLIP_COLLECTION_NAME } from "../data/store";
 import { assetUrl } from "../data/assets";
 import type { CollectionRow, PageRow, RecordRow } from "../data/db";
-import { asText } from "../data/collections";
+import { asText, isBlank } from "../data/collections";
 import { extractBlocksText } from "../data/search";
 import { fetchHighlights, highlightExcerpts, type MarkedExcerpt } from "../data/highlights";
 import { AppIcon } from "../design/icons";
 import { PageEditor } from "../editor/PageEditor";
 import { AiPanel } from "./AiPanel";
 import { CellEditor } from "./CollectionView";
+import { FieldPropMenu } from "./FieldPropMenu";
+import { FieldSettings } from "./FieldSettings";
 
 const fmt = (t: number) => new Date(t).toLocaleString("zh-CN", { hour12: false });
 
@@ -62,6 +64,12 @@ function RecordPanel({ collection, record }: { collection: CollectionRow; record
   const theme = useStore((s) => s.theme);
   const uploadFile = useStore((s) => s.uploadFile);
   const [snapshotUrl, setSnapshotUrl] = useState<string | null>(null);
+  // W76：属性行菜单 / 属性编辑面板 的开合状态
+  const [propMenuId, setPropMenuId] = useState<string | null>(null);
+  const [settingsFieldId, setSettingsFieldId] = useState<string | null>(null);
+  // W76：点「未填写」后换成真实编辑器的那一格
+  const [editFieldId, setEditFieldId] = useState<string | null>(null);
+  const addField = useStore((s) => s.addField);
 
   // 剪藏记录的原文快照：从附件库换成可下载的 blob 地址
   useEffect(() => {
@@ -80,8 +88,10 @@ function RecordPanel({ collection, record }: { collection: CollectionRow; record
   }, [record.snapshotAssetId]);
 
   // 第一个文本字段当标题列（和表格里的粗体标题列一致），属性区里不再重复列一次
-  const titleField = collection.fields.find((f) => f.type === "text") ?? null;
-  const propFields = titleField ? collection.fields.filter((f) => f.id !== titleField.id) : collection.fields;
+  // W76：「隐藏」过的属性在记录页也不显示（与网格同一套 hidden 语义）
+  const visibleFields = collection.fields.filter((f) => !f.hidden);
+  const titleField = visibleFields.find((f) => f.type === "text") ?? null;
+  const propFields = titleField ? visibleFields.filter((f) => f.id !== titleField.id) : visibleFields;
   // 剪藏来源的记录（R01）：原文只读，想法写在单独的「想法」分区（落库分离）
   const isClip = collection.name === CLIP_COLLECTION_NAME;
 
@@ -116,6 +126,8 @@ function RecordPanel({ collection, record }: { collection: CollectionRow; record
       <div className="panel__header">
         <span className="panel__crumb">
           {collection.icon ?? "🗂️"} {collection.name}
+          <span className="panel__crumb-sep"> / </span>
+          <span className="panel__crumb-sub">{recordTitle}</span>
         </span>
         <button className="icon-btn panel__close" title="关闭记录" onClick={closeRecord}>
           ×
@@ -134,19 +146,63 @@ function RecordPanel({ collection, record }: { collection: CollectionRow; record
           <div className="record__title record__title--static">无标题</div>
         )}
 
+        {/* W76 属性区（04 §6）：字段名 + 值；未填显示「未填写 / 未关联」 */}
         <div className="record__props">
           {propFields.map((f) => (
             <div className="record__prop" key={f.id}>
-              <span className="record__label">{f.name}</span>
+              <span className="record__label">
+                <button
+                  className="record__label-btn"
+                  title="属性设置"
+                  onClick={() => setPropMenuId((v) => (v === f.id ? null : f.id))}
+                >
+                  {f.name}
+                </button>
+                {propMenuId === f.id && (
+                  <FieldPropMenu
+                    collection={collection}
+                    field={f}
+                    onClose={() => setPropMenuId(null)}
+                    onOpenSettings={() => setSettingsFieldId(f.id)}
+                  />
+                )}
+                {settingsFieldId === f.id && (
+                  <FieldSettings
+                    collection={collection}
+                    field={f}
+                    onClose={() => setSettingsFieldId(null)}
+                  />
+                )}
+              </span>
               <div className="record__value">
-                <CellEditor
-                  field={f}
-                  record={record}
-                  onCommit={(value) => setCell(collection.id, record.id, f.id, value)}
-                />
+                {/* W76：没填的值显示「未填写 / 未关联」（点一下换成真实编辑器）。
+                    不叠在输入框上——文本类字段自己有 placeholder，叠起来会花。 */}
+                {isBlank(record.values[f.id]) && editFieldId !== f.id ? (
+                  <button
+                    className="record__placeholder"
+                    title="填写此属性"
+                    onClick={() => setEditFieldId(f.id)}
+                  >
+                    {f.type === "relation" || f.type === "rollup" ? "未关联" : "未填写"}
+                  </button>
+                ) : (
+                  <CellEditor
+                    field={f}
+                    record={record}
+                    onCommit={(value) => {
+                      setCell(collection.id, record.id, f.id, value);
+                      setEditFieldId(null);
+                    }}
+                  />
+                )}
               </div>
             </div>
           ))}
+
+          {/* W76：「＋ 添加属性」 */}
+          <button className="record__add-prop" onClick={() => void addField(collection.id, "text")}>
+            ＋ 添加属性
+          </button>
         </div>
 
         {snapshotUrl && (
@@ -176,14 +232,21 @@ function RecordPanel({ collection, record }: { collection: CollectionRow; record
 
         <div className="record__body">
           <div className="record__body-label">{isClip ? "原文（只读）" : "正文"}</div>
-          <PageEditor
-            key={record.id}
-            initialBlocks={(record.doc as PartialBlock[]) ?? []}
-            theme={theme}
-            readOnly={isClip}
-            onChange={(blocks) => setRecordDoc(collection.id, record.id, blocks)}
-            uploadFile={(file) => uploadFile(file, "image", null)}
-          />
+          <div className="record__body-editor">
+            {/* W76：正文为空时的引导（04 §6 桌面「按回车开始编辑，或模板」）——
+                判空按「有没有真文字」，不是数组长度——PageEditor 挂载时会写一个空段落进来 */}
+            {!isClip && recordText.trim() === "" && (
+              <div className="record__body-hint">按回车开始编辑，或模板</div>
+            )}
+            <PageEditor
+              key={record.id}
+              initialBlocks={(record.doc as PartialBlock[]) ?? []}
+              theme={theme}
+              readOnly={isClip}
+              onChange={(blocks) => setRecordDoc(collection.id, record.id, blocks)}
+              uploadFile={(file) => uploadFile(file, "image", null)}
+            />
+          </div>
         </div>
         {isClip && (
           <div className="record__body record__thoughts">

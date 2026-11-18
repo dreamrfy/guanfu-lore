@@ -66,10 +66,11 @@
     "W72",
     "W73",
     "W74",
-    "W75"
+    "W75",
+    "W76"
   ],
-  "nextTask": "W76",
-  "doneCount": 57,
+  "nextTask": "W77",
+  "doneCount": 58,
   "totalCount": 88,
   "testBaseline": "cd app && npm test = 272/272 绿（36 个文件，勿退化）",
   "devServer": "npm run dev 起在 5173（后台任务 bjlvotyrx；挂了重起即可）",
@@ -272,6 +273,10 @@
     {
       "time": "2026-11-19T02:50:00Z",
       "event": "完成 W75（日历视图：年月+今天、星期表头一~日、42 格 7 列、今天红标、跨月灰显、事件落格、翻月）——新增 CalendarView.tsx；6 种视图全部可切换；测试 36/272、build 通过、tsc 无错、calendar-check PASS；下一任务 W76 记录页"
+    },
+    {
+      "time": "2026-11-19T03:40:00Z",
+      "event": "完成 W76（记录页：面包屑表/记录名、属性行菜单 6 项照录、设置属性编辑面板、未填写/未关联占位、＋添加属性、正文引导、创建按钮直接开记录页、记录页遵守 hidden 语义）——新增 FieldPropMenu.tsx / FieldSettings.tsx；测试 36/272、build 通过、tsc 无错、recordpage-check PASS；下一任务 W77 多维表整体走查（收口模块 W5）"
     }
   ],
   "modulesDone": [

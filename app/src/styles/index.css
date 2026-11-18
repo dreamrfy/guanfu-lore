@@ -1501,6 +1501,9 @@ html[data-theme="dark"] .hit__snippet mark {
   display: flex;
   align-items: flex-start;
   gap: 8px;
+  /* 属性行菜单 / 属性编辑面板的定位锚点。
+     注意：锚点不能放在 .record__label 上——它有 overflow:hidden，会把弹层裁掉。 */
+  position: relative;
 }
 
 .record__label {
@@ -1511,6 +1514,95 @@ html[data-theme="dark"] .hit__snippet mark {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* W76：属性名可点开「属性行菜单」 */
+.record__label-btn {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.record__label-btn:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
+/* 属性行菜单 / 属性编辑面板：开在属性名下面（左对齐，不越出面板右缘） */
+.prop-menu {
+  z-index: 30;
+  min-width: 200px;
+  max-width: 260px;
+  left: 0;
+  right: auto;
+  top: 100%;
+}
+
+/* W76：未填写的值（点一下换成真实编辑器） */
+.record__placeholder {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 7px 0;
+}
+
+.record__placeholder:hover {
+  color: var(--text-secondary);
+}
+
+/* W76：「＋ 添加属性」 */
+.record__add-prop {
+  align-self: flex-start;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 0;
+  margin-top: 2px;
+}
+
+.record__add-prop:hover {
+  color: var(--text);
+}
+
+/* W76：正文为空的引导（盖在编辑器自己的占位提示上） */
+.record__body-editor {
+  position: relative;
+}
+
+.record__body-hint {
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  padding: 2px 0 8px;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* W76：面包屑里的记录名 */
+.panel__crumb-sep {
+  opacity: 0.5;
+}
+
+.panel__crumb-sub {
+  color: var(--text-secondary);
 }
 
 .record__value {

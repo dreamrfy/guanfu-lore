@@ -786,7 +786,14 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
         <span className="collection__count">
           {filtered ? `${rows.length} / ${records.length} 条` : `${records.length} 条`}
         </span>
-        <button className="btn" onClick={() => void addRecord(collection.id)}>
+        <button
+          className="btn"
+          onClick={async () => {
+            // W76（04 §6）：「创建」直接新建一条记录并打开记录页（不是菜单）
+            const id = await addRecord(collection.id);
+            openRecord(collection.id, id);
+          }}
+        >
           ＋ {t("newRecord")}
         </button>
         {collection.name === CLIP_COLLECTION_NAME && (
