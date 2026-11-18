@@ -2833,3 +2833,37 @@ html[data-theme="dark"] .winbtn--close:hover {
   background: var(--bg-hover);
   color: var(--text);
 }
+
+/* ---------- 侧栏图标行（手册 §2：5 个 32×32，x 步长 45 → gap 13） ---------- */
+
+.sidebar__icons {
+  display: flex;
+  gap: 13px;
+  padding: 10px 8px 0;
+  flex: 0 0 auto;
+}
+
+.sidebar__icon {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.sidebar__icon:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.sidebar__icon:disabled {
+  opacity: 0.35;
+  cursor: default;
+}

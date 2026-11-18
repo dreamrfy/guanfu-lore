@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavHistory } from "../data/navHistory";
 import { useStore } from "../data/store";
 import type { PageRow } from "../data/db";
 import { clipReadState, unreadClipCount } from "../data/clipBox";
@@ -81,6 +82,8 @@ export function Sidebar() {
   const records = useStore((s) => s.records);
   const ensureRecords = useStore((s) => s.ensureRecords);
 
+  const searchRef = useRef<HTMLInputElement | null>(null);
+  const goHome = useNavHistory((s) => s.goHome);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [searching, setSearching] = useState(false);
@@ -151,9 +154,35 @@ export function Sidebar() {
         </button>
       </div>
 
+      <div className="sidebar__icons">
+        <button className="sidebar__icon" title="主页" onClick={() => goHome()}>
+          <AppIcon name="home" set={iconSet} size={16} />
+        </button>
+        <button
+          className="sidebar__icon"
+          title="AI"
+          onClick={() => window.dispatchEvent(new CustomEvent("guanfu:open-ai"))}
+        >
+          <AppIcon name="ai" set={iconSet} size={16} />
+        </button>
+        <button className="sidebar__icon" title="搜索" onClick={() => searchRef.current?.focus()}>
+          <AppIcon name="search" set={iconSet} size={16} />
+        </button>
+        <button className="sidebar__icon" title="通知（待 W28 通知面板）" disabled>
+          <AppIcon name="inbox" set={iconSet} size={16} />
+        </button>
+        <button
+          className="sidebar__icon"
+          title="更多"
+          onClick={() => window.dispatchEvent(new CustomEvent("guanfu:import-file"))}
+        >
+          <AppIcon name="more" set={iconSet} size={16} />
+        </button>
+      </div>
+
       <label className="sidebar__search">
         <AppIcon name="search" set={iconSet} size={14} />
-        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("searchPlaceholder")} />
+        <input ref={searchRef} value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("searchPlaceholder")} />
       </label>
 
       <div className="sidebar__list">

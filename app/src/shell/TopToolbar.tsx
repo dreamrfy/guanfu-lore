@@ -40,6 +40,18 @@ export function TopToolbar() {
   const menuRef = useOutsideClose(() => setOpenMenu(null));
   const createPageWithBlocks = useStore((s) => s.createPageWithBlocks);
 
+  // 侧栏图标行（W21）联动：AI / 更多 两个入口由 Sidebar 派发事件
+  useEffect(() => {
+    const onOpenAi = () => setChatOpen(true);
+    const onImport = () => mdRef.current?.click();
+    window.addEventListener("guanfu:open-ai", onOpenAi);
+    window.addEventListener("guanfu:import-file", onImport);
+    return () => {
+      window.removeEventListener("guanfu:open-ai", onOpenAi);
+      window.removeEventListener("guanfu:import-file", onImport);
+    };
+  }, []);
+
   const onPickMarkdown = async (file: File) => {
     setBusy("正在导入…");
     try {

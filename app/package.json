@@ -33,7 +33,8 @@
     "install-app": "node tools/install-app.mjs",
     "installed-smoke": "node tools/installed-smoke.mjs",
     "run-installed": "node tools/run-installed.mjs",
-    "sidebar-check": "node tools/sidebar-check.mjs"
+    "sidebar-check": "node tools/sidebar-check.mjs",
+    "iconrow-check": "node tools/iconrow-check.mjs"
   },
   "keywords": [],
   "author": "",
