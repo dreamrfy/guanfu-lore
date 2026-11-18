@@ -24,7 +24,8 @@
     "kill-app": "node tools/kill-app.mjs",
     "run-app-fresh": "node tools/run-app-fresh.mjs",
     "win-final-check": "node tools/win-final-check.mjs",
-    "nav-check": "node tools/nav-check.mjs"
+    "nav-check": "node tools/nav-check.mjs",
+    "tab-size-check": "node tools/tab-size-check.mjs"
   },
   "keywords": [],
   "author": "",
