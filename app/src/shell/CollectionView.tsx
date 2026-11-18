@@ -789,6 +789,10 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
                 <th
                   className={frozenLeft.has(f.id) ? "grid__th--frozen" : undefined}
                   style={frozenLeft.has(f.id) ? { position: "sticky", left: frozenLeft.get(f.id), zIndex: 3, width: widthOf(f) } : { width: widthOf(f) }}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    setMenuFieldId(f.id);
+                  }}
                   key={f.id}
                 >
                   <div className="grid__th">
