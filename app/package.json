@@ -40,7 +40,8 @@
     "rowmore-check": "node tools/rowmore-check.mjs",
     "newchild-check": "node tools/newchild-check.mjs",
     "trashbar-check": "node tools/trashbar-check.mjs",
-    "wsrow-check": "node tools/wsrow-check.mjs"
+    "wsrow-check": "node tools/wsrow-check.mjs",
+    "notif-check": "node tools/notif-check.mjs"
   },
   "keywords": [],
   "author": "",

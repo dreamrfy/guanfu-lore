@@ -3123,3 +3123,146 @@ html[data-theme="dark"] .winbtn--close:hover {
   left: 8px;
   top: 54px;
 }
+
+/* ---------- 通知面板（W28：顶部浮层 ~500 宽；标题+筛选钮；条目 头像24+两行+日期，高 ~68） ---------- */
+
+.sidebar__icon {
+  position: relative;
+}
+
+.sidebar__icon-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e5484d;
+}
+
+.notif {
+  position: fixed;
+  z-index: 1000;
+  width: 500px;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+.notif__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.notif__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.notif__filters {
+  display: flex;
+  gap: 4px;
+}
+
+.notif__filter {
+  height: 22px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.notif__filter:hover {
+  background: var(--bg-hover);
+}
+
+.notif__filter--on {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.notif__list {
+  overflow-y: auto;
+}
+
+.notif__item {
+  height: 68px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+
+.notif__item:hover {
+  background: var(--bg-hover);
+}
+
+.notif__avatar {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  font-size: 13px;
+}
+
+.notif__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.notif__row1 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.notif__name {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.notif__at {
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.notif__sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.notif__empty {
+  padding: 18px 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-secondary);
+}

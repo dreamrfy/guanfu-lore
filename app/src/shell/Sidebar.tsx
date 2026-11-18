@@ -145,6 +145,11 @@ export function Sidebar() {
   const [renaming, setRenaming] = useState<string | null>(null);
   const [newChild, setNewChild] = useState<{ parentId: string; x: number; y: number } | null>(null);
   const [wsMenu, setWsMenu] = useState(false);
+  // W28 通知面板：入口=图标行「通知」，浮层 ~500 宽；条目来自真实状态（同步/剪藏/回收站）
+  const [notif, setNotif] = useState<{ x: number; y: number } | null>(null);
+  const [notifFilter, setNotifFilter] = useState<"all" | "sync" | "content">("all");
+  const syncStatus = useStore((s) => s.syncStatus);
+  const runSyncNow = useStore((s) => s.runSyncNow);
   const [tplPick, setTplPick] = useState<PageTemplate[] | null>(null);
   const [starred, setStarred] = useState<Set<string>>(() => {
     try {
@@ -154,6 +159,94 @@ export function Sidebar() {
     }
   });
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+
+  // 剪藏未读总数（通知面板角标/条目都用它）
+  const unreadTotal = useMemo(
+    () => collections.reduce((n, c) => n + unreadClipCount(c, records[c.id]), 0),
+    [collections, records],
+  );
+
+  /** W28 通知面板条目：全部来自真实状态，点条目跳到对应位置 */
+  const notices = useMemo(() => {
+    const hm = (t: number | null) =>
+      t ? new Date(t).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false }) : "";
+    type Notice = {
+      id: string;
+      kind: "sync" | "content";
+      icon: string;
+      title: string;
+      sub: string;
+      at: string;
+      run: () => void;
+    };
+    const list: Notice[] = [];
+    list.push({
+      id: "sync",
+      kind: "sync",
+      icon: "🔄",
+      title: syncStatus.busy
+        ? "正在同步…"
+        : syncStatus.pending > 0
+          ? `${syncStatus.pending} 条改动待推送`
+          : "本地改动已全部推送",
+      sub: syncStatus.lastSyncAt ? "点此立即同步一次" : "尚未同步过 · 点此开始",
+      at: hm(syncStatus.lastSyncAt),
+      run: () => {
+        setNotif(null);
+        void runSyncNow().catch(() => {});
+      },
+    });
+    if (syncStatus.conflicts > 0) {
+      list.push({
+        id: "conflict",
+        kind: "sync",
+        icon: "⚠️",
+        title: `${syncStatus.conflicts} 个同步冲突待处理`,
+        sub: "冲突副本已保留，可在同步面板里比对",
+        at: hm(syncStatus.lastErrorAt),
+        run: () => setNotif(null),
+      });
+    }
+    list.push({
+      id: "clip",
+      kind: "content",
+      icon: "📥",
+      title: unreadTotal > 0 ? `${unreadTotal} 条剪藏未读` : "没有未读剪藏",
+      sub: collections.length ? `共 ${collections.length} 个收集表` : "还没有收集表",
+      at: "",
+      run: () => {
+        const c = collections.find((c) => unreadClipCount(c, records[c.id]) > 0) ?? collections[0];
+        setNotif(null);
+        if (c) void openCollection(c.id);
+      },
+    });
+    list.push({
+      id: "trash",
+      kind: "content",
+      icon: "🗑",
+      title: trash.length > 0 ? `回收站有 ${trash.length} 个页面` : "回收站为空",
+      sub: "删除的页面可恢复或彻底删除",
+      at: hm(trash[0]?.deletedAt ?? null),
+      run: () => {
+        setNotif(null);
+        setTrashOpen(true);
+      },
+    });
+    return list;
+  }, [syncStatus, unreadTotal, collections, records, trash, runSyncNow, openCollection]);
+
+  // Esc 关闭通知面板 / 空间切换菜单（W28）
+  useEffect(() => {
+    if (!notif && !wsMenu) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setNotif(null);
+        setWsMenu(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [notif, wsMenu]);
 
   const withKids = useMemo(
     () => new Set(pages.filter((p) => p.parentId).map((p) => p.parentId as string)),
@@ -246,8 +339,16 @@ export function Sidebar() {
         <button className="sidebar__icon" title="搜索" onClick={() => searchRef.current?.focus()}>
           <AppIcon name="search" set={iconSet} size={16} />
         </button>
-        <button className="sidebar__icon" title="通知（待 W28 通知面板）" disabled>
+        <button
+          className="sidebar__icon"
+          title="通知"
+          onClick={(e) => {
+            const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+            setNotif((n) => (n ? null : { x: r.left, y: r.bottom + 6 }));
+          }}
+        >
           <AppIcon name="inbox" set={iconSet} size={16} />
+          {unreadTotal > 0 && <span className="sidebar__icon-dot" />}
         </button>
         <button
           className="sidebar__icon"
@@ -643,6 +744,57 @@ export function Sidebar() {
               }}
             >
               收起侧栏
+            </div>
+          </div>
+        </>
+      )}
+
+      {notif && (
+        <>
+          <div className="ctx-backdrop" onMouseDown={() => setNotif(null)} />
+          <div className="notif" style={{ left: notif.x, top: notif.y }}>
+            <div className="notif__head">
+              <span className="notif__title">通知</span>
+              <div className="notif__filters">
+                {(["all", "sync", "content"] as const).map((f) => (
+                  <button
+                    key={f}
+                    className={`notif__filter${notifFilter === f ? " notif__filter--on" : ""}`}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      setNotifFilter(f);
+                    }}
+                  >
+                    {f === "all" ? "全部" : f === "sync" ? "同步" : "内容"}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="notif__list">
+              {notices
+                .filter((n) => notifFilter === "all" || n.kind === notifFilter)
+                .map((n) => (
+                  <div
+                    key={n.id}
+                    className="notif__item"
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      n.run();
+                    }}
+                  >
+                    <span className="notif__avatar">{n.icon}</span>
+                    <span className="notif__body">
+                      <span className="notif__row1">
+                        <span className="notif__name">{n.title}</span>
+                        {n.at && <span className="notif__at">{n.at}</span>}
+                      </span>
+                      <span className="notif__sub">{n.sub}</span>
+                    </span>
+                  </div>
+                ))}
+              {notices.filter((n) => notifFilter === "all" || n.kind === notifFilter).length === 0 && (
+                <div className="notif__empty">这个筛选下没有通知</div>
+              )}
             </div>
           </div>
         </>
