@@ -35,9 +35,23 @@ function useAssetUrl(assetId: string | null | undefined): string | null {
 
 
 /** 页面封面：顶部横幅 + 悬停时出现「更换 / 移除」 */
+/** W43 封面渐变预设（来源 docs/复刻/15-颜色体系.md §8「封面渐变」） */
+const COVER_GRADIENTS: { id: string; label: string; css: string }[] = [
+  { id: "xuanzhi", label: "宣纸", css: "linear-gradient(135deg,#F7F6F2,#E8E5DE)" },
+  { id: "yuanshan", label: "远山", css: "linear-gradient(135deg,#DCE6EE,#A9C1D8)" },
+  { id: "zhusha", label: "朱砂", css: "linear-gradient(135deg,#F6E9E4,#D98A6E)" },
+  { id: "qingci", label: "青瓷", css: "linear-gradient(135deg,#E4F0EE,#9FD3CE)" },
+  { id: "muse", label: "暮色", css: "linear-gradient(135deg,#2B2A27,#4A4944)" },
+  { id: "molan", label: "墨蓝", css: "linear-gradient(135deg,#2F5D8A,#17304A)" },
+];
+const COVER_GRAD_PREFIX = "grad:";
+
 function PageCover({ pageId, coverAssetId }: { pageId: string; coverAssetId: string | null | undefined }) {
   const setCover = useStore((s) => s.setCover);
-  const url = useAssetUrl(coverAssetId);
+  const grad = coverAssetId?.startsWith(COVER_GRAD_PREFIX)
+    ? COVER_GRADIENTS.find((g) => g.id === coverAssetId.slice(COVER_GRAD_PREFIX.length))
+    : null;
+  const url = useAssetUrl(grad ? null : coverAssetId);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -51,13 +65,27 @@ function PageCover({ pageId, coverAssetId }: { pageId: string; coverAssetId: str
     }
   };
 
+  const randomGradient = () => {
+    const g = COVER_GRADIENTS[Math.floor(Math.random() * COVER_GRADIENTS.length)];
+    setCover(pageId, `${COVER_GRAD_PREFIX}${g.id}`);
+  };
+
+  const hasCover = Boolean(grad || url);
+
   return (
     <>
-      {url ? (
-        <div className="cover" style={{ backgroundImage: `url(${url})` }}>
+      {hasCover ? (
+        <div
+          className="cover"
+          style={grad ? { backgroundImage: grad.css } : { backgroundImage: `url(${url})` }}
+          title={grad ? `封面：${grad.label}` : undefined}
+        >
           <div className="cover__actions">
             <button className="cover__btn" onClick={() => fileRef.current?.click()} disabled={busy}>
               {busy ? "上传中…" : "更换封面"}
+            </button>
+            <button className="cover__btn" onClick={randomGradient}>
+              随机
             </button>
             <button className="cover__btn" onClick={() => setCover(pageId, null)}>
               移除
@@ -68,6 +96,9 @@ function PageCover({ pageId, coverAssetId }: { pageId: string; coverAssetId: str
         <div className="cover-add">
           <button className="cover__btn cover__btn--ghost" onClick={() => fileRef.current?.click()} disabled={busy}>
             {busy ? "上传中…" : "添加封面"}
+          </button>
+          <button className="cover__btn cover__btn--ghost" onClick={randomGradient}>
+            随机封面
           </button>
         </div>
       )}
