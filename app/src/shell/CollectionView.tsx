@@ -1,5 +1,5 @@
 import { type PointerEvent as ReactPointerEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import type { CollectionRow, FieldDef, FieldType, RecordRow } from "../data/db";
+import type { CollectionRow, FieldDef, FieldType, RecordRow, ViewDef } from "../data/db";
 import { OPTION_COLORS } from "../data/db";
 import {
   applyView,
@@ -702,7 +702,14 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
     void ensureRecords(collectionId);
   }, [collectionId, ensureRecords]);
 
-  const view = collection?.views[0];
+  // W68：按 store 里记录的当前视图取 view；没有则用第一个
+  const activeViewId = useStore((s) => (collection ? s.activeViewByCollection[collection.id] : undefined));
+  const setActiveView = useStore((s) => s.setActiveView);
+  const addView = useStore((s) => s.addView);
+  const removeView = useStore((s) => s.removeView);
+  const view = collection
+    ? (collection.views.find((v) => v.id === activeViewId) ?? collection.views[0])
+    : undefined;
   const rows = useMemo(
     () => (collection ? applyView(records, collection, view) : []),
     [collection, records, view]
@@ -778,6 +785,7 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
         )}
       </div>
 
+      {view && <ViewTabs collection={collection} view={view} />}
       {view && <ViewBar collection={collection} view={view} />}
 
       <div className="collection__scroll">
@@ -1142,5 +1150,111 @@ function MonthCalendar({ ms, onCommit }: { ms: number | null; onCommit: (v: unkn
         )}
       </div>
     </div>
+  );
+}
+
+
+/** W68 视图标签栏（04 §1.2 桌面）：视图名 | ＋；当前项下划线；超 5 个显示「N 更多…」 */
+function ViewTabs({ collection, view }: { collection: CollectionRow; view: ViewDef }) {
+  const setActiveView = useStore((s) => s.setActiveView);
+  const addView = useStore((s) => s.addView);
+  const removeView = useStore((s) => s.removeView);
+  const [menuFor, setMenuFor] = useState<string | null>(null);
+  const [confirmDel, setConfirmDel] = useState<string | null>(null);
+  const [moreOpen, setMoreOpen] = useState(false);
+
+  const views = collection.views;
+  const MAX = 5;
+  const visible = views.length > MAX ? views.slice(0, MAX) : views;
+  const hidden = views.length > MAX ? views.slice(MAX) : [];
+
+  return (
+    <>
+      <div className="viewtabs">
+        {visible.map((v) => (
+          <div key={v.id} className={`viewtab${v.id === view.id ? " viewtab--on" : ""}`}>
+            <button className="viewtab__name" onClick={() => setActiveView(collection.id, v.id)}>
+              {v.name}
+            </button>
+            <button
+              className="viewtab__menu"
+              title="视图设置"
+              onClick={() => setMenuFor(menuFor === v.id ? null : v.id)}
+            >
+              ⋯
+            </button>
+            {menuFor === v.id && (
+              <div className="viewtab__pop">
+                <button
+                  className="menu-item"
+                  onClick={() => {
+                    setMenuFor(null);
+                  }}
+                >
+                  拷贝视图（待 W69）
+                </button>
+                <button
+                  className="menu-item menu-item--danger"
+                  onClick={() => {
+                    setMenuFor(null);
+                    setConfirmDel(v.id);
+                  }}
+                >
+                  删除视图
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+        {hidden.length > 0 && (
+          <div className="viewtab viewtab--more">
+            <button className="viewtab__name" onClick={() => setMoreOpen((o) => !o)}>
+              {hidden.length} 更多…
+            </button>
+            {moreOpen && (
+              <div className="viewtab__pop">
+                {hidden.map((v) => (
+                  <button
+                    key={v.id}
+                    className="menu-item"
+                    onClick={() => {
+                      setActiveView(collection.id, v.id);
+                      setMoreOpen(false);
+                    }}
+                  >
+                    {v.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        <button className="viewtab__add" title="新建视图" onClick={() => void addView(collection.id)}>
+          ＋
+        </button>
+      </div>
+
+      {confirmDel && (
+        <div className="confirm-mask" onMouseDown={() => setConfirmDel(null)}>
+          <div className="confirm" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="confirm__title">是否确认删除该视图？</div>
+            <div className="confirm__actions">
+              <button
+                className="confirm__btn confirm__btn--danger"
+                onClick={() => {
+                  void removeView(collection.id, confirmDel);
+                  setConfirmDel(null);
+                }}
+              >
+                确定
+              </button>
+              <button className="confirm__btn" onClick={() => setConfirmDel(null)}>
+                取消
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

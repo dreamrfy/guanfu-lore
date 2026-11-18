@@ -64,7 +64,8 @@
     "cell-semantics-check": "node tools/cell-semantics-check.mjs",
     "cell-editor-check": "node tools/cell-editor-check.mjs",
     "colmenu-check": "node tools/colmenu-check.mjs",
-    "colright-check": "node tools/colright-check.mjs"
+    "colright-check": "node tools/colright-check.mjs",
+    "viewtabs-check": "node tools/viewtabs-check.mjs"
   },
   "keywords": [],
   "author": "",

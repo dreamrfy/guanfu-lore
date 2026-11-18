@@ -230,6 +230,12 @@ type Store = {
   setCell: (collectionId: string, recordId: string, fieldId: string, value: unknown) => void;
   removeRecord: (collectionId: string, recordId: string) => Promise<void>;
   updateView: (collectionId: string, viewId: string, patch: Partial<ViewDef>) => void;
+  /** W68：每个表当前选中的视图（不落库，切换是界面态） */
+  activeViewByCollection: Record<string, string>;
+  setActiveView: (collectionId: string, viewId: string) => void;
+  addView: (collectionId: string) => Promise<void>;
+  /** W68：删除视图（至少保留一个） */
+  removeView: (collectionId: string, viewId: string) => Promise<void>;
   /** 非空 = 表格里打开了某条记录的详情（右侧面板显示） */
   openRecordRef: { collectionId: string; recordId: string } | null;
   /** 自动同步开关（定时推 + 拉） */
@@ -781,6 +787,47 @@ export const useStore = create<Store>((set, get) => {
         openRecordRef:
           s.openRecordRef?.recordId === recordId ? null : s.openRecordRef,
       }));
+    },
+
+    activeViewByCollection: {},
+
+    setActiveView: (collectionId, viewId) => {
+      set((s) => ({ activeViewByCollection: { ...s.activeViewByCollection, [collectionId]: viewId } }));
+    },
+
+    addView: async (collectionId) => {
+      const row = get().collections.find((c) => c.id === collectionId);
+      if (!row) return;
+      const view = {
+        id: newId(),
+        name: `视图 ${row.views.length + 1}`,
+        type: "table" as const,
+        filterOp: "and" as const,
+        filters: [],
+        sorts: [],
+      };
+      const next = { ...row, views: [...row.views, view], updatedAt: Date.now() };
+      set((s) => ({
+        collections: s.collections.map((c) => (c.id === collectionId ? next : c)),
+        activeViewByCollection: { ...s.activeViewByCollection, [collectionId]: view.id },
+      }));
+      await repo.putCollection(next);
+    },
+
+    removeView: async (collectionId, viewId) => {
+      const row = get().collections.find((c) => c.id === collectionId);
+      if (!row) return;
+      if (row.views.length <= 1) return; // 至少留一个视图
+      const views = row.views.filter((v) => v.id !== viewId);
+      const next = { ...row, views, updatedAt: Date.now() };
+      set((s) => ({
+        collections: s.collections.map((c) => (c.id === collectionId ? next : c)),
+        activeViewByCollection: {
+          ...s.activeViewByCollection,
+          [collectionId]: s.activeViewByCollection[collectionId] === viewId ? views[0].id : s.activeViewByCollection[collectionId],
+        },
+      }));
+      await repo.putCollection(next);
     },
 
     updateView: (collectionId, viewId, patch) => {
