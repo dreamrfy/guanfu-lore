@@ -130,7 +130,8 @@ export type FilterCondition = {
 export type ViewDef = {
   id: string;
   name: string;
-  type: "table";
+  /** W71：视图类型（W71 实现看板；画廊/目录/时间轴/日历见 W72~W75） */
+  type: "table" | "kanban" | "gallery" | "catalog" | "timeline" | "calendar";
   filterOp: "and" | "or";
   filters: FilterCondition[];
   sorts: SortDef[];

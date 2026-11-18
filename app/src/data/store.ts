@@ -215,7 +215,8 @@ type Store = {
   duplicateField: (collectionId: string, fieldId: string) => Promise<void>;
   updateField: (collectionId: string, fieldId: string, patch: Partial<FieldDef>) => void;
   removeField: (collectionId: string, fieldId: string) => void;
-  addRecord: (collectionId: string) => Promise<void>;
+  /** 返回新记录 id（看板「创建记录」要把它放进对应列） */
+  addRecord: (collectionId: string) => Promise<string>;
   /** 剪藏库：不存在就按固定字段建一张（公众号 / B站 / 其他 + 作者、链接、收藏时间、状态） */
   ensureClipCollection: () => Promise<CollectionRow>;
   /** 给集合补上「AI 摘要 / AI 状态」两列（已有则跳过），返回最新表 */
@@ -689,6 +690,7 @@ export const useStore = create<Store>((set, get) => {
         records: { ...s.records, [collectionId]: [...(s.records[collectionId] ?? []), rec] },
       }));
       queue({ entity: "record", entityId: rec.id, op: "upsert", payload: { record: rec } });
+      return rec.id;
     },
 
     ensureClipCollection: async () => {

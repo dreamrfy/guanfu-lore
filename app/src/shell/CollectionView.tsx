@@ -26,6 +26,7 @@ import { AppIcon } from "../design/icons";
 import { useLang } from "../i18n";
 import { AiBatchDialog } from "./AiBatchDialog";
 import { ViewBar } from "./ViewBar";
+import { KanbanView } from "./KanbanView";
 
 /** 按字段类型渲染只读值 */
 function recordTitle(collection: CollectionRow | undefined, record: RecordRow): string {
@@ -794,6 +795,9 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
       {view && <ViewTabs collection={collection} view={view} />}
       {view && <ViewBar collection={collection} view={view} />}
 
+      {view?.type === "kanban" ? (
+        <KanbanView collection={collection} view={view} rows={rows} />
+      ) : (
       <div className="collection__scroll">
         <table className={`grid${view?.autoRowHeight ? " grid--auto-row" : ""}`} style={{ width: gridWidth, tableLayout: "fixed" }}>
           <thead>
@@ -987,6 +991,8 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
           )}
         </table>
       </div>
+      )}
+
 
       {batchOpen && (
         <AiBatchDialog collection={collection} records={records} onClose={() => setBatchOpen(false)} />
@@ -1288,9 +1294,34 @@ function ViewTabs({ collection, view }: { collection: CollectionRow; view: ViewD
                   </label>
                   <label className="vs-row">
                     <span>视图类型</span>
-                    <select className="cell-input" value="table" onChange={() => {}}>
+                    <select
+                      className="cell-input"
+                      value={view.type}
+                      onChange={(e) => {
+                        const type = e.target.value as ViewDef["type"];
+                        const label =
+                          type === "kanban"
+                            ? "看板"
+                            : type === "gallery"
+                              ? "画廊"
+                              : type === "catalog"
+                                ? "目录"
+                                : type === "timeline"
+                                  ? "时间轴"
+                                  : type === "calendar"
+                                    ? "日历"
+                                    : "表格";
+                        const firstSelect = collection.fields.find((f) => f.type === "select");
+                        updateView(collection.id, view.id, {
+                          type,
+                          name: label,
+                          groupById:
+                            type === "kanban" ? (view.groupById ?? firstSelect?.id ?? null) : view.groupById,
+                        });
+                      }}
+                    >
                       <option value="table">表格</option>
-                      <option disabled>看板（待 W71）</option>
+                      <option value="kanban">看板</option>
                       <option disabled>画廊（待 W72）</option>
                       <option disabled>目录（待 W73）</option>
                       <option disabled>时间轴（待 W74）</option>

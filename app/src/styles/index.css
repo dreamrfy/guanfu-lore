@@ -4397,3 +4397,97 @@ html[data-theme="dark"] .grid tbody tr:nth-child(odd) .grid__cell {
   padding: 6px 0;
   white-space: normal;
 }
+
+/* ---------- 看板视图（W71，04 §1.1：按字段分列，列头组名+计数+⋯，卡片=标题，列底创建记录） ---------- */
+
+.kanban {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  overflow-x: auto;
+  align-items: flex-start;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.kanban--empty {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.kanban__col {
+  flex: 0 0 auto;
+  width: 260px;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.kanban__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 4px 8px;
+}
+
+.kanban__name {
+  flex: 1 1 auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kanban__count {
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+  border-radius: 8px;
+  padding: 0 6px;
+  line-height: 16px;
+}
+
+.kanban__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+}
+
+.kanban__card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: grab;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.kanban__card:hover {
+  border-color: var(--primary);
+}
+
+.kanban__add {
+  height: 28px;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.kanban__add:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}

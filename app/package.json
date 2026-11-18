@@ -67,7 +67,8 @@
     "colright-check": "node tools/colright-check.mjs",
     "viewtabs-check": "node tools/viewtabs-check.mjs",
     "viewsettings-check": "node tools/viewsettings-check.mjs",
-    "viewlogic-check": "node tools/viewlogic-check.mjs"
+    "viewlogic-check": "node tools/viewlogic-check.mjs",
+    "kanban-check": "node tools/kanban-check.mjs"
   },
   "keywords": [],
   "author": "",
