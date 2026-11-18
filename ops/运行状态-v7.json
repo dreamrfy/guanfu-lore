@@ -48,10 +48,11 @@
     "W52",
     "W53",
     "W54",
-    "W55"
+    "W55",
+    "W56"
   ],
-  "nextTask": "W56",
-  "doneCount": 40,
+  "nextTask": "W57",
+  "doneCount": 41,
   "totalCount": 88,
   "testBaseline": "cd app && npm test = 250/250 绿（勿退化）",
   "devServer": "npm run dev 起在 5173（后台任务 bjlvotyrx；挂了重起即可）",
@@ -182,11 +183,18 @@
     {
       "time": "2026-11-18T16:35:00Z",
       "event": "会话#29 完成 W55（转换为面板 4 列/20 目标/✓ 跟随级别）094b196；测试 36/267；下一任务 W56 拖拽与块手柄"
+    },
+    {
+      "time": "2026-11-18T17:05:00Z",
+      "event": "会话#30 完成 W56（DONE·部分：手柄/Tab 缩进/侧栏拖拽已验；块鼠标拖拽 headless 无法复现，标待人工）d2f7657；下一任务 W57 编辑器整体走查（模块 W4 收口）"
     }
   ],
   "modulesDone": [
     "W1",
     "W2",
     "W3"
+  ],
+  "partialTasks": [
+    "W56"
   ]
 }
