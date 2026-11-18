@@ -39,6 +39,24 @@ export function TopToolbar() {
   const mdRef = useRef<HTMLInputElement | null>(null);
   const menuRef = useOutsideClose(() => setOpenMenu(null));
   const createPageWithBlocks = useStore((s) => s.createPageWithBlocks);
+  // W40 顶栏：页面路径（面包屑）+ 规格五图标
+  const pages = useStore((s) => s.pages);
+  const activeTabId = useStore((s) => s.activeTabId);
+  const openTab = useStore((s) => s.openTab);
+  const flash = (msg: string) => {
+    setBusy(msg);
+    window.setTimeout(() => setBusy(null), 1800);
+  };
+  const crumbs = (() => {
+    const byId = new Map(pages.map((p) => [p.id, p]));
+    const out: { id: string; title: string }[] = [];
+    let cur = activeTabId ? byId.get(activeTabId) : undefined;
+    while (cur && out.length < 8) {
+      out.unshift({ id: cur.id, title: cur.title });
+      cur = cur.parentId ? byId.get(cur.parentId) : undefined;
+    }
+    return out;
+  })();
 
   // 侧栏图标行（W21）联动：AI / 更多 两个入口由 Sidebar 派发事件
   useEffect(() => {
@@ -103,19 +121,60 @@ export function TopToolbar() {
 
       {busy && <span className="toolbar__toast">{busy}</span>}
 
+      {/* W40 页面路径（手册 §2/03 §3：桌面顶栏左=页面路径） */}
+      <nav className="toolbar__crumbs">
+        {crumbs.map((c, i) => (
+          <span key={c.id} className="toolbar__crumb-wrap">
+            {i > 0 && <span className="toolbar__crumb-sep">/</span>}
+            <button className="toolbar__crumb" title={c.title || "无标题"} onClick={() => openTab(c.id)}>
+              {c.title || "无标题"}
+            </button>
+          </span>
+        ))}
+      </nav>
+
       <div className="toolbar__spacer" />
 
-      {/* 同步（决策 D4）：待推送 / 冲突副本 */}
-      <SyncButton />
-
-      {/* 全局对话：不依赖当前页面也能聊 */}
-      <button className="icon-btn" title="AI 对话" onClick={() => setChatOpen(true)}>
-        <AppIcon name="ai" set={iconSet} />
+      {/* W40 规格五图标：分享 / 评论 / ⚡ / ⋯ / 搜索（03 §3 桌面细条右侧顺序） */}
+      <button
+        className="icon-btn"
+        title="分享"
+        onClick={() => {
+          void navigator.clipboard
+            .writeText(`${location.origin}${location.pathname}?page=${activeTabId ?? ""}`)
+            .then(() => flash("页面链接已复制（分享面板待 W110）"))
+            .catch(() => flash("复制失败"));
+        }}
+      >
+        <AppIcon name="share" set={iconSet} />
+      </button>
+      <button className="icon-btn" title="评论（待评论体系专项）" disabled>
+        <AppIcon name="comment" set={iconSet} />
+      </button>
+      <button className="icon-btn" title="⚡ AI" onClick={() => setChatOpen(true)}>
+        <AppIcon name="bolt" set={iconSet} />
+      </button>
+      <PageMenu />
+      <button
+        className="icon-btn"
+        title="搜索"
+        onClick={() => {
+          if (useStore.getState().sidebarCollapsed) toggleSidebar();
+          setTimeout(() => {
+            const input = document.querySelector<HTMLInputElement>(".sidebar__search input");
+            input?.focus();
+          }, 80);
+        }}
+      >
+        <AppIcon name="search" set={iconSet} />
       </button>
 
-      {/* 页面菜单（导出 / 复制 / 副本 / 删除） */}
-      <PageMenu />
+      <span className="toolbar__sep" />
 
+      {/* 【暂定】以下为观复自有工具入口，W100 设置弹层落位后收进设置页 */}
+      <SyncButton />
+
+      
       {/* 外观：主题 / 字体 / 图标风格 */}
       <div style={{ position: "relative" }}>
         <button
@@ -171,7 +230,7 @@ export function TopToolbar() {
       {/* AI 面板 */}
       <button
         className="icon-btn"
-        title="AI 面板（第 5 步接入能力）"
+        title="页面信息面板"
         onClick={toggleRightPanel}
         style={{ color: rightPanelOpen ? "var(--text)" : undefined }}
       >

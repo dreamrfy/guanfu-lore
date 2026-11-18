@@ -3335,3 +3335,47 @@ html[data-theme="dark"] .winbtn--close:hover {
   font-size: 12px;
   color: var(--text-secondary);
 }
+
+/* ---------- 页面顶栏：路径与五图标（W40，手册 §2/03 §3） ---------- */
+
+.toolbar__crumbs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  overflow: hidden;
+  padding-left: 6px;
+}
+
+.toolbar__crumb-wrap {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.toolbar__crumb {
+  max-width: 160px;
+  height: 24px;
+  padding: 0 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  border-radius: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.toolbar__crumb:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.toolbar__crumb-sep {
+  flex: 0 0 auto;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}

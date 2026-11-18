@@ -43,7 +43,8 @@
     "wsrow-check": "node tools/wsrow-check.mjs",
     "notif-check": "node tools/notif-check.mjs",
     "pageref-check": "node tools/pageref-check.mjs",
-    "sidebar-toggle-check": "node tools/sidebar-toggle-check.mjs"
+    "sidebar-toggle-check": "node tools/sidebar-toggle-check.mjs",
+    "toolbar-check": "node tools/toolbar-check.mjs"
   },
   "keywords": [],
   "author": "",
