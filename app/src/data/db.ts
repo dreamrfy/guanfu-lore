@@ -138,6 +138,11 @@ export type ViewDef = {
   groupById?: string | null;
   /** W66 列头菜单「冻结列」：冻结的列（含首列）横向滚动时固定 */
   frozenFieldIds?: string[];
+  /** W69 视图设置：自适应行高 / 显示序号 / 每页大小 / 显示页面图标 */
+  autoRowHeight?: boolean;
+  showIndex?: boolean;
+  pageSize?: number;
+  showPageIcon?: boolean;
 };
 
 export type CollectionRow = {

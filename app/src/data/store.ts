@@ -236,6 +236,8 @@ type Store = {
   addView: (collectionId: string) => Promise<void>;
   /** W68：删除视图（至少保留一个） */
   removeView: (collectionId: string, viewId: string) => Promise<void>;
+  /** W69：拷贝视图（连同筛选/排序/分组一起复制） */
+  copyView: (collectionId: string, viewId: string) => Promise<void>;
   /** 非空 = 表格里打开了某条记录的详情（右侧面板显示） */
   openRecordRef: { collectionId: string; recordId: string } | null;
   /** 自动同步开关（定时推 + 拉） */
@@ -826,6 +828,20 @@ export const useStore = create<Store>((set, get) => {
           ...s.activeViewByCollection,
           [collectionId]: s.activeViewByCollection[collectionId] === viewId ? views[0].id : s.activeViewByCollection[collectionId],
         },
+      }));
+      await repo.putCollection(next);
+    },
+
+    copyView: async (collectionId, viewId) => {
+      const row = get().collections.find((c) => c.id === collectionId);
+      if (!row) return;
+      const src = row.views.find((v) => v.id === viewId);
+      if (!src) return;
+      const copy = { ...src, id: newId(), name: `${src.name} 副本` };
+      const next = { ...row, views: [...row.views, copy], updatedAt: Date.now() };
+      set((s) => ({
+        collections: s.collections.map((c) => (c.id === collectionId ? next : c)),
+        activeViewByCollection: { ...s.activeViewByCollection, [collectionId]: copy.id },
       }));
       await repo.putCollection(next);
     },

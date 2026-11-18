@@ -711,7 +711,13 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
     ? (collection.views.find((v) => v.id === activeViewId) ?? collection.views[0])
     : undefined;
   const rows = useMemo(
-    () => (collection ? applyView(records, collection, view) : []),
+    () => {
+      if (!collection) return [];
+      const all = applyView(records, collection, view);
+      // W69 每页大小（未设置时按 50 条，规格默认）
+      const size = view?.pageSize ?? 50;
+      return all.slice(0, size);
+    },
     [collection, records, view]
   );
   // 分组（V01）：筛选、排序照旧先生效，这里只在结果上分桶展示。
@@ -789,10 +795,10 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
       {view && <ViewBar collection={collection} view={view} />}
 
       <div className="collection__scroll">
-        <table className="grid" style={{ width: gridWidth, tableLayout: "fixed" }}>
+        <table className={`grid${view?.autoRowHeight ? " grid--auto-row" : ""}`} style={{ width: gridWidth, tableLayout: "fixed" }}>
           <thead>
             <tr>
-              <th className="grid__idx grid__idx--head">#</th>
+              {view?.showIndex !== false && <th className="grid__idx grid__idx--head">#</th>}
               {visibleFields.map((f, colIdx) => (
                 <th
                   className={frozenLeft.has(f.id) ? "grid__th--frozen" : undefined}
@@ -873,9 +879,11 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
                   }, 220);
                 }}
               >
+                {view?.showIndex !== false && (
                 <td className="grid__idx">
                   {isClipUnread(collection, rec) ? <span className="unread-dot" title="未读" /> : i + 1}
                 </td>
+                )}
                 {visibleFields.map((f, colIdx) => {
                   const key = `${rec.id}:${f.id}`;
                   const editing = editingCell === key;
@@ -1159,6 +1167,10 @@ function ViewTabs({ collection, view }: { collection: CollectionRow; view: ViewD
   const setActiveView = useStore((s) => s.setActiveView);
   const addView = useStore((s) => s.addView);
   const removeView = useStore((s) => s.removeView);
+  const updateView = useStore((s) => s.updateView);
+  const copyView = useStore((s) => s.copyView);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [tab, setTab] = useState("view");
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [confirmDel, setConfirmDel] = useState<string | null>(null);
   const [moreOpen, setMoreOpen] = useState(false);
@@ -1189,9 +1201,11 @@ function ViewTabs({ collection, view }: { collection: CollectionRow; view: ViewD
                   className="menu-item"
                   onClick={() => {
                     setMenuFor(null);
+                    setTab("view");
+                    setSettingsOpen(true);
                   }}
                 >
-                  拷贝视图（待 W69）
+                  视图设置
                 </button>
                 <button
                   className="menu-item menu-item--danger"
@@ -1233,6 +1247,136 @@ function ViewTabs({ collection, view }: { collection: CollectionRow; view: ViewD
           ＋
         </button>
       </div>
+
+      {settingsOpen && (
+        <div className="confirm-mask" onMouseDown={() => setSettingsOpen(false)}>
+          <div className="viewsettings" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="viewsettings__head">
+              <span>视图设置</span>
+              <button className="viewsettings__close" onClick={() => setSettingsOpen(false)}>
+                ×
+              </button>
+            </div>
+            <div className="viewsettings__tabs">
+              {[
+                ["view", "视图"],
+                ["props", "属性"],
+                ["filter", "筛选"],
+                ["sort", "排序"],
+                ["group", "分组"],
+                ["child", "子记录"],
+              ].map(([id, label]) => (
+                <button
+                  key={id}
+                  className={`viewsettings__tab${tab === id ? " viewsettings__tab--on" : ""}`}
+                  onClick={() => setTab(id)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="viewsettings__body">
+              {tab === "view" ? (
+                <>
+                  <label className="vs-row">
+                    <span>视图名称</span>
+                    <input
+                      className="cell-input"
+                      defaultValue={view.name}
+                      onBlur={(e) => updateView(collection.id, view.id, { name: e.target.value || view.name })}
+                    />
+                  </label>
+                  <label className="vs-row">
+                    <span>视图类型</span>
+                    <select className="cell-input" value="table" onChange={() => {}}>
+                      <option value="table">表格</option>
+                      <option disabled>看板（待 W71）</option>
+                      <option disabled>画廊（待 W72）</option>
+                      <option disabled>目录（待 W73）</option>
+                      <option disabled>时间轴（待 W74）</option>
+                      <option disabled>日历（待 W75）</option>
+                    </select>
+                  </label>
+                  <label className="vs-row">
+                    <span>自适应行高</span>
+                    <input
+                      type="checkbox"
+                      checked={Boolean(view.autoRowHeight)}
+                      onChange={(e) => updateView(collection.id, view.id, { autoRowHeight: e.target.checked })}
+                    />
+                  </label>
+                  <label className="vs-row">
+                    <span>显示序号</span>
+                    <input
+                      type="checkbox"
+                      checked={view.showIndex !== false}
+                      onChange={(e) => updateView(collection.id, view.id, { showIndex: e.target.checked })}
+                    />
+                  </label>
+                  <label className="vs-row">
+                    <span>每页大小</span>
+                    <select
+                      className="cell-input"
+                      value={String(view.pageSize ?? 50)}
+                      onChange={(e) => updateView(collection.id, view.id, { pageSize: Number(e.target.value) })}
+                    >
+                      {[10, 20, 30, 50, 100].map((n) => (
+                        <option key={n} value={n}>
+                          {n} 条
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <div className="vs-row vs-row--muted" title="固定滑动加载（【暂定】）">
+                    <span>加载方式</span>
+                    <span>滑动加载</span>
+                  </div>
+                  <div className="vs-row vs-row--muted" title="待专项（【暂定】）">
+                    <span>打开记录方式</span>
+                    <span>整页打开</span>
+                  </div>
+                  <div className="vs-row vs-row--muted" title="待专项（【暂定】）">
+                    <span>显示页面图标</span>
+                    <span>待专项</span>
+                  </div>
+                  <button
+                    className="menu-item"
+                    onClick={() => {
+                      void navigator.clipboard
+                        .writeText(`${location.origin}${location.pathname}?view=${view.id}`)
+                        .catch(() => {});
+                    }}
+                  >
+                    复制引用视图链接
+                  </button>
+                  <button
+                    className="menu-item"
+                    onClick={() => {
+                      void copyView(collection.id, view.id);
+                      setSettingsOpen(false);
+                    }}
+                  >
+                    拷贝视图
+                  </button>
+                  <button
+                    className="menu-item menu-item--danger"
+                    onClick={() => {
+                      setSettingsOpen(false);
+                      setConfirmDel(view.id);
+                    }}
+                  >
+                    删除视图
+                  </button>
+                </>
+              ) : (
+                <div className="vs-placeholder">
+                  该页签内容待 W70 统一接入（筛选 / 排序 / 分组目前可在下方视图栏直接操作）
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {confirmDel && (
         <div className="confirm-mask" onMouseDown={() => setConfirmDel(null)}>
