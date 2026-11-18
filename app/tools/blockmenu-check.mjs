@@ -102,7 +102,7 @@ if (!bg || bg === "rgba(0, 0, 0, 0)") await fail("颜色未生效（无背景色
 await openMenu();
 await page.locator(".blockmenu .tabctx__item", { hasText: "转换为" }).click();
 await page.waitForTimeout(300);
-await page.locator(".blockmenu .tabctx__item", { hasText: "标题2" }).click();
+await page.locator(".convertpanel__tile", { has: page.locator(".convertpanel__label", { hasText: /^标题2$/ }) }).click();
 await page.waitForTimeout(500);
 const hasHeading = await page.locator('[data-content-type="heading"]').count();
 console.log("转换为标题2后 heading 数 =", hasHeading);

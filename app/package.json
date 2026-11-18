@@ -55,7 +55,8 @@
     "blocks-check": "node tools/blocks-check.mjs",
     "media-check": "node tools/media-check.mjs",
     "pageblock-check": "node tools/pageblock-check.mjs",
-    "blockmenu-check": "node tools/blockmenu-check.mjs"
+    "blockmenu-check": "node tools/blockmenu-check.mjs",
+    "convertpanel-check": "node tools/convertpanel-check.mjs"
   },
   "keywords": [],
   "author": "",

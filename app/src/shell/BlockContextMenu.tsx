@@ -19,20 +19,32 @@ import { resolveAssetRefs } from "../data/assets";
  */
 type Sub = null | "convert" | "color" | "move";
 
-const CONVERT_TARGETS: { label: string; type: string; text: string }[] = [
-  { label: "正文", type: "paragraph", text: "正文" },
-  { label: "标题1", type: "heading", text: "标题1" },
-  { label: "标题2", type: "heading", text: "标题2" },
-  { label: "标题3", type: "heading", text: "标题3" },
-  { label: "标题4", type: "heading", text: "标题4" },
-  { label: "项目列表", type: "bulletListItem", text: "项目列表" },
-  { label: "编号列表", type: "numberedListItem", text: "编号列表" },
-  { label: "待办列表", type: "checkListItem", text: "待办列表" },
-  { label: "折叠列表", type: "toggleListItem", text: "折叠列表" },
-  { label: "引述文字", type: "quote", text: "引述文字" },
-  { label: "代码片段", type: "codeBlock", text: "代码片段" },
-  { label: "着重文字", type: "callout", text: "着重文字" },
-  { label: "页面", type: "pageBlock", text: "页面" },
+/** W55 转换为面板：07 §3 的 15+ 种目标（未实现项用 disabled 标注，不做假入口） */
+type ConvertTile =
+  | { label: string; icon: string; type: string; text: string }
+  | { label: string; icon: string; disabled: true };
+
+const CONVERT_TILES: ConvertTile[] = [
+  { label: "正文", icon: "¶", type: "paragraph", text: "正文" },
+  { label: "标题1", icon: "H1", type: "heading", text: "标题1" },
+  { label: "标题2", icon: "H2", type: "heading", text: "标题2" },
+  { label: "标题3", icon: "H3", type: "heading", text: "标题3" },
+  { label: "标题4", icon: "H4", type: "heading", text: "标题4" },
+  { label: "项目列表", icon: "•", type: "bulletListItem", text: "项目列表" },
+  { label: "编号列表", icon: "1.", type: "numberedListItem", text: "编号列表" },
+  { label: "待办列表", icon: "☑", type: "checkListItem", text: "待办列表" },
+  { label: "折叠列表", icon: "▸", type: "toggleListItem", text: "折叠列表" },
+  { label: "引述文字", icon: "❝", type: "quote", text: "引述文字" },
+  { label: "代码片段", icon: "{ }", type: "codeBlock", text: "代码片段" },
+  { label: "着重文字", icon: "💡", type: "callout", text: "着重文字" },
+  { label: "页面", icon: "📄", type: "pageBlock", text: "页面" },
+    { label: "数学公式", icon: "∑", disabled: true },
+  { label: "思维导图", icon: "🧠", disabled: true },
+  { label: "折叠标题1", icon: "H1▾", disabled: true },
+  { label: "折叠标题2", icon: "H2▾", disabled: true },
+  { label: "折叠标题3", icon: "H3▾", disabled: true },
+  { label: "折叠标题4", icon: "H4▾", disabled: true },
+  { label: "同步块", icon: "⟳", disabled: true },
 ];
 
 const COLORS: { label: string; value: string }[] = [
@@ -98,6 +110,7 @@ export function BlockContextMenu({ editor }: { editor: AnyEditor }) {
   const block = editor.getBlock(ctx.blockId);
   if (!block) return null;
   const curType = block.type as string;
+  const curLevel = Number((block.props as { level?: number }).level ?? 1);
 
   const remove = () => editor.removeBlocks([block]);
   const copyText = (text: string, then?: () => void) => {
@@ -120,28 +133,47 @@ export function BlockContextMenu({ editor }: { editor: AnyEditor }) {
       {toast && <span className="toolbar__toast">{toast}</span>}
       <div className="blockmenu tabctx" style={{ left: ctx.x, top: ctx.y }}>
         {sub === "convert" ? (
-          <>
-            <div className="tabctx__item tabctx__item--head" onMouseDown={(e) => { e.stopPropagation(); setSub(null); }}>
+          <div className="convertpanel">
+            <div
+              className="convertpanel__head"
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                setSub(null);
+              }}
+            >
               ← 转换为
             </div>
-            {CONVERT_TARGETS.map((t) => (
-              <div
-                key={t.label}
-                className={`tabctx__item${t.type === curType ? " tabctx__item--on" : ""}`}
-                onMouseDown={(e) => {
-                  e.stopPropagation();
-                  const props: Record<string, unknown> = {};
-                  if (t.type === "heading") props.level = Number(t.text.replace("标题", "")) || 1;
-                  if (t.type === "pageBlock") props.mode = "ref";
-                  editor.updateBlock(block, { type: t.type, props } as never);
-                  close();
-                }}
-              >
-                {t.type === curType ? "✓ " : ""}
-                {t.label}
-              </div>
-            ))}
-          </>
+            <div className="convertpanel__grid">
+              {CONVERT_TILES.map((t) => {
+                const isCurrent =
+                  !("disabled" in t) &&
+                  t.type === curType &&
+                  (t.type !== "heading" || Number(t.text.replace("标题", "")) === curLevel);
+                return (
+                  <div
+                    key={t.label}
+                    className={`convertpanel__tile${isCurrent ? " convertpanel__tile--on" : ""}${
+                      "disabled" in t ? " convertpanel__tile--off" : ""
+                    }`}
+                    title={"disabled" in t ? `${t.label} 待专项（【暂定】）` : t.label}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      if ("disabled" in t) return;
+                      const props: Record<string, unknown> = {};
+                      if (t.type === "heading") props.level = Number(t.text.replace("标题", "")) || 1;
+                      if (t.type === "pageBlock") props.mode = "ref";
+                      editor.updateBlock(block, { type: t.type, props } as never);
+                      close();
+                    }}
+                  >
+                    <span className="convertpanel__icon">{t.icon}</span>
+                    <span className="convertpanel__label">{t.label}</span>
+                    {isCurrent && <span className="convertpanel__check">✓</span>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         ) : sub === "color" ? (
           <>
             <div className="tabctx__item tabctx__item--head" onMouseDown={(e) => { e.stopPropagation(); setSub(null); }}>
