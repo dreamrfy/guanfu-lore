@@ -171,15 +171,33 @@ export function Sidebar() {
           }}
           title="把页面拖到这里 = 移到最外层"
         >
-          {t("groupPages")}
+          <span>{t("groupPages")}</span>
+          <span style={{ flex: "1 1 auto" }} />
+          <button className="groupbtn" title="设置（待 W100 设置弹层接线）" disabled>
+            <AppIcon name="settings" set={iconSet} size={12} />
+          </button>
+          <button
+            className="groupbtn"
+            title="新建页面"
+            onClick={(e) => {
+              e.stopPropagation();
+              void createPage(null);
+            }}
+          >
+            <AppIcon name="plus" set={iconSet} size={12} />
+          </button>
         </div>
 
         {!query.trim() && (
           <>
             <div className="sidebar__group-label">
               <span>{t("groupTables")}</span>
+              <span style={{ flex: "1 1 auto" }} />
+              <button className="groupbtn" title="设置（待 W100 设置弹层接线）" disabled>
+                <AppIcon name="settings" set={iconSet} size={12} />
+              </button>
               <button
-                className="icon-btn"
+                className="groupbtn"
                 title={t("newTable")}
                 onClick={(e) => {
                   e.stopPropagation();

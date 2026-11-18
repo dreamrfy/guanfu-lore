@@ -32,7 +32,8 @@
     "tab-boundary-check": "node tools/tab-boundary-check.mjs",
     "install-app": "node tools/install-app.mjs",
     "installed-smoke": "node tools/installed-smoke.mjs",
-    "run-installed": "node tools/run-installed.mjs"
+    "run-installed": "node tools/run-installed.mjs",
+    "sidebar-check": "node tools/sidebar-check.mjs"
   },
   "keywords": [],
   "author": "",

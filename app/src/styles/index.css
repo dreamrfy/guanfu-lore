@@ -156,9 +156,13 @@ body {
 }
 
 .sidebar__group-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
   font-size: 12px;
   color: var(--text-secondary);
-  padding: 10px 8px 4px;
+  padding: 0 8px;
   border-radius: 6px;
 }
 
@@ -181,7 +185,8 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 8px;
+  height: 32px;
+  padding: 0 8px;
   border-radius: 6px;
   cursor: pointer;
   color: var(--text);
@@ -2800,4 +2805,31 @@ html[data-theme="dark"] .winbtn--close:hover {
   right: 138px; /* 46×3 窗口控制左缘前 */
   top: 34px;
   left: auto;
+}
+
+/* ---------- 侧栏组头两钮（手册 §2：组头右 设置+新建 20×20；设置钮待 W100 设置弹层接线） ---------- */
+
+.groupbtn {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0;
+}
+
+.sidebar__group-label:hover .groupbtn {
+  opacity: 1;
+}
+
+.groupbtn:hover {
+  background: var(--bg-hover);
+  color: var(--text);
 }
