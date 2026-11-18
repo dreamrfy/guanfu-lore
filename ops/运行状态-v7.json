@@ -56,10 +56,11 @@
     "W62",
     "W63",
     "W64",
-    "W65"
+    "W65",
+    "W66"
   ],
-  "nextTask": "W66",
-  "doneCount": 49,
+  "nextTask": "W67",
+  "doneCount": 50,
   "totalCount": 88,
   "testBaseline": "cd app && npm test = 250/250 绿（勿退化）",
   "devServer": "npm run dev 起在 5173（后台任务 bjlvotyrx；挂了重起即可）",
@@ -218,6 +219,10 @@
     {
       "time": "2026-11-18T20:30:00Z",
       "event": "会话#36 完成 W65（单选/多选 chips 面板 + 日期月历）6eb9efc；测试 36/272；下一任务 W66 列头菜单 11 项"
+    },
+    {
+      "time": "2026-11-18T21:20:00Z",
+      "event": "会话#37 完成 W66 DONE·部分（列头菜单 10 项真实现，冻结列实测不可行→置灰）ce34550；测试 36/272；下一任务 W67 列头右键"
     }
   ],
   "modulesDone": [
@@ -227,6 +232,7 @@
     "W4"
   ],
   "partialTasks": [
-    "W56"
+    "W56",
+    "W66"
   ]
 }
