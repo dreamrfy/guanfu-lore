@@ -28,6 +28,7 @@ import { AiBatchDialog } from "./AiBatchDialog";
 import { ViewBar } from "./ViewBar";
 import { KanbanView } from "./KanbanView";
 import { GalleryView } from "./GalleryView";
+import { CatalogView } from "./CatalogView";
 
 /** 按字段类型渲染只读值 */
 function recordTitle(collection: CollectionRow | undefined, record: RecordRow): string {
@@ -800,6 +801,8 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
         <KanbanView collection={collection} view={view} rows={rows} />
       ) : view?.type === "gallery" ? (
         <GalleryView collection={collection} view={view} rows={rows} />
+      ) : view?.type === "catalog" ? (
+        <CatalogView collection={collection} view={view} rows={rows} />
       ) : (
       <div className="collection__scroll">
         <table className={`grid${view?.autoRowHeight ? " grid--auto-row" : ""}`} style={{ width: gridWidth, tableLayout: "fixed" }}>
@@ -1326,7 +1329,7 @@ function ViewTabs({ collection, view }: { collection: CollectionRow; view: ViewD
                       <option value="table">表格</option>
                       <option value="kanban">看板</option>
                       <option value="gallery">画廊</option>
-                      <option disabled>目录（待 W73）</option>
+                      <option value="catalog">目录</option>
                       <option disabled>时间轴（待 W74）</option>
                       <option disabled>日历（待 W75）</option>
                     </select>

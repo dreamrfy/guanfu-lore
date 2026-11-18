@@ -63,10 +63,11 @@
     "W69",
     "W70",
     "W71",
-    "W72"
+    "W72",
+    "W73"
   ],
-  "nextTask": "W73",
-  "doneCount": 54,
+  "nextTask": "W74",
+  "doneCount": 55,
   "totalCount": 88,
   "testBaseline": "cd app && npm test = 272/272 绿（36 个文件，勿退化）",
   "devServer": "npm run dev 起在 5173（后台任务 bjlvotyrx；挂了重起即可）",
@@ -257,6 +258,10 @@
     {
       "time": "2026-11-19T00:40:00Z",
       "event": "完成 W72（画廊视图：卡片 220 宽/封面 16:9/标题条/真图片封面/点开记录）——新增 GalleryView.tsx + image 语义图标；视图类型下拉画廊项由置灰改为可选；测试 36/272、build 通过、check-icons 112 条全过、gallery-check PASS；下一任务 W73 目录视图"
+    },
+    {
+      "time": "2026-11-19T01:20:00Z",
+      "event": "完成 W73（目录视图：纯标题列表/行分隔线/页面图标/底部创建记录/点开记录）——新增 CatalogView.tsx；视图类型下拉目录项由置灰改为可选；测试 36/272、build 通过、tsc 无错、catalog-check PASS；下一任务 W74 时间轴视图"
     }
   ],
   "modulesDone": [

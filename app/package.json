@@ -69,7 +69,8 @@
     "viewsettings-check": "node tools/viewsettings-check.mjs",
     "viewlogic-check": "node tools/viewlogic-check.mjs",
     "kanban-check": "node tools/kanban-check.mjs",
-    "gallery-check": "node tools/gallery-check.mjs"
+    "gallery-check": "node tools/gallery-check.mjs",
+    "catalog-check": "node tools/catalog-check.mjs"
   },
   "keywords": [],
   "author": "",

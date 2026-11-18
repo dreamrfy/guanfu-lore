@@ -4560,3 +4560,69 @@ html[data-theme="dark"] .grid tbody tr:nth-child(odd) .grid__cell {
   white-space: nowrap;
 }
 
+/* ---------- 目录视图（W73，04 §1.1 纯标题列表 + 66 号观测：图标+标题+分隔线） ---------- */
+
+.catalog {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 4px 12px 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.catalog__list {
+  flex: 1 1 auto;
+}
+
+.catalog__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* 行 40（22 §3.5 List） */
+  min-height: 40px;
+  padding: 0 4px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.catalog__row:hover {
+  background: var(--bg-hover);
+}
+
+.catalog__icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+  flex: 0 0 auto;
+}
+
+.catalog__title {
+  font-size: 14px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.catalog__empty {
+  color: var(--text-secondary);
+  font-size: 13px;
+  padding: 12px 4px;
+}
+
+.catalog__add {
+  align-self: flex-start;
+  margin-top: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.catalog__add:hover {
+  color: var(--text);
+}
+
