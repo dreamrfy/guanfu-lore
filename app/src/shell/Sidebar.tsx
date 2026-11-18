@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavHistory } from "../data/navHistory";
+import { createPageFromTemplate, listTemplates, type PageTemplate } from "../data/templates";
 import { useStore } from "../data/store";
 import type { PageRow } from "../data/db";
 import { clipReadState, unreadClipCount } from "../data/clipBox";
@@ -142,6 +143,8 @@ export function Sidebar() {
   const [rowCtx, setRowCtx] = useState<{ id: string; x: number; y: number } | null>(null);
   const [movePick, setMovePick] = useState(false);
   const [renaming, setRenaming] = useState<string | null>(null);
+  const [newChild, setNewChild] = useState<{ parentId: string; x: number; y: number } | null>(null);
+  const [tplPick, setTplPick] = useState<PageTemplate[] | null>(null);
   const [starred, setStarred] = useState<Set<string>>(() => {
     try {
       return new Set(JSON.parse(localStorage.getItem("guanfu.starred") ?? "[]") as string[]);
@@ -477,7 +480,8 @@ export function Sidebar() {
                 title="新建子页面"
                 onClick={(e) => {
                   e.stopPropagation();
-                  void createPage(node.id);
+                  const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  setNewChild({ parentId: node.id, x: r.left, y: r.bottom + 4 });
                 }}
               >
                 <AppIcon name="plus" set={iconSet} size={14} />
@@ -603,6 +607,117 @@ export function Sidebar() {
                         {item.label}
                       </div>
                     ))
+                  )}
+                </div>
+              </>
+            )}
+
+      {newChild && (
+              <>
+                <div
+                  className="ctx-backdrop"
+                  onMouseDown={() => {
+                    setNewChild(null);
+                    setTplPick(null);
+                  }}
+                />
+                <div className="newchild" style={{ left: newChild.x, top: newChild.y }}>
+                  {tplPick ? (
+                    <>
+                      <div className="newchild__head">选择模板（{tplPick.length} 个）</div>
+                      {tplPick.length === 0 && <div className="newchild__hint">还没有模板：可在页面 ⋯ 菜单里「存为模板」</div>}
+                      {tplPick.map((tpl) => (
+                        <div
+                          key={tpl.id}
+                          className="newchild__item"
+                          onMouseDown={async (e) => {
+                            e.stopPropagation();
+                            const id = await createPageFromTemplate(tpl);
+                            if (newChild.parentId) setParent(id, newChild.parentId);
+                            setNewChild(null);
+                            setTplPick(null);
+                          }}
+                        >
+                          <span className="newchild__label">{tpl.name}</span>
+                        </div>
+                      ))}
+                      <div
+                        className="newchild__item newchild__item--back"
+                        onMouseDown={(e) => {
+                          e.stopPropagation();
+                          setTplPick(null);
+                        }}
+                      >
+                        ← 返回
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="newchild__head">新建</div>
+                      <div
+                        className="newchild__item"
+                        onMouseDown={(e) => {
+                          e.stopPropagation();
+                          void createPage(newChild.parentId);
+                          setNewChild(null);
+                        }}
+                      >
+                        <span className="newchild__label">页面</span>
+                        <span className="newchild__kbd">↵</span>
+                      </div>
+                      <div
+                        className="newchild__item"
+                        onMouseDown={(e) => {
+                          e.stopPropagation();
+                          void createPage(newChild.parentId).then((id) => renamePage(id, "未命名文件夹"));
+                          setNewChild(null);
+                        }}
+                      >
+                        <span className="newchild__label">文件夹【暂定】</span>
+                      </div>
+                      <div className="newchild__item newchild__item--off" title="待 AI 专项">
+                        <span className="newchild__label">AI 写作</span>
+                      </div>
+                      <div className="newchild__item newchild__item--off" title="待独有功能专项">
+                        <span className="newchild__label">思维导图</span>
+                      </div>
+                      <div
+                        className="newchild__item"
+                        onMouseDown={async (e) => {
+                          e.stopPropagation();
+                          setTplPick(await listTemplates());
+                        }}
+                      >
+                        <span className="newchild__label">模板</span>
+                      </div>
+                      <div
+                        className="newchild__item"
+                        onMouseDown={(e) => {
+                          e.stopPropagation();
+                          window.dispatchEvent(new CustomEvent("guanfu:import-file"));
+                          setNewChild(null);
+                        }}
+                      >
+                        <span className="newchild__label">导入</span>
+                      </div>
+      
+                      <div className="newchild__head newchild__head--sub">多维表</div>
+                      <div
+                        className="newchild__item"
+                        onMouseDown={async (e) => {
+                          e.stopPropagation();
+                          await createCollection();
+                          setNewChild(null);
+                        }}
+                      >
+                        <span className="newchild__label">表格</span>
+                      </div>
+                      {["看板", "画廊", "目录", "时间轴", "日历"].map((v) => (
+                        <div key={v} className="newchild__item newchild__item--off" title={`${v}视图待 W71~W75`}>
+                          <span className="newchild__label">{v}【待视图批】</span>
+                        </div>
+                      ))}
+                    </>
                   )}
                 </div>
               </>

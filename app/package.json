@@ -37,7 +37,8 @@
     "iconrow-check": "node tools/iconrow-check.mjs",
     "tree-row-check": "node tools/tree-row-check.mjs",
     "rowctx-check": "node tools/rowctx-check.mjs",
-    "rowmore-check": "node tools/rowmore-check.mjs"
+    "rowmore-check": "node tools/rowmore-check.mjs",
+    "newchild-check": "node tools/newchild-check.mjs"
   },
   "keywords": [],
   "author": "",
