@@ -16,10 +16,11 @@
     "W10",
     "W11",
     "W12",
-    "W13"
+    "W13",
+    "W14"
   ],
-  "nextTask": "W14",
-  "doneCount": 7,
+  "nextTask": "W15",
+  "doneCount": 8,
   "totalCount": 88,
   "testBaseline": "cd app && npm test = 250/250 绿（勿退化）",
   "devServer": "npm run dev 起在 5173（后台任务 bjlvotyrx；挂了重起即可）",
@@ -54,6 +55,10 @@
     {
       "time": "2026-11-18T08:25:00Z",
       "event": "会话#5(cron) 完成 W13（页签本体数值达标：180×38/favicon16/标题20/关闭20/新建28，多页签不压缩；页签栏分隔线改 box-shadow）e500a0d；教训：全局 sed 改 CSS 误伤 9 处已还原；下一任务 W14 页签右键菜单 8 项"
+    },
+    {
+      "time": "2026-11-18T08:36:00Z",
+      "event": "会话#6(cron) 完成 W14（页签右键菜单 8 项真实现+边界灰置+tabctx-check 9 步断言全过）8ec8445；第 8 项观测未取到→【暂定】关闭标签页；下一任务 W15 页签=独立实例（⚠️ 手册推断项：先核验 Tauri 2 多 webview 能力，核验不了→同窗口隔离实现标【暂定】）"
     }
   ]
 }
