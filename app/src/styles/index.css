@@ -2867,3 +2867,29 @@ html[data-theme="dark"] .winbtn--close:hover {
   opacity: 0.35;
   cursor: default;
 }
+
+/* ---------- 页面树行交互（W22：展开箭头 + 缩进层级；缩进步长 14 为观测未取项【暂定】） ---------- */
+
+.tree-item__chev {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+  border-radius: 3px;
+}
+
+.tree-item__chev:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.tree-item__chev--none {
+  cursor: default;
+}

@@ -30,7 +30,7 @@ type TreeNode = { id: string; title: string; icon: string | null; depth: number 
  *  - **孤儿页兜底**：父级被删掉/进了回收站时，子页不能跟着从侧栏消失 → 这种情况当顶层显示。
  *  - **防环**：数据里万一已经有环（历史 bug 或手工改库），遍历时用 guard 集合拦住，避免死循环。
  */
-export function buildTree(pages: PageRow[]): TreeNode[] {
+export function buildTree(pages: PageRow[], collapsed: ReadonlySet<string> = new Set()): TreeNode[] {
   const ids = new Set(pages.map((p) => p.id));
   const out: TreeNode[] = [];
   const guard = new Set<string>();
@@ -41,12 +41,24 @@ export function buildTree(pages: PageRow[]): TreeNode[] {
       return effectiveParent === parentId;
     });
 
+  /** 收起时把整棵子树标为已访问（不出行，也不进孤儿兜底） */
+  const markHidden = (parentId: string) => {
+    for (const p of childrenOf(parentId)) {
+      if (guard.has(p.id)) continue;
+      guard.add(p.id);
+      markHidden(p.id);
+    }
+  };
+
   const walk = (parentId: string | null, depth: number) => {
     for (const p of childrenOf(parentId)) {
       if (guard.has(p.id)) continue;
       guard.add(p.id);
       out.push({ id: p.id, title: p.title, icon: p.icon, depth });
-      walk(p.id, depth + 1);
+      // W22 展开/收起：收起的节点不展开子树（节点本身仍显示）；
+      // 子树要标记为已访问，否则会被下面的「孤儿页兜底」当成孤儿补回顶层
+      if (!collapsed.has(p.id)) walk(p.id, depth + 1);
+      else markHidden(p.id);
     }
   };
 
@@ -91,13 +103,19 @@ export function Sidebar() {
   const [dragging, setDragging] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<string | "root" | null>(null);
   const [hint, setHint] = useState<string | null>(null);
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+
+  const withKids = useMemo(
+    () => new Set(pages.filter((p) => p.parentId).map((p) => p.parentId as string)),
+    [pages],
+  );
 
   const tree = useMemo(() => {
-    const rows = buildTree(pages);
+    const rows = buildTree(pages, collapsed);
     if (!query.trim()) return rows;
     const q = query.trim().toLowerCase();
     return rows.filter((r) => r.title.toLowerCase().includes(q)).map((r) => ({ ...r, depth: 0 }));
-  }, [pages, query]);
+  }, [pages, query, collapsed]);
 
   // 收集箱（带未读/已读的表）的未读角标：开机侧栏就要能显示，
   // 所以这里提前把它的记录补进内存（进过内存后，自动导入/标已读会实时刷新角标）
@@ -323,6 +341,25 @@ export function Sidebar() {
               handleDrop(node.id);
             }}
           >
+            {withKids.has(node.id) ? (
+              <button
+                className={"tree-item__chev"}
+                title={collapsed.has(node.id) ? "展开子页" : "收起子页"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCollapsed((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(node.id)) next.delete(node.id);
+                    else next.add(node.id);
+                    return next;
+                  });
+                }}
+              >
+                <AppIcon name={collapsed.has(node.id) ? "chevronRight" : "chevronDown"} set={iconSet} size={12} />
+              </button>
+            ) : (
+              <span className="tree-item__chev tree-item__chev--none" />
+            )}
             <span style={{ fontSize: 14 }}>{node.icon ?? ""}</span>
             <AppIcon name="file" set={iconSet} size={14} />
             <span className="tree-item__label">{node.title || "无标题"}</span>

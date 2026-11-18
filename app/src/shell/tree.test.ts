@@ -45,3 +45,24 @@ describe("侧栏页面树", () => {
     expect(buildTree([])).toEqual([]);
   });
 });
+
+describe("页面树展开/收起（W22）", () => {
+  const pages = [row("a", "父"), row("b", "子", "a"), row("c", "孙", "b"), row("d", "另一根")];
+
+  it("默认全部展开：父/子/孙/另一根 共 4 行，depth 正确", () => {
+    const t = buildTree(pages);
+    expect(t.map((n) => n.id)).toEqual(["a", "b", "c", "d"]);
+    expect(t.map((n) => n.depth)).toEqual([0, 1, 2, 0]);
+  });
+
+  it("收起父节点：子树整棵隐藏（不会被孤儿兜底补回顶层）", () => {
+    const t = buildTree(pages, new Set(["a"]));
+    expect(t.map((n) => n.id)).toEqual(["a", "d"]);
+    expect(t.map((n) => n.depth)).toEqual([0, 0]);
+  });
+
+  it("收起中间节点：只隐藏它的后代", () => {
+    const t = buildTree(pages, new Set(["b"]));
+    expect(t.map((n) => n.id)).toEqual(["a", "b", "d"]);
+  });
+});

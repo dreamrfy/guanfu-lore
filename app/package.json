@@ -34,7 +34,8 @@
     "installed-smoke": "node tools/installed-smoke.mjs",
     "run-installed": "node tools/run-installed.mjs",
     "sidebar-check": "node tools/sidebar-check.mjs",
-    "iconrow-check": "node tools/iconrow-check.mjs"
+    "iconrow-check": "node tools/iconrow-check.mjs",
+    "tree-row-check": "node tools/tree-row-check.mjs"
   },
   "keywords": [],
   "author": "",
