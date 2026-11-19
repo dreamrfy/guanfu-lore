@@ -19,6 +19,8 @@
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
     "shot": "node tools/shot.mjs",
+    "token-verify-shot": "node tools/token-verify-shot.mjs",
+    "png-diff": "node tools/png-diff.mjs",
     "theme-shot": "node tools/theme-shot.mjs",
     "tabbar-check": "node tools/tabbar-check.mjs",
     "wait-cdp": "node tools/wait-cdp.mjs",
