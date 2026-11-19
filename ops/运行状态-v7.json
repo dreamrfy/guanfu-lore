@@ -77,9 +77,10 @@
     "W85",
     "W90",
     "W91",
-    "W92"
+    "W92",
+    "W93"
   ],
-  "nextTask": "W93",
+  "nextTask": "W94",
   "doneCount": 59,
   "totalCount": 88,
   "testBaseline": "cd app && npm test = 272/272 绿（36 个文件，勿退化）",
@@ -314,6 +315,11 @@
       "time": "2026-11-20T04:15:00+08:00",
       "task": "W92",
       "result": "看门狗 0345 轮：领 W92 历史面板并收口 DONE——AiPanel 对话视图加 ⊕/🕐/» 工具行（»仅侧栏【暂定】），🕐 切「« 历史记录」视图：空态居中「暂无历史记录」（规格原文），条目=标题+时间（形态未取，观复自有【暂定】）最近在前，点条目切回会话、续聊写回同记录。npm test 272 绿 + build 过 + ai-history-check 7 断言 PASS + 3 截图。锁已删，任务表 DONE，已 push 两远程"
+    },
+    {
+      "time": "2026-11-20T06:25:00+08:00",
+      "task": "W93",
+      "result": "看门狗 0430 轮（同会话连续做满 2 任务）：W93 ⚡ 入口语义收口 DONE——①顶栏 ⚡ 改「添加到快速访问」（收藏真生效，旧 AI 模态+死监听移除，顶栏无 AI 按规格）；②选区 AI 弹层新增「在 AI 面板继续问」（aiCommand kind=selection，与问问 AI 同机制）；③修复弹层挂工具条下随失焦卸载的历史真 bug（提到 PageEditor Host）。272 绿+build 过+ai-entry-check 5 断言 PASS+3 截图+W92 回归 PASS。锁已删，已 push 两远程。下一任务 W94"
     }
   ],
   "modulesDone": [

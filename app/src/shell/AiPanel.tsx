@@ -261,6 +261,12 @@ export function AiPanel({
       const q = command.question ?? "";
       if (q) setAskInput(q);
       void runAsk(q);
+    } else if (command.kind === "selection") {
+      // W93：选中文字弹层「在 AI 面板继续问」——选中原文预填进对话输入，发送即带上下文
+      setTab("chat");
+      setShowHistory(false);
+      const sel = (command.text ?? "").trim();
+      if (sel) setChatInput(`关于这段文字：「${sel}」`);
     }
     clearCommand();
   }, [command]);

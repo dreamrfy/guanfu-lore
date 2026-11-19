@@ -4,8 +4,8 @@ import { exportBackup, importBackupFile } from "../data/backup";
 import { dropLeadingTitleBlock, markdownToBlocks, titleFromMarkdown } from "../data/exporters";
 import { AppIcon, ICON_SETS, type IconSetId } from "../design/icons";
 import { FONT_THEMES } from "../design/fonts";
+import { useStarred } from "../data/starred";
 import { PageMenu } from "./PageMenu";
-import { AiPanel } from "./AiPanel";
 import { SyncButton } from "./SyncButton";
 import { openSearchOverlay } from "./SearchOverlay";
 
@@ -34,7 +34,6 @@ export function TopToolbar() {
   const toggleSidebar = useStore((s) => s.toggleSidebar);
 
   const [openMenu, setOpenMenu] = useState<null | "appearance" | "more">(null);
-  const [chatOpen, setChatOpen] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const mdRef = useRef<HTMLInputElement | null>(null);
@@ -44,6 +43,10 @@ export function TopToolbar() {
   const pages = useStore((s) => s.pages);
   const activeTabId = useStore((s) => s.activeTabId);
   const openTab = useStore((s) => s.openTab);
+  // W93 ⚡ 入口语义（10 号规格）：顶栏第 3 图标是「添加到快速访问」，不是 AI
+  const starredIds = useStarred((s) => s.ids);
+  const toggleStarred = useStarred((s) => s.toggle);
+  const starred = activeTabId ? starredIds.includes(activeTabId) : false;
   const flash = (msg: string) => {
     setBusy(msg);
     window.setTimeout(() => setBusy(null), 1800);
@@ -59,16 +62,13 @@ export function TopToolbar() {
     return out;
   })();
 
-  // 侧栏图标行（W21）联动：AI / 更多 两个入口由 Sidebar 派发事件
+  // 侧栏图标行（W21）联动：导入 / 外观 入口由 Sidebar 派发事件（W93：顶栏 ⚡ 改快速访问，AI 不再走顶栏模态）
   useEffect(() => {
-    const onOpenAi = () => setChatOpen(true);
     const onImport = () => mdRef.current?.click();
-    window.addEventListener("guanfu:open-ai", onOpenAi);
     const onAppearance = () => setOpenMenu("appearance");
     window.addEventListener("guanfu:import-file", onImport);
     window.addEventListener("guanfu:open-appearance", onAppearance);
     return () => {
-      window.removeEventListener("guanfu:open-ai", onOpenAi);
       window.removeEventListener("guanfu:import-file", onImport);
       window.removeEventListener("guanfu:open-appearance", onAppearance);
     };
@@ -155,7 +155,16 @@ export function TopToolbar() {
       <button className="icon-btn" title="评论（待评论体系专项）" disabled>
         <AppIcon name="comment" set={iconSet} />
       </button>
-      <button className="icon-btn" title="⚡ AI" onClick={() => setChatOpen(true)}>
+      <button
+        className="icon-btn"
+        title={starred ? "从快速访问移除" : "添加到快速访问"}
+        style={{ color: starred ? "var(--gf-primary)" : undefined }}
+        onClick={() => {
+          if (!activeTabId) return;
+          toggleStarred(activeTabId);
+          flash(starred ? "已从快速访问移除" : "已加入快速访问");
+        }}
+      >
         <AppIcon name="bolt" set={iconSet} />
       </button>
       <PageMenu />
@@ -300,21 +309,6 @@ export function TopToolbar() {
           if (f) void onPickMarkdown(f);
         }}
       />
-      {chatOpen && (
-        <div className="modal" role="dialog" aria-modal="true" onMouseDown={() => setChatOpen(false)}>
-          <div className="modal__card chatmodal" onMouseDown={(e) => e.stopPropagation()}>
-            <div className="modal__head">
-              <b>AI 对话</b>
-              <button className="icon-btn" title="关闭" onClick={() => setChatOpen(false)}>
-                ×
-              </button>
-            </div>
-            <div className="modal__body chatmodal__body">
-              <AiPanel initialTab="chat" hideTabs />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

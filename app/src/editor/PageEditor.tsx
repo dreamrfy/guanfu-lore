@@ -14,7 +14,7 @@ import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
 import { setCurrentEditor } from "./editorRef";
 import { schema } from "./schema";
-import { SelectionAiButton } from "./SelectionAi";
+import { SelectionAiButton, SelectionAiHost } from "./SelectionAi";
 import { AiAskBox } from "./AiAskBox";
 import { useStore } from "../data/store";
 import { BlockContextMenu } from "../shell/BlockContextMenu";
@@ -372,6 +372,7 @@ export function PageEditor({ initialBlocks, theme, onChange, uploadFile, readOnl
       {ask && (
         <AiAskBox position={{ top: ask.top, left: ask.left }} onAnswer={insertAnswer} onClose={() => setAsk(null)} />
       )}
+      <SelectionAiHost editor={editor} />
       <BlockContextMenu editor={editor} />
     </div>
   );
