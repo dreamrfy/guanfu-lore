@@ -1,0 +1,1572 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light" data-theme-mode="auto" data-scheme="A">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="观复 · Lore 六套视觉方案对照（三套现代 + 三套国风）：色板、字体、图标、组件与三个独有功能，含可切换的预览画布与落地清单。">
+<title>观复 · Lore 视觉方案对照 v2</title>
+<style>
+/* ============================================================
+   0. 设计 token
+   ============================================================ */
+:root{
+  color-scheme:light;
+  --on-primary:#FFFFFF;
+  --paper:#F1EDE3;--paper-2:#E8E3D6;--paper-3:#D8D3C7;
+  --ink:#16181C;--ink-2:#4A4D52;--ink-3:#5F6266;
+  --rule:#C9C3B4;--rule-strong:#A8A59D;
+  --blue:#1E4E79;--blue-soft:#DDE6EF;
+  --vermilion:#9E3524;--vermilion-soft:#F0DFD9;
+  --green:#2F6B58;--grid:rgba(22,24,28,.035);
+  --sans:"Noto Sans SC","Source Han Sans SC","PingFang SC","Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --serif:"Noto Serif SC","Source Han Serif SC","Songti SC",SimSun,serif;
+  --mono:"JetBrains Mono","IBM Plex Mono",Consolas,ui-monospace,monospace;
+  --max:1320px;--gutter:48px;--rail:220px;
+  --ease-out:cubic-bezier(.16,1,.3,1);
+  --ease-soft:cubic-bezier(.2,.8,.2,1);
+  --ease-color:cubic-bezier(.4,0,.2,1);
+}
+[data-theme="dark"]{
+  color-scheme:dark;
+  --on-primary:#101312;
+  --paper:#141518;--paper-2:#1C1E22;--paper-3:#26292E;
+  --ink:#EDE8DC;--ink-2:#B9B4A8;--ink-3:#9A968C;
+  --rule:#33363C;--rule-strong:#4A4E55;
+  --blue:#8FB4D4;--blue-soft:#1E2A36;
+  --vermilion:#E08A72;--vermilion-soft:#3A2320;
+  --green:#7FB59F;--grid:rgba(237,232,220,.03);
+}
+
+/* 方案色：只作用于预览画布与方案卡 */
+[data-scheme="A"]{
+  --s-bg:#F7F6F2;--s-sidebar:#FBFAF7;--s-surface:#FFFFFF;--s-sunken:#F1EFEA;
+  --s-text:#2B2A27;--s-text2:#6B6A64;--s-text3:#9B9A93;
+  --s-border:rgba(43,42,39,.10);--s-border-strong:rgba(43,42,39,.18);
+  --s-primary:#2F5D8A;--s-primary-hover:#274C72;--s-primary-soft:#E8EEF5;
+  --s-accent:#B4472E;--s-accent-soft:#F6E9E4;
+  --s-radius:8px;--s-radius-sm:6px;--s-title:36px;--s-display:var(--serif);--s-density:1;
+}
+[data-scheme="B"]{
+  --s-bg:#F4F6F5;--s-sidebar:#FAFCFB;--s-surface:#FFFFFF;--s-sunken:#EDF1F0;
+  --s-text:#232826;--s-text2:#5F6A66;--s-text3:#94A09B;
+  --s-border:rgba(35,40,38,.10);--s-border-strong:rgba(35,40,38,.18);
+  --s-primary:#2C6E6A;--s-primary-hover:#235955;--s-primary-soft:#E3F0EE;
+  --s-accent:#C08A2E;--s-accent-soft:#F7EFDF;
+  --s-radius:6px;--s-radius-sm:6px;--s-title:34px;--s-display:var(--sans);--s-density:.94;
+}
+[data-scheme="C"]{
+  --s-bg:#FFFFFF;--s-sidebar:#FAFAFA;--s-surface:#FFFFFF;--s-sunken:#F4F4F5;
+  --s-text:#1F1F1F;--s-text2:#5F5F5F;--s-text3:#9A9A9A;
+  --s-border:rgba(0,0,0,.10);--s-border-strong:rgba(0,0,0,.18);
+  --s-primary:#1F6FEB;--s-primary-hover:#1858C4;--s-primary-soft:#E8F0FE;
+  --s-accent:#7C3AED;--s-accent-soft:#F1EAFE;
+  --s-radius:4px;--s-radius-sm:4px;--s-title:32px;--s-display:var(--sans);--s-density:.88;
+}
+/* D 天青·汝窑：雨过天青、月白、胭脂印章 */
+[data-scheme="D"]{
+  --s-bg:#F2F4EF;--s-sidebar:#EAF0EB;--s-surface:#FFFFFF;--s-sunken:#E2EAE5;
+  --s-text:#22302D;--s-text2:#5A6B66;--s-text3:#8A9A94;
+  --s-border:rgba(34,48,45,.12);--s-border-strong:rgba(34,48,45,.20);
+  --s-primary:#3C6B7A;--s-primary-hover:#305A67;--s-primary-soft:#E0EDF0;
+  --s-accent:#A64B3C;--s-accent-soft:#F2E4DF;
+  --s-radius:8px;--s-radius-sm:6px;--s-title:36px;--s-display:var(--serif);--s-density:1;
+}
+/* E 赭墨·敦煌：土红、石青、赭石、藤黄 */
+[data-scheme="E"]{
+  --s-bg:#F5EEE3;--s-sidebar:#EFE5D6;--s-surface:#FFFDF8;--s-sunken:#E9DCC9;
+  --s-text:#2A211B;--s-text2:#6B5A4A;--s-text3:#9A8875;
+  --s-border:rgba(42,33,27,.14);--s-border-strong:rgba(42,33,27,.22);
+  --s-primary:#2E5D8C;--s-primary-hover:#244A70;--s-primary-soft:#E3EAF2;
+  --s-accent:#A6472E;--s-accent-soft:#F3E2D9;
+  --s-radius:4px;--s-radius-sm:4px;--s-title:36px;--s-display:var(--serif);--s-density:.96;
+}
+/* F 青绿·江山：石青、石绿、赭石、月白 */
+[data-scheme="F"]{
+  --s-bg:#F2F6F4;--s-sidebar:#E8F0EE;--s-surface:#FFFFFF;--s-sunken:#DDE9E6;
+  --s-text:#1F2E2B;--s-text2:#526A64;--s-text3:#849A94;
+  --s-border:rgba(31,46,43,.12);--s-border-strong:rgba(31,46,43,.20);
+  --s-primary:#2F6B63;--s-primary-hover:#255650;--s-primary-soft:#DFEDE9;
+  --s-accent:#A65A3A;--s-accent-soft:#F1E6D8;
+  --s-radius:4px;--s-radius-sm:4px;--s-title:36px;--s-display:var(--serif);--s-density:.94;
+}
+[data-theme="dark"] [data-scheme="A"]{
+  --s-bg:#171716;--s-sidebar:#1C1C1A;--s-surface:#20201E;--s-sunken:#121211;
+  --s-text:#E6E3DC;--s-text2:#A8A59C;--s-text3:#74716A;
+  --s-border:rgba(255,255,255,.10);--s-border-strong:rgba(255,255,255,.18);
+  --s-primary:#7FA8CC;--s-primary-hover:#9BBFDE;--s-primary-soft:rgba(127,168,204,.14);
+  --s-accent:#D98A6E;--s-accent-soft:rgba(217,138,110,.14);
+}
+[data-theme="dark"] [data-scheme="B"]{
+  --s-bg:#141817;--s-sidebar:#191E1C;--s-surface:#1E2422;--s-sunken:#101312;
+  --s-text:#E3E9E6;--s-text2:#A3B0AB;--s-text3:#6F7C77;
+  --s-border:rgba(255,255,255,.10);--s-border-strong:rgba(255,255,255,.18);
+  --s-primary:#6FB8B2;--s-primary-hover:#8ACBC6;--s-primary-soft:rgba(111,184,178,.14);
+  --s-accent:#D9A85C;--s-accent-soft:rgba(217,168,92,.14);
+}
+[data-theme="dark"] [data-scheme="C"]{
+  --s-bg:#0F1115;--s-sidebar:#151821;--s-surface:#1A1E26;--s-sunken:#0B0D11;
+  --s-text:#E8EAED;--s-text2:#A0A6B0;--s-text3:#6B7280;
+  --s-border:rgba(255,255,255,.10);--s-border-strong:rgba(255,255,255,.18);
+  --s-primary:#6EA8FF;--s-primary-hover:#8CBBFF;--s-primary-soft:rgba(110,168,255,.14);
+  --s-accent:#A78BFA;--s-accent-soft:rgba(167,139,250,.14);
+}
+[data-theme="dark"] [data-scheme="D"]{
+  --s-bg:#151B1A;--s-sidebar:#1B2321;--s-surface:#202826;--s-sunken:#101514;
+  --s-text:#E6EDE9;--s-text2:#A9B8B2;--s-text3:#7A8A84;
+  --s-border:rgba(255,255,255,.10);--s-border-strong:rgba(255,255,255,.18);
+  --s-primary:#8FBFCB;--s-primary-hover:#A9D0DA;--s-primary-soft:rgba(143,191,203,.14);
+  --s-accent:#D99A86;--s-accent-soft:rgba(217,154,134,.14);
+}
+[data-theme="dark"] [data-scheme="E"]{
+  --s-bg:#1C1714;--s-sidebar:#241E19;--s-surface:#2A231D;--s-sunken:#15110E;
+  --s-text:#EDE3D6;--s-text2:#BCAE9C;--s-text3:#8C7E6E;
+  --s-border:rgba(255,255,255,.10);--s-border-strong:rgba(255,255,255,.18);
+  --s-primary:#7FA8CC;--s-primary-hover:#9BBFDE;--s-primary-soft:rgba(127,168,204,.14);
+  --s-accent:#D98A6E;--s-accent-soft:rgba(217,138,110,.14);
+}
+[data-theme="dark"] [data-scheme="F"]{
+  --s-bg:#101816;--s-sidebar:#16201D;--s-surface:#1B2623;--s-sunken:#0B1110;
+  --s-text:#E4EDE9;--s-text2:#A6B8B2;--s-text3:#768A84;
+  --s-border:rgba(255,255,255,.10);--s-border-strong:rgba(255,255,255,.18);
+  --s-primary:#7FBDB2;--s-primary-hover:#9ACFC6;--s-primary-soft:rgba(127,189,178,.14);
+  --s-accent:#D9A86A;--s-accent-soft:rgba(217,168,106,.14);
+}
+[data-scheme="A"],[data-scheme="B"],[data-scheme="C"],[data-scheme="D"],[data-scheme="E"],[data-scheme="F"]{--s-on-primary:#FFFFFF}
+[data-theme="dark"] [data-scheme="A"],[data-theme="dark"] [data-scheme="B"],[data-theme="dark"] [data-scheme="C"],[data-theme="dark"] [data-scheme="D"],[data-theme="dark"] [data-scheme="E"],[data-theme="dark"] [data-scheme="F"]{--s-on-primary:var(--s-bg)}
+
+/* ============================================================
+   1. 基础
+   ============================================================ */
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font:400 16px/1.75 var(--sans);
+  transition:background-color .2s var(--ease-color),color .2s var(--ease-color);
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(to right,var(--grid) 1px,transparent 1px),
+    linear-gradient(to bottom,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+}
+[hidden]{display:none!important}
+a{color:var(--blue);text-decoration-thickness:1px;text-underline-offset:3px}
+button{font:inherit;color:inherit}
+img,svg{display:block}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.eyebrow{
+  font:600 12px/1.4 var(--mono);letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 10px;
+}
+.skip{
+  position:fixed;left:12px;top:-64px;z-index:300;background:var(--ink);color:var(--paper);
+  padding:10px 14px;font:500 13px/1 var(--sans);transition:top .15s;
+}
+.skip:focus{top:12px}
+:focus-visible{outline:2px solid var(--vermilion);outline-offset:2px}
+.progress{position:fixed;inset:0 0 auto 0;height:2px;z-index:120;pointer-events:none}
+.progress span{display:block;height:100%;width:0;background:var(--vermilion);transition:width .1s linear}
+
+/* ============================================================
+   2. 顶栏
+   ============================================================ */
+.topbar{
+  position:sticky;top:0;z-index:100;background:var(--paper);
+  border-bottom:1px solid var(--rule);
+}
+.topbar__inner{
+  max-width:var(--max);margin:0 auto;padding:11px var(--gutter);
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.brand__mark{
+  width:30px;height:30px;display:grid;place-items:center;
+  border:1px solid var(--ink);font:700 15px/1 var(--serif);
+}
+.brand__text{font:600 15px/1.2 var(--serif);letter-spacing:.01em}
+.brand__text em{
+  display:block;font:500 10px/1.4 var(--mono);font-style:normal;
+  letter-spacing:.08em;color:var(--ink-3);text-transform:uppercase;
+}
+.controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.seg{display:inline-flex;border:1px solid var(--rule);background:var(--paper)}
+.seg button{
+  border:0;border-right:1px solid var(--rule);background:transparent;
+  padding:8px 10px;font:500 12px/1 var(--sans);cursor:pointer;
+  transition:background .16s var(--ease-color),color .16s var(--ease-color);
+  min-height:34px;display:inline-flex;align-items:center;gap:6px;
+}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.seg .dot{width:8px;height:8px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.18)}
+.dot--a{background:#2F5D8A}.dot--b{background:#2C6E6A}.dot--c{background:#1F6FEB}
+.dot--d{background:#3C6B7A}.dot--e{background:#2E5D8C}.dot--f{background:#2F6B63}
+
+/* ============================================================
+   3. 布局与目录
+   ============================================================ */
+.layout{
+  position:relative;z-index:1;max-width:var(--max);margin:0 auto;
+  padding:0 var(--gutter);display:grid;grid-template-columns:var(--rail) minmax(0,1fr);
+  gap:48px;align-items:start;
+}
+.rail{position:sticky;top:86px;padding-top:38px}
+.rail__label{font:600 10px/1.4 var(--mono);letter-spacing:.1em;color:var(--ink-3);margin:0 0 14px}
+.rail__nav{display:grid;gap:2px}
+.rail__nav a{
+  display:flex;align-items:baseline;gap:10px;padding:7px 0;color:var(--ink-3);
+  text-decoration:none;border-bottom:1px solid transparent;font:500 13px/1.4 var(--sans);
+  transition:color .16s,border-color .16s;
+}
+.rail__nav a .mono{font-size:10px;color:var(--ink-3)}
+.rail__nav a:hover{color:var(--ink)}
+.rail__nav a[aria-current="true"]{color:var(--ink);border-color:var(--vermilion)}
+.rail__nav a[aria-current="true"] .mono{color:var(--vermilion)}
+.rail__foot{margin-top:28px;display:flex;flex-direction:column;gap:8px}
+.linkbtn{
+  border:0;background:transparent;padding:0;cursor:pointer;text-align:left;
+  font:500 12px/1.6 var(--sans);color:var(--ink-3);text-decoration:underline;
+  text-underline-offset:3px;text-decoration-thickness:1px;
+}
+.linkbtn:hover{color:var(--vermilion)}
+main{min-width:0;padding-bottom:80px}
+
+/* ============================================================
+   4. 首屏
+   ============================================================ */
+.hero{padding:40px 0 32px;border-bottom:1px solid var(--rule)}
+.hero h1{
+  font:700 clamp(40px,6.2vw,68px)/1.04 var(--serif);
+  letter-spacing:-.035em;margin:12px 0 18px;
+}
+.hero__lead{max-width:56ch;font-size:17px;line-height:1.8;color:var(--ink-2);margin:0 0 26px}
+.hero__stats{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--rule);margin-bottom:24px}
+.stat{flex:1 1 140px;padding:14px 16px;border-right:1px solid var(--rule)}
+.stat:last-child{border-right:0}
+.stat b{display:block;font:700 26px/1.1 var(--serif);letter-spacing:-.02em}
+.stat span{display:block;font:500 11px/1.5 var(--mono);color:var(--ink-3);margin-top:4px}
+.hero__actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:26px}
+.frame-palette{display:flex;gap:6px;align-items:stretch;max-width:520px}
+.frame-palette .swatch{height:34px}
+
+/* ============================================================
+   4b. 首屏快速对比
+   ============================================================ */
+.quick{padding:44px 0 40px;border-bottom:1px solid var(--rule)}
+.quick__head{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:24px;margin-bottom:22px}
+.quick__head h2{font:700 clamp(26px,3.4vw,36px)/1.2 var(--serif);letter-spacing:-.02em;margin:0}
+.quick__head p:last-child{margin:0;color:var(--ink-2);font-size:15px;line-height:1.8}
+.quick__grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:28px;align-items:start}
+.big-seg{display:grid;gap:8px}
+.big-seg button{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:14px 16px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);
+  text-align:left;font:600 15px/1.4 var(--sans);cursor:pointer;min-height:56px;
+  transition:background .16s var(--ease-color),border-color .16s var(--ease-color);
+}
+.big-seg button span{font:500 10px/1.4 var(--mono);color:var(--ink-3);letter-spacing:.04em}
+.big-seg button:hover{background:var(--paper-2)}
+.big-seg button[aria-pressed="true"]{border-color:var(--vermilion);background:var(--paper-2);box-shadow:inset 3px 0 0 var(--vermilion)}
+.quick__group-wrap{display:grid;gap:6px}
+.quick__group-wrap + .quick__group-wrap{margin-top:10px}
+.quick__group{margin:0;font:600 10px/1.4 var(--mono);letter-spacing:.08em;color:var(--ink-3)}
+.quick__state{margin:14px 0 6px;font:600 13px/1.5 var(--mono);color:var(--ink)}
+.quick__hint{margin:0 0 16px;padding-left:10px;border-left:2px solid var(--rule-strong);font-size:13px;line-height:1.7;color:var(--ink-2)}
+.quick__table-title{margin:18px 0 4px;font:600 10px/1.4 var(--mono);letter-spacing:.08em;color:var(--ink-3)}
+.quick__table{width:100%;border-collapse:collapse;font-size:13px}
+.quick__table th,.quick__table td{border-bottom:1px solid var(--rule);padding:8px 6px;text-align:left;vertical-align:top}
+.quick__table th{font:600 10px/1.4 var(--mono);letter-spacing:.06em;color:var(--ink-3)}
+.quick__table td:first-child{color:var(--ink-3);white-space:nowrap}
+.quick__preview{
+  background:var(--s-bg);color:var(--s-text);border:1px solid var(--s-border);
+  border-radius:var(--s-radius);padding:22px;min-height:300px;
+  transition:background .24s var(--ease-color),color .24s var(--ease-color),border-radius .24s var(--ease-soft),border-color .24s var(--ease-color);
+}
+.quick__preview-top{display:flex;justify-content:space-between;gap:12px;align-items:center;font:500 10px/1.4 var(--mono);color:var(--s-text3);border-bottom:1px solid var(--s-border);padding-bottom:10px}
+.quick__chip{background:var(--s-primary-soft);color:var(--s-primary);padding:3px 7px;border-radius:999px;font-size:9px}
+.quick__preview h3{font:700 var(--s-title)/1.12 var(--s-display);letter-spacing:-.02em;margin:18px 0 8px}
+.quick__body{font:400 15px/1.7 var(--sans);color:var(--s-text2);margin:0 0 16px}
+.quick__btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.q-btn{font:500 14px/1 var(--sans);padding:9px 14px;border:1px solid var(--s-border-strong);background:var(--s-surface);color:var(--s-text);border-radius:var(--s-radius-sm);cursor:pointer;min-height:36px}
+.q-btn--primary{background:var(--s-primary);border-color:var(--s-primary);color:var(--s-on-primary)}
+.quick__meta{display:flex;gap:16px;flex-wrap:wrap;border-top:1px solid var(--s-border);padding-top:10px;font:500 10px/1.4 var(--mono);color:var(--s-text3)}
+.quick__meta-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:end;margin-top:24px;padding-top:20px;border-top:1px solid var(--rule)}
+.quick__meta-row .hero__stats{margin:0}
+@media(max-width:900px){
+  .quick__head{grid-template-columns:1fr}
+  .quick__grid{grid-template-columns:1fr}
+  .quick__controls{display:contents}
+  .quick__group-wrap{order:1}
+  .quick__group-wrap + .quick__group-wrap{margin-top:0}
+  .big-seg{order:1}
+  .quick__state{order:2}
+  .quick__hint{order:3}
+  .quick__preview{order:4;min-height:220px}
+  .quick__table{order:5}
+}
+@media(max-width:720px){.big-seg button,.q-btn{min-height:44px}}
+
+/* ============================================================
+   5. 按钮 / 链接
+   ============================================================ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:10px 14px;border:1px solid var(--ink);background:transparent;color:var(--ink);
+  font:500 14px/1 var(--sans);cursor:pointer;min-height:38px;
+  transition:background .18s var(--ease-color),color .18s var(--ease-color),transform .1s;
+}
+.btn:hover{background:var(--ink);color:var(--paper)}
+.btn:active{transform:translateY(1px)}
+.btn--primary{background:var(--blue);border-color:var(--blue);color:var(--on-primary)}
+.btn--primary:hover{background:var(--ink);border-color:var(--ink)}
+.btn--sm{padding:7px 10px;min-height:32px;font-size:13px}
+.btn--ghost{border-color:transparent}
+
+/* ============================================================
+   6. 阅读说明
+   ============================================================ */
+.guide{border-bottom:1px solid var(--rule);padding:28px 0 32px}
+.guide__head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:16px}
+.guide__head h2{font:700 24px/1.25 var(--serif);margin:0;letter-spacing:-.01em}
+.guide__steps{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.guide__steps li{display:grid;grid-template-columns:26px 1fr;gap:10px;font-size:14px;line-height:1.7;color:var(--ink-2)}
+.guide__num{font:600 11px/1.6 var(--mono);color:var(--vermilion)}
+.guide__steps strong{color:var(--ink);font-weight:600}
+
+/* ============================================================
+   7. 章节
+   ============================================================ */
+.section{padding:88px 0 0;border-top:1px solid var(--rule);scroll-margin-top:84px}
+.section:first-of-type{border-top:0}
+.section__head{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:32px;margin-bottom:34px}
+.section__head h2{
+  font:700 clamp(30px,4vw,42px)/1.12 var(--serif);
+  letter-spacing:-.025em;margin:6px 0 0;
+}
+.section__head p{margin:0;color:var(--ink-2);font-size:16px;line-height:1.8;max-width:54ch}
+.section__head p em{font-style:normal;color:var(--ink);border-bottom:1px solid var(--vermilion)}
+.note{
+  margin:20px 0 0;padding:14px 16px;border-left:2px solid var(--vermilion);
+  background:var(--paper-2);font-size:14px;line-height:1.75;color:var(--ink-2);
+}
+.note strong{color:var(--ink)}
+
+/* ============================================================
+   8. 方案卡
+   ============================================================ */
+.schemes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.scheme-card{
+  position:relative;border:1px solid var(--rule);background:var(--paper);padding:18px;
+  transition:outline-color .18s,background .18s;
+}
+.scheme-card::before,.scheme-card::after{
+  content:"";position:absolute;width:9px;height:9px;border-color:var(--rule-strong);border-style:solid;
+}
+.scheme-card::before{top:-1px;left:-1px;border-width:1px 0 0 1px}
+.scheme-card::after{bottom:-1px;right:-1px;border-width:0 1px 1px 0}
+.scheme-card[data-selected="true"]{outline:2px solid var(--vermilion);outline-offset:2px}
+.scheme-card__top{display:flex;justify-content:space-between;gap:12px;padding-bottom:8px;border-bottom:1px solid var(--rule);font-size:10px;color:var(--ink-3);letter-spacing:.06em}
+.scheme-card h3{font:600 24px/1.2 var(--serif);margin:14px 0 8px;letter-spacing:-.01em}
+.scheme-card p{font-size:13px;line-height:1.75;color:var(--ink-2);margin:0 0 14px}
+.swatches{display:flex;gap:4px;margin:0 0 14px}
+.swatch{
+  flex:1;height:26px;border:1px solid rgba(0,0,0,.10);padding:0;cursor:pointer;
+  transition:transform .16s var(--ease-soft),box-shadow .16s var(--ease-soft);
+}
+.swatch:hover{transform:translateY(-2px);box-shadow:0 3px 0 rgba(22,24,28,.14)}
+.scheme-card__sample{
+  padding:12px;border:1px solid var(--s-border);background:var(--s-bg);color:var(--s-text);
+  margin-bottom:14px;border-radius:var(--s-radius-sm);
+}
+.scheme-card__sample .sample-title{
+  display:block;font:700 22px/1.2 var(--s-display);letter-spacing:-.01em;
+}
+.scheme-card__sample .sample-body{
+  display:block;font:400 13px/1.6 var(--sans);color:var(--s-text2);margin-top:4px;
+}
+.scheme-card .btn{width:100%}
+
+/* ============================================================
+   9. 字体
+   ============================================================ */
+.specimen{border-top:1px solid var(--rule)}
+.specimen__row{
+  display:grid;grid-template-columns:170px minmax(0,1fr);gap:24px;
+  padding:24px 0;border-bottom:1px solid var(--rule);align-items:baseline;
+}
+.specimen__row>.mono{font-size:10px;letter-spacing:.06em;color:var(--ink-3)}
+.spec-display{font:700 clamp(38px,5.4vw,64px)/1.08 var(--serif);letter-spacing:-.035em;margin:0}
+.spec-h2{font:600 28px/1.25 var(--serif);letter-spacing:-.015em;margin:0}
+.spec-body{font:400 16px/1.75 var(--sans);margin:0;max-width:44em}
+.spec-ui{font:500 14px/1.6 var(--sans);margin:0}
+.spec-mono{font:500 13px/1.7 var(--mono);margin:0;color:var(--ink-2)}
+.table-wrap{overflow-x:auto;margin:26px 0}
+.spec-table{width:100%;border-collapse:collapse;font-size:14px;min-width:560px}
+.spec-table th,.spec-table td{
+  border-bottom:1px solid var(--rule);padding:10px 8px;text-align:left;vertical-align:top;
+}
+.spec-table th{
+  font:600 10px/1.4 var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);
+}
+.spec-table td.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.spec-table tr:hover td{background:var(--paper-2)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:8px}
+.panel-box{border:1px solid var(--rule);padding:16px 18px}
+.panel-box h3{font:600 15px/1.4 var(--sans);margin:0 0 10px}
+.panel-box ul{margin:0;padding-left:18px}
+.panel-box li{font-size:14px;line-height:1.8;color:var(--ink-2);margin:2px 0}
+.panel-box--do{border-top:2px solid var(--green)}
+.panel-box--dont{border-top:2px solid var(--vermilion)}
+
+/* ============================================================
+   10. 图标
+   ============================================================ */
+.size-ladder{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0}
+.size-step{border:1px solid var(--rule);padding:16px;display:flex;align-items:flex-end;gap:14px;min-height:96px}
+.size-step .mono{font-size:10px;color:var(--ink-3);letter-spacing:.05em}
+.icon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:8px;margin:24px 0}
+.icon-cell{
+  position:relative;aspect-ratio:1;display:grid;place-items:center;
+  border:1px solid var(--rule);background:transparent;cursor:pointer;
+  transition:background .16s;
+}
+.icon-cell:hover{background:var(--paper-2)}
+.icon-cell .tip{
+  position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);
+  background:var(--ink);color:var(--paper);padding:5px 8px;font:500 10px/1.3 var(--mono);
+  white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .14s;z-index:5;
+}
+.icon-cell:hover .tip,.icon-cell:focus-visible .tip{opacity:1}
+.ico{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.stroke-row{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-end;margin:20px 0}
+.stroke-item{display:flex;flex-direction:column;gap:8px;align-items:center}
+.stroke-item .mono{font-size:10px;color:var(--ink-3)}
+
+/* ============================================================
+   11. 组件
+   ============================================================ */
+.tabs{display:flex;border-bottom:1px solid var(--rule);margin:0 0 22px;overflow-x:auto}
+.tab{
+  border:0;background:transparent;padding:11px 16px;margin-bottom:-1px;cursor:pointer;
+  border-bottom:2px solid transparent;color:var(--ink-3);
+  font:500 14px/1 var(--sans);white-space:nowrap;
+}
+.tab[aria-selected="true"]{color:var(--ink);border-color:var(--vermilion)}
+.demo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.demo{border:1px solid var(--rule);padding:16px}
+.demo__label{font:600 10px/1.4 var(--mono);letter-spacing:.06em;color:var(--ink-3);margin-bottom:12px}
+.demo__row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.d-btn{
+  font:500 14px/1 var(--sans);padding:9px 14px;border:1px solid var(--ink);
+  background:transparent;color:var(--ink);cursor:pointer;min-height:34px;
+  transition:background .16s var(--ease-color),color .16s var(--ease-color),transform .1s;
+}
+.d-btn:hover{background:var(--ink);color:var(--paper)}
+.d-btn:active{transform:translateY(1px)}
+.d-btn--primary{background:var(--blue);border-color:var(--blue);color:var(--on-primary)}
+.d-btn--primary:hover{background:var(--ink);border-color:var(--ink)}
+.d-btn--danger{border-color:var(--vermilion);color:var(--vermilion)}
+.d-btn--danger:hover{background:var(--vermilion);color:#fff}
+.d-btn--ghost{border-color:transparent}
+.d-btn--sm{padding:6px 10px;font-size:13px;min-height:30px}
+.d-btn--lg{padding:12px 18px;font-size:15px;min-height:44px}
+.d-btn:disabled{opacity:.45;cursor:not-allowed}
+.spinner{
+  width:12px;height:12px;border:2px solid currentColor;border-top-color:transparent;opacity:.7;
+  border-radius:50%;display:inline-block;animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field:last-child{margin-bottom:0}
+.field label{font:500 13px/1.4 var(--sans)}
+.field input{
+  border:1px solid var(--rule-strong);background:var(--paper);color:var(--ink);
+  padding:9px 10px;font:400 14px/1.4 var(--sans);min-height:38px;
+}
+.field input::placeholder{color:var(--ink-3)}
+.field input:focus{outline:2px solid var(--vermilion);outline-offset:1px}
+.field--error input{border-color:var(--vermilion)}
+.field__hint{font-size:12px;line-height:1.5;color:var(--ink-3)}
+.field__error{font-size:12px;line-height:1.5;color:var(--vermilion)}
+.segmented{display:inline-flex;border:1px solid var(--rule)}
+.segmented button{border:0;border-right:1px solid var(--rule);background:transparent;padding:8px 12px;font:500 13px/1 var(--sans);cursor:pointer}
+.segmented button:last-child{border-right:0}
+.segmented button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.crumb{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--ink-3)}
+.crumb b{color:var(--ink);font-weight:500}
+.side-item{display:flex;align-items:center;gap:8px;padding:7px 8px;font-size:14px;border-left:2px solid transparent}
+.side-item[data-active="true"]{background:var(--paper-2);border-color:var(--vermilion);font-weight:500}
+.alert{display:flex;gap:10px;padding:10px 12px;border:1px solid var(--rule);border-left-width:3px;font-size:13px;line-height:1.6;margin-bottom:10px}
+.alert strong{display:block;font-weight:600}
+.alert--info{border-left-color:var(--blue)}
+.alert--success{border-left-color:var(--green)}
+.alert--warning{border-left-color:#A86B1F}
+.alert--danger{border-left-color:var(--vermilion)}
+.empty{
+  border:1px dashed var(--rule-strong);padding:26px 20px;text-align:center;color:var(--ink-2);
+}
+.empty strong{display:block;font:600 18px/1.4 var(--serif);color:var(--ink);margin-bottom:6px}
+.empty p{margin:0 0 14px;font-size:14px}
+.skeleton{display:grid;gap:8px;max-width:340px}
+.skeleton span{display:block;height:10px;background:var(--paper-3);animation:pulse 1.4s ease-in-out infinite}
+.skeleton span:nth-child(2){width:82%}.skeleton span:nth-child(3){width:64%}
+@keyframes pulse{0%,100%{opacity:.55}50%{opacity:1}}
+.menu-wrap{position:relative;display:inline-block}
+.menu{
+  position:absolute;top:calc(100% + 6px);left:0;min-width:184px;z-index:80;
+  background:var(--paper);border:1px solid var(--ink);padding:4px;
+  box-shadow:4px 4px 0 rgba(22,24,28,.12);
+}
+.menu button{
+  display:block;width:100%;text-align:left;border:0;background:transparent;
+  padding:8px 10px;font:400 14px/1.4 var(--sans);cursor:pointer;
+}
+.menu button:hover{background:var(--ink);color:var(--paper)}
+.canvas-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:34px 0 12px}
+.canvas-bar .mono{font-size:10px;color:var(--ink-3);letter-spacing:.06em}
+.preview{
+  margin:0 auto;width:100%;max-width:100%;
+  border:1px solid var(--rule-strong);background:var(--s-bg);color:var(--s-text);
+  overflow:hidden;border-radius:var(--s-radius);
+  transition:max-width .24s var(--ease-soft),background .24s var(--ease-color),color .24s var(--ease-color),border-radius .24s var(--ease-soft);
+}
+.preview[data-canvas="tablet"]{max-width:768px}
+.preview[data-canvas="mobile"]{max-width:375px}
+.preview__app{display:grid;grid-template-columns:180px minmax(0,1fr);min-height:360px}
+.preview__side{background:var(--s-sidebar);border-right:1px solid var(--s-border);padding:16px}
+.preview__side .mono{font-size:9px;color:var(--s-text3);letter-spacing:.08em}
+.preview__side p{margin:14px 0 6px;font-size:12px;color:var(--s-text2)}
+.preview__side .side-item{padding:6px 6px;font-size:12px}
+.preview__main{padding:22px 24px}
+.preview__top{display:flex;justify-content:space-between;gap:12px;align-items:center;font:500 10px/1.4 var(--mono);color:var(--s-text3);border-bottom:1px solid var(--s-border);padding-bottom:10px}
+.preview__chip{background:var(--s-primary-soft);color:var(--s-primary);padding:3px 7px;border-radius:999px;font-size:9px}
+.preview__title{font:700 var(--s-title)/1.12 var(--s-display);letter-spacing:-.02em;margin:16px 0 8px;color:var(--s-text)}
+.preview__body{font:400 16px/1.75 var(--sans);color:var(--s-text2);margin:0 0 16px;max-width:44em}
+.preview__actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.p-btn{
+  font:500 14px/1 var(--sans);padding:9px 14px;border:1px solid var(--s-border-strong);
+  background:var(--s-surface);color:var(--s-text);cursor:pointer;border-radius:var(--s-radius-sm);
+  min-height:34px;transition:background .16s,color .16s;
+}
+.p-btn:hover{background:var(--s-sunken)}
+.p-btn--primary{background:var(--s-primary);border-color:var(--s-primary);color:var(--s-on-primary)}
+.p-btn--primary:hover{background:var(--s-primary-hover)}
+.preview__row{
+  display:flex;gap:16px;flex-wrap:wrap;border-top:1px solid var(--s-border);
+  padding-top:10px;font:500 10px/1.4 var(--mono);color:var(--s-text3);
+}
+.preview .side-item{color:var(--s-text2)}
+.preview .side-item[data-active="true"]{background:var(--s-sunken);border-color:var(--s-accent);color:var(--s-text)}
+.preview[data-canvas="mobile"] .preview__app{grid-template-columns:1fr}
+.preview[data-canvas="mobile"] .preview__side{display:none}
+.preview[data-canvas="mobile"] .preview__main{padding:18px 16px}
+.preview[data-canvas="mobile"] .preview__title{font-size:28px;line-height:1.16}
+
+/* ============================================================
+   12. 独有功能
+   ============================================================ */
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.feature-card{
+  text-align:left;border:1px solid var(--rule);background:transparent;padding:18px;cursor:pointer;
+  transition:background .16s,outline-color .16s;
+}
+.feature-card:hover{background:var(--paper-2)}
+.feature-card[aria-pressed="true"]{outline:2px solid var(--vermilion);outline-offset:2px}
+.feature-card .mono{font-size:10px;color:var(--vermilion);letter-spacing:.06em}
+.feature-card h3{font:600 20px/1.3 var(--serif);margin:8px 0 6px;letter-spacing:-.01em}
+.feature-card p{font-size:13px;line-height:1.7;color:var(--ink-2);margin:0}
+.feature-detail{border:1px solid var(--rule);padding:24px;margin-top:14px;min-height:190px}
+.feature-detail h3{font:600 24px/1.3 var(--serif);margin:0 0 8px}
+.detail-lead{margin:0 0 14px;color:var(--ink-2);font-size:15px;line-height:1.75}
+.flow{list-style:none;padding:0;margin:0 0 16px;display:grid;gap:9px}
+.flow li{display:grid;grid-template-columns:28px 1fr;gap:10px;font-size:14px;line-height:1.7}
+.flow .n{font:600 11px/1.7 var(--mono);color:var(--vermilion)}
+.detail-metric{
+  display:inline-block;border:1px solid var(--rule);padding:6px 10px;
+  font:500 11px/1.4 var(--mono);color:var(--ink-2);margin:0 0 16px;
+}
+.detail-errors{border-top:1px solid var(--rule);padding-top:12px;font-size:13px;color:var(--ink-2)}
+.detail-errors strong{display:block;color:var(--ink);margin-bottom:6px;font-weight:600}
+.detail-errors ul{margin:0;padding-left:18px}
+.detail-errors li{margin:2px 0;line-height:1.7}
+
+/* ============================================================
+   13. 落地清单
+   ============================================================ */
+.check-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.check-head .mono{font-size:11px;color:var(--vermilion);letter-spacing:.06em}
+.checklist{display:grid;grid-template-columns:1fr 1fr;gap:0 32px}
+.check{
+  display:grid;grid-template-columns:20px 1fr;gap:12px;padding:13px 0;
+  border-bottom:1px solid var(--rule);cursor:pointer;position:relative;
+}
+.check input{position:absolute;opacity:0;width:1px;height:1px}
+.check .box{
+  width:18px;height:18px;border:1px solid var(--rule-strong);margin-top:3px;
+  display:grid;place-items:center;transition:background .14s,border-color .14s;
+}
+.check input:checked+.box{background:var(--vermilion);border-color:var(--vermilion)}
+.check input:checked+.box::after{content:"✓";color:#fff;font:700 11px/1 var(--sans)}
+.check input:focus-visible+.box{outline:2px solid var(--vermilion);outline-offset:2px}
+.check .txt{font-size:14px;line-height:1.7;color:var(--ink-2)}
+.check .txt b{color:var(--ink);font-weight:600}
+
+/* ============================================================
+   14. 页脚 / Toast / 弹窗
+   ============================================================ */
+.footer{margin-top:88px;padding:40px 0 0;border-top:1px solid var(--rule)}
+.footer__big{font:700 clamp(26px,3.4vw,36px)/1.2 var(--serif);letter-spacing:-.02em;margin:0 0 10px}
+.footer p{max-width:60ch;color:var(--ink-2);margin:0 0 18px}
+.footer__meta{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font:500 10px/1.5 var(--mono);color:var(--ink-3);border-top:1px solid var(--rule);padding-top:14px}
+.toast{
+  position:fixed;left:50%;top:64px;z-index:200;
+  transform:translate(-50%,-12px);opacity:0;pointer-events:none;
+  background:var(--ink);color:var(--paper);padding:10px 14px;
+  font:500 12px/1.5 var(--mono);max-width:min(90vw,560px);
+  transition:opacity .2s var(--ease-color),transform .2s var(--ease-soft);
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+dialog{
+  border:1px solid var(--ink);background:var(--paper);color:var(--ink);
+  padding:0;max-width:520px;width:calc(100vw - 32px);
+}
+dialog::backdrop{background:rgba(22,24,28,.45)}
+.dialog__head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--rule)}
+.dialog__head h3{font:600 18px/1.3 var(--serif);margin:0}
+.dialog__body{padding:18px;font-size:14px;line-height:1.75;color:var(--ink-2)}
+.dialog__foot{padding:12px 18px 18px;display:flex;justify-content:flex-end;gap:8px}
+.closebtn{border:0;background:transparent;font-size:18px;line-height:1;cursor:pointer;padding:4px 8px}
+
+/* ============================================================
+   15. 入场
+   ============================================================ */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .48s var(--ease-out),transform .48s var(--ease-out)}
+.reveal.in{opacity:1;transform:none}
+.reveal:nth-child(2){transition-delay:60ms}
+.reveal:nth-child(3){transition-delay:120ms}
+
+/* ============================================================
+   16. 响应式
+   ============================================================ */
+@media (max-width:1100px){
+  .schemes{grid-template-columns:1fr}
+  .guide__steps{grid-template-columns:1fr}
+  .feature-grid{grid-template-columns:1fr}
+  .two-col{grid-template-columns:1fr}
+}
+@media (max-width:980px){
+  :root{--gutter:20px}
+  .layout{grid-template-columns:1fr;gap:0}
+  .rail{position:static;padding:18px 0;border-bottom:1px solid var(--rule)}
+  .rail__label{display:none}
+  .rail__nav{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+  .rail__nav a{border:1px solid var(--rule);padding:6px 10px;white-space:nowrap}
+  .rail__nav a[aria-current="true"]{background:var(--paper-2)}
+  .rail__foot{flex-direction:row;gap:18px;margin-top:10px}
+  .hero{padding:40px 0 32px}
+  .section{padding:64px 0 0}
+  .section__head{grid-template-columns:1fr;gap:10px}
+  .section__head p{font-size:15px}
+  .preview__app{grid-template-columns:1fr}
+  .preview__side{display:none}
+  .checklist{grid-template-columns:1fr}
+}
+@media (max-width:720px){
+  .toast{top:124px}
+  .seg button,.btn,.d-btn,.tab,.p-btn,.linkbtn,.rail__nav a{min-height:44px}
+  .linkbtn{display:inline-flex;align-items:center}
+  .topbar__inner{flex-wrap:wrap;padding-top:10px;padding-bottom:10px}
+  .controls{width:100%;justify-content:space-between}
+  .hero h1{font-size:40px}
+  .hero__lead{font-size:16px}
+  .stat{flex-basis:50%}
+  .stat:nth-child(2){border-right:0}
+  .specimen__row{grid-template-columns:1fr;gap:8px}
+  .size-ladder{grid-template-columns:1fr 1fr}
+  .scheme-card h3{font-size:22px}
+  .preview__title{font-size:28px}
+  .footer__meta{flex-direction:column}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important;scroll-behavior:auto!important;
+  }
+  .reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">跳到正文</a>
+<noscript><div style="position:relative;z-index:150;background:#16181C;color:#F1EDE3;padding:10px 16px;font:500 13px/1.6 system-ui,sans-serif">脚本没启用：方案切换、主题和交互演示不可用；规格、色板、清单仍可正常阅读。</div></noscript>
+<div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="#top">
+      <span class="brand__mark">观</span>
+      <span class="brand__text">Lore<em>视觉方案对照 / v2</em></span>
+    </a>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="选择方案">
+        <button data-scheme-btn="A" aria-pressed="true"><i class="dot dot--a"></i>A 墨蓝</button>
+        <button data-scheme-btn="B" aria-pressed="false"><i class="dot dot--b"></i>B 青瓷</button>
+        <button data-scheme-btn="C" aria-pressed="false"><i class="dot dot--c"></i>C 玄墨</button>
+        <button data-scheme-btn="D" aria-pressed="false"><i class="dot dot--d"></i>D 天青</button>
+        <button data-scheme-btn="E" aria-pressed="false"><i class="dot dot--e"></i>E 赭墨</button>
+        <button data-scheme-btn="F" aria-pressed="false"><i class="dot dot--f"></i>F 青绿</button>
+      </div>
+      <div class="seg" role="group" aria-label="选择主题">
+        <button data-theme-btn="light" aria-pressed="true">浅</button>
+        <button data-theme-btn="dark" aria-pressed="false">深</button>
+        <button data-theme-btn="auto" aria-pressed="false">跟随</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="rail" aria-label="目录">
+    <p class="rail__label">CONTENTS / 07</p>
+    <nav class="rail__nav">
+      <a href="#quick" data-nav="quick" aria-current="true"><span class="mono">00</span>一眼看懂</a>
+      <a href="#overview" data-nav="overview"><span class="mono">01</span>方案总览</a>
+      <a href="#type" data-nav="type"><span class="mono">02</span>字体</a>
+      <a href="#icons" data-nav="icons"><span class="mono">03</span>图标</a>
+      <a href="#components" data-nav="components"><span class="mono">04</span>组件</a>
+      <a href="#features" data-nav="features"><span class="mono">05</span>独有功能</a>
+      <a href="#checklist" data-nav="checklist"><span class="mono">06</span>落地清单</a>
+    </nav>
+    <div class="rail__foot">
+      <button class="linkbtn" id="guideOpen" type="button">阅读说明</button>
+      <a class="linkbtn" href="#top">回到顶部 ↑</a>
+    </div>
+  </aside>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <p class="eyebrow">观复 · Lore / 视觉方案对照 / 2026-11-18</p>
+      <h1>六套方案，<br>一眼看完。</h1>
+      <p class="hero__lead">A/B/C 偏现代，D/E/F 偏国风。点一下，下面的预览立刻换色、换字号、换圆角。页面骨架故意不动，变的只有预览——这样比才公平。</p>
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="#quick">先选一套</a>
+        <a class="btn" href="#checklist">看落地清单</a>
+      </div>
+    </section>
+
+    <section class="quick reveal" id="quick">
+      <div class="quick__head">
+        <div><p class="eyebrow">00 / QUICK LOOK</p><h2>先看这个，30 秒。</h2></div>
+        <p>左边点方案，右边看效果。A/B/C 是现有三版，D/E/F 是国风三版。先选出顺眼的那套；规格在后面，不用现在读。</p>
+      </div>
+      <div class="quick__grid">
+        <div class="quick__controls">
+          <div class="quick__group-wrap">
+            <p class="quick__group">现有三版</p>
+            <div class="big-seg" role="group" aria-label="现有三版">
+              <button type="button" data-quick-scheme="A" aria-pressed="true">A 墨蓝 · 暖纸<span>#2F5D8A</span></button>
+              <button type="button" data-quick-scheme="B" aria-pressed="false">B 青瓷 · 冷雾<span>#2C6E6A</span></button>
+              <button type="button" data-quick-scheme="C" aria-pressed="false">C 玄墨 · 纯白<span>#1F6FEB</span></button>
+            </div>
+          </div>
+          <div class="quick__group-wrap">
+            <p class="quick__group">国风三版</p>
+            <div class="big-seg" role="group" aria-label="国风三版">
+              <button type="button" data-quick-scheme="D" aria-pressed="false">D 天青 · 汝窑<span>#3C6B7A</span></button>
+              <button type="button" data-quick-scheme="E" aria-pressed="false">E 赭墨 · 敦煌<span>#2E5D8C</span></button>
+              <button type="button" data-quick-scheme="F" aria-pressed="false">F 青绿 · 江山<span>#2F6B63</span></button>
+            </div>
+          </div>
+          <p class="quick__state" id="quickState" aria-live="polite">当前：A 墨蓝 · 浅色</p>
+          <p class="quick__hint">点了没变化？看右边预览的底色、标题大小和按钮圆角——它们会变。页面骨架不动是故意的。</p>
+          <table class="quick__table">
+            <thead><tr><th></th><th>A 墨蓝</th><th>B 青瓷</th><th>C 玄墨</th></tr></thead>
+            <tbody>
+              <tr><td>底色</td><td>暖纸</td><td>冷雾</td><td>纯白</td></tr>
+              <tr><td>主色</td><td>靛蓝</td><td>青瓷</td><td>亮蓝</td></tr>
+              <tr><td>标题</td><td>宋体 36</td><td>黑体 34</td><td>黑体 32</td></tr>
+              <tr><td>适合</td><td>长文阅读</td><td>工具感</td><td>最像 Notion</td></tr>
+              <tr><td>风险</td><td>首屏不够亮</td><td>青色撞成功色</td><td>辨识度低</td></tr>
+            </tbody>
+          </table>
+          <p class="quick__table-title">国风三版</p>
+          <table class="quick__table">
+            <thead><tr><th></th><th>D 天青</th><th>E 赭墨</th><th>F 青绿</th></tr></thead>
+            <tbody>
+              <tr><td>底色</td><td>月白</td><td>沙壁</td><td>云峰白</td></tr>
+              <tr><td>主色</td><td>天青</td><td>石青</td><td>石绿</td></tr>
+              <tr><td>强调</td><td>胭脂</td><td>赭石</td><td>赭石</td></tr>
+              <tr><td>气质</td><td>宋瓷</td><td>敦煌</td><td>青绿山水</td></tr>
+              <tr><td>风险</td><td>太淡</td><td>太暖</td><td>绿色偏多</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="quick__preview" id="quickPreview" data-scheme="A">
+          <div class="quick__preview-top"><span>LIVE / 当前方案</span><span class="quick__chip">本地优先</span></div>
+          <h3>万物并作，吾以观复</h3>
+          <p class="quick__body">把 16px 的正文放进 708px 的内容宽，一行大约 44 个汉字。标题、按钮、圆角都会跟着左边切。</p>
+          <div class="quick__btns"><button class="q-btn q-btn--primary" type="button">新建页面</button><button class="q-btn" type="button">导入</button></div>
+          <div class="quick__meta"><span>2026-11-18</span><span>微信剪藏 · 3 条未读</span></div>
+        </div>
+      </div>
+      <div class="quick__meta-row">
+        <div class="hero__stats">
+          <div class="stat"><b>6</b><span>套方案 / A–F</span></div>
+          <div class="stat"><b>14</b><span>份规格文档</span></div>
+          <div class="stat"><b>3</b><span>端 / Web 桌面 安卓</span></div>
+          <div class="stat"><b>1</b><span>个 HTML 文件</span></div>
+        </div>
+        <div class="frame-palette" aria-label="页面骨架色板，点击复制十六进制">
+          <button class="swatch" style="background:#F1EDE3" data-hex="#F1EDE3" aria-label="复制纸色 #F1EDE3"></button>
+          <button class="swatch" style="background:#16181C" data-hex="#16181C" aria-label="复制墨色 #16181C"></button>
+          <button class="swatch" style="background:#1E4E79" data-hex="#1E4E79" aria-label="复制靛蓝 #1E4E79"></button>
+          <button class="swatch" style="background:#9E3524" data-hex="#9E3524" aria-label="复制朱砂 #9E3524"></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="guide reveal" id="guide" aria-labelledby="guideTitle">
+      <div class="guide__head">
+        <div>
+          <p class="eyebrow">READING / 03 STEPS</p>
+          <h2 id="guideTitle">怎么读这页</h2>
+        </div>
+        <button class="linkbtn" id="guideClose" type="button">收起</button>
+      </div>
+      <ol class="guide__steps">
+        <li><span class="guide__num">01</span><div><strong>先换肤。</strong>点 A/B/C，看预览画布在暖纸、冷雾、纯白底上的重量差。页面骨架不跟着变，变的只有画布。</div></li>
+        <li><span class="guide__num">02</span><div><strong>再读字。</strong>16/28 的正文在 1440 宽屏幕上每行约 44 个汉字；把预览切到 375 宽，看标题从 36 降到 28 还压不压得住。</div></li>
+        <li><span class="guide__num">03</span><div><strong>最后动手。</strong>按钮、输入框、Toast、菜单、弹窗都能点。状态不是画上去的，点一下就知道。</div></li>
+      </ol>
+    </section>
+
+    <section class="section" id="overview">
+      <header class="section__head reveal">
+        <div><p class="eyebrow">01 / SCHEMES</p><h2>六套方案，<br>不是六套皮肤。</h2></div>
+        <p>三套现代 + 三套国风。底色、主色、圆角、标题字号和密度都不同。色板写传统色源，UI 用的是降饱和后的可用值；暗色变体在预览切到深色时一起出现。</p>
+      </header>
+      <div class="schemes">
+        <article class="scheme-card reveal" data-scheme="A" data-card="A" data-selected="true">
+          <div class="scheme-card__top"><span class="mono">A / 墨蓝 · 宣纸</span><span class="mono">#2F5D8A</span></div>
+          <h3>墨蓝 · 宣纸</h3>
+          <p>暖纸底，墨蓝做骨架，朱砂只给 AI 和重要提醒。标题，正文 16/28，圆角 8/6。</p>
+          <div class="swatches">
+            <button class="swatch" style="background:#F7F6F2" data-hex="#F7F6F2" aria-label="复制 #F7F6F2"></button>
+            <button class="swatch" style="background:#2F5D8A" data-hex="#2F5D8A" aria-label="复制 #2F5D8A"></button>
+            <button class="swatch" style="background:#B4472E" data-hex="#B4472E" aria-label="复制 #B4472E"></button>
+            <button class="swatch" style="background:#2B2A27" data-hex="#2B2A27" aria-label="复制 #2B2A27"></button>
+            <button class="swatch" style="background:#FFFFFF" data-hex="#FFFFFF" aria-label="复制 #FFFFFF"></button>
+          </div>
+          <div class="scheme-card__sample">
+            <span class="sample-title">万物并作</span>
+            <span class="sample-body">吾以观复。读两小时不累，是这套方案的第一目标。</span>
+          </div>
+          <button class="btn btn--sm" data-apply="A" type="button">用这套</button>
+        </article>
+
+        <article class="scheme-card reveal" data-scheme="B" data-card="B" data-selected="false">
+          <div class="scheme-card__top"><span class="mono">B / 青瓷 · 雾灰</span><span class="mono">#2C6E6A</span></div>
+          <h3>青瓷 · 雾灰</h3>
+          <p>冷雾底，青瓷做主色，琥珀做强调。标题 34px，圆角 6，密度 .94。更轻，但青色别拿去当成功色。</p>
+          <div class="swatches">
+            <button class="swatch" style="background:#F4F6F5" data-hex="#F4F6F5" aria-label="复制 #F4F6F5"></button>
+            <button class="swatch" style="background:#2C6E6A" data-hex="#2C6E6A" aria-label="复制 #2C6E6A"></button>
+            <button class="swatch" style="background:#C08A2E" data-hex="#C08A2E" aria-label="复制 #C08A2E"></button>
+            <button class="swatch" style="background:#232826" data-hex="#232826" aria-label="复制 #232826"></button>
+            <button class="swatch" style="background:#FFFFFF" data-hex="#FFFFFF" aria-label="复制 #FFFFFF"></button>
+          </div>
+          <div class="scheme-card__sample">
+            <span class="sample-title">万物并作</span>
+            <span class="sample-body">吾以观复。雾灰底把彩色图表的噪点压下去，代价是暖意少一点。</span>
+          </div>
+          <button class="btn btn--sm" data-apply="B" type="button">用这套</button>
+        </article>
+
+        <article class="scheme-card reveal" data-scheme="C" data-card="C" data-selected="false">
+          <div class="scheme-card__top"><span class="mono">C / 玄墨 · 极简</span><span class="mono">#1F6FEB</span></div>
+          <h3>玄墨 · 极简</h3>
+          <p>纯白底，一束蓝，紫色只做辅助。标题 32px，圆角 4，密度 .88。最像 Notion/Linear，辨识度也最低。</p>
+          <div class="swatches">
+            <button class="swatch" style="background:#FFFFFF" data-hex="#FFFFFF" aria-label="复制 #FFFFFF"></button>
+            <button class="swatch" style="background:#1F6FEB" data-hex="#1F6FEB" aria-label="复制 #1F6FEB"></button>
+            <button class="swatch" style="background:#7C3AED" data-hex="#7C3AED" aria-label="复制 #7C3AED"></button>
+            <button class="swatch" style="background:#1F1F1F" data-hex="#1F1F1F" aria-label="复制 #1F1F1F"></button>
+            <button class="swatch" style="background:#FAFAFA" data-hex="#FAFAFA" aria-label="复制 #FAFAFA"></button>
+          </div>
+          <div class="scheme-card__sample">
+            <span class="sample-title">万物并作</span>
+            <span class="sample-body">吾以观复。最省眼，也最容易被说“像别人”。</span>
+          </div>
+          <button class="btn btn--sm" data-apply="C" type="button">用这套</button>
+        </article>
+
+        <article class="scheme-card reveal" data-scheme="D" data-card="D" data-selected="false">
+          <div class="scheme-card__top"><span class="mono">D / 天青 · 汝窑</span><span class="mono">#3C6B7A</span></div>
+          <h3>天青 · 汝窑</h3>
+          <p>雨过天青，月白底，胭脂只做印章。标题宋体，圆角 8，留白最大。传统色源：天青 <code>#6C9BCA</code>、月白 <code>#EEF7F2</code>、胭脂 <code>#A64B3C</code>。</p>
+          <div class="swatches">
+            <button class="swatch" style="background:#6C9BCA" data-hex="#6C9BCA" aria-label="复制 #6C9BCA"></button>
+            <button class="swatch" style="background:#EEF7F2" data-hex="#EEF7F2" aria-label="复制 #EEF7F2"></button>
+            <button class="swatch" style="background:#F8F4ED" data-hex="#F8F4ED" aria-label="复制 #F8F4ED"></button>
+            <button class="swatch" style="background:#2B333E" data-hex="#2B333E" aria-label="复制 #2B333E"></button>
+            <button class="swatch" style="background:#A64B3C" data-hex="#A64B3C" aria-label="复制 #A64B3C"></button>
+          </div>
+          <div class="scheme-card__sample">
+            <span class="sample-title">万物并作</span>
+            <span class="sample-body">吾以观复。像一只汝窑杯，安静，不反光。</span>
+          </div>
+          <button class="btn btn--sm" data-apply="D" type="button">用这套</button>
+        </article>
+
+        <article class="scheme-card reveal" data-scheme="E" data-card="E" data-selected="false">
+          <div class="scheme-card__top"><span class="mono">E / 赭墨 · 敦煌</span><span class="mono">#2E5D8C</span></div>
+          <h3>赭墨 · 敦煌</h3>
+          <p>土红铺底、石青点睛、赭石和藤黄做温度。不是红金国潮，是壁画剥落后的暖。传统色源：石青 <code>#2E5D8C</code>、赭石 <code>#862617</code>、淡赭 <code>#BE7E4A</code>、藤黄 <code>#C9A227</code>。</p>
+          <div class="swatches">
+            <button class="swatch" style="background:#2E5D8C" data-hex="#2E5D8C" aria-label="复制 #2E5D8C"></button>
+            <button class="swatch" style="background:#862617" data-hex="#862617" aria-label="复制 #862617"></button>
+            <button class="swatch" style="background:#BE7E4A" data-hex="#BE7E4A" aria-label="复制 #BE7E4A"></button>
+            <button class="swatch" style="background:#C9A227" data-hex="#C9A227" aria-label="复制 #C9A227"></button>
+            <button class="swatch" style="background:#F8F4ED" data-hex="#F8F4ED" aria-label="复制 #F8F4ED"></button>
+          </div>
+          <div class="scheme-card__sample">
+            <span class="sample-title">万物并作</span>
+            <span class="sample-body">吾以观复。像洞窟里的一束侧光，暖，但不吵。</span>
+          </div>
+          <button class="btn btn--sm" data-apply="E" type="button">用这套</button>
+        </article>
+
+        <article class="scheme-card reveal" data-scheme="F" data-card="F" data-selected="false">
+          <div class="scheme-card__top"><span class="mono">F / 青绿 · 江山</span><span class="mono">#2F6B63</span></div>
+          <h3>青绿 · 江山</h3>
+          <p>石青石绿做主色，赭石压山脚，月白留云气。比 A 清透，比 B 东方。传统色源：石青 <code>#2E5D8C</code>、石绿 <code>#2E7D6E</code>、赭石 <code>#862617</code>、月白 <code>#EEF7F2</code>。</p>
+          <div class="swatches">
+            <button class="swatch" style="background:#2E5D8C" data-hex="#2E5D8C" aria-label="复制 #2E5D8C"></button>
+            <button class="swatch" style="background:#2E7D6E" data-hex="#2E7D6E" aria-label="复制 #2E7D6E"></button>
+            <button class="swatch" style="background:#862617" data-hex="#862617" aria-label="复制 #862617"></button>
+            <button class="swatch" style="background:#EEF7F2" data-hex="#EEF7F2" aria-label="复制 #EEF7F2"></button>
+            <button class="swatch" style="background:#223E36" data-hex="#223E36" aria-label="复制 #223E36"></button>
+          </div>
+          <div class="scheme-card__sample">
+            <span class="sample-title">万物并作</span>
+            <span class="sample-body">吾以观复。像一卷青绿山水，慢慢展开。</span>
+          </div>
+          <button class="btn btn--sm" data-apply="F" type="button">用这套</button>
+        </article>
+      </div>
+      <p class="note"><strong>先看 A 和 D。</strong>A 是暖纸墨蓝，适合连续读两小时长文；D 是天青汝窑，更东方、更轻。B/C/E/F 不是陪跑：B 更工具，C 最像 Notion，E 偏敦煌的暖，F 是青绿山水的清透。国风三版不靠红金和龙纹：用天青、石青、赭石这些传统色名，配宋体、留白和低饱和矿物色。选的时候别只看色块，把预览切到 375 宽读一段正文。</p>
+    </section>
+
+    <section class="section" id="type">
+      <header class="section__head reveal">
+        <div><p class="eyebrow">02 / TYPE</p><h2>字重只用三档，<br>700 会让标题喊。</h2></div>
+        <p>标题用思源宋体，正文用思源黑体。中文标题 600 已经够重，700 在 40px 以上会显得急。下面每一行都是实际渲染，不是图片。</p>
+      </header>
+      <div class="specimen reveal">
+        <div class="specimen__row">
+          <span class="mono">DISPLAY / 64 · 72 · 700</span>
+          <p class="spec-display">万物并作，吾以观复。</p>
+        </div>
+        <div class="specimen__row">
+          <span class="mono">SECTION / 40 · 48 · 700</span>
+          <p class="spec-h2">页面不是文件夹。</p>
+        </div>
+        <div class="specimen__row">
+          <span class="mono">BODY / 16 · 28 · 400</span>
+          <p class="spec-body">把 16px 的正文放进 708px 的内容宽，一行大约 44 个汉字。超过这个宽度，眼睛回行时会丢；低于 36 个，换行又太碎。读一段 800 字的长文，再决定要不要加宽。</p>
+        </div>
+        <div class="specimen__row">
+          <span class="mono">UI / 14 · 22 · 500</span>
+          <p class="spec-ui">保存设置 · 新建页面 · 导入 Markdown</p>
+        </div>
+        <div class="specimen__row">
+          <span class="mono">LABEL / 12 · 18 · 600 · MONO</span>
+          <p class="spec-mono">SECTION 02 / TYPE / 2026-11-18</p>
+        </div>
+      </div>
+      <div class="table-wrap reveal">
+        <table class="spec-table">
+          <thead><tr><th>角色</th><th>字号 / 行高</th><th>字重</th><th>用在哪</th></tr></thead>
+          <tbody>
+            <tr><td>Hero</td><td class="num">64 / 72</td><td class="num">700</td><td>首屏主标题，只在落地页与官网首屏</td></tr>
+            <tr><td>章节标题</td><td class="num">40 / 48</td><td class="num">700</td><td>页面一级标题、空态大标题</td></tr>
+            <tr><td>子标题</td><td class="num">24 / 32</td><td class="num">600</td><td>卡片标题、设置分组</td></tr>
+            <tr><td>正文</td><td class="num">16 / 28</td><td class="num">400</td><td>编辑器正文、长文阅读</td></tr>
+            <tr><td>UI</td><td class="num">14 / 22</td><td class="num">500</td><td>按钮、菜单、侧栏条目</td></tr>
+            <tr><td>标签</td><td class="num">12 / 18</td><td class="num">600</td><td>等宽标签、表头、状态徽标</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="two-col reveal">
+        <div class="panel-box panel-box--do">
+          <h3>这样做</h3>
+          <ul>
+            <li>中文正文不小于 16px；行宽 36–44 个汉字。</li>
+            <li>标题上留 24px、下留 12px；段间距 12px。</li>
+            <li>中英混排时英文降 1px、行高加 2px，基线才齐。</li>
+            <li>表格数字用等宽，16/28、32px 要对得齐。</li>
+          </ul>
+        </div>
+        <div class="panel-box panel-box--dont">
+          <h3>别这样做</h3>
+          <ul>
+            <li>不要用 12px 排正文；不要用 700 排长段中文。</li>
+            <li>不要首行缩进；不要用两端对齐制造字缝。</li>
+            <li>不要把英文全大写当标题，中文里会像喊口号。</li>
+            <li>不要为了“高级感”把行高压到 1.2。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="icons">
+      <header class="section__head reveal">
+        <div><p class="eyebrow">03 / ICONS</p><h2>图标是标点，<br>不是插画。</h2></div>
+        <p>20px 是默认，16px 进正文，24/32 只给空态和功能入口。描边统一 1.75；12px 只给徽标，9px 不用。点击图标可以复制名字。</p>
+      </header>
+      <div class="size-ladder reveal">
+        <div class="size-step"><svg class="ico" style="width:16px;height:16px" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span class="mono">16 / 行内</span></div>
+        <div class="size-step"><svg class="ico" style="width:20px;height:20px" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span class="mono">20 / 默认</span></div>
+        <div class="size-step"><svg class="ico" style="width:24px;height:24px" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span class="mono">24 / 入口</span></div>
+        <div class="size-step"><svg class="ico" style="width:32px;height:32px" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span class="mono">32 / 空态</span></div>
+      </div>
+      <div class="icon-grid reveal" id="iconGrid">
+        <button class="icon-cell" data-name="search" aria-label="复制图标名 search"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span class="tip">search · 20 · 1.75</span></button>
+        <button class="icon-cell" data-name="plus" aria-label="复制图标名 plus"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg><span class="tip">plus · 20 · 1.75</span></button>
+        <button class="icon-cell" data-name="settings" aria-label="复制图标名 settings"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span class="tip">settings · 20 · 1.75</span></button>
+        <button class="icon-cell" data-name="folder" aria-label="复制图标名 folder"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg><span class="tip">folder · 20 · 1.75</span></button>
+        <button class="icon-cell" data-name="file-text" aria-label="复制图标名 file-text"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"/></svg><span class="tip">file-text · 20 · 1.75</span></button>
+        <button class="icon-cell" data-name="chevron-down" aria-label="复制图标名 chevron-down"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg><span class="tip">chevron-down · 20 · 1.75</span></button>
+        <button class="icon-cell" data-name="more-horizontal" aria-label="复制图标名 more-horizontal"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg><span class="tip">more-horizontal · 20 · 1.75</span></button>
+        <button class="icon-cell" data-name="trash-2" aria-label="复制图标名 trash-2"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></svg><span class="tip">trash-2 · 20 · 1.75</span></button>
+        <button class="icon-cell" data-name="panel-left" aria-label="复制图标名 panel-left"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg><span class="tip">panel-left · 20 · 1.75</span></button>
+        <button class="icon-cell" data-name="bell" aria-label="复制图标名 bell"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="tip">bell · 20 · 1.75</span></button>
+        <button class="icon-cell" data-name="sparkles" aria-label="复制图标名 sparkles"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg><span class="tip">sparkles · 20 · 1.75</span></button>
+        <button class="icon-cell" data-name="cloud" aria-label="复制图标名 cloud"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg><span class="tip">cloud · 20 · 1.75</span></button>
+        <button class="icon-cell" data-name="check" aria-label="复制图标名 check"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span class="tip">check · 20 · 1.75</span></button>
+        <button class="icon-cell" data-name="x" aria-label="复制图标名 x"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg><span class="tip">x · 20 · 1.75</span></button>
+      </div>
+      <div class="stroke-row reveal">
+        <div class="stroke-item"><svg class="ico" style="stroke-width:1.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg><span class="mono">1.5 / 太轻</span></div>
+        <div class="stroke-item"><svg class="ico" style="stroke-width:1.75" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg><span class="mono">1.75 / 推荐</span></div>
+        <div class="stroke-item"><svg class="ico" style="stroke-width:2" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg><span class="mono">2.0 / 偏重</span></div>
+      </div>
+      <div class="table-wrap reveal">
+        <table class="spec-table">
+          <thead><tr><th>动作</th><th>图标</th><th>尺寸</th><th>点击区</th></tr></thead>
+          <tbody>
+            <tr><td>搜索</td><td class="num">search</td><td class="num">20</td><td class="num">32 / 触摸 44</td></tr>
+            <tr><td>新建</td><td class="num">plus</td><td class="num">20</td><td class="num">32 / 触摸 44</td></tr>
+            <tr><td>设置</td><td class="num">settings</td><td class="num">20</td><td class="num">32 / 触摸 44</td></tr>
+            <tr><td>更多</td><td class="num">more-horizontal</td><td class="num">20</td><td class="num">32 / 触摸 44</td></tr>
+            <tr><td>删除</td><td class="num">trash-2</td><td class="num">20</td><td class="num">32 / 触摸 44</td></tr>
+            <tr><td>侧栏</td><td class="num">panel-left</td><td class="num">20</td><td class="num">32 / 触摸 44</td></tr>
+            <tr><td>AI</td><td class="num">sparkles</td><td class="num">20</td><td class="num">32 / 触摸 44</td></tr>
+            <tr><td>同步</td><td class="num">cloud</td><td class="num">20</td><td class="num">32 / 触摸 44</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" id="components">
+      <header class="section__head reveal">
+        <div><p class="eyebrow">04 / COMPONENTS</p><h2>状态不是画上去的，<br>点一下就知道。</h2></div>
+        <p>下面四个页签里的控件都能操作。按钮会弹 Toast，菜单会开合，弹窗会真的挡住页面。预览画布可以切桌面、平板、手机三种宽度。</p>
+      </header>
+      <div class="tabs reveal" role="tablist" aria-label="组件分类">
+        <button class="tab" role="tab" id="tab-buttons" aria-selected="true" aria-controls="panel-buttons" data-tab="buttons" tabindex="0">按钮</button>
+        <button class="tab" role="tab" id="tab-inputs" aria-selected="false" aria-controls="panel-inputs" data-tab="inputs" tabindex="-1">输入</button>
+        <button class="tab" role="tab" id="tab-nav" aria-selected="false" aria-controls="panel-nav" data-tab="nav" tabindex="-1">导航</button>
+        <button class="tab" role="tab" id="tab-feedback" aria-selected="false" aria-controls="panel-feedback" data-tab="feedback" tabindex="-1">反馈</button>
+      </div>
+
+      <div class="reveal" role="tabpanel" id="panel-buttons" aria-labelledby="tab-buttons">
+        <div class="demo-grid">
+          <div class="demo">
+            <p class="demo__label">VARIANTS / 32</p>
+            <div class="demo__row">
+              <button class="d-btn d-btn--primary" id="saveBtn" type="button">主按钮</button>
+              <button class="d-btn" type="button">次按钮</button>
+              <button class="d-btn d-btn--ghost" type="button">幽灵</button>
+              <button class="d-btn d-btn--danger" type="button">删除</button>
+            </div>
+          </div>
+          <div class="demo">
+            <p class="demo__label">SIZES / 28 · 32 · 36</p>
+            <div class="demo__row">
+              <button class="d-btn d-btn--sm" type="button">小 28</button>
+              <button class="d-btn" type="button">中 32</button>
+              <button class="d-btn d-btn--lg" type="button">大 36</button>
+            </div>
+          </div>
+          <div class="demo">
+            <p class="demo__label">STATES / 6</p>
+            <div class="demo__row">
+              <button class="d-btn" type="button">默认</button>
+              <button class="d-btn" type="button" disabled>禁用</button>
+              <button class="d-btn d-btn--primary" type="button" disabled><span class="spinner" aria-hidden="true"></span>保存中…</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal" role="tabpanel" id="panel-inputs" aria-labelledby="tab-inputs" hidden>
+        <div class="demo-grid">
+          <div class="demo">
+            <p class="demo__label">TEXT / DEFAULT</p>
+            <div class="field">
+              <label for="pageName">页面名</label>
+              <input id="pageName" type="text" value="万物并作" autocomplete="off">
+              <span class="field__hint">最多 80 个字符；重名会自动加序号。</span>
+            </div>
+          </div>
+          <div class="demo">
+            <p class="demo__label">TEXT / ERROR</p>
+            <div class="field field--error">
+              <label for="emailErr">同步邮箱</label>
+              <input id="emailErr" type="email" value="not-an-email" aria-invalid="true" aria-describedby="emailErrMsg">
+              <span class="field__error" id="emailErrMsg">缺一个 @。填完再点保存。</span>
+            </div>
+          </div>
+          <div class="demo">
+            <p class="demo__label">SEARCH / WITH HINT</p>
+            <div class="field">
+              <label for="searchDemo">搜索页面</label>
+              <input id="searchDemo" type="search" placeholder="输入标题，回车搜索" autocomplete="off">
+              <span class="field__hint">Ctrl+K 随时唤起；空结果会显示最近浏览。</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal" role="tabpanel" id="panel-nav" aria-labelledby="tab-nav" hidden>
+        <div class="demo-grid">
+          <div class="demo">
+            <p class="demo__label">SEGMENTED / 3</p>
+            <div class="segmented" role="group" aria-label="视图切换">
+              <button type="button" aria-pressed="true">全部</button>
+              <button type="button" aria-pressed="false">未读</button>
+              <button type="button" aria-pressed="false">已归档</button>
+            </div>
+          </div>
+          <div class="demo">
+            <p class="demo__label">BREADCRUMB / 3 LEVELS</p>
+            <div class="crumb"><span>知识库</span><span>/</span><span>产品</span><span>/</span><b>视觉方案</b></div>
+          </div>
+          <div class="demo">
+            <p class="demo__label">SIDEBAR ITEM / ACTIVE</p>
+            <div class="side-item" data-active="true"><svg class="ico" style="width:16px;height:16px" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>视觉方案对照</div>
+            <div class="side-item"><svg class="ico" style="width:16px;height:16px" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>项目资料</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal" role="tabpanel" id="panel-feedback" aria-labelledby="tab-feedback" hidden>
+        <div class="demo-grid">
+          <div class="demo">
+            <p class="demo__label">ALERTS / 4</p>
+            <div class="alert alert--info"><div><strong>同步已暂停</strong>上次成功在 11:42；网络恢复后会自动续传。</div></div>
+            <div class="alert alert--success"><div><strong>已保存</strong>3 个块，0 个冲突。</div></div>
+            <div class="alert alert--warning"><div><strong>容量用到 176.1M / 200M</strong>还能传 23.9M，建议先清缓存。</div></div>
+            <div class="alert alert--danger"><div><strong>密钥无效</strong>检查 Base URL 和 Key，或换一个供应商。</div></div>
+          </div>
+          <div class="demo">
+            <p class="demo__label">EMPTY / LOADING</p>
+            <div class="empty"><strong>还没有剪藏</strong><p>在微信里分享一篇文章给观复，5 秒后它会出现在这里。</p><button class="d-btn d-btn--sm" type="button">看怎么剪藏</button></div>
+            <div class="skeleton" style="margin-top:14px" aria-label="加载中"><span></span><span></span><span></span></div>
+          </div>
+          <div class="demo">
+            <p class="demo__label">TRANSIENT / 3</p>
+            <div class="demo__row">
+              <button class="d-btn" type="button" id="toastBtn">弹一个 Toast</button>
+              <div class="menu-wrap">
+                <button class="d-btn" type="button" id="menuBtn" aria-haspopup="menu" aria-expanded="false">打开菜单</button>
+                <div class="menu" id="menu" role="menu" hidden>
+                  <button role="menuitem" type="button">重命名</button>
+                  <button role="menuitem" type="button">复制链接</button>
+                  <button role="menuitem" type="button">移动到…</button>
+                  <button role="menuitem" type="button">删除</button>
+                </div>
+              </div>
+              <button class="d-btn" type="button" id="modalBtn">打开弹窗</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="canvas-bar">
+        <span class="mono">LIVE CANVAS / 方案跟随上方 A/B/C</span>
+        <div class="seg" role="group" aria-label="预览宽度">
+          <button type="button" data-canvas-btn="desktop" aria-pressed="true">桌面</button>
+          <button type="button" data-canvas-btn="tablet" aria-pressed="false">平板</button>
+          <button type="button" data-canvas-btn="mobile" aria-pressed="false">手机</button>
+        </div>
+      </div>
+      <div class="preview" id="preview" data-scheme="A" data-canvas="desktop">
+        <div class="preview__app">
+          <div class="preview__side">
+            <span class="mono">WORKSPACE</span>
+            <p>两相欢的空间</p>
+            <div class="side-item" data-active="true">学习进度</div>
+            <div class="side-item">微信公众号剪藏</div>
+            <div class="side-item">网页剪藏</div>
+            <div class="side-item">归档历史材料</div>
+          </div>
+          <div class="preview__main">
+            <div class="preview__top"><span>首页 / 最近浏览</span><span class="preview__chip">本地优先</span></div>
+            <h3 class="preview__title">万物并作，吾以观复</h3>
+            <p class="preview__body">把 16px 的正文放进 708px 的内容宽，一行大约 44 个汉字。超过这个宽度，眼睛回行会丢；低于 36 个，换行又太碎。</p>
+            <div class="preview__actions"><button class="p-btn p-btn--primary" type="button">新建页面</button><button class="p-btn" type="button">导入 Markdown</button></div>
+            <div class="preview__row"><span>2026-11-18</span><span>微信剪藏 · 3 条未读</span><span>同步已暂停</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="table-wrap reveal">
+        <table class="spec-table">
+          <thead><tr><th>组件</th><th>高</th><th>圆角</th><th>字号</th><th>状态</th></tr></thead>
+          <tbody>
+            <tr><td>Button</td><td class="num">32 / 28 / 36</td><td class="num">6</td><td class="num">14 / 22</td><td>default hover active focus disabled loading</td></tr>
+            <tr><td>Input</td><td class="num">32</td><td class="num">6</td><td class="num">14 / 22</td><td>default focus error disabled</td></tr>
+            <tr><td>Menu</td><td class="num">32 / 项</td><td class="num">6</td><td class="num">14 / 22</td><td>closed open hover focus</td></tr>
+            <tr><td>Toast</td><td class="num">36</td><td class="num">6</td><td class="num">12 / 18</td><td>enter show exit</td></tr>
+            <tr><td>Table row</td><td class="num">36 / 40</td><td class="num">0</td><td class="num">14 / 22</td><td>default hover selected</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <header class="section__head reveal">
+        <div><p class="eyebrow">05 / NATIVE</p><h2>这三块，<br>FlowUs 没有对照。</h2></div>
+        <p>微信剪藏、AI 供应商、同步与凭证决定观复是不是只是一个“像 Notion 的壳”。点一张卡，流程和失败分支会展开；没选时这里保持空状态。</p>
+      </header>
+      <div class="feature-grid reveal">
+        <button class="feature-card" data-feature="clip" aria-pressed="false" type="button">
+          <span class="mono">NATIVE / 01</span>
+          <h3>微信剪藏</h3>
+          <p>从微信分享到进收集箱，目标 5 秒、2 次点击。失败先存链接，联网再抓。</p>
+        </button>
+        <button class="feature-card" data-feature="ai" aria-pressed="false" type="button">
+          <span class="mono">NATIVE / 02</span>
+          <h3>AI 供应商</h3>
+          <p>OpenAI / Anthropic / Gemini / Ollama / 兼容接口。Key 只进本机钥匙串，不进同步。</p>
+        </button>
+        <button class="feature-card" data-feature="sync" aria-pressed="false" type="button">
+          <span class="mono">NATIVE / 03</span>
+          <h3>同步与凭证</h3>
+          <p>默认关闭。S3 / WebDAV / 自建三选一；冲突生成副本，不静默覆盖。</p>
+        </button>
+      </div>
+      <div class="feature-detail reveal" id="featureDetail" aria-live="polite"></div>
+    </section>
+
+    <section class="section" id="checklist">
+      <header class="section__head reveal">
+        <div><p class="eyebrow">06 / SHIP</p><h2>八条能验收的，<br>不是八句口号。</h2></div>
+        <p>每一条都能在代码或真实页面里核对。勾完 8 条再开工；勾不动的那条，说明规格还没定清楚。</p>
+      </header>
+      <div class="check-head reveal"><span class="mono" id="checkCount">已勾 0/8</span><button class="linkbtn" id="checkReset" type="button">清空</button></div>
+      <div class="checklist reveal">
+        <label class="check"><input type="checkbox"><span class="box" aria-hidden="true"></span><span class="txt"><b>语义变量落盘。</b>`--gf-*` 写进 `app/src/styles/index.css`，组件里不再出现十六进制。</span></label>
+        <label class="check"><input type="checkbox"><span class="box" aria-hidden="true"></span><span class="txt"><b>字阶。</b>正文 16/28、UI 14/22、标题 36/48；375 宽下标题降到 28/36。</span></label>
+        <label class="check"><input type="checkbox"><span class="box" aria-hidden="true"></span><span class="txt"><b>图标。</b>统一 Lucide 20 / 1.75，点击区 32，触摸 44；12px 只给徽标。</span></label>
+        <label class="check"><input type="checkbox"><span class="box" aria-hidden="true"></span><span class="txt"><b>按钮。</b>32 / 28 / 36 三档，圆角 6，六个状态齐全；loading 有 spinner。</span></label>
+        <label class="check"><input type="checkbox"><span class="box" aria-hidden="true"></span><span class="txt"><b>深色。</b>底 `#171716`、面 `#20201E`、浮层 `#262624`；图片不反色。</span></label>
+        <label class="check"><input type="checkbox"><span class="box" aria-hidden="true"></span><span class="txt"><b>剪藏。</b>微信分享到进收集箱 ≤5 秒、≤2 次点击；失败保留链接可重试。</span></label>
+        <label class="check"><input type="checkbox"><span class="box" aria-hidden="true"></span><span class="txt"><b>AI Key。</b>只进本机钥匙串，不进同步、不进日志；设置页能看到“仅本机”。</span></label>
+        <label class="check"><input type="checkbox"><span class="box" aria-hidden="true"></span><span class="txt"><b>同步。</b>默认关闭；冲突生成副本并让用户选，不静默覆盖。</span></label>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p class="footer__big">下一步不是继续写文档。</p>
+      <p>把 A 套的 16/28 正文塞进真实页面，在 375 宽的手机上读一段 800 字的长文，再回来改。读得下去，方案才算成立；读不下去，色板再漂亮也没用。</p>
+      <div class="footer__meta">
+        <span>SPECS / docs/复刻/14~27</span>
+        <span>HTML v2 / 2026-11-18 / 单文件无外部依赖</span>
+      </div>
+    </footer>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<dialog id="demoDialog" aria-labelledby="dialogTitle">
+  <div class="dialog__head">
+    <h3 id="dialogTitle">删除这个页面？</h3>
+    <button class="closebtn" id="dialogClose" type="button" aria-label="关闭弹窗">×</button>
+  </div>
+  <div class="dialog__body">页面会进回收站，30 天内可以恢复。里面的 12 个子页面会一起移动，不会单独删。</div>
+  <div class="dialog__foot">
+    <button class="d-btn" id="dialogCancel" type="button">取消</button>
+    <button class="d-btn d-btn--danger" type="button">删除</button>
+  </div>
+</dialog>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+
+  /* ---------- 首屏快速对比状态 ---------- */
+  const quickState = $('#quickState');
+  const quickPreview = $('#quickPreview');
+  const quickSchemeBtns = $$('[data-quick-scheme]');
+  const schemeLabel = { A: 'A 墨蓝 · 暖纸', B: 'B 青瓷 · 冷雾', C: 'C 玄墨 · 纯白', D: 'D 天青 · 汝窑', E: 'E 赭墨 · 敦煌', F: 'F 青绿 · 江山' };
+  function updateQuickState() {
+    if (!quickState) return;
+    const s = document.documentElement.dataset.scheme || 'A';
+    const t = document.documentElement.dataset.theme === 'dark' ? '深色' : '浅色';
+    quickState.textContent = '当前：' + (schemeLabel[s] || s) + ' · ' + t;
+  }
+
+  /* ---------- Toast ---------- */
+  let toastTimer;
+  const toastEl = $('#toast');
+  function toast(msg, ms = 2400) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms);
+  }
+
+  /* ---------- 复制 ---------- */
+  async function copyText(text, label) {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast('已复制 ' + (label || text));
+    } catch (e) {
+      toast('浏览器不让复制，手动选中：' + text, 5000);
+    }
+  }
+  $$('[data-hex]').forEach(el => {
+    el.addEventListener('click', () => copyText(el.dataset.hex, el.dataset.hex));
+  });
+  $$('.icon-cell').forEach(el => {
+    el.addEventListener('click', () => copyText(el.dataset.name, el.dataset.name));
+  });
+
+  /* ---------- 主题 ---------- */
+  const themeBtns = $$('[data-theme-btn]');
+  const mqDark = matchMedia('(prefers-color-scheme: dark)');
+  function applyTheme(mode) {
+    const actual = mode === 'auto' ? (mqDark.matches ? 'dark' : 'light') : mode;
+    document.documentElement.dataset.theme = actual;
+    document.documentElement.dataset.themeMode = mode;
+    themeBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeBtn === mode)));
+    updateQuickState();
+  }
+  themeBtns.forEach(b => b.addEventListener('click', () => {
+    applyTheme(b.dataset.themeBtn);
+    store.set('gf-v2-theme', b.dataset.themeBtn);
+  }));
+  applyTheme(store.get('gf-v2-theme') || 'auto');
+  mqDark.addEventListener('change', () => {
+    if (document.documentElement.dataset.themeMode === 'auto') applyTheme('auto');
+  });
+
+  /* ---------- 方案 ---------- */
+  const schemeBtns = $$('[data-scheme-btn]');
+  const preview = $('#preview');
+  function applyScheme(s, opts = {}) {
+    document.documentElement.dataset.scheme = s;
+    if (preview) preview.dataset.scheme = s;
+    if (quickPreview) quickPreview.dataset.scheme = s;
+    schemeBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.schemeBtn === s)));
+    quickSchemeBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.quickScheme === s)));
+    $$('.scheme-card').forEach(c => c.dataset.selected = String(c.dataset.card === s));
+    store.set('gf-v2-scheme', s);
+    updateQuickState();
+    if (!opts.silent) toast('已切换到 ' + (schemeLabel[s] || s));
+  }
+  schemeBtns.forEach(b => b.addEventListener('click', () => applyScheme(b.dataset.schemeBtn)));
+  quickSchemeBtns.forEach(b => b.addEventListener('click', () => applyScheme(b.dataset.quickScheme)));
+  $$('[data-apply]').forEach(b => b.addEventListener('click', () => {
+    applyScheme(b.dataset.apply);
+  }));
+  applyScheme(store.get('gf-v2-scheme') || 'A', { silent: true });
+
+  /* ---------- 阅读说明 ---------- */
+  const guide = $('#guide');
+  const guideClose = $('#guideClose');
+  const guideOpen = $('#guideOpen');
+  function setGuide(open) {
+    if (open) guide.removeAttribute('hidden');
+    else guide.setAttribute('hidden', '');
+  }
+  if (store.get('gf-v2-guide') === 'closed') setGuide(false);
+  guideClose.addEventListener('click', () => { setGuide(false); store.set('gf-v2-guide', 'closed'); });
+  guideOpen.addEventListener('click', () => {
+    setGuide(true);
+    store.set('gf-v2-guide', 'open');
+    guide.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  /* ---------- 入场 / 目录 / 进度 ---------- */
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const revealEls = $$('.reveal');
+  if (reduce) revealEls.forEach(el => el.classList.add('in'));
+  else {
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, { threshold: .12 });
+    revealEls.forEach(el => io.observe(el));
+  }
+
+  const navLinks = $$('[data-nav]');
+  const sections = $$('main section[id]');
+  const navIO = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (en.isIntersecting) {
+        navLinks.forEach(a => a.setAttribute('aria-current', String(a.dataset.nav === en.target.id)));
+      }
+    });
+  }, { rootMargin: '-28% 0px -62% 0px', threshold: 0 });
+  sections.forEach(s => navIO.observe(s));
+
+  const progressBar = $('#progressBar');
+  function onScroll() {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    progressBar.style.width = (max > 0 ? Math.min(100, (h.scrollTop / max) * 100) : 0) + '%';
+  }
+  addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* ---------- Tabs ---------- */
+  const tabs = $$('.tab');
+  const panels = $$('[role="tabpanel"]');
+  function selectTab(id) {
+    tabs.forEach(t => {
+      const on = t.dataset.tab === id;
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+    });
+    panels.forEach(p => { p.hidden = p.id !== 'panel-' + id; });
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => selectTab(t.dataset.tab));
+    t.addEventListener('keydown', e => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length];
+      next.focus();
+      selectTab(next.dataset.tab);
+    });
+  });
+  selectTab('buttons');
+
+  /* ---------- 预览宽度 ---------- */
+  $$('[data-canvas-btn]').forEach(b => b.addEventListener('click', () => {
+    preview.dataset.canvas = b.dataset.canvasBtn;
+    $$('[data-canvas-btn]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  }));
+
+  /* ---------- 独有功能 ---------- */
+  const featureData = {
+    clip: {
+      title: '微信剪藏',
+      lead: '从微信看到一篇文章，到进入收集箱，目标 5 秒、2 次点击。先在本地留链接，再抓正文。',
+      steps: ['微信右上角分享，选观复。', '观复接住链接，先落本地队列。', '联网后抓正文；成功进收集箱，失败保留链接。'],
+      metric: '≤5s / ≤2 次点击 / 同一 canonical URL 只留一条',
+      errors: ['公众号文章已删：保留标题和链接，标「原文不可用」。', '断网：链接进队列，联网后自动抓。', '重复分享：打开已有条目，不新建。']
+    },
+    ai: {
+      title: 'AI 供应商',
+      lead: 'OpenAI / Anthropic / Gemini / Ollama / OpenAI 兼容五类。Key 只进本机钥匙串，不进同步、不进日志。',
+      steps: ['设置 → AI 供应商 → 选类型。', '填 Base URL、Key、模型名。', '点「测试连接」，成功后再保存。'],
+      metric: 'Key 仅本机 / 测试连接 ≤3s / 失败有具体原因',
+      errors: ['Key 无效：提示检查 Base URL 和 Key。', '跨域：建议用桌面端或本地代理。', '配额不足：显示供应商原始错误，不吞掉。']
+    },
+    sync: {
+      title: '同步与凭证',
+      lead: '默认关闭。S3 兼容 / WebDAV / 自建服务三选一；凭证与加密口令分开保存。',
+      steps: ['设置 → 同步 → 选类型。', '填端点、桶、凭证。', '设加密口令，首次同步前确认覆盖方向。'],
+      metric: '默认关闭 / 冲突生成副本 / 凭证不进日志',
+      errors: ['凭证错误：停在连接测试，不写入。', '口令错：本地数据不覆盖，提示重新输入。', '冲突：按块三方合并，无法判定时生成副本。']
+    }
+  };
+  const featureCards = $$('.feature-card');
+  const detail = $('#featureDetail');
+  let activeFeature = null;
+  function renderFeature(key) {
+    activeFeature = key;
+    featureCards.forEach(c => c.setAttribute('aria-pressed', String(c.dataset.feature === key)));
+    if (!key) {
+      detail.innerHTML = '<div class="empty"><strong>先选一块功能。</strong><p>流程、状态和失败分支会在这里展开。</p><button class="btn btn--sm" data-feature-pick="clip" type="button">看微信剪藏</button></div>';
+      const pick = $('[data-feature-pick]', detail);
+      if (pick) pick.addEventListener('click', () => renderFeature('clip'));
+      return;
+    }
+    const f = featureData[key];
+    detail.innerHTML = [
+      '<p class="eyebrow">NATIVE / ' + f.title + '</p>',
+      '<h3>' + f.title + '</h3>',
+      '<p class="detail-lead">' + f.lead + '</p>',
+      '<ol class="flow">' + f.steps.map((s, i) => '<li><span class="n">0' + (i + 1) + '</span><span>' + s + '</span></li>').join('') + '</ol>',
+      '<p class="detail-metric">' + f.metric + '</p>',
+      '<div class="detail-errors"><strong>失败时</strong><ul>' + f.errors.map(e => '<li>' + e + '</li>').join('') + '</ul></div>',
+      '<p style="margin:16px 0 0"><button class="linkbtn" data-feature-clear type="button">收起</button></p>'
+    ].join('');
+    const clear = $('[data-feature-clear]', detail);
+    if (clear) clear.addEventListener('click', () => renderFeature(null));
+  }
+  featureCards.forEach(c => c.addEventListener('click', () => renderFeature(c.dataset.feature)));
+  renderFeature(null);
+
+  /* ---------- 清单 ---------- */
+  const checks = $$('.check input');
+  const checkCount = $('#checkCount');
+  function updateChecks() {
+    const n = checks.filter(c => c.checked).length;
+    checkCount.textContent = '已勾 ' + n + '/' + checks.length;
+    if (n === checks.length) toast('8/8。可以把 A 套的规格搬进 app/src 了。');
+  }
+  checks.forEach(c => c.addEventListener('change', updateChecks));
+  $('#checkReset').addEventListener('click', () => {
+    checks.forEach(c => { c.checked = false; });
+    updateChecks();
+  });
+  updateChecks();
+
+  /* ---------- 菜单 ---------- */
+  const menuBtn = $('#menuBtn');
+  const menu = $('#menu');
+  function closeMenu() {
+    menu.hidden = true;
+    menuBtn.setAttribute('aria-expanded', 'false');
+  }
+  menuBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    const open = menu.hidden;
+    menu.hidden = !open;
+    menuBtn.setAttribute('aria-expanded', String(open));
+  });
+  document.addEventListener('click', e => {
+    if (!menu.hidden && !menu.contains(e.target) && e.target !== menuBtn) closeMenu();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+
+  /* ---------- 弹窗 ---------- */
+  const dialog = $('#demoDialog');
+  $('#modalBtn').addEventListener('click', () => dialog.showModal());
+  $('#dialogClose').addEventListener('click', () => dialog.close());
+  $('#dialogCancel').addEventListener('click', () => dialog.close());
+  dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
+
+  /* ---------- 演示按钮 ---------- */
+  $('#toastBtn').addEventListener('click', () => toast('已保存。这个 Toast 2.4 秒后自己走。'));
+  $('#saveBtn').addEventListener('click', () => toast('已保存（演示，没有真的写库）。'));
+})();
+</script>
+</body>
+</html>
