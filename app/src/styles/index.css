@@ -80,6 +80,60 @@ body {
   overflow: hidden;
 }
 
+/* ---------- AI 侧边面板（W90 · 10 号 §1） ----------
+   挤压式：占 flex 流宽度把主区挤窄，不是 fixed 覆盖；
+   顶栏随主区变窄自然被挤（规格：顶栏 5 图标变 4，⚡ 被挤掉）。 */
+.shell__ai {
+  width: var(--gf-ai-panel-width);
+  flex: 0 0 auto;
+  border-left: 1px solid var(--gf-border);
+  background: var(--gf-bg-surface);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: ai-panel-in var(--gf-ai-panel-motion) ease;
+}
+
+.shell__ai > * {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+@keyframes ai-panel-in {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* 右下角浮钮（ai-chat-trigger）：36×36 圆形白底 AI logo，文档页内出现 */
+.ai-fab {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: var(--gf-ai-fab-size);
+  height: var(--gf-ai-fab-size);
+  border-radius: 50%;
+  border: 1px solid var(--gf-border);
+  background: var(--gf-bg-surface);
+  color: var(--gf-text-primary);
+  box-shadow: var(--gf-shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 40;
+  transition: transform var(--gf-ai-panel-motion) ease;
+}
+
+.ai-fab:hover {
+  transform: scale(1.06);
+}
+
 /* ---------- 侧栏 ---------- */
 
 .sidebar__header {

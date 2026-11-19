@@ -5,7 +5,7 @@
   "taskTable": "开发任务表-v3.5-重做批.md",
   "reportFile": "ops/执行报告-v7.md",
   "startedAt": "2026-11-17T20:13:24Z",
-  "maxConcurrent": 1,
+  "maxConcurrent": 2,
   "stallMinutes": 30,
   "tasksPerSession": 3,
   "running": [],
@@ -295,5 +295,7 @@
     "W56",
     "W66",
     "W69"
-  ]
+  ],
+  "note7_1": "2026-11-20 用户要求提速：*/5 触发、写码串行+走查并行≤2、push 豁免两远程、W132 最后",
+  "cronTask": "guanfu-lore-watchdog-v8"
 }

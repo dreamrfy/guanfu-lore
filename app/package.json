@@ -79,7 +79,8 @@
     "recordpage-check": "node tools/recordpage-check.mjs",
     "table-walkthrough": "node tools/table-walkthrough.mjs",
     "search-check": "node tools/search-check.mjs",
-    "shortcuts-check": "node tools/shortcuts-check.mjs"
+    "shortcuts-check": "node tools/shortcuts-check.mjs",
+    "ai-panel-check": "node tools/ai-panel-check.mjs"
   },
   "keywords": [],
   "author": "",

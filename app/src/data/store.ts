@@ -72,6 +72,7 @@ type Prefs = {
   tabs: string[];
   activeTabId: string | null;
   rightPanelOpen: boolean;
+  aiPanelOpen: boolean;
 };
 
 function loadPrefs(): Prefs {
@@ -82,6 +83,7 @@ function loadPrefs(): Prefs {
     tabs: [],
     activeTabId: null,
     rightPanelOpen: true,
+    aiPanelOpen: false,
   };
   try {
     const raw = localStorage.getItem(PREFS_KEY);
@@ -262,6 +264,8 @@ type Store = {
   fontTheme: string;
   rightPanelOpen: boolean;
   sidebarCollapsed: boolean;
+  /** W90 AI 侧边面板（380px 挤压式）开合 */
+  aiPanelOpen: boolean;
 
   hydrate: () => Promise<void>;
   ensureDoc: (pageId: string) => Promise<void>;
@@ -325,6 +329,9 @@ type Store = {
   toggleRightPanel: () => void;
   /** 直接设定右栏开合；persist=false 用于"窄屏下的临时收起"，不写进偏好 */
   setRightPanelOpen: (open: boolean, persist?: boolean) => void;
+  /** W90 AI 侧边面板：开/关（380px 挤压式，非覆盖） */
+  toggleAiPanel: () => void;
+  setAiPanelOpen: (open: boolean) => void;
 };
 
 export const useStore = create<Store>((set, get) => {
@@ -355,6 +362,7 @@ export const useStore = create<Store>((set, get) => {
     iconSet: prefs.iconSet,
     fontTheme: prefs.fontTheme,
     rightPanelOpen: prefs.rightPanelOpen,
+    aiPanelOpen: prefs.aiPanelOpen,
     sidebarCollapsed: false,
 
     hydrate: async () => {
@@ -1177,6 +1185,15 @@ export const useStore = create<Store>((set, get) => {
     setRightPanelOpen: (open, persist = true) => {
       set({ rightPanelOpen: open });
       if (persist) savePrefs({ rightPanelOpen: open });
+    },
+    toggleAiPanel: () => {
+      const v = !get().aiPanelOpen;
+      set({ aiPanelOpen: v });
+      savePrefs({ aiPanelOpen: v });
+    },
+    setAiPanelOpen: (open) => {
+      set({ aiPanelOpen: open });
+      savePrefs({ aiPanelOpen: open });
     },
   };
 });

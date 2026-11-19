@@ -14,6 +14,7 @@ import { useNavHistory } from "../data/navHistory";
 import { TopToolbar } from "./TopToolbar";
 import { PageIconPicker } from "./PageIconPicker";
 import { SearchOverlay } from "./SearchOverlay";
+import { AiPanel } from "./AiPanel";
 import { useGlobalShortcuts } from "./useGlobalShortcuts";
 
 /** 把附件 id 解析成可显示的地址（异步，解析期间先给 null） */
@@ -133,6 +134,9 @@ export function AppShell() {
   useGlobalShortcuts();
   const sidebarCollapsed = useStore((s) => s.sidebarCollapsed);
   const rightPanelOpen = useStore((s) => s.rightPanelOpen);
+  // W90 AI 侧边面板（380px 挤压式）
+  const aiPanelOpen = useStore((s) => s.aiPanelOpen);
+  const toggleAiPanel = useStore((s) => s.toggleAiPanel);
   const theme = useStore((s) => s.theme);
   const navTick = useNavHistory((s) => s.tick);
   const iconSet = useStore((s) => s.iconSet);
@@ -278,6 +282,20 @@ export function AppShell() {
         </div>
         )}
       </main>
+
+      {/* W90 AI 侧边面板：正常 flex 流内、挤压主区而非覆盖（10 号 §1） */}
+      {aiPanelOpen && (
+        <aside className="shell__ai" aria-label="FlowUs AI">
+          <AiPanel initialTab="chat" hideTabs />
+        </aside>
+      )}
+
+      {/* W90 右下角浮钮（ai-chat-trigger）：文档页内出现，面板已开则隐藏 */}
+      {page && !aiPanelOpen && (
+        <button className="ai-fab" title="FlowUs AI" onClick={toggleAiPanel}>
+          <AppIcon name="ai" set={iconSet} size={18} />
+        </button>
+      )}
 
       {rightPanelOpen && (
         <aside className={`shell__right${recordOpen ? " shell__right--wide" : ""}`}>

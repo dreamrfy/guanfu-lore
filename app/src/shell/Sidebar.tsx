@@ -332,7 +332,7 @@ export function Sidebar() {
         <button
           className="sidebar__icon"
           title="AI"
-          onClick={() => window.dispatchEvent(new CustomEvent("guanfu:open-ai"))}
+          onClick={() => useStore.getState().toggleAiPanel()}
         >
           <AppIcon name="ai" set={iconSet} size={16} />
         </button>
