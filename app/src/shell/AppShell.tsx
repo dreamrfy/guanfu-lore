@@ -14,6 +14,7 @@ import { useNavHistory } from "../data/navHistory";
 import { TopToolbar } from "./TopToolbar";
 import { PageIconPicker } from "./PageIconPicker";
 import { SearchOverlay } from "./SearchOverlay";
+import { useGlobalShortcuts } from "./useGlobalShortcuts";
 
 /** 把附件 id 解析成可显示的地址（异步，解析期间先给 null） */
 function useAssetUrl(assetId: string | null | undefined): string | null {
@@ -128,6 +129,8 @@ function PageCover({ pageId, coverAssetId }: { pageId: string; coverAssetId: str
 }
 
 export function AppShell() {
+  // W84 全局快捷键（Ctrl+P 搜索 / Ctrl+\ 侧栏 / Ctrl+T 新页签）
+  useGlobalShortcuts();
   const sidebarCollapsed = useStore((s) => s.sidebarCollapsed);
   const rightPanelOpen = useStore((s) => s.rightPanelOpen);
   const theme = useStore((s) => s.theme);

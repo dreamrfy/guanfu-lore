@@ -60,13 +60,60 @@ export function PageEditor({ initialBlocks, theme, onChange, uploadFile, readOnl
   /** 空行按空格 → 唤起「问 AI」小框 */
   const [ask, setAsk] = useState<{ blockId: string; top: number; left: number } | null>(null);
 
+  /** 块文本（W84 块级快捷键用：Ctrl+J / Ctrl+D 的操作对象） */
+  const blockText = (block: { content: unknown }): string => {
+    const walk = (node: unknown): string => {
+      if (!node) return "";
+      if (Array.isArray(node)) return node.map(walk).join("");
+      if (typeof node !== "object") return "";
+      const o = node as { text?: string; content?: unknown; children?: unknown };
+      if (typeof o.text === "string") return o.text;
+      return walk(o.content) + walk(o.children);
+    };
+    return walk(block.content).trim();
+  };
+
   const onEditorKeyDown = (e: ReactKeyboardEvent) => {
-    if (e.key !== " " || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+    // W84 块级快捷键（07 §3 标注）：Ctrl+J 块AI助手 / Ctrl+D 创建副本 / Ctrl+Shift+P 移动到。
+    // A/B/F/Del 单键与文本输入冲突 → 【暂定】不落地，报告里如实记录。
+    // 空行按空格唤起「问 AI」不带 Ctrl——两条路径都要放行，不能在入口先按 Ctrl 分流。
     if (e.nativeEvent.isComposing) return;
     const pos = editor.getTextCursorPosition();
     if (!pos) return;
     const block = pos.block;
-    // 只有"空段落"才触发：有字时按空格就是正常打字
+    const hasCtrl = e.ctrlKey || e.metaKey;
+
+    if (hasCtrl) {
+      if (e.key.toLowerCase() === "j" && !e.shiftKey && !e.altKey) {
+        // Ctrl+J · 块 AI 助手：等同右键菜单「AI 助手」（改写本段）
+        e.preventDefault();
+        dispatchAiCommand({ kind: "rewriteBlock", blockId: block.id, text: blockText(block) });
+        return;
+      }
+      if (e.key.toLowerCase() === "d" && !e.shiftKey && !e.altKey) {
+        // Ctrl+D · 创建副本：在当前块之后插入一份内容拷贝
+        e.preventDefault();
+        editor.insertBlocks(
+          [{ type: block.type, props: block.props, content: block.content, children: block.children } as never],
+          block,
+          "after"
+        );
+        return;
+      }
+      if (e.shiftKey && e.key.toLowerCase() === "p") {
+        // Ctrl+Shift+P · 移动到：打开块右键菜单的「移动到页面」子面板
+        e.preventDefault();
+        const el = document.querySelector(`[data-id="${block.id}"]`);
+        const rect = el?.getBoundingClientRect();
+        window.dispatchEvent(
+          new CustomEvent("guanfu:block-move", { detail: { blockId: block.id, x: rect?.left ?? 120, y: rect?.top ?? 120 } })
+        );
+        return;
+      }
+      return;
+    }
+
+    if (e.key !== " " || e.altKey || e.shiftKey) return;
     if (inlineText(block.content).trim() !== "") return;
     e.preventDefault();
     const el = document.querySelector(`[data-id="${block.id}"]`);

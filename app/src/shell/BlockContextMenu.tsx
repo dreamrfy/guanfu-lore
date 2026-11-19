@@ -99,9 +99,18 @@ export function BlockContextMenu({ editor }: { editor: AnyEditor }) {
     };
     window.addEventListener("contextmenu", onCtx);
     window.addEventListener("mousedown", onDown);
+    // W84 Ctrl+Shift+P「移动到」：键盘入口 → 打开同一份「移动到页面」子面板
+    const onBlockMove = (e: Event) => {
+      const d = (e as CustomEvent<{ blockId: string; x?: number; y?: number }>).detail;
+      if (!d?.blockId) return;
+      setCtx({ blockId: d.blockId, x: d.x ?? 120, y: d.y ?? 120 });
+      setSub("move");
+    };
+    window.addEventListener("guanfu:block-move", onBlockMove);
     return () => {
       window.removeEventListener("contextmenu", onCtx);
       window.removeEventListener("mousedown", onDown);
+      window.removeEventListener("guanfu:block-move", onBlockMove);
     };
   }, []);
 
