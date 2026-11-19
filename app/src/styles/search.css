@@ -1,0 +1,441 @@
+/* ============================================================
+   §W6 全局搜索浮层（W80 · 08 号规格）
+   居中浮层，宽 800，y≈88..512；窄口（<768px）改成全屏页。
+   数值一律取令牌（tokens.css），禁止写死颜色。
+   ============================================================ */
+
+.searchpanel {
+  position: fixed;
+  inset: 0;
+  z-index: var(--gf-z-modal);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: var(--gf-search-panel-top);
+  background: var(--gf-overlay);
+}
+
+.searchpanel__card {
+  width: var(--gf-search-panel-width);
+  max-width: calc(100vw - 32px);
+  height: var(--gf-search-panel-height);
+  max-height: calc(100vh - var(--gf-search-panel-top) - 24px);
+  display: flex;
+  flex-direction: column;
+  background: var(--gf-bg-surface);
+  border: 1px solid var(--gf-border);
+  border-radius: var(--gf-search-panel-radius);
+  box-shadow: var(--gf-shadow-modal);
+  overflow: hidden;
+}
+
+/* ---------- 输入框 ---------- */
+.searchpanel__inputrow {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-2);
+  height: var(--gf-search-input-height);
+  padding: 0 var(--gf-space-4);
+  border-bottom: 1px solid var(--gf-border);
+  flex: none;
+}
+
+.searchpanel__input-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--gf-text-tertiary);
+}
+
+.searchpanel__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--gf-font-ui);
+  font-size: var(--gf-font-size-body-lg);
+  color: var(--gf-text-primary);
+}
+
+.searchpanel__input::placeholder {
+  color: var(--gf-text-tertiary);
+}
+
+.searchpanel__clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: var(--gf-radius-sm);
+  background: var(--gf-bg-hover);
+  color: var(--gf-text-secondary);
+  cursor: pointer;
+}
+
+.searchpanel__clear:hover {
+  background: var(--gf-bg-active);
+  color: var(--gf-text-primary);
+}
+
+/* 输入中的转圈 */
+.searchpanel__spinner {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid var(--gf-border-strong);
+  border-top-color: var(--gf-primary);
+  animation: searchpanel-spin 0.7s linear infinite;
+}
+
+@keyframes searchpanel-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- 页签行（页面 / 对话） ---------- */
+.searchpanel__tabs {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-1);
+  padding: var(--gf-space-2) var(--gf-space-4) 0;
+  flex: none;
+}
+
+.searchpanel__tab {
+  height: 28px;
+  padding: 0 var(--gf-space-3);
+  border: none;
+  border-radius: var(--gf-radius-sm);
+  background: transparent;
+  font-family: var(--gf-font-ui);
+  font-size: var(--gf-font-size-body);
+  color: var(--gf-text-secondary);
+  cursor: pointer;
+}
+
+.searchpanel__tab:hover {
+  background: var(--gf-bg-hover);
+  color: var(--gf-text-primary);
+}
+
+.searchpanel__tab--on {
+  background: var(--gf-primary-soft);
+  color: var(--gf-primary);
+  font-weight: 600;
+}
+
+/* ---------- 过滤行 ---------- */
+.searchpanel__filters {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-2);
+  padding: var(--gf-space-2) var(--gf-space-4);
+  flex: none;
+  flex-wrap: wrap;
+}
+
+.searchpanel__filters-spacer {
+  flex: 1;
+}
+
+.searchpanel__chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gf-space-1);
+  height: 26px;
+  padding: 0 var(--gf-space-2);
+  border: 1px solid var(--gf-border);
+  border-radius: var(--gf-radius-sm);
+  background: transparent;
+  font-family: var(--gf-font-ui);
+  font-size: var(--gf-font-size-caption);
+  color: var(--gf-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.searchpanel__chip-btn:hover:not(:disabled) {
+  background: var(--gf-bg-hover);
+  color: var(--gf-text-primary);
+}
+
+.searchpanel__chip-btn--on {
+  background: var(--gf-primary-soft);
+  border-color: transparent;
+  color: var(--gf-primary);
+  font-weight: 600;
+}
+
+/* 创建者：观复页面表没有创建者字段 → 诚实置灰 */
+.searchpanel__chip-btn--off:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.searchpanel__chip-letter {
+  font-weight: 700;
+  font-size: var(--gf-font-size-caption);
+}
+
+/* 范围 chip（蓝底可移除） */
+.searchpanel__scope {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gf-space-1);
+  height: 26px;
+  padding: 0 var(--gf-space-1) 0 var(--gf-space-2);
+  border-radius: var(--gf-radius-sm);
+  background: var(--gf-primary-soft);
+  color: var(--gf-primary);
+  font-size: var(--gf-font-size-caption);
+  max-width: 220px;
+}
+
+.searchpanel__scope-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.searchpanel__scope-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: var(--gf-radius-xs);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.searchpanel__scope-x:hover {
+  background: var(--gf-bg-active);
+}
+
+/* ---------- 排序下拉 ---------- */
+.searchpanel__sortmenu {
+  margin: 0 var(--gf-space-4) var(--gf-space-1);
+  padding: var(--gf-space-1);
+  border: 1px solid var(--gf-border);
+  border-radius: var(--gf-radius-md);
+  background: var(--gf-bg-raised);
+  box-shadow: var(--gf-shadow-menu);
+  flex: none;
+}
+
+.searchpanel__sortitem {
+  display: block;
+  width: 100%;
+  height: 30px;
+  padding: 0 var(--gf-space-3);
+  border: none;
+  border-radius: var(--gf-radius-sm);
+  background: transparent;
+  text-align: left;
+  font-family: var(--gf-font-ui);
+  font-size: var(--gf-font-size-body);
+  color: var(--gf-text-secondary);
+  cursor: pointer;
+}
+
+.searchpanel__sortitem:hover {
+  background: var(--gf-bg-hover);
+  color: var(--gf-text-primary);
+}
+
+.searchpanel__sortitem--on {
+  color: var(--gf-primary);
+  font-weight: 600;
+}
+
+/* ---------- 列表区 ---------- */
+.searchpanel__list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 var(--gf-space-2) var(--gf-space-3);
+}
+
+/* 「在当前页中问 AI / 问问 AI「关键词」」行 */
+.searchpanel__airow {
+  display: flex;
+  align-items: center;
+  gap: var(--gf-space-2);
+  width: 100%;
+  height: var(--gf-search-row-height);
+  padding: 0 var(--gf-space-3);
+  border: none;
+  border-radius: var(--gf-radius-md);
+  background: transparent;
+  font-family: var(--gf-font-ui);
+  font-size: var(--gf-font-size-body);
+  color: var(--gf-text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.searchpanel__airow:hover {
+  background: var(--gf-bg-hover);
+}
+
+.searchpanel__airow svg {
+  color: var(--gf-primary);
+}
+
+/* 分组标题（搜索结果 / 最近浏览） */
+.searchpanel__section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--gf-space-2) var(--gf-space-3) var(--gf-space-1);
+  font-size: var(--gf-font-size-caption);
+  color: var(--gf-text-tertiary);
+}
+
+.searchpanel__count {
+  color: var(--gf-text-tertiary);
+}
+
+/* 结果条目 */
+.searchpanel__item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gf-space-2);
+  width: 100%;
+  min-height: var(--gf-search-row-height);
+  padding: var(--gf-space-1) var(--gf-space-3);
+  border: none;
+  border-radius: var(--gf-radius-md);
+  background: transparent;
+  text-align: left;
+  font-family: var(--gf-font-ui);
+  cursor: pointer;
+}
+
+.searchpanel__item--on,
+.searchpanel__item:hover {
+  background: var(--gf-bg-hover);
+}
+
+.searchpanel__item-icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gf-text-secondary);
+}
+
+.searchpanel__item-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.searchpanel__item-title {
+  font-size: var(--gf-font-size-body);
+  color: var(--gf-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.searchpanel__item-snippet {
+  font-size: var(--gf-font-size-caption);
+  color: var(--gf-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.searchpanel__item-snippet mark {
+  background: var(--gf-mark-bg);
+  color: var(--gf-mark-fg);
+  border-radius: 2px;
+}
+
+/* 「在回收站」小标签 */
+.searchpanel__item-tag {
+  font-size: var(--gf-font-size-caption);
+  color: var(--gf-text-tertiary);
+}
+
+/* 行缘「打开」按钮（hover 才显形） */
+.searchpanel__item-open {
+  flex: none;
+  align-self: center;
+  font-size: var(--gf-font-size-caption);
+  color: var(--gf-text-tertiary);
+  opacity: 0;
+}
+
+.searchpanel__item:hover .searchpanel__item-open,
+.searchpanel__item--on .searchpanel__item-open {
+  opacity: 1;
+  color: var(--gf-primary);
+}
+
+/* 空态 */
+.searchpanel__empty {
+  padding: var(--gf-space-4) var(--gf-space-3);
+  font-size: var(--gf-font-size-body);
+  color: var(--gf-text-tertiary);
+  text-align: center;
+}
+
+/* ============================================================
+   §W6 窄口全屏搜索页（W83 · 08 §2 手机端形态）
+   ============================================================ */
+.searchpanel--full {
+  padding-top: 0;
+  background: var(--gf-bg-app);
+}
+
+.searchpanel--full .searchpanel__card {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.searchpanel__topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--gf-topbar-height);
+  padding: 0 var(--gf-space-3);
+  border-bottom: 1px solid var(--gf-border);
+  flex: none;
+}
+
+.searchpanel__cancel {
+  border: none;
+  background: transparent;
+  font-family: var(--gf-font-ui);
+  font-size: var(--gf-font-size-body-lg);
+  color: var(--gf-primary);
+  cursor: pointer;
+}
+
+.searchpanel__topbar-title {
+  font-size: var(--gf-font-size-body-lg);
+  font-weight: 600;
+  color: var(--gf-text-primary);
+}
+
+.searchpanel__topbar-spacer {
+  width: 48px;
+}

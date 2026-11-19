@@ -12,6 +12,7 @@ import { useLang } from "../i18n";
 import { ClipButton } from "./ClipDialog";
 import { TagPanel } from "./TagPanel";
 import { TemplateMenu } from "./TemplateMenu";
+import { openSearchOverlay } from "./SearchOverlay";
 
 /** 命中处加亮 */
 function Snippet({ text, start, end }: { text: string; start: number; end: number }) {
@@ -335,7 +336,7 @@ export function Sidebar() {
         >
           <AppIcon name="ai" set={iconSet} size={16} />
         </button>
-        <button className="sidebar__icon" title="搜索" onClick={() => searchRef.current?.focus()}>
+        <button className="sidebar__icon" title="搜索" onClick={() => openSearchOverlay()}>
           <AppIcon name="search" set={iconSet} size={16} />
         </button>
         <button

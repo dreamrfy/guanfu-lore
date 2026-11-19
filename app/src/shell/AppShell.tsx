@@ -13,6 +13,7 @@ import { TabBar } from "./TabBar";
 import { useNavHistory } from "../data/navHistory";
 import { TopToolbar } from "./TopToolbar";
 import { PageIconPicker } from "./PageIconPicker";
+import { SearchOverlay } from "./SearchOverlay";
 
 /** 把附件 id 解析成可显示的地址（异步，解析期间先给 null） */
 function useAssetUrl(assetId: string | null | undefined): string | null {
@@ -194,6 +195,7 @@ export function AppShell() {
         <div className="narrow-scrim" onClick={() => setNarrowOpen(false)} />
       )}
       <TabBar />
+      <SearchOverlay />
       <div className="shell__body">
       <aside className={`shell__sidebar${sidebarCollapsed ? " shell__sidebar--collapsed" : ""}`}>
         <Sidebar />

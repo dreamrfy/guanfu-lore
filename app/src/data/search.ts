@@ -23,6 +23,16 @@ export type SearchResult = {
   pageId: string;
   title: string;
   hits: SearchHit[];
+  /** 最后编辑时间（排序用） */
+  updatedAt: number;
+};
+
+/** 搜索选项（W81 搜索语义） */
+export type SearchOptions = {
+  /** 只搜标题（浮层里「只搜索标题」开关） */
+  titleOnly?: boolean;
+  /** 范围限定：只在这几页里搜（浮层里的范围 chip）；null/空 = 全库 */
+  scopePageIds?: string[] | null;
 };
 
 type PlainText = { blockId: string; text: string };
@@ -73,13 +83,24 @@ function makeSnippet(text: string, at: number, len: number): { snippet: string; 
 /**
  * 跨全部页面搜（标题 + 正文）。
  * 已打开的页面直接用内存里那份，没打开的从库里读。
+ *
+ * opts（W81 搜索语义）：
+ *  - titleOnly：只搜标题，不搜正文（对应浮层「只搜索标题」开关）
+ *  - scopePageIds：把结果限定在指定页集合里（对应浮层范围 chip）
  */
-export async function searchAll(query: string, limit = 40): Promise<SearchResult[]> {
+export async function searchAll(
+  query: string,
+  limit = 40,
+  opts: SearchOptions = {},
+): Promise<SearchResult[]> {
   const q = query.trim().toLowerCase();
   if (!q) return [];
 
   const state = useStore.getState();
-  const pages: PageRow[] = state.pages;
+  const scope = opts.scopePageIds && opts.scopePageIds.length ? new Set(opts.scopePageIds) : null;
+  const pages: PageRow[] = scope
+    ? state.pages.filter((p) => scope.has(p.id))
+    : state.pages;
   const results: SearchResult[] = [];
 
   for (const page of pages) {
@@ -93,23 +114,50 @@ export async function searchAll(query: string, limit = 40): Promise<SearchResult
       hits.push({ pageId: page.id, title, blockId: "", snippet, start, end });
     }
 
-    // 2) 正文命中
-    const doc = (state.docs[page.id] as unknown[]) ?? (await repo.getDoc(page.id)) ?? [];
-    for (const { blockId, text } of extractBlocksText(doc)) {
-      const at = text.toLowerCase().indexOf(q);
-      if (at < 0) continue;
-      const { snippet, start, end } = makeSnippet(text, at, q.length);
-      hits.push({ pageId: page.id, title, blockId, snippet, start, end });
-      if (hits.length >= 5) break; // 单页最多展示几条，避免一篇长文刷屏
+    // 2) 正文命中（titleOnly 时跳过）
+    if (!opts.titleOnly) {
+      const doc = (state.docs[page.id] as unknown[]) ?? (await repo.getDoc(page.id)) ?? [];
+      for (const { blockId, text } of extractBlocksText(doc)) {
+        const at = text.toLowerCase().indexOf(q);
+        if (at < 0) continue;
+        const { snippet, start, end } = makeSnippet(text, at, q.length);
+        hits.push({ pageId: page.id, title, blockId, snippet, start, end });
+        if (hits.length >= 5) break; // 单页最多展示几条，避免一篇长文刷屏
+      }
     }
 
-    if (hits.length) results.push({ pageId: page.id, title, hits });
+    if (hits.length) results.push({ pageId: page.id, title, hits, updatedAt: page.updatedAt });
     if (results.length >= limit) break;
   }
 
   // 标题命中的排前面
   results.sort((a, b) => Number(b.hits[0].blockId === "") - Number(a.hits[0].blockId === ""));
   return results;
+}
+
+/** 排序方式（W81：匹配度 / 最后编辑时间） */
+export type SearchSort = "relevance" | "updatedDesc" | "updatedAsc";
+
+/**
+ * 按排序方式重排结果。匹配度 = 标题命中优先、正文命中条数多者靠前。
+ */
+export function sortSearchResults(results: SearchResult[], sort: SearchSort): SearchResult[] {
+  const copy = [...results];
+  if (sort === "updatedDesc") {
+    copy.sort((a, b) => b.updatedAt - a.updatedAt);
+  } else if (sort === "updatedAsc") {
+    copy.sort((a, b) => a.updatedAt - b.updatedAt);
+  } else {
+    // relevance：标题命中在前，其次命中条数多者在前，最后按编辑时间新的在前
+    copy.sort((a, b) => {
+      const ta = Number(a.hits[0].blockId === "");
+      const tb = Number(b.hits[0].blockId === "");
+      if (ta !== tb) return tb - ta;
+      if (a.hits.length !== b.hits.length) return b.hits.length - a.hits.length;
+      return b.updatedAt - a.updatedAt;
+    });
+  }
+  return copy;
 }
 
 /* ---------------- 点搜索结果后跳到那一块 ---------------- */

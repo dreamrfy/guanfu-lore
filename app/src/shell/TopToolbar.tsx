@@ -7,6 +7,7 @@ import { FONT_THEMES } from "../design/fonts";
 import { PageMenu } from "./PageMenu";
 import { AiPanel } from "./AiPanel";
 import { SyncButton } from "./SyncButton";
+import { openSearchOverlay } from "./SearchOverlay";
 
 function useOutsideClose(onClose: () => void) {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -160,14 +161,8 @@ export function TopToolbar() {
       <PageMenu />
       <button
         className="icon-btn"
-        title="搜索"
-        onClick={() => {
-          if (useStore.getState().sidebarCollapsed) toggleSidebar();
-          setTimeout(() => {
-            const input = document.querySelector<HTMLInputElement>(".sidebar__search input");
-            input?.focus();
-          }, 80);
-        }}
+        title="快速查找 Ctrl+P"
+        onClick={() => openSearchOverlay()}
       >
         <AppIcon name="search" set={iconSet} />
       </button>

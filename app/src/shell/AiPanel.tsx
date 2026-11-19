@@ -234,6 +234,12 @@ export function AiPanel({
     } else if (command.kind === "rewriteBlock") {
       setTab("actions");
       void runRewrite(command.text ?? "", command.blockId);
+    } else if (command.kind === "askPage") {
+      // 搜索浮层里的「问问 AI「关键词」」/「在当前页中问 AI」
+      setTab("ask");
+      const q = command.question ?? "";
+      if (q) setAskInput(q);
+      void runAsk(q);
     }
     clearCommand();
   }, [command]);
@@ -366,8 +372,8 @@ export function AiPanel({
   /* ---------------- 供应商配置 ---------------- */
 
   /** 问知识库 */
-  const runAsk = async () => {
-    const question = askInput.trim();
+  const runAsk = async (override?: string) => {
+    const question = (override ?? askInput).trim();
     if (!question || askBusy) return;
     setAskBusy(true);
     setAskError(null);

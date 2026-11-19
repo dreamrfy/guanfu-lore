@@ -5,6 +5,7 @@
  * 本文件只写组件样式；新增样式一律引用 var(--gf-*)，禁止直接写十六进制。
  */
 @import "./tokens.css";
+@import "./search.css";
 
 * {
   box-sizing: border-box;

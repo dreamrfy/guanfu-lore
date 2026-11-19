@@ -56,6 +56,8 @@ export const ICONS = {
   comment: { lucide: "message-square", mingcute: "comment-line", ph: "chat", tabler: "message" },
   bolt: { lucide: "zap", mingcute: "flash-line", ph: "lightning", tabler: "bolt" },
   refresh: { lucide: "rotate-cw", mingcute: "refresh-2-line", ph: "arrows-clockwise", tabler: "rotate" },
+  user: { lucide: "user", mingcute: "user-3-line", ph: "user", tabler: "user" },
+  filter: { lucide: "filter", mingcute: "filter-2-line", ph: "funnel", tabler: "filter" },
   inbox: { lucide: "inbox", mingcute: "inbox-line", ph: "tray", tabler: "inbox" },
   tag: { lucide: "tag", mingcute: "tag-line", ph: "tag", tabler: "tag" },
   star: { lucide: "star", mingcute: "star-line", ph: "star", tabler: "star" },

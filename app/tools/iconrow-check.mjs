@@ -67,12 +67,19 @@ await page.click('.modal__head .icon-btn[title="关闭"]');
 await page.waitForTimeout(500);
 if (await page.locator(".modal").count()) console.error("警告: 弹层未关");
 
-// 4) 搜索钮：真实聚焦输入框
-await page.locator('.sidebar__icons button[title="搜索"]').click();
+// 4) 搜索钮：真实打开全局搜索浮层（W80 · 08 §1 侧栏图标行第 3 钮 = 浮层入口）
+await page.locator('.sidebar__icons button[title^="快速查找"]').click();
+await page.waitForTimeout(400);
+const panelShown = await page.locator(".searchpanel").count();
+const panelInputFocused = await page.evaluate(() =>
+  document.activeElement?.classList.contains("searchpanel__input") ?? false
+);
+console.log("搜索浮层出现 =", panelShown, "浮层输入框聚焦 =", panelInputFocused);
+if (!panelShown) await fail("搜索钮未打开全局搜索浮层");
+if (!panelInputFocused) await fail("浮层打开后输入框未聚焦");
+await page.keyboard.press("Escape");
 await page.waitForTimeout(300);
-const focused = await page.evaluate(() => document.activeElement?.getAttribute("placeholder") ?? "");
-console.log("聚焦元素 placeholder =", focused);
-if (!focused.includes("搜索")) await fail("搜索钮未聚焦搜索框");
+if (await page.locator(".searchpanel").count()) await fail("Escape 未关闭搜索浮层");
 
 // 5) 通知钮：按规格待 W28 → 应为 disabled（诚实占位）
 const noticeDisabled = await page.locator('.sidebar__icons button[title^="通知"]').isDisabled();

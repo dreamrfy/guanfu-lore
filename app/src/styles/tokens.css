@@ -303,6 +303,19 @@
   --gf-control-height-lg: 36px;
   --gf-timeline-tick-w: 56px;
 
+  /* ---------- 搜索浮层（W80） ----------
+     08 §1 实测：居中浮层，宽约 800，y≈88..512。
+     这里定死为 800×424（= 512-88），窄口改成全屏页由 CSS 覆盖。 */
+  --gf-search-panel-width: 800px;
+  --gf-search-panel-height: 424px;
+  --gf-search-panel-top: 88px;
+  --gf-search-panel-radius: 12px;
+  --gf-search-input-height: 52px;
+  --gf-search-row-height: 40px;
+  --gf-search-result-max-height: 268px;
+  /* 窄口（全屏页）时浮层铺满 */
+  --gf-search-fullscreen-inset: 0px;
+
   /* ---------- 焦点环 ---------- */
   --gf-focus-ring-width: 2px;
   --gf-focus-ring-color: var(--gf-accent);
