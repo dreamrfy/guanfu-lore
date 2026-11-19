@@ -2454,6 +2454,99 @@ html[data-theme="dark"] .modal__ok {
   background: var(--gf-bg-sidebar);
 }
 
+/* W92 AI 历史面板：顶部工具行（⊕/🕐/»）+ « 历史记录 视图 */
+.ai__tools {
+  display: flex;
+  gap: 2px;
+  margin: 2px 0 4px;
+}
+
+.ai__tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--gf-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--gf-radius-sm);
+  cursor: pointer;
+}
+
+.ai__tool:hover {
+  color: var(--gf-text-primary);
+  background: var(--gf-bg-sidebar);
+}
+
+.ai__history {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.ai__history-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai__history-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gf-text-primary);
+}
+
+.ai__history-empty {
+  padding: 56px 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--gf-text-tertiary);
+}
+
+.ai__history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.ai__history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  font-family: inherit;
+  text-align: left;
+  color: var(--gf-text-primary);
+  background: transparent;
+  border: 1px solid var(--gf-border);
+  border-radius: var(--gf-radius-md);
+  cursor: pointer;
+}
+
+.ai__history-item:hover {
+  background: var(--gf-bg-sidebar);
+}
+
+.ai__history-item-title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 13px;
+}
+
+.ai__history-item-time {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--gf-text-tertiary);
+}
+
 .ai__check {
   display: flex;
   align-items: center;

@@ -81,7 +81,8 @@
     "search-check": "node tools/search-check.mjs",
     "shortcuts-check": "node tools/shortcuts-check.mjs",
     "ai-panel-check": "node tools/ai-panel-check.mjs",
-    "ai-chat-check": "node tools/ai-chat-check.mjs"
+    "ai-chat-check": "node tools/ai-chat-check.mjs",
+    "ai-history-check": "node tools/ai-history-check.mjs"
   },
   "keywords": [],
   "author": "",

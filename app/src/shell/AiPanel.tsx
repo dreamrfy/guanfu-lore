@@ -105,6 +105,9 @@ export function AiPanel({
   /** W91：当前会话（落库，刷新不丢）；abortRef 用于「停止」 */
   const sessionIdRef = useRef<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  /** W92：历史面板（对话 ↔ 历史视图切换；有记录时的条目形态规格未取，观复自有【暂定】） */
+  const [showHistory, setShowHistory] = useState(false);
+  const [sessions, setSessions] = useState<AiSessionRow[]>([]);
 
   const [mcpServers, setMcpServers] = useState<McpServerConfig[]>([]);
   const [mcpEditor, setMcpEditor] = useState<McpServerConfig | null>(null);
@@ -132,6 +135,8 @@ export function AiPanel({
   // 斜杠菜单等入口发来的 AI 命令（面板关着时 dispatch 会顺手把面板打开）
   const command = useStore((s) => s.aiCommand);
   const clearCommand = useStore((s) => s.clearAiCommand);
+  /** W92：侧栏形态下的 » 收起面板（顶栏模态有自己的关闭钮，不显示） */
+  const toggleAiPanel = useStore((s) => s.toggleAiPanel);
 
   useEffect(() => {
     void loadAiConfig().then((cfg) => {
@@ -309,6 +314,21 @@ export function AiPanel({
     setToolTrace([]);
     setChatInput("");
     setError(null);
+  };
+
+  /** W92：打开历史面板（最近改动在前，跨页全局列表【暂定】） */
+  const openHistory = async () => {
+    setSessions(await repo.listAiSessions());
+    setShowHistory(true);
+  };
+
+  /** W92：从历史切回某个会话（续聊会写回同一条记录） */
+  const openSession = (row: AiSessionRow) => {
+    sessionIdRef.current = row.id;
+    setMessages(row.messages);
+    setToolTrace([]);
+    setError(null);
+    setShowHistory(false);
   };
 
   /** W91：停止生成——abort 流式请求，已收到的文字保留 */
@@ -609,8 +629,46 @@ export function AiPanel({
         </>
       )}
 
-      {tab === "chat" && (
+      {tab === "chat" && showHistory && (
+        <div className="ai__history">
+          <div className="ai__history-head">
+            <button className="ai__tool" title="返回对话" onClick={() => setShowHistory(false)}>
+              «
+            </button>
+            <span className="ai__history-title">历史记录</span>
+          </div>
+          {sessions.length === 0 ? (
+            <div className="ai__history-empty">暂无历史记录</div>
+          ) : (
+            <div className="ai__history-list">
+              {sessions.map((s) => (
+                <button key={s.id} className="ai__history-item" onClick={() => openSession(s)}>
+                  <span className="ai__history-item-title">{s.title}</span>
+                  <span className="ai__history-item-time">
+                    {new Date(s.updatedAt).toLocaleString()}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === "chat" && !showHistory && (
         <>
+          <div className="ai__tools">
+            <button className="ai__tool" title="新对话" onClick={startNewSession}>
+              ⊕
+            </button>
+            <button className="ai__tool" title="历史记录" onClick={() => void openHistory()}>
+              🕐
+            </button>
+            {hideTabs && (
+              <button className="ai__tool" title="收起面板" onClick={toggleAiPanel}>
+                »
+              </button>
+            )}
+          </div>
           <div className="ai__chat">
             {messages.length === 0 && (
               <div className="ai__hint">和 AI 讨论这一页。会话自动保存，换页、刷新都在。</div>
