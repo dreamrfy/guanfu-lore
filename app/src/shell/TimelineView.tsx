@@ -226,7 +226,7 @@ export function TimelineView({
             {todayIdx >= 0 && (
               <div
                 className="timeline__now-line"
-                style={{ left: `calc(${todayIdx} * var(--timeline-tick-w) + var(--timeline-tick-w) / 2)` }}
+                style={{ left: `calc(${todayIdx} * var(--gf-timeline-tick-w) + var(--gf-timeline-tick-w) / 2)` }}
               />
             )}
             {ticks.map((_, i) => {

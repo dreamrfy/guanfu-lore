@@ -58,7 +58,7 @@ export function PageIconPicker({
         style={parsed.kind === "icon" ? { display: "flex", alignItems: "center" } : undefined}
       >
         {parsed.kind === "none" ? (
-          <span style={{ fontSize: 20, color: "var(--text-tertiary)" }}>＋ 图标</span>
+          <span style={{ fontSize: 20, color: "var(--gf-text-tertiary)" }}>＋ 图标</span>
         ) : (
           <PageIconGlyph icon={value} size={size} set={iconSet} />
         )}

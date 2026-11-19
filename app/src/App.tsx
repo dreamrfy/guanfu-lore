@@ -23,8 +23,9 @@ export function App() {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
 
+  // 字体主题写进语义令牌 --gf-font-ui；旧变量 --font-family 由 tokens.css 映射到它
   useEffect(() => {
-    document.documentElement.style.setProperty("--font-family", fontStackOf(fontTheme));
+    document.documentElement.style.setProperty("--gf-font-ui", fontStackOf(fontTheme));
   }, [fontTheme]);
 
   useEffect(() => {

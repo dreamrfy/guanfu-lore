@@ -52,7 +52,7 @@ export const CalloutBlock = createReactBlockSpec(
     toExternalHTML: ({ block, contentRef }): ReactNode => {
       const color = (block.props.color ?? "grey") as CalloutColor;
       return (
-        <blockquote data-callout-color={color} style={{ borderLeft: "3px solid #ddd", margin: "4px 0", paddingLeft: 12 }}>
+        <blockquote data-callout-color={color} style={{ borderLeft: "3px solid var(--gf-border-strong)", margin: "4px 0", paddingLeft: 12 }}>
           <span>{(block.props.emoji as string) || "💡"} </span>
           <span ref={contentRef} />
         </blockquote>

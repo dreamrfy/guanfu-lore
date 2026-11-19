@@ -235,7 +235,7 @@ export function TopToolbar() {
         className="icon-btn"
         title="页面信息面板"
         onClick={toggleRightPanel}
-        style={{ color: rightPanelOpen ? "var(--text)" : undefined }}
+        style={{ color: rightPanelOpen ? "var(--gf-text-primary)" : undefined }}
       >
         <AppIcon name="ai" set={iconSet} />
       </button>

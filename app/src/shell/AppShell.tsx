@@ -35,14 +35,15 @@ function useAssetUrl(assetId: string | null | undefined): string | null {
 
 
 /** 页面封面：顶部横幅 + 悬停时出现「更换 / 移除」 */
-/** W43 封面渐变预设（来源 docs/复刻/15-颜色体系.md §8「封面渐变」） */
+/** W43 封面渐变预设（来源 docs/复刻/15-颜色体系.md §8「封面渐变」）
+ *  渐变端点全部走 CSS 令牌，换皮时只改 tokens.css。 */
 const COVER_GRADIENTS: { id: string; label: string; css: string }[] = [
-  { id: "xuanzhi", label: "宣纸", css: "linear-gradient(135deg,#F7F6F2,#E8E5DE)" },
-  { id: "yuanshan", label: "远山", css: "linear-gradient(135deg,#DCE6EE,#A9C1D8)" },
-  { id: "zhusha", label: "朱砂", css: "linear-gradient(135deg,#F6E9E4,#D98A6E)" },
-  { id: "qingci", label: "青瓷", css: "linear-gradient(135deg,#E4F0EE,#9FD3CE)" },
-  { id: "muse", label: "暮色", css: "linear-gradient(135deg,#2B2A27,#4A4944)" },
-  { id: "molan", label: "墨蓝", css: "linear-gradient(135deg,#2F5D8A,#17304A)" },
+  { id: "xuanzhi", label: "宣纸", css: "var(--gf-cover-xuanzhi)" },
+  { id: "yuanshan", label: "远山", css: "var(--gf-cover-yuanshan)" },
+  { id: "zhusha", label: "朱砂", css: "var(--gf-cover-zhusha)" },
+  { id: "qingci", label: "青瓷", css: "var(--gf-cover-qingci)" },
+  { id: "muse", label: "暮色", css: "var(--gf-cover-muse)" },
+  { id: "molan", label: "墨蓝", css: "var(--gf-cover-molan)" },
 ];
 const COVER_GRAD_PREFIX = "grad:";
 

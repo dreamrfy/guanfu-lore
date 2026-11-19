@@ -213,16 +213,17 @@ export type RagVectorRow = {
   updatedAt: number;
 };
 
-/** 选项胶囊配色（需求 M2-07：单选/多选按选项色名显示） */
+/** 选项胶囊配色（需求 M2-07：单选/多选按选项色名显示）
+ *  配色走 CSS 令牌（--gf-tag-*），换皮时只改 tokens.css，组件代码不动。 */
 export const OPTION_COLORS: Record<string, { bg: string; fg: string }> = {
-  grey: { bg: "#ECEDED", fg: "#474D58" },
-  green: { bg: "#D2ECD5", fg: "#3B5B46" },
-  pink: { bg: "#F8DAE6", fg: "#8B2B69" },
-  orange: { bg: "#F8DEC5", fg: "#683D26" },
-  blue: { bg: "#DCEEFF", fg: "#1F4E79" },
-  purple: { bg: "#E5DAFF", fg: "#4B2E83" },
-  yellow: { bg: "#FFFCBF", fg: "#5C5410" },
-  red: { bg: "#FFD3D3", fg: "#7A2B2B" },
+  grey: { bg: "var(--gf-tag-grey-bg)", fg: "var(--gf-tag-grey-fg)" },
+  green: { bg: "var(--gf-tag-green-bg)", fg: "var(--gf-tag-green-fg)" },
+  pink: { bg: "var(--gf-tag-pink-bg)", fg: "var(--gf-tag-pink-fg)" },
+  orange: { bg: "var(--gf-tag-orange-bg)", fg: "var(--gf-tag-orange-fg)" },
+  blue: { bg: "var(--gf-tag-blue-bg)", fg: "var(--gf-tag-blue-fg)" },
+  purple: { bg: "var(--gf-tag-purple-bg)", fg: "var(--gf-tag-purple-fg)" },
+  yellow: { bg: "var(--gf-tag-yellow-bg)", fg: "var(--gf-tag-yellow-fg)" },
+  red: { bg: "var(--gf-tag-red-bg)", fg: "var(--gf-tag-red-fg)" },
 };
 
 export const DEFAULT_OPTION_COLORS = Object.keys(OPTION_COLORS);

@@ -1,0 +1,399 @@
+/**
+ * 观复 · Lore —— 设计令牌层（Design Tokens）
+ *
+ * 分层（依据 docs/复刻/14-前端设计规范-总纲.md §3）：
+ *   Primitive（--gf-raw-*）  原始色值，不进组件
+ *   Semantic  （--gf-*）      组件唯一允许引用的层
+ *   Legacy    （--text 等）   旧变量别名，保留一个迁移周期后删除
+ *
+ * 本轮（Phase 1）落地策略：令牌结构一次建全，默认值 = 现行 FlowUs 实测调色，
+ * 因此零视觉变化。后续「统一换皮」只改本文件的数值，不动任何组件代码。
+ */
+
+/* ============================================================
+   §1 Primitive —— 原始色值
+   ============================================================ */
+:root {
+  /* 中性阶（暖灰，色相 ~40°） */
+  --gf-raw-neutral-0: #ffffff;
+  --gf-raw-neutral-50: #fbfaf7;
+  --gf-raw-neutral-100: #f7f7f5;
+  --gf-raw-neutral-150: #f1f1ef;
+  --gf-raw-neutral-200: #e8e5de;
+  --gf-raw-neutral-300: #d6d2c8;
+  --gf-raw-neutral-400: #b7b6b1;
+  --gf-raw-neutral-500: #91918e;
+  --gf-raw-neutral-600: #6b6a64;
+  --gf-raw-neutral-700: #4a4944;
+  --gf-raw-neutral-800: #37352f;
+  --gf-raw-neutral-900: #191919;
+  --gf-raw-neutral-950: #121110;
+
+  /* 主色阶（墨蓝） */
+  --gf-raw-primary-50: #f2f6fa;
+  --gf-raw-primary-100: #e8eef5;
+  --gf-raw-primary-300: #a9c1d8;
+  --gf-raw-primary-400: #7fa8cc;
+  --gf-raw-primary-500: #4f7da8;
+  --gf-raw-primary-600: #2f5d8a;
+  --gf-raw-primary-700: #274c72;
+  --gf-raw-primary-800: #1f3d5c;
+  --gf-raw-primary-900: #17304a;
+
+  /* 强调色阶（朱砂） */
+  --gf-raw-accent-50: #fbf3f0;
+  --gf-raw-accent-100: #f6e9e4;
+  --gf-raw-accent-400: #d98a6e;
+  --gf-raw-accent-600: #b4472e;
+
+  /* 语义原色 */
+  --gf-raw-success: #067647;
+  --gf-raw-warning: #d97706;
+  --gf-raw-danger: #e5484d;
+  --gf-raw-danger-strong: #e81123;
+  --gf-raw-info: #3a6fa0;
+
+  /* 覆盖层与阴影基色 */
+  --gf-raw-black: #000000;
+  --gf-raw-white: #ffffff;
+
+  /* 标签色板（原色，供 --gf-tag-* 派生；深色模式改用透明度叠加） */
+  --gf-raw-tag-grey-bg: #eceded;  --gf-raw-tag-grey-fg: #474d58;
+  --gf-raw-tag-green-bg: #d2ecd5;
+  --gf-raw-tag-green-fg: #3b5b46;
+  --gf-raw-tag-pink-bg: #f8dae6;
+  --gf-raw-tag-pink-fg: #8b2b69;
+  --gf-raw-tag-orange-bg: #f8dec5;
+  --gf-raw-tag-orange-fg: #683d26;
+  --gf-raw-tag-blue-bg: #dceeff;
+  --gf-raw-tag-blue-fg: #1f4e79;
+  --gf-raw-tag-purple-bg: #e5daff;
+  --gf-raw-tag-purple-fg: #4b2e83;
+  --gf-raw-tag-yellow-bg: #fffcbf;
+  --gf-raw-tag-yellow-fg: #5c5410;
+  --gf-raw-tag-red-bg: #ffd3d3;
+  --gf-raw-tag-red-fg: #7a2b2b;
+
+  /* 封面渐变端点（来源 docs/复刻/15-颜色体系.md §8「封面渐变」） */
+  --gf-raw-cover-xuanzhi-a: #f7f6f2;
+  --gf-raw-cover-xuanzhi-b: #e8e5de;
+  --gf-raw-cover-yuanshan-a: #dce6ee;
+  --gf-raw-cover-yuanshan-b: #a9c1d8;
+  --gf-raw-cover-zhusha-a: #f6e9e4;
+  --gf-raw-cover-zhusha-b: #d98a6e;
+  --gf-raw-cover-qingci-a: #e4f0ee;
+  --gf-raw-cover-qingci-b: #9fd3ce;
+  --gf-raw-cover-muse-a: #2b2a27;
+  --gf-raw-cover-muse-b: #4a4944;
+  --gf-raw-cover-molan-a: #2f5d8a;
+  --gf-raw-cover-molan-b: #17304a;
+}
+
+/* ============================================================
+   §2 Semantic —— 语义令牌（组件唯一可引用层）
+   ============================================================ */
+:root {
+  /* ---------- 背景 ---------- */
+  --gf-bg-app: var(--gf-raw-neutral-0);
+  --gf-bg-sidebar: var(--gf-raw-neutral-100);
+  --gf-bg-surface: var(--gf-raw-neutral-0);
+  --gf-bg-raised: var(--gf-raw-neutral-0);
+  --gf-bg-sunken: var(--gf-raw-neutral-50);
+  --gf-bg-hover: rgba(55, 53, 47, 0.06);
+  --gf-bg-active: rgba(35, 131, 226, 0.1);
+  --gf-bg-selected: rgba(35, 131, 226, 0.14);
+  --gf-bg-inverse: var(--gf-raw-neutral-900);
+
+  /* ---------- 文字 ---------- */
+  --gf-text-primary: var(--gf-raw-neutral-800);
+  --gf-text-secondary: var(--gf-raw-neutral-500);
+  --gf-text-tertiary: var(--gf-raw-neutral-400);
+  --gf-text-disabled: rgba(55, 53, 47, 0.35);
+  --gf-text-inverse: var(--gf-raw-white);
+
+  /* ---------- 描边 ---------- */
+  --gf-border: rgba(55, 53, 47, 0.09);
+  --gf-border-strong: #dddddd;
+
+  /* ---------- 主色 ---------- */
+  --gf-primary: #2383e2;
+  --gf-primary-hover: #1a6fc4;
+  --gf-primary-active: #155a9e;
+  --gf-primary-soft: rgba(35, 131, 226, 0.12);
+  --gf-primary-soft-hover: rgba(35, 131, 226, 0.14);
+  --gf-primary-contrast: var(--gf-raw-white);
+
+  /* ---------- 强调 ---------- */
+  --gf-accent: var(--gf-raw-danger);
+  --gf-accent-soft: var(--gf-raw-accent-100);
+
+  /* ---------- 语义色（base / text / soft 三档） ---------- */
+  --gf-success: var(--gf-raw-success);
+  --gf-success-text: var(--gf-raw-success);
+  --gf-success-soft: rgba(18, 183, 106, 0.12);
+  --gf-warning: var(--gf-raw-warning);
+  --gf-warning-text: var(--gf-raw-warning);
+  --gf-warning-soft: rgba(250, 204, 21, 0.45);
+  --gf-danger: var(--gf-raw-danger);
+  --gf-danger-text: #b42318;
+  --gf-danger-soft: rgba(224, 62, 62, 0.1);
+  --gf-danger-strong: var(--gf-raw-danger-strong);
+  /* 危险色实心按钮之上的描边 / 悬停底色 */
+  --gf-on-danger-border: rgba(255, 255, 255, 0.55);
+  --gf-on-danger-border-strong: rgba(255, 255, 255, 0.35);
+  --gf-on-danger-hover: rgba(255, 255, 255, 0.18);
+  --gf-info: var(--gf-raw-info);
+  --gf-info-text: var(--gf-raw-info);
+  --gf-info-soft: rgba(58, 111, 160, 0.1);
+
+  /* ---------- 覆盖层 ---------- */
+  --gf-overlay: rgba(0, 0, 0, 0.32);
+  --gf-overlay-soft: rgba(0, 0, 0, 0.28);
+
+  /* ---------- 高亮（搜索命中 / 闪烁定位） ---------- */
+  --gf-mark-bg: #ffe89a;
+  --gf-mark-fg: inherit;
+
+  /* ---------- 提示条（callout） ---------- */
+  --gf-callout-grey-bg: var(--gf-raw-neutral-150);
+  --gf-callout-yellow-bg: #fbf3db;
+  --gf-callout-red-bg: #fdebec;
+  --gf-callout-blue-bg: #e7f3f8;
+
+  /* ---------- 标签色板 ---------- */
+  --gf-tag-grey-bg: var(--gf-raw-tag-grey-bg);
+  --gf-tag-grey-fg: var(--gf-raw-tag-grey-fg);
+  --gf-tag-green-bg: var(--gf-raw-tag-green-bg);
+  --gf-tag-green-fg: var(--gf-raw-tag-green-fg);
+  --gf-tag-pink-bg: var(--gf-raw-tag-pink-bg);
+  --gf-tag-pink-fg: var(--gf-raw-tag-pink-fg);
+  --gf-tag-orange-bg: var(--gf-raw-tag-orange-bg);
+  --gf-tag-orange-fg: var(--gf-raw-tag-orange-fg);
+  --gf-tag-blue-bg: var(--gf-raw-tag-blue-bg);
+  --gf-tag-blue-fg: var(--gf-raw-tag-blue-fg);
+  --gf-tag-purple-bg: var(--gf-raw-tag-purple-bg);
+  --gf-tag-purple-fg: var(--gf-raw-tag-purple-fg);
+  --gf-tag-yellow-bg: var(--gf-raw-tag-yellow-bg);
+  --gf-tag-yellow-fg: var(--gf-raw-tag-yellow-fg);
+  --gf-tag-red-bg: var(--gf-raw-tag-red-bg);
+  --gf-tag-red-fg: var(--gf-raw-tag-red-fg);
+
+  /* ---------- 封面渐变（可直接用作 background-image） ---------- */
+  --gf-cover-xuanzhi: linear-gradient(135deg, var(--gf-raw-cover-xuanzhi-a), var(--gf-raw-cover-xuanzhi-b));
+  --gf-cover-yuanshan: linear-gradient(135deg, var(--gf-raw-cover-yuanshan-a), var(--gf-raw-cover-yuanshan-b));
+  --gf-cover-zhusha: linear-gradient(135deg, var(--gf-raw-cover-zhusha-a), var(--gf-raw-cover-zhusha-b));
+  --gf-cover-qingci: linear-gradient(135deg, var(--gf-raw-cover-qingci-a), var(--gf-raw-cover-qingci-b));
+  --gf-cover-muse: linear-gradient(135deg, var(--gf-raw-cover-muse-a), var(--gf-raw-cover-muse-b));
+  --gf-cover-molan: linear-gradient(135deg, var(--gf-raw-cover-molan-a), var(--gf-raw-cover-molan-b));
+
+  /* ---------- 字体族 ---------- */
+  --gf-font-ui: "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  --gf-font-reading: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "SimSun", serif;
+  --gf-font-mono: "JetBrains Mono", "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+
+  /* ---------- 字号阶梯（size / line-height） ---------- */
+  --gf-font-size-caption: 12px;
+  --gf-line-height-caption: 18px;
+  --gf-font-size-small: 13px;
+  --gf-line-height-small: 20px;
+  --gf-font-size-body: 14px;
+  --gf-line-height-body: 22px;
+  --gf-font-size-body-lg: 16px;
+  --gf-line-height-body-lg: 28px;
+  --gf-font-size-h4: 18px;
+  --gf-line-height-h4: 26px;
+  --gf-font-size-h3: 22px;
+  --gf-line-height-h3: 30px;
+  --gf-font-size-h2: 28px;
+  --gf-line-height-h2: 36px;
+  --gf-font-size-h1: 36px;
+  --gf-line-height-h1: 48px;
+  --gf-font-size-display: 44px;
+  --gf-line-height-display: 56px;
+
+  /* 字号 shorthand：font: var(--gf-text-body) */
+  --gf-text-caption: var(--gf-font-size-caption) / var(--gf-line-height-caption);
+  --gf-text-small: var(--gf-font-size-small) / var(--gf-line-height-small);
+  --gf-text-body: var(--gf-font-size-body) / var(--gf-line-height-body);
+  --gf-text-body-lg: var(--gf-font-size-body-lg) / var(--gf-line-height-body-lg);
+  --gf-text-h4: var(--gf-font-size-h4) / var(--gf-line-height-h4);
+  --gf-text-h3: var(--gf-font-size-h3) / var(--gf-line-height-h3);
+  --gf-text-h2: var(--gf-font-size-h2) / var(--gf-line-height-h2);
+  --gf-text-h1: var(--gf-font-size-h1) / var(--gf-line-height-h1);
+  --gf-text-display: var(--gf-font-size-display) / var(--gf-line-height-display);
+
+  /* ---------- 字重 ---------- */
+  --gf-weight-regular: 400;
+  --gf-weight-medium: 500;
+  --gf-weight-semibold: 600;
+
+  /* ---------- 间距阶梯 ---------- */
+  --gf-space-0-5: 2px;
+  --gf-space-1: 4px;
+  --gf-space-1-5: 6px;
+  --gf-space-2: 8px;
+  --gf-space-3: 12px;
+  --gf-space-4: 16px;
+  --gf-space-5: 20px;
+  --gf-space-6: 24px;
+  --gf-space-8: 32px;
+  --gf-space-10: 40px;
+  --gf-space-12: 48px;
+  --gf-space-16: 64px;
+  --gf-space-20: 80px;
+  --gf-space-24: 96px;
+
+  /* ---------- 圆角 ---------- */
+  --gf-radius-xs: 4px;
+  --gf-radius-sm: 6px;
+  --gf-radius-md: 8px;
+  --gf-radius-lg: 12px;
+  --gf-radius-xl: 16px;
+  --gf-radius-pill: 999px;
+
+  /* ---------- 阴影 ---------- */
+  --gf-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --gf-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --gf-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --gf-shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.24);
+  --gf-shadow-panel: 8px 0 24px rgba(0, 0, 0, 0.18);
+  --gf-shadow-panel-left: -8px 0 24px rgba(0, 0, 0, 0.16);
+  --gf-shadow-popover: 0 12px 32px rgba(0, 0, 0, 0.18);
+  --gf-shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.25);
+  --gf-shadow-menu: 0 8px 28px rgba(0, 0, 0, 0.18);
+  --gf-shadow-bar: 0 4px 16px rgba(0, 0, 0, 0.14);
+  --gf-shadow-float: 0 6px 20px rgba(0, 0, 0, 0.16);
+  --gf-shadow-trashbar: 0 6px 20px rgba(0, 0, 0, 0.24);
+
+  /* ---------- 层级 ---------- */
+  --gf-z-base: 0;
+  --gf-z-sticky: 10;
+  --gf-z-dropdown: 100;
+  --gf-z-popover: 200;
+  --gf-z-modal: 300;
+  --gf-z-toast: 400;
+  --gf-z-tooltip: 500;
+
+  /* ---------- 动效 ---------- */
+  --gf-duration-instant: 80ms;
+  --gf-duration-fast: 120ms;
+  --gf-duration-base: 160ms;
+  --gf-duration-slow: 240ms;
+  --gf-duration-page: 320ms;
+  --gf-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --gf-ease-enter: cubic-bezier(0, 0, 0.2, 1);
+  --gf-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --gf-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ---------- 布局尺寸 ---------- */
+  --gf-sidebar-width: 228px;
+  --gf-sidebar-width-collapsed: 0px;
+  --gf-topbar-height: 48px;
+  --gf-tabbar-height: 38px;
+  --gf-toolbar-height: 44px;
+  --gf-content-width: 708px;
+  --gf-right-panel-width: 320px;
+  --gf-page-padding-x: 48px;
+  --gf-page-padding-x-tablet: 24px;
+  --gf-page-padding-x-phone: 16px;
+  --gf-row-height: 32px;
+  --gf-row-height-phone: 40px;
+  --gf-control-height: 32px;
+  --gf-control-height-sm: 28px;
+  --gf-control-height-lg: 36px;
+  --gf-timeline-tick-w: 56px;
+
+  /* ---------- 焦点环 ---------- */
+  --gf-focus-ring-width: 2px;
+  --gf-focus-ring-color: var(--gf-accent);
+}
+
+/* ============================================================
+   §3 深色主题覆盖
+   ============================================================ */
+html[data-theme="dark"] {
+  --gf-bg-app: var(--gf-raw-neutral-900);
+  --gf-bg-sidebar: #202020;
+  --gf-bg-surface: var(--gf-raw-neutral-900);
+  --gf-bg-raised: #202020;
+  --gf-bg-sunken: rgba(255, 255, 255, 0.03);
+  --gf-bg-hover: rgba(255, 255, 255, 0.055);
+  --gf-bg-active: rgba(82, 156, 202, 0.14);
+  --gf-bg-selected: rgba(82, 156, 202, 0.18);
+
+  --gf-text-primary: #d4d4d4;
+  --gf-text-secondary: #9b9b9b;
+  --gf-text-tertiary: #6f6f6f;
+  --gf-text-disabled: rgba(255, 255, 255, 0.32);
+
+  --gf-border: rgba(255, 255, 255, 0.094);
+  --gf-border-strong: #4a4a4a;
+
+  --gf-primary: #529cca;
+  --gf-primary-hover: #6aa8d2;
+  --gf-primary-active: #7fb4da;
+  --gf-primary-soft: rgba(82, 156, 202, 0.12);
+  --gf-primary-soft-hover: rgba(82, 156, 202, 0.14);
+
+  --gf-accent: #e08585;
+  --gf-accent-soft: rgba(217, 138, 110, 0.16);
+
+  --gf-success-text: #75e0a7;
+  --gf-warning-text: #d2a05c;
+  --gf-danger-text: #f97066;
+  --gf-info: #7fa8cc;
+  --gf-info-text: #7fa8cc;
+  --gf-info-soft: rgba(127, 168, 204, 0.14);
+
+  --gf-overlay: rgba(0, 0, 0, 0.55);
+  --gf-overlay-soft: rgba(0, 0, 0, 0.45);
+
+  --gf-mark-bg: #6b5a00;
+  --gf-mark-fg: #ffffff;
+
+  --gf-callout-grey-bg: rgba(255, 255, 255, 0.07);
+  --gf-callout-yellow-bg: rgba(255, 212, 0, 0.14);
+  --gf-callout-red-bg: rgba(255, 80, 80, 0.14);
+  --gf-callout-blue-bg: rgba(60, 160, 255, 0.14);
+
+  /* 深色下阴影减弱，改用 1px 边框 */
+  --gf-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --gf-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.36);
+  --gf-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.42);
+  --gf-shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.5);
+  --gf-shadow-panel: 8px 0 24px rgba(0, 0, 0, 0.44);
+  --gf-shadow-panel-left: -8px 0 24px rgba(0, 0, 0, 0.44);
+  --gf-shadow-popover: 0 12px 32px rgba(0, 0, 0, 0.46);
+  --gf-shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.55);
+  --gf-shadow-menu: 0 8px 28px rgba(0, 0, 0, 0.46);
+  --gf-shadow-bar: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --gf-shadow-float: 0 6px 20px rgba(0, 0, 0, 0.44);
+  --gf-shadow-trashbar: 0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================================
+   §4 Legacy —— 旧变量别名（保留一个迁移周期）
+   ------------------------------------------------------------
+   新代码一律使用 --gf-*；以下别名等旧引用清零后整段删除。
+   ============================================================ */
+:root {
+  --bg: var(--gf-bg-surface);
+  --bg-secondary: var(--gf-bg-sidebar);
+  --bg-hover: var(--gf-bg-hover);
+  --text: var(--gf-text-primary);
+  --text-secondary: var(--gf-text-secondary);
+  --text-tertiary: var(--gf-text-tertiary);
+  --border: var(--gf-border);
+  --primary: var(--gf-primary);
+
+  --sidebar-width: var(--gf-sidebar-width);
+  --content-width: var(--gf-content-width);
+  --tabbar-height: var(--gf-tabbar-height);
+  --toolbar-height: var(--gf-toolbar-height);
+  --right-panel-width: var(--gf-right-panel-width);
+
+  --font-family: var(--gf-font-ui);
+  --font-size-body: 16px;
+  --line-height-body: 26px;
+  --timeline-tick-w: var(--gf-timeline-tick-w);
+}
