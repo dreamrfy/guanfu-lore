@@ -183,6 +183,99 @@ export async function chat(messages: ChatMessage[], config: AiConfig): Promise<C
   return result.ok ? { ok: true, text: result.content } : result;
 }
 
+/* ---------------- 流式对话（W91） ---------------- */
+
+export type StreamHandlers = {
+  /** 每收到一段增量文本回调一次（累计后的全文） */
+  onDelta: (fullText: string) => void;
+  /** 用户点「停止」或组件卸载时 abort */
+  signal: AbortSignal;
+};
+
+/**
+ * 流式聊天：OpenAI 兼容协议 `stream: true`（SSE，data: {...} 行）。
+ * 返回累计全文；被 abort 时算「用户停止」而不是错误——已收到的文本保留。
+ */
+export async function chatStream(
+  messages: ChatMessage[],
+  config: AiConfig,
+  handlers: StreamHandlers
+): Promise<ChatResult> {
+  if (!config.apiKey.trim()) return { ok: false, error: "还没填 API Key" };
+  if (!config.model.trim()) return { ok: false, error: "还没填模型名" };
+
+  let res: Response;
+  try {
+    res = await fetch(chatEndpoint(config.baseUrl), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${config.apiKey}`,
+      },
+      body: JSON.stringify({ model: config.model, messages, temperature: config.temperature, stream: true }),
+      signal: handlers.signal,
+    });
+  } catch (e) {
+    const aborted = (e as Error)?.name === "AbortError";
+    return aborted
+      ? { ok: true, text: "" }
+      : { ok: false, error: "连不上 AI 服务，请检查地址与网络" };
+  }
+
+  if (!res.ok || !res.body) {
+    let data: unknown = null;
+    try {
+      data = await res.json();
+    } catch {
+      /* 非 JSON，按状态码报错 */
+    }
+    const detail = errorMessageOf(data);
+    if (res.status === 401 || res.status === 403) return { ok: false, error: "API Key 无效或没有权限" + (detail ? `：${detail}` : "") };
+    if (res.status === 404) return { ok: false, error: "地址不对（OpenAI 兼容地址通常要写到 /v1）" + (detail ? `：${detail}` : "") };
+    if (res.status === 429) return { ok: false, error: "被限流或额度不足，请稍后再试" };
+    return { ok: false, error: `AI 服务返回 ${res.status}${detail ? `：${detail}` : ""}` };
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let full = "";
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      // SSE 事件以空行分隔；一行一条 data:
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith("data:")) continue;
+        const payload = trimmed.slice(5).trim();
+        if (payload === "[DONE]") continue;
+        try {
+          const delta = JSON.parse(payload) as {
+            choices?: Array<{ delta?: { content?: unknown } }>;
+          };
+          const piece = delta.choices?.[0]?.delta?.content;
+          if (typeof piece === "string" && piece) {
+            full += piece;
+            handlers.onDelta(full);
+          }
+        } catch {
+          /* 非 JSON 行跳过（心跳/注释行） */
+        }
+      }
+    }
+  } catch (e) {
+    if ((e as Error)?.name === "AbortError") return { ok: true, text: full };
+    return { ok: false, error: `流式读取中断：${String((e as Error)?.message ?? e)}` };
+  }
+
+  if (!full.trim()) return { ok: false, error: "AI 返回了空内容（检查模型名是否可用）" };
+  return { ok: true, text: full };
+}
+
 /* ---------------- 提示词 ---------------- */
 
 export const AI_ACTIONS = {

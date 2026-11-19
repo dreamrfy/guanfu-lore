@@ -213,6 +213,18 @@ export type RagVectorRow = {
   updatedAt: number;
 };
 
+/** AI 对话会话（W91：刷新不丢；W92 历史面板） */
+export type AiSessionRow = {
+  id: string;
+  /** 挂在哪个页面（null = 全局会话） */
+  pageId: string | null;
+  /** 标题 = 首条用户消息截断，历史面板显示用 */
+  title: string;
+  messages: Array<{ role: "user" | "assistant"; content: string }>;
+  createdAt: number;
+  updatedAt: number;
+};
+
 /** 选项胶囊配色（需求 M2-07：单选/多选按选项色名显示）
  *  配色走 CSS 令牌（--gf-tag-*），换皮时只改 tokens.css，组件代码不动。 */
 export const OPTION_COLORS: Record<string, { bg: string; fg: string }> = {
@@ -241,6 +253,8 @@ class KnowledgeDB extends Dexie {
   syncConflicts!: EntityTable<SyncConflictRow, "id">;
   /** 问知识库：段落向量（按 chunkId 存，变了就重算） */
   ragVectors!: EntityTable<RagVectorRow, "chunkId">;
+  /** AI 对话会话（W91/W92） */
+  aiSessions!: EntityTable<AiSessionRow, "id">;
 
   constructor() {
     super("bijiapp.v3.store");
@@ -303,6 +317,20 @@ class KnowledgeDB extends Dexie {
       outbox: "++id, entity, entityId, createdAt",
       syncConflicts: "++id, entity, entityId, createdAt",
       ragVectors: "chunkId, entity, entityId",
+    });
+
+    // 版本 7 —— AI 对话会话（W91：会话落库刷新不丢；W92 历史面板按 updatedAt 列表）
+    this.version(7).stores({
+      pages: "id, parentId, updatedAt, deletedAt, sortKey",
+      docs: "pageId, updatedAt",
+      meta: "key",
+      assets: "id, pageId, kind, createdAt",
+      collections: "id, updatedAt",
+      records: "id, collectionId, updatedAt",
+      outbox: "++id, entity, entityId, createdAt",
+      syncConflicts: "++id, entity, entityId, createdAt",
+      ragVectors: "chunkId, entity, entityId",
+      aiSessions: "id, pageId, updatedAt",
     });
   }
 }
@@ -444,6 +472,26 @@ export const repo = {
 
   async setMeta(key: string, value: unknown): Promise<void> {
     await db.meta.put({ key, value });
+  },
+
+  /* ---- AI 对话会话（W91/W92）---- */
+
+  async putAiSession(row: AiSessionRow): Promise<void> {
+    await db.aiSessions.put(row);
+  },
+
+  async getAiSession(id: string): Promise<AiSessionRow | null> {
+    return (await db.aiSessions.get(id)) ?? null;
+  },
+
+  /** 历史面板：最近改动的会话在前 */
+  async listAiSessions(pageId?: string | null): Promise<AiSessionRow[]> {
+    const rows = await db.aiSessions.orderBy("updatedAt").reverse().toArray();
+    return pageId === undefined ? rows : rows.filter((r) => r.pageId === pageId);
+  },
+
+  async deleteAiSession(id: string): Promise<void> {
+    await db.aiSessions.delete(id);
   },
 
   /* ---- 附件（图片/文件）---- */
