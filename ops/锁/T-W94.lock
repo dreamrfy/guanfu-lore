@@ -1,0 +1,8 @@
+{
+  "task": "W94",
+  "scope": "桌面主页=AI chat（06 号规格 §1）",
+  "session": "watchdog-v8-0800",
+  "kind": "code",
+  "claimedAt": "2026-11-20T08:07:36+08:00",
+  "note": "承接 0712 重试会话残留（代码已落盘待验收：HomeAiChat/AiChatView/HOME_TAB 接线/.homeai 样式）。本锁超 30 分钟无报告进度行按 v7 规则③判断掉；他人发现断掉可接手，只清本锁对应的孤儿锁不碰别的锁。"
+}
