@@ -991,11 +991,13 @@ export const useStore = create<Store>((set, get) => {
       autoTimer = null;
     },
 
-    dispatchAiCommand: (command) => {      // 面板关着也要接得住命令：顺手打开右侧面板，命令不会丢
+    dispatchAiCommand: (command) => {      // 面板关着也要接得住命令：顺手打开 AI 面板，命令不会丢
+      // W90 起 AI 对话入口是独立挤压式 aiPanelOpen（W90 回归修复：旧逻辑只开 rightPanelOpen，
+      // 面板不挂载 → chatRef 永远 null → selection 预填静默丢失）
       set({ aiCommand: command });
-      if (!get().rightPanelOpen) {
-        set({ rightPanelOpen: true });
-        savePrefs({ rightPanelOpen: true });
+      if (!get().aiPanelOpen) {
+        set({ aiPanelOpen: true });
+        savePrefs({ aiPanelOpen: true });
       }
     },
 

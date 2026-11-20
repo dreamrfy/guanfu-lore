@@ -52,6 +52,9 @@ export const AiChatView = forwardRef<
     hideInput?: boolean;
     /** 面板的 MCP 页签会增删服务器，宿主把列表传下来保持同步 */
     mcpServers?: McpServerConfig[];
+    /** 挂载时的初始输入（选区「在 AI 面板继续问」走拉取式预填：面板被配置表单覆盖导致
+        本组件卸载重建时，ref 推送必丢，宿主把待预填文本作为 prop 传进来才接得住） */
+    initialInput?: string | null;
     /** 侧栏形态的 » 收起面板钮；不传就不显示 */
     onCollapse?: () => void;
   }
@@ -68,13 +71,14 @@ export const AiChatView = forwardRef<
     hideInput,
     mcpServers = [],
     onCollapse,
+    initialInput,
   },
   ref
 ) {
   const { t } = useLang();
   const [config, setConfig] = useState<AiConfig | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [chatInput, setChatInput] = useState("");
+  const [chatInput, setChatInput] = useState(initialInput ?? "");
   const [withPage, setWithPage] = useState(true);
   const [toolTrace, setToolTrace] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);

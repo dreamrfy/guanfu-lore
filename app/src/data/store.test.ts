@@ -142,11 +142,11 @@ describe("应用状态", () => {
 });
 
 describe("AI 命令通道", () => {
-  it("斜杠命令写进 store，面板关着也会顺手打开右侧面板", () => {
-    useStore.setState({ rightPanelOpen: false, aiCommand: null });
+  it("斜杠命令写进 store，面板关着也会顺手打开 AI 面板（W90 起对话入口是 aiPanelOpen）", () => {
+    useStore.setState({ rightPanelOpen: false, aiPanelOpen: false, aiCommand: null });
     s().dispatchAiCommand({ kind: "summary" });
     expect(s().aiCommand).toEqual({ kind: "summary" });
-    expect(s().rightPanelOpen).toBe(true);
+    expect(s().aiPanelOpen).toBe(true);
     s().clearAiCommand();
     expect(s().aiCommand).toBeNull();
   });

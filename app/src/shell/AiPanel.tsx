@@ -93,6 +93,8 @@ export function AiPanel({
 
   /** W94：对话栏抽成 AiChatView（与桌面主页共用），对话状态/流式/落库/历史都在那里 */
   const chatRef = useRef<AiChatHandle | null>(null);
+  /** W93 选区转面板的待预填文本：拉取式消费（配置表单覆盖 chat tab 导致卸载重建也不丢） */
+  const [pendingPrefill, setPendingPrefill] = useState<string | null>(null);
 
   const [mcpServers, setMcpServers] = useState<McpServerConfig[]>([]);
   const [mcpEditor, setMcpEditor] = useState<McpServerConfig | null>(null);
@@ -232,12 +234,20 @@ export function AiPanel({
       void runAsk(q);
     } else if (command.kind === "selection") {
       // W93：选中文字弹层「在 AI 面板继续问」——选中原文预填进对话输入，发送即带上下文
+      // 不用 chatRef.prefill 推送：未配置供应商时配置表单会覆盖 chat tab，AiChatView
+      // 卸载重建后一次性推送必丢——改成 pendingPrefill 状态拉取，挂载时消费
       setTab("chat");
       const sel = (command.text ?? "").trim();
-      if (sel) chatRef.current?.prefill(`关于这段文字：「${sel}」`);
+      if (sel) setPendingPrefill(`关于这段文字：「${sel}」`);
     }
     clearCommand();
   }, [command]);
+
+  // pendingPrefill 已被 AiChatView 挂载消费（initialInput 只在 useState 初始化读一次），
+  // 清掉避免之后切页签重挂载时重复带上旧选区文本
+  useEffect(() => {
+    if (pendingPrefill && chatRef.current) setPendingPrefill(null);
+  }, [pendingPrefill, tab, editingConfig]);
 
   const runSkill = async (skill: AiSkill) => {
     if (!config) return;
@@ -471,6 +481,7 @@ export function AiPanel({
       {tab === "chat" && (
         <AiChatView
           ref={chatRef}
+          initialInput={pendingPrefill}
           pageId={contextKey ? null : (page?.id ?? null)}
           pageTitle={pageTitle || null}
           pageText={pageText || null}
