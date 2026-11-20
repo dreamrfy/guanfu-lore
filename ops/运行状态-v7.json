@@ -14,6 +14,8 @@
   "W02",
   "W03",
   "W10",
+  "W103",
+  "W104",
   "W11",
   "W12",
   "W13",
@@ -79,11 +81,10 @@
   "W91",
   "W92",
   "W93",
-  "W94",
-  "W103"
+  "W94"
  ],
- "nextTask": "W95",
- "doneCount": 60,
+ "nextTask": "W110",
+ "doneCount": 72,
  "totalCount": 88,
  "testBaseline": "cd app && npm test = 272/272 绿（36 个文件，勿退化）",
  "devServer": "npm run dev 起在 5173（后台任务 bjlvotyrx；挂了重起即可）",
@@ -351,6 +352,10 @@
   {
    "time": "2026-11-20T15:40:00+08:00",
    "event": "看门狗轮完成 W103（账号区，commit 1f2db80/fe958a4，push 两远程）；任务 1/3 配额，模块9剩 W104；下轮从 W104 起"
+  },
+  {
+   "time": "2026-11-20T08:24:41Z",
+   "event": "W104 DONE：设置走查（模块 W8 收口，📦 待验收）——三断言脚本 22 断言复跑全绿+w104-shot 截图 6 张+走查文档落盘；commit 22de580 push 两远程；下轮 W110（分享模块 W110~W114）"
   }
  ],
  "modulesDone": [
