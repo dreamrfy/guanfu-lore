@@ -89,10 +89,11 @@
   "W104",
   "W120",
   "W121",
-  "W122"
+  "W122",
+  "W123"
  ],
- "nextTask": "W123",
- "doneCount": 80,
+ "nextTask": "W110",
+ "doneCount": 81,
  "totalCount": 90,
  "testBaseline": "cd app && npm test = 272/272 绿（36 个文件，勿退化）",
  "devServer": "cd app && npm run dev（5173）；截图 npm run shot -- <url> <out.png> [宽] [高] [等待ms]；主题点验 npm run theme-shot。原后台任务已失效，重起即可。",
@@ -380,6 +381,10 @@
   {
    "time": "2026-11-20T21:28:00+08:00",
    "event": "W122 DONE（观复独有链路对照）：首页剪贴板检测提示条（微信/B站）+ 收进自动抓取 + 忽略记忆；真实入库；clip-banner-check 6 断言全过；281 测试/check/build 过；本地 commit（不 push）。下一 W123。"
+  },
+  {
+   "time": "2026-11-20T22:05:00+08:00",
+   "event": "W123 DONE（剪藏全链走查）：6 步全过；修快照 UTF-8 乱码 + 记录详情属性全展开；W10 收口 📦；284 测试/check/build 过；本地 commit（不 push）。下一 W110 分享。"
   }
  ],
  "modulesDone": [

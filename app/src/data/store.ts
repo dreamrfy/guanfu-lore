@@ -584,9 +584,11 @@ export const useStore = create<Store>((set, get) => {
     },
 
     openCollection: async (id) => {
-      // 换表时把上一张表打开的记录详情关掉，避免面板里还挂着别的表的数据
+      // 换表时把上一张表打开的记录详情关掉，避免面板里还挂着别的表的数据。
+      // activeTabId 置空：表格不是页签，避免顶栏还高亮着上一个页面/AI 主页（W123 走查发现）。
       set({
         activeCollectionId: id,
+        activeTabId: null,
         openRecordRef: get().openRecordRef?.collectionId === id ? get().openRecordRef : null,
       });
       await get().ensureRecords(id);

@@ -212,13 +212,36 @@ export function CellEditor({
   record,
   collection,
   onCommit,
+  mode = "inline",
 }: {
   field: FieldDef;
   record: RecordRow;
   collection?: CollectionRow;
   onCommit: (value: unknown) => void;
+  /** panel = 记录详情：下拉/日历先收起，点一下再展开（否则整页都是展开的选择器） */
+  mode?: "inline" | "panel";
 }) {
   const v = record.values[field.id];
+  const [openEditor, setOpenEditor] = useState(false);
+
+  if (
+    mode === "panel" &&
+    !openEditor &&
+    (field.type === "select" || field.type === "multiSelect" || field.type === "date")
+  ) {
+    return (
+      <button
+        type="button"
+        className="record__value-btn"
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpenEditor(true);
+        }}
+      >
+        {collection ? <CellValue field={field} record={record} collection={collection} /> : <span />}
+      </button>
+    );
+  }
 
   if (field.type === "checkbox") {
     return (
@@ -238,7 +261,10 @@ export function CellEditor({
         collection={collection}
         value={asText(v)}
         multiple={false}
-        onCommit={onCommit}
+        onCommit={(value) => {
+          onCommit(value);
+          if (mode === "panel") setOpenEditor(false);
+        }}
       />
     );
   }
@@ -250,13 +276,24 @@ export function CellEditor({
         collection={collection}
         value={asStringList(v)}
         multiple
-        onCommit={onCommit}
+        onCommit={(value) => {
+          onCommit(value);
+          if (mode === "panel") setOpenEditor(false);
+        }}
       />
     );
   }
 
   if (field.type === "date") {
-    return <MonthCalendar ms={asDateMs(v)} onCommit={onCommit} />;
+    return (
+      <MonthCalendar
+        ms={asDateMs(v)}
+        onCommit={(value) => {
+          onCommit(value);
+          if (mode === "panel") setOpenEditor(false);
+        }}
+      />
+    );
   }
 
   if (field.type === "number") {

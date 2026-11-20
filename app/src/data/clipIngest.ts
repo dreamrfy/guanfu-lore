@@ -145,11 +145,24 @@ async function saveClipImages(assets: OkClip["assets"]): Promise<Map<string, str
   return mapping;
 }
 
+/**
+ * 快照 HTML 补 UTF-8 声明。
+ * blob: URL 打开时没有 HTTP Content-Type 兜底，未声明 charset 的 HTML 会被浏览器按系统编码
+ * （中文 Windows 上是 GBK）解析 → 中文乱码。这里统一补一个 <meta charset="utf-8">。
+ */
+export function ensureUtf8Meta(html: string): string {
+  if (/<meta[^>]+charset\s*=/i.test(html)) return html;
+  const meta = '<meta charset="utf-8">';
+  if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, (m) => m + meta);
+  if (/<html[^>]*>/i.test(html)) return html.replace(/<html[^>]*>/i, (m) => `${m}<head>${meta}</head>`);
+  return meta + html;
+}
+
 /** 存原文快照（自包含 HTML）。失败只丢备份，不影响正文。 */
 async function saveSnapshot(html: string | null): Promise<string | null> {
   if (!html) return null;
   try {
-    const bytes = new TextEncoder().encode(html);
+    const bytes = new TextEncoder().encode(ensureUtf8Meta(html));
     const data = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
     const row = await repo.putAsset({ pageId: null, kind: "clip-snapshot", mime: "text/html", data });
     return row.id;

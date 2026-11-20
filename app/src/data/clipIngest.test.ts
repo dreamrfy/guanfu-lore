@@ -4,6 +4,7 @@ import type { ClipPayload } from "./clipApi";
 import {
   buildClipValues,
   clipLinkKey,
+  ensureUtf8Meta,
   extractSnapshotContent,
   rewriteClipImages,
   sourceLabel,
@@ -132,5 +133,23 @@ describe("剪藏：记录属性", () => {
     const byName = (name: string) => collection.fields.find((f) => f.name === name)!.id;
     expect(values[byName("来源")]).toBe("src-bili");
     expect(values[byName("作者")]).toBe("科技汤");
+  });
+});
+
+describe("剪藏：快照 UTF-8 声明", () => {
+  it("没有 head 时插一个带 charset 的 head", () => {
+    const out = ensureUtf8Meta("<!doctype html><html><body>中文</body></html>");
+    expect(out).toContain('<head><meta charset="utf-8"></head>');
+    expect(out).toContain("中文");
+  });
+
+  it("已有 head 时把 meta 插到 head 里", () => {
+    const out = ensureUtf8Meta("<html><head><title>t</title></head><body>中文</body></html>");
+    expect(out).toContain('<head><meta charset="utf-8"><title>');
+  });
+
+  it("已有 charset 时不重复插", () => {
+    const html = '<html><head><meta charset="gbk"></head><body>x</body></html>';
+    expect(ensureUtf8Meta(html)).toBe(html);
   });
 });

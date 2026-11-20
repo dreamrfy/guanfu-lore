@@ -1717,6 +1717,27 @@ body {
   width: 100%;
 }
 
+/* W123：记录详情的下拉/日历默认收起，点一下再展开 */
+.record__value-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-height: 28px;
+  padding: 2px 4px;
+  border: none;
+  border-radius: var(--gf-radius-xs);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.record__value-btn:hover {
+  background: var(--gf-bg-hover);
+}
+
 .record__body {
   margin-top: 14px;
   padding-top: 12px;

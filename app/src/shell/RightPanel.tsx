@@ -189,6 +189,8 @@ function RecordPanel({ collection, record }: { collection: CollectionRow; record
                   <CellEditor
                     field={f}
                     record={record}
+                    collection={collection}
+                    mode="panel"
                     onCommit={(value) => {
                       setCell(collection.id, record.id, f.id, value);
                       setEditFieldId(null);

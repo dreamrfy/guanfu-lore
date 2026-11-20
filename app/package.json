@@ -67,6 +67,7 @@
     "clip-inbox-check": "node tools/clip-inbox-check.mjs",
     "clip-entry-check": "node tools/clip-entry-check.mjs",
     "clip-banner-check": "node tools/clip-banner-check.mjs",
+    "clip-walkthrough": "node tools/clip-walkthrough.mjs",
     "cell-semantics-check": "node tools/cell-semantics-check.mjs",
     "cell-editor-check": "node tools/cell-editor-check.mjs",
     "colmenu-check": "node tools/colmenu-check.mjs",
