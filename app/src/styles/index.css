@@ -529,6 +529,103 @@ body {
   white-space: nowrap;
 }
 
+/* W120 收集箱页：状态页签 + 本地搜索 */
+.clipinbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px 10px;
+  border-bottom: 1px solid var(--gf-border);
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+}
+
+.clipinbox__tabs {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--gf-radius-sm);
+  background: var(--gf-bg-sunken);
+}
+
+.clipinbox__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--gf-radius-xs);
+  background: transparent;
+  color: var(--gf-text-secondary);
+  font: inherit;
+  font-size: var(--gf-font-size-caption);
+  cursor: pointer;
+}
+
+.clipinbox__tab:hover {
+  background: var(--gf-bg-hover);
+  color: var(--gf-text-primary);
+}
+
+.clipinbox__tab--active {
+  background: var(--gf-bg-surface);
+  color: var(--gf-text-primary);
+  box-shadow: var(--gf-shadow-xs);
+}
+
+.clipinbox__count {
+  min-width: 16px;
+  padding: 0 5px;
+  border-radius: var(--gf-radius-pill);
+  background: var(--gf-bg-hover);
+  color: var(--gf-text-secondary);
+  font-size: var(--gf-font-size-caption);
+  line-height: 16px;
+  text-align: center;
+}
+
+.clipinbox__tab--active .clipinbox__count {
+  background: var(--gf-bg-selected);
+  color: var(--gf-text-primary);
+}
+
+.clipinbox__search {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--gf-border);
+  border-radius: var(--gf-radius-sm);
+  background: var(--gf-bg-surface);
+  color: var(--gf-text-tertiary);
+}
+
+.clipinbox__search input {
+  width: 190px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--gf-text-primary);
+  font: inherit;
+  font-size: var(--gf-font-size-caption);
+}
+
+.clipinbox__search input::placeholder {
+  color: var(--gf-text-tertiary);
+}
+
+@media (max-width: 760px) {
+  .clipinbox__search {
+    margin-left: 0;
+  }
+  .clipinbox__search input {
+    width: 100%;
+  }
+}
+
 /* 主区被右侧记录面板挤窄时，按钮和表名不要折行 */
 .collection__head .btn,
 .collection__name {

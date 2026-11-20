@@ -1,6 +1,6 @@
 {
  "version": "v7",
- "batch": "重做批（Web+桌面，88 任务）",
+ "batch": "重做批（Web+桌面，90 任务）",
  "promptFile": "ops/看门狗-v7提示词.md",
  "taskTable": "开发任务表-v3.5-重做批.md",
  "reportFile": "ops/执行报告-v7.md",
@@ -14,8 +14,6 @@
   "W02",
   "W03",
   "W10",
-  "W103",
-  "W104",
   "W11",
   "W12",
   "W13",
@@ -81,13 +79,21 @@
   "W91",
   "W92",
   "W93",
-  "W94"
+  "W94",
+  "W95",
+  "W96",
+  "W100",
+  "W101",
+  "W102",
+  "W103",
+  "W104",
+  "W120"
  ],
- "nextTask": "W110",
- "doneCount": 72,
- "totalCount": 88,
+ "nextTask": "W121",
+ "doneCount": 78,
+ "totalCount": 90,
  "testBaseline": "cd app && npm test = 272/272 绿（36 个文件，勿退化）",
- "devServer": "npm run dev 起在 5173（后台任务 bjlvotyrx；挂了重起即可）",
+ "devServer": "cd app && npm run dev（5173）；截图 npm run shot -- <url> <out.png> [宽] [高] [等待ms]；主题点验 npm run theme-shot。原后台任务已失效，重起即可。",
  "envNotes": [
   "今晚无人值守：Edit 工具改已有文件、直接跑 node/chrome.exe/curl/netstat 会触发权限确认超时",
   "放行路径：Write 新文件/覆盖、npm 系（npm run/test/build/i/shot）、git、sed/printf/ls/grep/常规 bash",
@@ -356,20 +362,33 @@
   {
    "time": "2026-11-20T08:24:41Z",
    "event": "W104 DONE：设置走查（模块 W8 收口，📦 待验收）——三断言脚本 22 断言复跑全绿+w104-shot 截图 6 张+走查文档落盘；commit 22de580 push 两远程；下轮 W110（分享模块 W110~W114）"
+  },
+  {
+   "time": "2026-11-20T16:30:00+08:00",
+   "event": "状态对齐：补记 W95/W96/W100–W102 完成（doneTasks 77/90）；totalCount 88→90；modulesDone 补齐 W0/W6/W7/W8；看门狗已无定时任务。前端专项 S01–S15 已完成，两套视觉预览（天青/赭墨）待统一换皮。"
+  },
+  {
+   "time": "2026-11-20T20:20:00+08:00",
+   "event": "W120 DONE（收集箱页形态）：状态页签/计数/搜索/空态；顺手修主页挡住表格与 openTab 不清表格态；clip-inbox-check 9 断言全过；277 测试/check/build 过；本地 commit（不 push）。下一 W121。"
   }
  ],
  "modulesDone": [
+  "W0",
   "W1",
   "W2",
   "W3",
   "W4",
-  "W5"
+  "W5",
+  "W6",
+  "W7",
+  "W8"
  ],
  "partialTasks": [
   "W56",
   "W66",
-  "W69"
+  "W69",
+  "W84"
  ],
- "note7_1": "2026-11-20 用户要求提速：*/5 触发、写码串行+走查并行≤2、push 豁免两远程、W132 最后",
- "cronTask": "guanfu-lore-watchdog-v8"
+ "note7_1": "2026-11-20 用户要求提速：*/5 触发、写码串行+走查并行≤2、push 豁免两远程、W132 最后。2026-11-20 起已无定时任务（人工/会话驱动）。",
+ "cronTask": null
 }

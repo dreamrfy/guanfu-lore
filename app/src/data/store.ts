@@ -1144,8 +1144,9 @@ export const useStore = create<Store>((set, get) => {
     },
 
     openTab: (id) => {
-      const { tabs, activeTabId } = get();
-      if (activeTabId === id) return;
+      const { tabs, activeTabId, activeCollectionId } = get();
+      // 从表格/收集箱点回当前页签时也必须退出表格态（否则主区一直停在表上）
+      if (activeTabId === id && !activeCollectionId) return;
       const nextTabs = tabs.includes(id) ? tabs : [...tabs, id];
       // 打开页面时退出"正在看表格"的状态，否则主区还显示着表
       set({ tabs: nextTabs, activeTabId: id, activeCollectionId: null, openRecordRef: null });

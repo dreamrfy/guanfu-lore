@@ -149,7 +149,8 @@ export function AppShell() {
   const activeCollectionId = useStore((s) => s.activeCollectionId);
   const activeTabId = useStore((s) => s.activeTabId);
   // W94 桌面主页：activeTabId=HOME_TAB 时主区渲染 AI 对话页（无文档页顶栏）
-  const isHome = activeTabId === HOME_TAB;
+  // W120：从主页打开收集箱/表格时 activeCollectionId 已设置，不能继续被主页条件挡住
+  const isHome = activeTabId === HOME_TAB && !activeCollectionId;
   // W26 删除红幅（手册 §2：无确认弹窗 + 红幅「恢复/彻底删除」）
   const trashBanner = useStore((s) => s.trashBanner);
   const restoreFromTrash = useStore((s) => s.restoreFromTrash);

@@ -64,6 +64,7 @@
     "fields61-check": "node tools/fields61-check.mjs",
     "advfields-check": "node tools/advfields-check.mjs",
     "grid-check": "node tools/grid-check.mjs",
+    "clip-inbox-check": "node tools/clip-inbox-check.mjs",
     "cell-semantics-check": "node tools/cell-semantics-check.mjs",
     "cell-editor-check": "node tools/cell-editor-check.mjs",
     "colmenu-check": "node tools/colmenu-check.mjs",

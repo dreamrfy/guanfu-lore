@@ -22,6 +22,11 @@ import {
 import { CLIP_COLLECTION_NAME, useStore } from "../data/store";
 import { uploadAsset } from "../data/assets";
 import { clipReadState, isClipUnread } from "../data/clipBox";
+import {
+  countClipStatuses,
+  filterClipRecords,
+  type ClipInboxFilter,
+} from "../data/clipInbox";
 import { AppIcon } from "../design/icons";
 import { useLang } from "../i18n";
 import { AiBatchDialog } from "./AiBatchDialog";
@@ -693,6 +698,9 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
    */
   const [drag, setDrag] = useState<{ id: string; width: number } | null>(null);
   const { t } = useLang();
+  // W120 收集箱页：状态页签 + 本地搜索（只影响当前页，不写视图筛选）
+  const [clipFilter, setClipFilter] = useState<ClipInboxFilter>("all");
+  const [clipQuery, setClipQuery] = useState("");
   /**
    * 单击行 = 打开记录详情，双击单元格 = 原地编辑。
    * 单击必须等 220ms 再开面板：否则双击的第一下就把面板打开、布局一挪，第二下就点偏了。
@@ -718,15 +726,31 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
   const view = collection
     ? (collection.views.find((v) => v.id === activeViewId) ?? collection.views[0])
     : undefined;
+  const isClipInbox = collection?.name === CLIP_COLLECTION_NAME;
+  const clipCounts = useMemo(
+    () =>
+      collection && isClipInbox
+        ? countClipStatuses(collection, records)
+        : { all: 0, pending: 0, archived: 0, failed: 0 },
+    [collection, records, isClipInbox],
+  );
+  // 收集箱的页签/搜索先过滤，再交给通用视图逻辑（排序/分组/每页大小仍生效）
+  const inboxRecords = useMemo(
+    () =>
+      collection && isClipInbox
+        ? filterClipRecords(collection, records, clipFilter, clipQuery)
+        : records,
+    [collection, records, isClipInbox, clipFilter, clipQuery],
+  );
   const rows = useMemo(
     () => {
       if (!collection) return [];
-      const all = applyView(records, collection, view);
+      const all = applyView(inboxRecords, collection, view);
       // W69 每页大小（未设置时按 50 条，规格默认）
       const size = view?.pageSize ?? 50;
       return all.slice(0, size);
     },
-    [collection, records, view]
+    [collection, inboxRecords, view]
   );
   // 分组（V01）：筛选、排序照旧先生效，这里只在结果上分桶展示。
   // useMemo 必须在提前 return 之前调用（hook 顺序不能随 collection 有无而变化）。
@@ -805,6 +829,38 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
           </button>
         )}
       </div>
+
+      {isClipInbox && (
+        <div className="clipinbox" data-testid="clip-inbox">
+          <div className="clipinbox__tabs" role="tablist" aria-label={t("clipInboxTitle")}>
+            {([
+              ["all", t("clipInboxAll"), clipCounts.all],
+              ["pending", t("clipInboxPending"), clipCounts.pending],
+              ["archived", t("clipInboxArchived"), clipCounts.archived],
+              ["failed", t("clipInboxFailed"), clipCounts.failed],
+            ] as const).map(([key, label, count]) => (
+              <button
+                key={key}
+                role="tab"
+                aria-selected={clipFilter === key}
+                className={`clipinbox__tab${clipFilter === key ? " clipinbox__tab--active" : ""}`}
+                onClick={() => setClipFilter(key)}
+              >
+                {label}
+                <span className="clipinbox__count">{count}</span>
+              </button>
+            ))}
+          </div>
+          <label className="clipinbox__search">
+            <AppIcon name="search" set={iconSet} size={13} />
+            <input
+              value={clipQuery}
+              onChange={(e) => setClipQuery(e.target.value)}
+              placeholder={t("clipInboxSearch")}
+            />
+          </label>
+        </div>
+      )}
 
       {view && <ViewTabs collection={collection} view={view} />}
       {view && <ViewBar collection={collection} view={view} />}
@@ -993,7 +1049,19 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
             {rows.length === 0 && (
               <tr>
                 <td colSpan={collection.fields.length + 2} className="grid__empty">
-                  {t("emptyRecords")}
+                  {t(
+                    !isClipInbox
+                      ? "emptyRecords"
+                      : clipQuery.trim()
+                        ? "searchNoResult"
+                        : clipFilter === "pending"
+                          ? "clipInboxEmptyPending"
+                          : clipFilter === "archived"
+                            ? "clipInboxEmptyArchived"
+                            : clipFilter === "failed"
+                              ? "clipInboxEmptyFailed"
+                              : "clipInboxEmpty"
+                  )}
                 </td>
               </tr>
             )}
