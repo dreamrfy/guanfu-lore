@@ -1173,6 +1173,146 @@ body {
   padding: 12px;
 }
 
+/* W110 分享面板（12 号 §1）：宽 360、公开分享页签 + 权限选项 */
+.share-popover {
+  width: 360px;
+  padding: 10px 10px 12px;
+}
+
+.share-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--gf-radius-sm);
+  background: var(--gf-bg-sunken);
+}
+
+.share-tab {
+  flex: 1 1 0;
+  height: 28px;
+  border: 0;
+  border-radius: var(--gf-radius-xs);
+  background: transparent;
+  color: var(--gf-text-secondary);
+  font: inherit;
+  font-size: var(--gf-font-size-caption);
+  cursor: pointer;
+}
+
+.share-tab--active {
+  background: var(--gf-bg-surface);
+  color: var(--gf-text-primary);
+  box-shadow: var(--gf-shadow-xs);
+}
+
+.share-tab:disabled {
+  color: var(--gf-text-disabled);
+  cursor: default;
+}
+
+.share-public {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid var(--gf-border);
+  border-radius: var(--gf-radius-md);
+}
+
+.share-public__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.share-public__text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--gf-font-size-caption);
+}
+
+.share-public__text b {
+  font-size: var(--gf-font-size-small);
+  font-weight: 600;
+}
+
+.share-public__text span {
+  color: var(--gf-text-tertiary);
+}
+
+.share-badge {
+  flex: 0 0 auto;
+  padding: 1px 6px;
+  border-radius: var(--gf-radius-pill);
+  background: var(--gf-primary-soft);
+  color: var(--gf-primary);
+  font-size: 11px;
+}
+
+.share-perms {
+  display: flex;
+  gap: 2px;
+  margin-top: 10px;
+  padding: 2px;
+  border-radius: var(--gf-radius-sm);
+  background: var(--gf-bg-sunken);
+}
+
+.share-perm {
+  flex: 1 1 0;
+  height: 26px;
+  border: 0;
+  border-radius: var(--gf-radius-xs);
+  background: transparent;
+  color: var(--gf-text-secondary);
+  font: inherit;
+  font-size: var(--gf-font-size-caption);
+  cursor: pointer;
+}
+
+.share-perm--active {
+  background: var(--gf-bg-surface);
+  color: var(--gf-text-primary);
+  box-shadow: var(--gf-shadow-xs);
+}
+
+.share-perm:disabled {
+  color: var(--gf-text-disabled);
+  cursor: default;
+}
+
+.share-sep {
+  height: 1px;
+  margin: 10px 2px 6px;
+  background: var(--gf-border);
+}
+
+.share-popover .menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.share-link {
+  margin: 2px 8px 6px;
+  padding: 4px 6px;
+  overflow: hidden;
+  border-radius: var(--gf-radius-xs);
+  background: var(--gf-bg-sunken);
+  color: var(--gf-text-tertiary);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.share-footnote {
+  padding: 0 8px;
+  color: var(--gf-text-tertiary);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
 .popover--grid {
   left: 0;
   right: auto;
