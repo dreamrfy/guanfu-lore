@@ -2248,6 +2248,69 @@ html[data-theme="dark"] .modal__ok {
   gap: 6px;
 }
 
+/* W122 剪贴板入口：首页顶部提示条 */
+.clipbanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 16px 0;
+  padding: 9px 12px;
+  border: 1px solid var(--gf-border);
+  border-radius: var(--gf-radius-md);
+  background: var(--gf-primary-soft);
+}
+
+.clipbanner__icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--gf-radius-sm);
+  background: var(--gf-bg-surface);
+  color: var(--gf-primary);
+}
+
+.clipbanner__text {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.clipbanner__text b {
+  font-size: var(--gf-font-size-small);
+  font-weight: 600;
+  color: var(--gf-text-primary);
+}
+
+.clipbanner__text span {
+  overflow: hidden;
+  font-size: var(--gf-font-size-caption);
+  color: var(--gf-text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clipbanner__actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (max-width: 760px) {
+  .clipbanner {
+    margin: 8px 10px 0;
+    flex-wrap: wrap;
+  }
+  .clipbanner__actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
 .clip-server__toggle {
   margin-top: 14px;
   padding: 0;

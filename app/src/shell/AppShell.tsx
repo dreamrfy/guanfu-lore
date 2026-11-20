@@ -17,6 +17,7 @@ import { SearchOverlay } from "./SearchOverlay";
 import { SettingsDialog } from "./SettingsDialog";
 import { AiPanel } from "./AiPanel";
 import { HomeAiChat } from "./HomeAiChat";
+import { ClipboardBanner } from "./ClipboardBanner";
 import { useGlobalShortcuts } from "./useGlobalShortcuts";
 
 /** 把附件 id 解析成可显示的地址（异步，解析期间先给 null） */
@@ -221,7 +222,10 @@ export function AppShell() {
         {!isHome && <TopToolbar />}
 
         {isHome ? (
-          <HomeAiChat />
+          <>
+            <ClipboardBanner />
+            <HomeAiChat />
+          </>
         ) : activeCollectionId ? (
           <CollectionView collectionId={activeCollectionId} />
         ) : (

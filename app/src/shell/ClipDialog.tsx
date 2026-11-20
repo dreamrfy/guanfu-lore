@@ -30,12 +30,17 @@ import { AppIcon } from "../design/icons";
  */
 export function ClipButton() {
   const [open, setOpen] = useState(false);
+  const [initialUrl, setInitialUrl] = useState("");
   const iconSet = useStore((s) => s.iconSet);
   const { t } = useLang();
 
-  // 桌面快捷键 Ctrl+Shift+V 由 useGlobalShortcuts 广播；入口组件只管接
+  // 桌面快捷键 / 剪贴板提示条通过 gf:open-clip-dialog 广播；可带 detail.url 预填并直接抓取
   useEffect(() => {
-    const onOpen = () => setOpen(true);
+    const onOpen = (e: Event) => {
+      const detail = (e as CustomEvent<{ url?: string }>).detail;
+      setInitialUrl(typeof detail?.url === "string" ? detail.url : "");
+      setOpen(true);
+    };
     window.addEventListener("gf:open-clip-dialog", onOpen);
     return () => window.removeEventListener("gf:open-clip-dialog", onOpen);
   }, []);
@@ -45,12 +50,23 @@ export function ClipButton() {
       <button
         className="icon-btn"
         style={{ width: "100%", justifyContent: "flex-start" }}
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setInitialUrl("");
+          setOpen(true);
+        }}
       >
         <AppIcon name="inbox" set={iconSet} />
         {t("clipEntry")}
       </button>
-      {open && <ClipDialog onClose={() => setOpen(false)} />}
+      {open && (
+        <ClipDialog
+          initialUrl={initialUrl}
+          onClose={() => {
+            setOpen(false);
+            setInitialUrl("");
+          }}
+        />
+      )}
     </>
   );
 }
@@ -71,11 +87,11 @@ function recordTitle(collectionId: string, recordId: string): string {
   return String(record.values[field.id] ?? "") || "（无标题）";
 }
 
-function ClipDialog({ onClose }: { onClose: () => void }) {
+function ClipDialog({ onClose, initialUrl = "" }: { onClose: () => void; initialUrl?: string }) {
   const { t } = useLang();
   const iconSet = useStore((s) => s.iconSet);
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState(initialUrl);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<ClipDone | null>(null);
@@ -159,6 +175,12 @@ function ClipDialog({ onClose }: { onClose: () => void }) {
       setBusy(false);
     }
   };
+
+  // 剪贴板提示条点「收进」：带链接打开弹层，直接开始抓取（≤2 次点击）
+  useEffect(() => {
+    if (initialUrl.trim()) void submit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const openDone = async () => {
     if (!done) return;
