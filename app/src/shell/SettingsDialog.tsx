@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { useStore } from "../data/store";
 import { loadClipServerUrl, saveClipServerUrl, loadClipToken, saveClipToken } from "../data/clipApi";
+import {
+  useLocalAccount,
+  saveNick,
+  saveAvatarColor,
+  avatarLetter,
+  signOutLocal,
+  AVATAR_COLORS,
+} from "../data/account";
 import { repo } from "../data/db";
 import { FONT_THEMES } from "../design/fonts";
 import { ICON_SETS, type IconSetId } from "../design/icons";
@@ -48,6 +56,7 @@ const TAB_TITLE: Record<SettingsTab, string> = {
 
 export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [tab, setTab] = useState<SettingsTab>("account");
+  const [quitHint, setQuitHint] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -79,7 +88,21 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
             </div>
           ))}
           <div className="setdlg__group setdlg__group--bottom">
-            <button className="setdlg__item setdlg__item--quit">退出登录</button>
+            <button
+              className="setdlg__item setdlg__item--quit"
+              title="清除同步凭证（本机数据不动）"
+              onClick={async () => {
+                const cleared = await signOutLocal();
+                setQuitHint(
+                  cleared
+                    ? "已清除同步凭证（服务端地址/Token）"
+                    : "本机模式无凭证可清，数据全在本机"
+                );
+              }}
+            >
+              退出登录
+            </button>
+            {quitHint && <div className="setdlg__quit-hint">{quitHint}</div>}
           </div>
         </aside>
         <section className="setdlg__body">
@@ -99,24 +122,30 @@ export function SettingsDialog({ open, onClose }: { open: boolean; onClose: () =
   );
 }
 
-/* ---------------- 账号设置（11 号 §2.1 观复槽位：昵称保留真存，其余简化【暂定】） ---------------- */
-
-const NICK_KEY = "accountNick";
+/* ---------------- 账号设置（11 号 §2.1 观复槽位；W103 本地账号三件套：昵称/头像色/退出） ---------------- */
 
 function AccountPane() {
-  const [nick, setNickState] = useState("");
-  const [draft, setDraft] = useState("");
+  const account = useLocalAccount();
+  const [draft, setDraft] = useState(account.nick);
   const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    void repo.getMeta<string>(NICK_KEY).then((v) => {
-      setNickState(typeof v === "string" ? v : "");
-      setDraft(typeof v === "string" ? v : "");
-    });
-  }, []);
+  // 外部（工作区菜单改名）改过昵称时把草稿同步上来
+  useEffect(() => setDraft(account.nick), [account.nick]);
 
   return (
     <div className="setpane">
+      <div className="setpane__row setpane__row--head">
+        <span
+          className="account-avatar account-avatar--lg"
+          style={{ background: `var(${account.avatarColor})` }}
+          data-testid="account-avatar"
+        >
+          {avatarLetter(account.nick)}
+        </span>
+        <span className="setpane__value setpane__value--name">
+          {account.nick || "未设置昵称"}
+        </span>
+      </div>
+      <div className="setpane__sep" />
       <div className="setpane__row">
         <label className="setpane__label">昵称</label>
         <input
@@ -128,17 +157,33 @@ function AccountPane() {
             setSaved(false);
           }}
           onBlur={async () => {
-            const v = draft.trim();
-            await repo.setMeta(NICK_KEY, v);
-            setNickState(v);
+            await saveNick(draft);
             setSaved(true);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") (e.target as HTMLInputElement).blur();
           }}
           spellCheck={false}
         />
         {saved && <span className="setpane__saved">已保存</span>}
       </div>
+      <div className="setpane__row">
+        <label className="setpane__label">头像颜色</label>
+        <div className="account-swatches" data-testid="account-swatches">
+          {AVATAR_COLORS.map((c) => (
+            <button
+              key={c}
+              className={`account-swatch${account.avatarColor === c ? " account-swatch--on" : ""}`}
+              style={{ background: `var(${c})` }}
+              title={c}
+              onClick={() => void saveAvatarColor(c)}
+            />
+          ))}
+        </div>
+      </div>
       <div className="setpane__hint">
         邮箱 / 手机号 / 学生教师认证 / 设备管理：观复自建账号体系，【暂定】不做（11 号 §5 槽位简化）。
+        昵称与头像色存本机数据库，随备份带走。
       </div>
     </div>
   );

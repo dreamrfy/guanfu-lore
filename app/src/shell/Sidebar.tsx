@@ -9,6 +9,7 @@ import { clipReadState, unreadClipCount } from "../data/clipBox";
 import { searchAll, setPendingBlockFocus, type SearchResult } from "../data/search";
 import { AppIcon } from "../design/icons";
 import { useLang } from "../i18n";
+import { useLocalAccount, saveNick, avatarLetter } from "../data/account";
 import { ClipButton } from "./ClipDialog";
 import { TagPanel } from "./TagPanel";
 import { TemplateMenu } from "./TemplateMenu";
@@ -84,6 +85,8 @@ export function Sidebar({ onOpenSettings }: { onOpenSettings?: () => void }) {
   const activeTabId = useStore((s) => s.activeTabId);
   const iconSet = useStore((s) => s.iconSet);
   const { lang, setLang, t } = useLang();
+  // W103 账号区：侧栏工作区行头像/昵称走本地账号（account.ts），菜单内可改名
+  const account = useLocalAccount();
   const openTab = useStore((s) => s.openTab);
   const createPage = useStore((s) => s.createPage);
   const moveToTrash = useStore((s) => s.moveToTrash);
@@ -319,8 +322,10 @@ export function Sidebar({ onOpenSettings }: { onOpenSettings?: () => void }) {
             setWsMenu((o) => !o);
           }}
         >
-          <span className="wsrow__avatar">观</span>
-          <span className="wsrow__name">{t("brandTitle")}</span>
+          <span className="wsrow__avatar" style={{ background: `var(${account.avatarColor})` }}>
+            {avatarLetter(account.nick)}
+          </span>
+          <span className="wsrow__name">{account.nick || t("brandTitle")}</span>
           <span className="wsrow__caret">⌄</span>
         </button>
       </div>
@@ -718,6 +723,24 @@ export function Sidebar({ onOpenSettings }: { onOpenSettings?: () => void }) {
         <>
           <div className="ctx-backdrop" onMouseDown={() => setWsMenu(false)} />
           <div className="tabctx tabctx--ws">
+            {/* W103 账号区头部：头像 + 昵称（点击改名走 prompt【暂定】，与设置弹层同源 account.ts） */}
+            <div
+              className="tabctx__item tabctx__item--account"
+              title="点击修改昵称"
+              onMouseDown={async (e) => {
+                e.stopPropagation();
+                const next = window.prompt("昵称", account.nick);
+                if (next !== null) await saveNick(next);
+              }}
+            >
+              <span
+                className="wsrow__avatar"
+                style={{ background: `var(${account.avatarColor})` }}
+              >
+                {avatarLetter(account.nick)}
+              </span>
+              <span className="tabctx__account-name">{account.nick || t("brandTitle")}</span>
+            </div>
             <div className="tabctx__item tabctx__item--head" onMouseDown={(e) => e.stopPropagation()}>
               工作空间
             </div>

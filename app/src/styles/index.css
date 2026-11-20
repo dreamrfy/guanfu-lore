@@ -3167,6 +3167,28 @@ html[data-theme="dark"] .winbtn--close:hover {
   margin-bottom: 4px;
 }
 
+/* W103 空间切换菜单账号头部：头像 + 昵称（11 号 §1：70 号菜单头部=当前空间卡形态【暂定】自有） */
+.tabctx__item--account {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.tabctx__item--account .wsrow__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--gf-radius-sm);
+  font-size: 16px;
+}
+
+.tabctx__account-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .tree-item__rename {
   flex: 1 1 auto;
   min-width: 0;
@@ -5499,6 +5521,55 @@ html[data-theme="dark"] .winbtn--close:hover {
 
 .setdlg__item--quit {
   color: var(--gf-danger-text);
+}
+
+/* W103 退出登录结果提示（单机语义：清凭证） */
+.setdlg__quit-hint {
+  padding: 4px 12px;
+  font-size: 12px;
+  color: var(--gf-text-tertiary);
+}
+
+/* W103 账号设置：字母头像 + 头像色板 */
+.account-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--gf-radius-sm);
+  color: var(--gf-text-inverse);
+  font-weight: 600;
+}
+
+.account-avatar--lg {
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+}
+
+.account-swatches {
+  display: flex;
+  gap: 8px;
+}
+
+.account-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.account-swatch--on {
+  border-color: var(--gf-text-primary);
+}
+
+.setpane__row--head {
+  gap: 12px;
+}
+
+.setpane__value--name {
+  font-weight: 600;
 }
 
 .setdlg__badge {

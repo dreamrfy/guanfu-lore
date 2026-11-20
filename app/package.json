@@ -87,7 +87,8 @@
     "ai-history-check": "node tools/ai-history-check.mjs",
     "ai-entry-check": "node tools/ai-entry-check.mjs",
     "settings-check": "node tools/settings-check.mjs",
-    "settings-content-check": "node tools/settings-content-check.mjs"
+    "settings-content-check": "node tools/settings-content-check.mjs",
+    "account-check": "node tools/account-check.mjs"
   },
   "keywords": [],
   "author": "",
