@@ -49,7 +49,7 @@ server/out/bijiapp-poll.zip      ← 打包产物（gitignored）：src/.ts + in
 ```
 
 打包产物里的 `index.js` 是脚本生成的入口垫片（`import { main } from "./src/cloud/pollFn.ts"`），
-**要求 Runtime 为 Node 24**（原生直跑 .ts）；若平台只有更低版本，需先改为 tsc 编译再打包（见 docs/部署清单-阶段一-控制台操作.md 第 1 步）。
+**要求 Runtime 为 Node 24**（原生直跑 .ts）；若平台只有更低版本，需先改为 tsc 编译再打包（见 _cleanup/待归档/docs/部署清单-阶段一-控制台操作.md 第 1 步）。
 
 ---
 

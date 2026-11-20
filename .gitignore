@@ -56,3 +56,9 @@ ops/观测/*
 !ops/观测/_tools
 ops/shots/
 ops/tmp/
+
+# 文档清理区（待删除/待归档；保留在本地复核，不进 Git、不参与遍历）
+_cleanup/
+
+# 服务端可重新生成的离线快照
+server/out/
