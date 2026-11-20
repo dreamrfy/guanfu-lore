@@ -101,18 +101,18 @@ try {
   await serverInput.blur();
   await page.waitForTimeout(400);
 
-  // ④ 公开分享空态 + MCP & SKILL 文案
-  await page.locator(".setdlg__item", { hasText: "公开分享" }).click();
-  await page.waitForTimeout(300);
-  const shareHint = await page.locator(".setpane__hint").textContent();
-  if (!shareHint.includes("单机自托管")) await fail("公开分享空态文案不符: " + shareHint);
+  // ④ W102 后：公开分享已删；MCP & SKILL 文案仍在
+  const navAll = await page.evaluate(() =>
+    [...document.querySelectorAll(".setdlg__item")].map((b) => b.textContent?.trim())
+  );
+  if (navAll.some((n) => n?.includes("公开分享"))) await fail("公开分享槽位未删除（W102）");
   await page.locator(".setdlg__item", { hasText: "MCP & SKILL" }).click();
   await page.waitForTimeout(300);
   const mcpHint = await page.locator(".setpane__hint").textContent();
   if (!mcpHint.includes("mcp.ts")) await fail("MCP & SKILL 提示文案不符: " + mcpHint);
   await page.screenshot({ path: OUT + "/04-公开分享与MCP.png" });
 
-  console.log("PASS: W101 设置页签内容 6 项断言全过（昵称真存/主题切换/三下拉/同步状态/地址真存回读/空态文案）");
+  console.log("PASS: W101 设置页签内容 6 项断言全过（昵称真存/主题切换/三下拉/同步状态/地址真存回读/MCP文案）");
 } catch (e) {
   if (!failed) { console.error("FAIL: " + e.message); failed = 1; }
   await page.screenshot({ path: OUT + "/99-失败现场.png" });

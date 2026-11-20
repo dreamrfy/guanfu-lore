@@ -73,8 +73,9 @@ try {
     };
   });
   if (nav.groupNames.join(",") !== "账号,空间") await fail("导航分组 ≠ 账号/空间: " + nav.groupNames);
-  if (nav.accountItems.length !== 4) await fail("账号组应有 4 项: " + nav.accountItems);
-  if (nav.spaceItems.length !== 9) await fail("空间组应有 9 项: " + nav.spaceItems);
+  // W102 槽位替换后：账号组 2 项（账号/通用）+ 空间组 2 项（空间设置/MCP & SKILL）
+  if (nav.accountItems.length !== 2) await fail("账号组应有 2 项: " + nav.accountItems);
+  if (nav.spaceItems.length !== 2) await fail("空间组应有 2 项: " + nav.spaceItems);
   if (nav.quit !== "退出登录") await fail("底部退出登录缺失");
   if (!nav.close) await fail("右上 × 缺失");
   await page.screenshot({ path: OUT + "/02-弹层-整体形态.png" });
@@ -91,16 +92,17 @@ try {
   }));
   if (switched.title !== "通用设置") await fail("切到通用设置后标题未变: " + switched.title);
   if (switched.onCount !== 1 || !switched.onText?.includes("通用设置")) await fail("active 态未迁移");
-  if (!switched.content?.includes("W101")) await fail("右侧内容占位未渲染");
+  if (!switched.content) await fail("右侧内容未渲染");
   await page.screenshot({ path: OUT + "/03-页签切换-通用设置.png" });
 
-  // 5) 置灰项：活动中心/推荐佣金 disabled 且带徽章
-  const disabled = await page.evaluate(() =>
-    [...document.querySelectorAll(".setdlg__item--off")].map((b) => b.textContent?.trim())
+  // 5) W102 槽位替换：商业化 6 项 + 成员/公开分享/空间信息 已从导航删除
+  const navAll = await page.evaluate(() =>
+    [...document.querySelectorAll(".setdlg__item")].map((b) => b.textContent?.trim())
   );
-  for (const need of ["活动中心", "推荐佣金", "自定义模型", "已授权应用", "升级", "订单"]) {
-    if (!disabled.some((d) => d?.includes(need))) await fail("置灰项缺 " + need);
+  for (const gone of ["活动中心", "推荐佣金", "升级", "订单", "自定义模型", "已授权应用", "成员", "公开分享", "空间信息"]) {
+    if (navAll.some((n) => n?.includes(gone))) await fail("槽位未删除: " + gone);
   }
+  if (!navAll.some((n) => n?.includes("MCP & SKILL"))) await fail("MCP & SKILL 槽位应保留");
 
   // 6) Esc 关闭 → 再开 → × 关闭 → 再开 → 遮罩关闭
   await page.keyboard.press("Escape");
