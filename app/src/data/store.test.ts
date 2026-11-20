@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { flushDocs, useStore } from "./store";
+import { flushDocs, useStore, HOME_TAB } from "./store";
 import { repo } from "./db";
 
 /** 每个用例开始前把内存状态清干净（库由 setup.ts 负责清） */
@@ -28,7 +28,8 @@ describe("应用状态", () => {
     expect(s().bootError).toBeNull();
     expect(s().pages).toHaveLength(1);
     expect(s().pages[0].title).toBe("");
-    expect(s().activeTabId).toBe(s().pages[0].id);
+    // 空库首启按 06 号 §2「开屏第一眼」落主页（W94），空页照旧补库
+    expect(s().activeTabId).toBe(HOME_TAB);
   });
 
   it("新建页面：进列表、开标签、正文就绪", async () => {
@@ -92,7 +93,8 @@ describe("应用状态", () => {
     expect(s().pages).toHaveLength(1);
     expect(s().pages[0].id).not.toBe(only);
     expect(s().trash.map((p) => p.id)).toContain(only);
-    expect(s().activeTabId).toBe(s().pages[0].id);
+    // 删尽后页签落主页（W94 主页常驻），补空页行为不变
+    expect(s().activeTabId).toBe(HOME_TAB);
   });
 
   it("回收站可以恢复，恢复后正文还在", async () => {

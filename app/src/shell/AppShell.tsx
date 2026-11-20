@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { PartialBlock } from "@blocknote/core";
-import { useActiveDoc, useActivePage, useStore } from "../data/store";
+import { useActiveDoc, useActivePage, useStore, HOME_TAB } from "../data/store";
 import { assetUrl, uploadAsset } from "../data/assets";
 import { AppIcon } from "../design/icons";
 import { PageEditor } from "../editor/PageEditor";
@@ -15,6 +15,7 @@ import { TopToolbar } from "./TopToolbar";
 import { PageIconPicker } from "./PageIconPicker";
 import { SearchOverlay } from "./SearchOverlay";
 import { AiPanel } from "./AiPanel";
+import { HomeAiChat } from "./HomeAiChat";
 import { useGlobalShortcuts } from "./useGlobalShortcuts";
 
 /** 把附件 id 解析成可显示的地址（异步，解析期间先给 null） */
@@ -145,6 +146,9 @@ export function AppShell() {
   const setPageIcon = useStore((s) => s.setPageIcon);
   const uploadFile = useStore((s) => s.uploadFile);
   const activeCollectionId = useStore((s) => s.activeCollectionId);
+  const activeTabId = useStore((s) => s.activeTabId);
+  // W94 桌面主页：activeTabId=HOME_TAB 时主区渲染 AI 对话页（无文档页顶栏）
+  const isHome = activeTabId === HOME_TAB;
   // W26 删除红幅（手册 §2：无确认弹窗 + 红幅「恢复/彻底删除」）
   const trashBanner = useStore((s) => s.trashBanner);
   const restoreFromTrash = useStore((s) => s.restoreFromTrash);
@@ -209,9 +213,11 @@ export function AppShell() {
       </aside>
 
       <main className="shell__main">
-        <TopToolbar />
+        {!isHome && <TopToolbar />}
 
-        {activeCollectionId ? (
+        {isHome ? (
+          <HomeAiChat />
+        ) : activeCollectionId ? (
           <CollectionView collectionId={activeCollectionId} />
         ) : (
         <div className="page">
@@ -285,14 +291,14 @@ export function AppShell() {
 
       {/* W90 AI 侧边面板：正常 flex 流内、挤压主区而非覆盖（10 号 §1） */}
       {aiPanelOpen && (
-        <aside className="shell__ai" aria-label="FlowUs AI">
+        <aside className="shell__ai" aria-label="观复 AI">
           <AiPanel initialTab="chat" hideTabs />
         </aside>
       )}
 
       {/* W90 右下角浮钮（ai-chat-trigger）：文档页内出现，面板已开则隐藏 */}
       {page && !aiPanelOpen && (
-        <button className="ai-fab" title="FlowUs AI" onClick={toggleAiPanel}>
+        <button className="ai-fab" title="观复 AI" onClick={toggleAiPanel}>
           <AppIcon name="ai" set={iconSet} size={18} />
         </button>
       )}

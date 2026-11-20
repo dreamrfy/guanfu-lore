@@ -334,6 +334,9 @@ type Store = {
   setAiPanelOpen: (open: boolean) => void;
 };
 
+/** W94 桌面主页：AI 对话页签的占位 id（非真实页面，TabBar/AppShell/导航/ensureDoc 特判） */
+export const HOME_TAB = "__home__";
+
 export const useStore = create<Store>((set, get) => {
   const prefs = loadPrefs();
 
@@ -378,17 +381,18 @@ export const useStore = create<Store>((set, get) => {
         const alive = pages.filter((p) => p.deletedAt === null);
         const trash = pages.filter((p) => p.deletedAt !== null);
 
-        const savedTabs = get().tabs.filter((id) => alive.some((p) => p.id === id));
-        const tabs = savedTabs.length ? savedTabs : [alive[0].id];
+        // W94 主页是常驻虚拟页签：不参与存活过滤，无历史（首启/清库）时按规格 06 §2「开屏第一眼」落主页
+        const savedTabs = get().tabs.filter((id) => id === HOME_TAB || alive.some((p) => p.id === id));
+        const tabs = savedTabs.length ? savedTabs : [HOME_TAB];
         const active =
-          get().activeTabId && alive.some((p) => p.id === get().activeTabId)
+          get().activeTabId && (get().activeTabId === HOME_TAB || alive.some((p) => p.id === get().activeTabId))
             ? get().activeTabId
             : tabs[tabs.length - 1];
 
         const collections = await repo.listCollections();
         set({ pages: alive, trash, tabs, activeTabId: active, collections, ready: true, bootError: null });
         savePrefs({ tabs, activeTabId: active });
-        if (active) void get().ensureDoc(active);
+        if (active && active !== HOME_TAB) void get().ensureDoc(active);
         // 开机顺手把服务器剪藏箱里已完成的新文章收进来（幂等，失败静默）
         void maybeAutoImportClips();
       } catch (e) {
@@ -1144,7 +1148,7 @@ export const useStore = create<Store>((set, get) => {
       // 打开页面时退出"正在看表格"的状态，否则主区还显示着表
       set({ tabs: nextTabs, activeTabId: id, activeCollectionId: null, openRecordRef: null });
       savePrefs({ tabs: nextTabs, activeTabId: id });
-      void get().ensureDoc(id);
+      if (id !== HOME_TAB) void get().ensureDoc(id);
     },
 
     closeTab: (id) => {
@@ -1160,7 +1164,7 @@ export const useStore = create<Store>((set, get) => {
     setActiveTab: (id) => {
       set({ activeTabId: id, activeCollectionId: null, openRecordRef: null });
       savePrefs({ activeTabId: id });
-      void get().ensureDoc(id);
+      if (id !== HOME_TAB) void get().ensureDoc(id);
     },
 
     setTheme: (theme) => {

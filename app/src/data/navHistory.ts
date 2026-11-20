@@ -5,12 +5,12 @@
  *  - 历史栈记录 activeTabId 的变化顺序；后退/前进在栈上移动，目标页若不在当前页签则重新打开。
  *  - back/forward 内部切页时打 navigating 标记，避免订阅器把程序化跳转再记一次历史。
  *  - 页签关闭时剪掉栈里的死条目（否则后退会翻到已关页）。
- *  - 主页【暂定】= 打开最近修改的第一页（桌面主页的 AI chat 形态在 W94 落位）。
+ *  - 主页 = AI 对话页签（W94 落位，规格 06 §1：已在主页时点击无反应）。
  *  - 刷新 = 从 Dexie 强制重读正文 + bump tick，AppShell 用 tick 参与 PageEditor 的 key 触发重挂载；
  *    refreshTab(id) 是通用版（W14 页签右键菜单也用它刷新非激活页签）。
  */
 import { create } from "zustand";
-import { useStore } from "./store";
+import { useStore, HOME_TAB } from "./store";
 import { repo } from "./db";
 import { resolveAssetRefs } from "./assets";
 
@@ -63,10 +63,10 @@ export const useNavHistory = create<NavState>((set, get) => ({
   },
 
   goHome: () => {
-    const { pages } = useStore.getState();
-    if (!pages.length) return;
-    const first = [...pages].sort((a, b) => b.updatedAt - a.updatedAt)[0];
-    useStore.getState().openTab(first.id);
+    // W94：主页=AI 对话页签；已在主页时点击无反应（激活态圆角灰底不消失，规格 06 §1）
+    const { activeTabId, openTab } = useStore.getState();
+    if (activeTabId === HOME_TAB) return;
+    openTab(HOME_TAB);
   },
 
   refresh: () => {

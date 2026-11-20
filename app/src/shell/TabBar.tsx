@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useStore } from "../data/store";
+import { useStore, HOME_TAB } from "../data/store";
 import { savePrefs } from "../data/store";
 import { useNavHistory } from "../data/navHistory";
 import { AppIcon } from "../design/icons";
@@ -190,7 +190,11 @@ export function TabBar() {
       <div className="tabbar__tabs">
         {tabs.map((id) => {
           const page = pages.find((p) => p.id === id);
-          if (!page) return null;
+          // W94 主页页签：非真实页面，标题/图标特判
+          const isHome = id === HOME_TAB;
+          if (!page && !isHome) return null;
+          // 页签标题照 06 号 §1「主页页签显示 AI 名」，品牌字换观复自有【暂定】
+          const label = isHome ? "观复 AI" : page?.title || "无标题";
           return (
             <div
               key={id}
@@ -201,14 +205,20 @@ export function TabBar() {
                 e.stopPropagation();
                 setCtx({ tabId: id, x: e.clientX, y: e.clientY });
               }}
-              title={page.title}
+              title={label}
             >
-              {page.icon && (
+              {isHome ? (
                 <span className="tab__icon">
-                  <PageIconGlyph icon={page.icon} size={16} set={iconSet} />
+                  <AppIcon name="ai" set={iconSet} size={16} />
                 </span>
+              ) : (
+                page?.icon && (
+                  <span className="tab__icon">
+                    <PageIconGlyph icon={page.icon} size={16} set={iconSet} />
+                  </span>
+                )
               )}
-              <span className="tab__label">{page.title || "无标题"}</span>
+              <span className="tab__label">{label}</span>
               <span
                 className="tab__close"
                 onClick={(e) => {

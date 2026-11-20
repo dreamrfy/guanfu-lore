@@ -1,23 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import {
   AI_ACTIONS,
-  buildChatMessages,
   buildPageMessages,
   buildRewriteMessages,
   chat,
-  chatStream,
   DEFAULT_AI_CONFIG,
   loadAiConfig,
   saveAiConfig,
   type AiAction,
   type AiConfig,
-  type ApiMessage,
-  type ChatMessage,
 } from "../data/ai";
-import { newId, repo, type AiSessionRow } from "../data/db";
-import { buildMcpToolset, chatWithTools } from "../data/aiTools";
 import {
-  callMcpTool,
   deleteMcpServer,
   listMcpServers,
   listMcpTools,
@@ -27,6 +20,7 @@ import {
   type McpServerConfig,
   type McpTool,
 } from "../data/mcp";
+import { AiChatView, type AiChatHandle } from "./AiChatView";
 import {
   addPresetSkills,
   buildSkillMessages,
@@ -97,17 +91,8 @@ export function AiPanel({
   const [skills, setSkills] = useState<AiSkill[]>([]);
   const [skillEditor, setSkillEditor] = useState<AiSkill | null>(null);
 
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [chatInput, setChatInput] = useState("");
-  const [withPage, setWithPage] = useState(true);
-  const [toolTrace, setToolTrace] = useState<string[]>([]);
-  const chatEndRef = useRef<HTMLDivElement | null>(null);
-  /** W91：当前会话（落库，刷新不丢）；abortRef 用于「停止」 */
-  const sessionIdRef = useRef<string | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
-  /** W92：历史面板（对话 ↔ 历史视图切换；有记录时的条目形态规格未取，观复自有【暂定】） */
-  const [showHistory, setShowHistory] = useState(false);
-  const [sessions, setSessions] = useState<AiSessionRow[]>([]);
+  /** W94：对话栏抽成 AiChatView（与桌面主页共用），对话状态/流式/落库/历史都在那里 */
+  const chatRef = useRef<AiChatHandle | null>(null);
 
   const [mcpServers, setMcpServers] = useState<McpServerConfig[]>([]);
   const [mcpEditor, setMcpEditor] = useState<McpServerConfig | null>(null);
@@ -168,27 +153,11 @@ export function AiPanel({
     }
   };
 
-  // 换页/换上下文：载入该页最近的会话（W91 会话落库，刷新/换页不丢）
+  // 换页/换上下文：清掉上一个页面留下的动作结果（对话会话由 AiChatView 按页自载，W91 语义不变）
   useEffect(() => {
-    let alive = true;
-    const key = contextKey ?? page?.id ?? null;
-    void repo.listAiSessions(key).then((rows) => {
-      if (!alive) return;
-      const latest = rows[0] ?? null;
-      sessionIdRef.current = latest?.id ?? null;
-      setMessages(latest ? (latest.messages as ChatMessage[]) : []);
-      setToolTrace([]);
-      setOutput(null);
-      setError(null);
-    });
-    return () => {
-      alive = false;
-    };
+    setOutput(null);
+    setError(null);
   }, [contextKey ?? page?.id]);
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ block: "end" });
-  }, [messages, busy]);
 
   const pageText = context
     ? context.text
@@ -264,9 +233,8 @@ export function AiPanel({
     } else if (command.kind === "selection") {
       // W93：选中文字弹层「在 AI 面板继续问」——选中原文预填进对话输入，发送即带上下文
       setTab("chat");
-      setShowHistory(false);
       const sel = (command.text ?? "").trim();
-      if (sel) setChatInput(`关于这段文字：「${sel}」`);
+      if (sel) chatRef.current?.prefill(`关于这段文字：「${sel}」`);
     }
     clearCommand();
   }, [command]);
@@ -294,141 +262,6 @@ export function AiPanel({
     setBusy(null);
     if (!result.ok) setError(result.error);
     else setOutput({ label: skill.name, text: result.text, selection });
-  };
-
-  /** W91：把当前会话写进 IndexedDB（messages 快照 + updatedAt） */
-  const persistSession = (msgs: ChatMessage[], title?: string) => {
-    const id = sessionIdRef.current;
-    if (!id) return;
-    const row: AiSessionRow = {
-      id,
-      pageId: contextKey ? null : (page?.id ?? null),
-      title: title ?? "对话",
-      messages: msgs
-        .filter((m) => m.role === "user" || m.role === "assistant")
-        .map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    };
-    void repo.putAiSession(row);
-  };
-
-  /** 开新会话（清空对话按钮 / 第一条消息时）：旧会话留在历史里（W92 列表用） */
-  const startNewSession = () => {
-    sessionIdRef.current = newId();
-    setMessages([]);
-    setToolTrace([]);
-    setChatInput("");
-    setError(null);
-  };
-
-  /** W92：打开历史面板（最近改动在前，跨页全局列表【暂定】） */
-  const openHistory = async () => {
-    setSessions(await repo.listAiSessions());
-    setShowHistory(true);
-  };
-
-  /** W92：从历史切回某个会话（续聊会写回同一条记录） */
-  const openSession = (row: AiSessionRow) => {
-    sessionIdRef.current = row.id;
-    setMessages(row.messages);
-    setToolTrace([]);
-    setError(null);
-    setShowHistory(false);
-  };
-
-  /** W91：停止生成——abort 流式请求，已收到的文字保留 */
-  const stopChat = () => {
-    abortRef.current?.abort();
-    abortRef.current = null;
-    setBusy(null);
-  };
-
-  const sendChat = async () => {
-    if (!config) return;
-    const text = chatInput.trim();
-    if (!text || busy === "chat") return;
-    if (!sessionIdRef.current) sessionIdRef.current = newId();
-    const userMessage: ChatMessage = { role: "user", content: text };
-    const next = [...messages, userMessage];
-    setMessages(next);
-    setChatInput("");
-    setError(null);
-    setToolTrace([]);
-    setBusy("chat");
-    persistSession(next, text.slice(0, 24));
-
-    const base = buildChatMessages(
-      next,
-      withPage ? { title: pageTitle, text: pageText } : null
-    ) as ApiMessage[];
-
-    // 收集启用的 MCP 工具；没缓存过的先发现。单个服务器失败不应拖垮对话。
-    const enabled = mcpServers.filter((s) => s.enabled);
-    const allTools: McpTool[] = [];
-    for (const server of enabled) {
-      const cached = mcpTools[server.id];
-      if (cached) {
-        allTools.push(...cached);
-        continue;
-      }
-      try {
-        const tools = await listMcpTools(server);
-        setMcpTools((prev) => ({ ...prev, [server.id]: tools }));
-        allTools.push(...tools);
-      } catch {
-        /* 跳过这个服务器 */
-      }
-    }
-
-    let answer = "";
-    if (allTools.length > 0) {
-      // 带工具的回合仍走非流式（流式 + 工具聚合复杂度高）【暂定】
-      const toolset = buildMcpToolset(allTools);
-      const byId = new Map(enabled.map((s) => [s.id, s]));
-      const result = await chatWithTools([...base], config, toolset, (tool, args) => {
-        const server = byId.get(tool.serverId);
-        return server
-          ? callMcpTool(server, tool.name, args)
-          : Promise.resolve({ ok: false as const, error: "这个 MCP 服务器已被移除" });
-      });
-      if (!result.ok) {
-        setBusy(null);
-        setError(result.error);
-        return;
-      }
-      answer = result.text;
-      setToolTrace(result.used);
-    } else {
-      // W91 流式：增量直接顶进最后一条 assistant 消息
-      const controller = new AbortController();
-      abortRef.current = controller;
-      const result = await chatStream(base as ChatMessage[], config, {
-        signal: controller.signal,
-        onDelta: (full) => {
-          setMessages((prev) => {
-            const copy = [...prev];
-            if (copy[copy.length - 1]?.role === "assistant") copy[copy.length - 1] = { role: "assistant", content: full };
-            else copy.push({ role: "assistant", content: full });
-            return copy;
-          });
-        },
-      });
-      abortRef.current = null;
-      if (!result.ok) {
-        setBusy(null);
-        setError(result.error);
-        return;
-      }
-      answer = result.text;
-    }
-
-    const done: ChatMessage[] = answer
-      ? [...next, { role: "assistant", content: answer }]
-      : next; // 用户点停止且一无所获 → 只留已有内容
-    setMessages(done);
-    persistSession(done, next[0]?.content.slice(0, 24));
-    setBusy(null);
   };
 
   const insertAsCallout = (text: string) => {
@@ -635,95 +468,15 @@ export function AiPanel({
         </>
       )}
 
-      {tab === "chat" && showHistory && (
-        <div className="ai__history">
-          <div className="ai__history-head">
-            <button className="ai__tool" title="返回对话" onClick={() => setShowHistory(false)}>
-              «
-            </button>
-            <span className="ai__history-title">历史记录</span>
-          </div>
-          {sessions.length === 0 ? (
-            <div className="ai__history-empty">暂无历史记录</div>
-          ) : (
-            <div className="ai__history-list">
-              {sessions.map((s) => (
-                <button key={s.id} className="ai__history-item" onClick={() => openSession(s)}>
-                  <span className="ai__history-item-title">{s.title}</span>
-                  <span className="ai__history-item-time">
-                    {new Date(s.updatedAt).toLocaleString()}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {tab === "chat" && !showHistory && (
-        <>
-          <div className="ai__tools">
-            <button className="ai__tool" title="新对话" onClick={startNewSession}>
-              ⊕
-            </button>
-            <button className="ai__tool" title="历史记录" onClick={() => void openHistory()}>
-              🕐
-            </button>
-            {hideTabs && (
-              <button className="ai__tool" title="收起面板" onClick={toggleAiPanel}>
-                »
-              </button>
-            )}
-          </div>
-          <div className="ai__chat">
-            {messages.length === 0 && (
-              <div className="ai__hint">和 AI 讨论这一页。会话自动保存，换页、刷新都在。</div>
-            )}
-            {messages.map((message, i) => (
-              <div key={i} className={`ai__msg ai__msg--${message.role}`}>
-                {message.content}
-              </div>
-            ))}
-            {toolTrace.length > 0 && (
-              <div className="ai__trace">调用了工具：{toolTrace.join("、")}</div>
-            )}
-            {busy === "chat" && <div className="ai__msg ai__msg--assistant">思考中…</div>}
-            <div ref={chatEndRef} />
-          </div>
-          <label className="ai__check">
-            <input type="checkbox" checked={withPage} onChange={(e) => setWithPage(e.target.checked)} />
-            带上本页正文
-          </label>
-          <div className="ai__row">
-            <input
-              className="clip-input"
-              value={chatInput}
-              placeholder={t("aiAskPlaceholder")}
-              onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  void sendChat();
-                }
-              }}
-              disabled={busy === "chat"}
-            />
-            {busy === "chat" ? (
-              <button className="btn btn--sm" onClick={stopChat} title="停止生成（已收到的文字保留）">
-                停止
-              </button>
-            ) : (
-              <button className="btn btn--sm" onClick={() => void sendChat()} disabled={!chatInput.trim()}>
-                发送
-              </button>
-            )}
-          </div>
-          {messages.length > 0 && (
-            <button className="clip-server__toggle" onClick={startNewSession}>
-              新会话
-            </button>
-          )}
-        </>
+      {tab === "chat" && (
+        <AiChatView
+          ref={chatRef}
+          pageId={contextKey ? null : (page?.id ?? null)}
+          pageTitle={pageTitle || null}
+          pageText={pageText || null}
+          mcpServers={mcpServers}
+          onCollapse={hideTabs ? toggleAiPanel : undefined}
+        />
       )}
 
       {tab === "ask" && (

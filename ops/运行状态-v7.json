@@ -78,10 +78,11 @@
     "W90",
     "W91",
     "W92",
-    "W93"
+    "W93",
+    "W94"
   ],
-  "nextTask": "W94",
-  "doneCount": 59,
+  "nextTask": "W95",
+  "doneCount": 60,
   "totalCount": 88,
   "testBaseline": "cd app && npm test = 272/272 绿（36 个文件，勿退化）",
   "devServer": "npm run dev 起在 5173（后台任务 bjlvotyrx；挂了重起即可）",
@@ -331,6 +332,13 @@
       "time": "2026-11-20T07:46:00+08:00",
       "task": "W94",
       "result": "看门狗 0746 轮（r2）：让位心跳——领取会话存活（07:44 状态提交 301f641、07:36 代码落盘），W95/W96 同文件域不可并行，本轮零代码；断停判定基准=本行之后 W94 新进度"
+    },
+    {
+      "time": "2026-11-20T08:40+08:00",
+      "task": "W94",
+      "result": "DONE",
+      "session": "watchdog-v8-0800",
+      "note": "承接0712残留收尾；修 hydrate丢主页签/后配置发不出/丢刷新恢复三真bug+品牌字改观复AI；homeai-check 8断言+3截图，272绿"
     }
   ],
   "modulesDone": [

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { flushDocs, useStore } from "./store";
+import { flushDocs, useStore, HOME_TAB } from "./store";
 import { useNavHistory } from "./navHistory";
 
 /** 每个用例开始前把内存状态清干净（库由 setup.ts 负责清） */
@@ -69,20 +69,16 @@ describe("导航历史（W12 后退/前进/主页）", () => {
     expect(n().idx).toBe(0);
   });
 
-  it("goHome 打开最近修改的页面（主页【暂定】语义）", async () => {
+  it("goHome 打开 AI 对话主页页签；已在主页时点击无反应（W94）", async () => {
     await s().hydrate();
-    const firstId = s().activeTabId as string;
-    const secondId = await s().createPage(null);
-    // 把旧页的时间戳人为提到最新（模拟"刚改过旧页"）
-    useStore.setState((st) => ({
-      pages: st.pages.map((p) => (p.id === firstId ? { ...p, updatedAt: Date.now() + 60_000 } : p)),
-    }));
-    // 切到新页，让"当前页 ≠ 最近修改页"
-    s().setActiveTab(secondId);
-    expect(s().activeTabId).toBe(secondId);
-
+    await s().createPage(null);
+    s().setActiveTab(s().tabs[1]);
     n().goHome();
-    expect(s().activeTabId).toBe(firstId);
+    expect(s().activeTabId).toBe(HOME_TAB);
+    expect(s().tabs).toContain(HOME_TAB);
+    // 已在主页（且主页页签首启就常驻）：再点主页钮无反应（不新增页签）
+    n().goHome();
+    expect(s().tabs).toHaveLength(2);
   });
 
   it("refresh 强制重读正文并 bump tick（编辑器重挂载链路）", async () => {
