@@ -92,10 +92,11 @@
   "W121",
   "W122",
   "W123",
-  "W131"
+  "W131",
+  "W132"
  ],
- "nextTask": "W132",
- "doneCount": 83,
+ "nextTask": "W133",
+ "doneCount": 84,
  "totalCount": 90,
  "testBaseline": "cd app && npm test = 272/272 绿（36 个文件，勿退化）",
  "devServer": "cd app && npm run dev（5173）；截图 npm run shot -- <url> <out.png> [宽] [高] [等待ms]；主题点验 npm run theme-shot。原后台任务已失效，重起即可。",
@@ -399,6 +400,10 @@
   {
    "time": "2026-11-20T23:10:00+08:00",
    "event": "W131 DONE（双主题全量走查）：8 模块×浅/深 16 图+拼图；关键表面颜色 2–4 个/模块随主题变化；无阻塞不一致；284 测试/check/build 过；本地 commit（不 push）。下一 W132 Tauri 打包。"
+  },
+  {
+   "time": "2026-11-21T00:05:00+08:00",
+   "event": "W132 DONE（Tauri 终版打包）：NSIS 0.1.0+sig 23:47 构建；静默安装升级到既有目录；installed-w132-smoke 5 步真装全过（外壳/页签/编辑器/多维表/关窗）；本地 commit（不 push）。下一 W133 文档收尾。"
   }
  ],
  "modulesDone": [

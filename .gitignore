@@ -62,3 +62,6 @@ _cleanup/
 
 # 服务端可重新生成的离线快照
 server/out/
+
+# Tauri 安装版调试用 WebView2 档案（本地临时）
+.webview2-*/
