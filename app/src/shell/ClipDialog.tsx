@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLang } from "../i18n";
 import {
   DEFAULT_CLIP_SERVER,
@@ -22,15 +22,23 @@ import { useStore } from "../data/store";
 import { AppIcon } from "../design/icons";
 
 /**
- * 「快速剪藏」入口 + 对话框。
+ * 「快速剪藏」入口 + 对话框（W121）。
  *
  * 粘贴链接 → 调本地剪藏服务（server/src/clipServer.ts）→ 落进「剪藏库」表的记录。
- * 服务没起来时给的是可执行的提示，而不是一句"失败了"。
+ * 抓取过程、成功、同链接已存在、失败四种状态都在同一个面板里给出下一步动作，
+ * 不再抓完就自动关窗（用户看不到结果、也没法「继续」）。
  */
 export function ClipButton() {
   const [open, setOpen] = useState(false);
   const iconSet = useStore((s) => s.iconSet);
   const { t } = useLang();
+
+  // 桌面快捷键 Ctrl+Shift+V 由 useGlobalShortcuts 广播；入口组件只管接
+  useEffect(() => {
+    const onOpen = () => setOpen(true);
+    window.addEventListener("gf:open-clip-dialog", onOpen);
+    return () => window.removeEventListener("gf:open-clip-dialog", onOpen);
+  }, []);
 
   return (
     <>
@@ -47,12 +55,30 @@ export function ClipButton() {
   );
 }
 
+type ClipDone = {
+  title: string;
+  collectionId: string;
+  recordId: string;
+  duplicate: boolean;
+};
+
+function recordTitle(collectionId: string, recordId: string): string {
+  const state = useStore.getState();
+  const collection = state.collections.find((c) => c.id === collectionId);
+  const record = (state.records[collectionId] ?? []).find((r) => r.id === recordId);
+  if (!collection || !record) return "（无标题）";
+  const field = collection.fields.find((f) => f.name === "标题") ?? collection.fields[0];
+  return String(record.values[field.id] ?? "") || "（无标题）";
+}
+
 function ClipDialog({ onClose }: { onClose: () => void }) {
   const { t } = useLang();
+  const iconSet = useStore((s) => s.iconSet);
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState<string | null>(null);
+  const [done, setDone] = useState<ClipDone | null>(null);
   const [server, setServer] = useState(DEFAULT_CLIP_SERVER);
   const [token, setToken] = useState("");
   const [showBox, setShowBox] = useState(false);
@@ -83,23 +109,31 @@ function ClipDialog({ onClose }: { onClose: () => void }) {
 
   const submit = async () => {
     const value = url.trim();
-    if (!value || busy) return;
+    if (!value || busy) {
+      if (!value) inputRef.current?.focus();
+      return;
+    }
     setBusy(true);
     setError(null);
     setDone(null);
 
-    // 先看本地有没有同链接的记录：有就直接打开，不必再抓一遍
+    // 先看本地有没有同链接的记录：有就直接给「打开」，不必再抓一遍
     const state = useStore.getState();
     const existingCollection = state.collections.find((c) => c.name === CLIP_COLLECTION_NAME);
     if (existingCollection) {
       await state.ensureRecords(existingCollection.id);
-      const existing = findExistingClipRecord(value, useStore.getState().collections.find((c) => c.id === existingCollection.id));
+      const existing = findExistingClipRecord(
+        value,
+        useStore.getState().collections.find((c) => c.id === existingCollection.id),
+      );
       if (existing) {
-        state.openCollection(existingCollection.id);
-        state.openRecord(existingCollection.id, existing.id);
-        setDone("这篇之前已经剪藏过，已为你打开原记录");
+        setDone({
+          title: recordTitle(existingCollection.id, existing.id),
+          collectionId: existingCollection.id,
+          recordId: existing.id,
+          duplicate: true,
+        });
         setBusy(false);
-        window.setTimeout(onClose, 700);
         return;
       }
     }
@@ -112,127 +146,206 @@ function ClipDialog({ onClose }: { onClose: () => void }) {
     }
 
     try {
-      await ingestClip(result);
-      setDone(`已存入「${CLIP_COLLECTION_NAME}」：${result.clip.title}`);
+      const { collectionId, recordId } = await ingestClip(result, { open: false });
+      setDone({
+        title: result.clip.title || value,
+        collectionId,
+        recordId,
+        duplicate: false,
+      });
       setBusy(false);
-      window.setTimeout(onClose, 500);
     } catch (e) {
       setError("已抓到内容，但写入本地库失败：" + String((e as Error)?.message ?? e));
       setBusy(false);
     }
   };
 
+  const openDone = async () => {
+    if (!done) return;
+    const state = useStore.getState();
+    await state.openCollection(done.collectionId);
+    state.openRecord(done.collectionId, done.recordId);
+    onClose();
+  };
+
+  const continueClip = () => {
+    setUrl("");
+    setError(null);
+    setDone(null);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  };
+
+  const openOriginal = () => {
+    const value = url.trim();
+    if (value) window.open(value, "_blank", "noopener,noreferrer");
+  };
+
   return (
-    <div className="modal" role="dialog" aria-modal="true" onMouseDown={() => !busy && onClose()}>
+    <div
+      className="modal"
+      role="dialog"
+      aria-modal="true"
+      data-testid="clip-dialog"
+      onMouseDown={() => !busy && onClose()}
+    >
       <div className="modal__card" onMouseDown={(e) => e.stopPropagation()}>
         <div className="modal__head">
           <b>{t("clipEntry")}</b>
-          <button className="icon-btn" title="关闭" onClick={onClose} disabled={busy}>
-            ×
+          <button className="icon-btn" title="关闭" onClick={onClose}>
+            <AppIcon name="close" set={iconSet} />
           </button>
         </div>
 
         <div className="modal__body">
-          <label className="modal__label" htmlFor="clip-url">
-            粘贴链接
-          </label>
-          <div className="modal__row">
-            <input
-              id="clip-url"
-              className="clip-input"
-              autoFocus
-              value={url}
-              placeholder="公众号文章链接 / B站视频链接（b23.tv 或 bilibili.com）"
-              onChange={(e) => setUrl(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") void submit();
-              }}
-              disabled={busy}
-            />
-            <button className="btn" onClick={() => void submit()} disabled={busy || !url.trim()}>
-              {busy ? t("clipFetching") : t("clipButton")}
-            </button>
-          </div>
+          {!done && (
+            <>
+              <label className="modal__label" htmlFor="clip-url">
+                {t("clipPasteLabel")}
+              </label>
+              <div className="modal__row">
+                <input
+                  ref={inputRef}
+                  id="clip-url"
+                  className="clip-input"
+                  autoFocus
+                  value={url}
+                  placeholder={t("clipInputPlaceholder")}
+                  onChange={(e) => setUrl(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") void submit();
+                  }}
+                  disabled={busy}
+                />
+                <button className="btn" onClick={() => void submit()} disabled={busy || !url.trim()}>
+                  {busy ? t("clipFetching") : t("clipButton")}
+                </button>
+              </div>
 
-          <div className="modal__hint">
-            第一批支持公众号文章与 B 站视频；抓取会下载正文与图片，页面多图时可能需要十几秒。
-          </div>
+              <div className="modal__hint">{t("clipHint")}</div>
 
-          {busy && <div className="modal__status">正在抓取并保存，请稍候…</div>}
-          {error && <div className="modal__error">{error}</div>}
-          {done && <div className="modal__ok">{done}</div>}
-
-          <button className="clip-server__toggle" onClick={() => setShowBox((v) => !v)}>
-            服务器剪藏箱（微信转发自动收进来的）
-          </button>
-          {showBox && (
-            <div className="clip-box">
-              {box.length === 0 && <div className="ai__hint">服务器上还没有剪藏（把文章转发给微信客服即可）。</div>}
-              {box.map((entry) => (
-                <div className="clip-box__item" key={entry.id}>
-                  <span className="clip-box__title">{entry.title || "（无标题）"}</span>
-                  <button
-                    className="btn btn--sm"
-                    disabled={boxBusy !== null}
-                    onClick={async () => {
-                      setBoxBusy(entry.id);
-                      setBoxMsg(null);
-                      const result = await importServerClip(entry.id);
-                      setBoxMsg(
-                        result.ok
-                          ? result.skipped
-                            ? `「${result.title}」之前已经导入过，跳过`
-                            : `已导入「${result.title}」到剪藏库`
-                          : `导入失败：${result.error}`
-                      );
-                      setBoxBusy(null);
-                    }}
-                  >
-                    {boxBusy === entry.id ? "导入中…" : "导入"}
-                  </button>
+              {busy && (
+                <div className="clip-progress" role="progressbar" aria-label={t("clipFetching")}>
+                  <span />
                 </div>
-              ))}
-              {boxMsg && <div className="ai__hint">{boxMsg}</div>}
+              )}
+
+              {error && (
+                <div className="clip-result clip-result--error" data-testid="clip-error" aria-live="polite">
+                  <div className="clip-result__icon">!</div>
+                  <div className="clip-result__main">
+                    <b>{t("clipFailedHint")}</b>
+                    <span title={error}>{error}</span>
+                  </div>
+                  <div className="clip-result__actions">
+                    <button className="btn btn--sm" onClick={() => void submit()} disabled={busy || !url.trim()}>
+                      {t("clipRetry")}
+                    </button>
+                    <button className="btn btn--sm" onClick={openOriginal}>
+                      {t("clipOpenOriginal")}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {done && (
+            <div
+              className={`clip-result${done.duplicate ? " clip-result--duplicate" : ""}`}
+              data-testid={done.duplicate ? "clip-duplicate" : "clip-success"}
+              aria-live="polite"
+            >
+              <div className="clip-result__icon">{done.duplicate ? "↺" : "✓"}</div>
+              <div className="clip-result__main">
+                <b>{done.duplicate ? t("clipDuplicateTitle") : t("clipSuccessTitle")}</b>
+                <span title={done.title}>{done.title}</span>
+              </div>
+              <div className="clip-result__actions">
+                <button className="btn btn--sm" onClick={() => void openDone()}>
+                  {t("clipOpen")}
+                </button>
+                <button className="btn btn--sm" onClick={continueClip}>
+                  {t("clipContinue")}
+                </button>
+              </div>
             </div>
           )}
 
-          <button className="clip-server__toggle" onClick={() => setShowServer((v) => !v)}>
-            {showServer ? "收起" : "剪藏服务地址"}（{server}）
-          </button>
-          {showServer && (
+          {!done && (
             <>
-              <div className="modal__row">
-                <input
-                  className="clip-input"
-                  value={server}
-                  onChange={(e) => setServer(e.target.value)}
-                  onBlur={() => void saveClipServerUrl(server)}
-                  spellCheck={false}
-                />
-                <button
-                  className="btn btn--sm"
-                  onClick={() => {
-                    void saveClipServerUrl(server);
-                    setShowServer(false);
-                  }}
-                >
-                  保存
-                </button>
-              </div>
-              <div className="modal__row">
-                <input
-                  className="clip-input"
-                  type="password"
-                  value={token}
-                  placeholder="访问 Token（服务端设了 CLIP_TOKEN 才需要）"
-                  onChange={(e) => setToken(e.target.value)}
-                  onBlur={() => void saveClipToken(token)}
-                  spellCheck={false}
-                />
-                <button className="btn btn--sm" onClick={() => void saveClipToken(token)}>
-                  存 Token
-                </button>
-              </div>
+              <button className="clip-server__toggle" onClick={() => setShowBox((v) => !v)}>
+                服务器剪藏箱（微信转发自动收进来的）
+              </button>
+              {showBox && (
+                <div className="clip-box">
+                  {box.length === 0 && <div className="ai__hint">服务器上还没有剪藏（把文章转发给微信客服即可）。</div>}
+                  {box.map((entry) => (
+                    <div className="clip-box__item" key={entry.id}>
+                      <span className="clip-box__title">{entry.title || "（无标题）"}</span>
+                      <button
+                        className="btn btn--sm"
+                        disabled={boxBusy !== null}
+                        onClick={async () => {
+                          setBoxBusy(entry.id);
+                          setBoxMsg(null);
+                          const result = await importServerClip(entry.id);
+                          setBoxMsg(
+                            result.ok
+                              ? result.skipped
+                                ? `「${result.title}」之前已经导入过，跳过`
+                                : `已导入「${result.title}」到剪藏库`
+                              : `导入失败：${result.error}`
+                          );
+                          setBoxBusy(null);
+                        }}
+                      >
+                        {boxBusy === entry.id ? "导入中…" : "导入"}
+                      </button>
+                    </div>
+                  ))}
+                  {boxMsg && <div className="ai__hint">{boxMsg}</div>}
+                </div>
+              )}
+
+              <button className="clip-server__toggle" onClick={() => setShowServer((v) => !v)}>
+                {showServer ? "收起" : "剪藏服务地址"}（{server}）
+              </button>
+              {showServer && (
+                <>
+                  <div className="modal__row">
+                    <input
+                      className="clip-input"
+                      value={server}
+                      onChange={(e) => setServer(e.target.value)}
+                      onBlur={() => void saveClipServerUrl(server)}
+                      spellCheck={false}
+                    />
+                    <button
+                      className="btn btn--sm"
+                      onClick={() => {
+                        void saveClipServerUrl(server);
+                        setShowServer(false);
+                      }}
+                    >
+                      保存
+                    </button>
+                  </div>
+                  <div className="modal__row">
+                    <input
+                      className="clip-input"
+                      type="password"
+                      value={token}
+                      placeholder="访问 Token（服务端设了 CLIP_TOKEN 才需要）"
+                      onChange={(e) => setToken(e.target.value)}
+                      onBlur={() => void saveClipToken(token)}
+                      spellCheck={false}
+                    />
+                    <button className="btn btn--sm" onClick={() => void saveClipToken(token)}>
+                      存 Token
+                    </button>
+                  </div>
+                </>
+              )}
             </>
           )}
         </div>

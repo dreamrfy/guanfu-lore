@@ -2158,6 +2158,96 @@ html[data-theme="dark"] .modal__ok {
   color: var(--gf-success-text);
 }
 
+/* W121 剪藏入口：抓取进度条 + 成功/重复/失败结果卡 */
+.clip-progress {
+  height: 2px;
+  margin: 10px 0 2px;
+  overflow: hidden;
+  border-radius: var(--gf-radius-pill);
+  background: var(--gf-bg-sunken);
+}
+
+.clip-progress span {
+  display: block;
+  width: 38%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--gf-primary);
+  animation: clip-progress 1.1s ease-in-out infinite;
+}
+
+@keyframes clip-progress {
+  0% {
+    transform: translateX(-110%);
+  }
+  100% {
+    transform: translateX(290%);
+  }
+}
+
+.clip-result {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid var(--gf-border);
+  border-radius: var(--gf-radius-md);
+  background: var(--gf-bg-raised);
+}
+
+.clip-result__icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--gf-success-soft);
+  color: var(--gf-success-text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.clip-result--duplicate .clip-result__icon {
+  background: var(--gf-primary-soft);
+  color: var(--gf-primary);
+}
+
+.clip-result--error .clip-result__icon {
+  background: var(--gf-danger-soft);
+  color: var(--gf-danger-text);
+}
+
+.clip-result__main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.clip-result__main b {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.clip-result__main span {
+  overflow: hidden;
+  color: var(--gf-text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clip-result__actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-self: center;
+  gap: 6px;
+}
+
 .clip-server__toggle {
   margin-top: 14px;
   padding: 0;

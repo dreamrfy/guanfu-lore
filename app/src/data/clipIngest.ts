@@ -162,7 +162,10 @@ async function saveSnapshot(html: string | null): Promise<string | null> {
  * 剪藏结果 → 剪藏库记录。
  * 返回 collectionId / recordId，并顺手打开记录详情。
  */
-export async function ingestClip(result: OkClip): Promise<{ collectionId: string; recordId: string }> {
+export async function ingestClip(
+  result: OkClip,
+  opts: { open?: boolean } = {},
+): Promise<{ collectionId: string; recordId: string }> {
   const store = useStore.getState();
 
   const imageMap = await saveClipImages(result.assets);
@@ -179,8 +182,12 @@ export async function ingestClip(result: OkClip): Promise<{ collectionId: string
   const values = buildClipValues(collection, result.clip);
   const recordId = await store.addClipRecord(collection.id, values, blocks, snapshotAssetId);
 
-  await store.openCollection(collection.id);
-  store.openRecord(collection.id, recordId);
+  // 默认保持旧行为：入库后直接打开记录。
+  // 剪藏弹层（W121）要留在成功面板等用户选「打开/继续」，传 { open: false }。
+  if (opts.open !== false) {
+    await store.openCollection(collection.id);
+    store.openRecord(collection.id, recordId);
+  }
   return { collectionId: collection.id, recordId };
 }
 
