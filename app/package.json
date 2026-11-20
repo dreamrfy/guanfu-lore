@@ -86,7 +86,8 @@
     "notfound-check": "node tools/notfound-check.mjs",
     "ai-history-check": "node tools/ai-history-check.mjs",
     "ai-entry-check": "node tools/ai-entry-check.mjs",
-    "settings-check": "node tools/settings-check.mjs"
+    "settings-check": "node tools/settings-check.mjs",
+    "settings-content-check": "node tools/settings-content-check.mjs"
   },
   "keywords": [],
   "author": "",
