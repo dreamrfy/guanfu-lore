@@ -323,6 +323,12 @@
   /* 窄口（全屏页）时浮层铺满 */
   --gf-search-fullscreen-inset: 0px;
 
+  /* ---------- 设置弹层（W100） ----------
+     11 号 §1 实测：居中大弹层 ~950×660，左竖导航 + 右内容 + 右上 ×。 */
+  --gf-settings-width: 950px;
+  --gf-settings-height: 660px;
+  --gf-settings-nav-width: 200px;
+
   /* ---------- 焦点环 ---------- */
   --gf-focus-ring-width: 2px;
   --gf-focus-ring-color: var(--gf-accent);

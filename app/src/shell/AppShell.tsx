@@ -14,6 +14,7 @@ import { useNavHistory } from "../data/navHistory";
 import { TopToolbar } from "./TopToolbar";
 import { PageIconPicker } from "./PageIconPicker";
 import { SearchOverlay } from "./SearchOverlay";
+import { SettingsDialog } from "./SettingsDialog";
 import { AiPanel } from "./AiPanel";
 import { HomeAiChat } from "./HomeAiChat";
 import { useGlobalShortcuts } from "./useGlobalShortcuts";
@@ -184,6 +185,8 @@ export function AppShell() {
   // W47 窄口（Web <768）：侧栏改抽屉（默认收起，☰ 打开），桌面形态完全不受影响
   const [narrow, setNarrow] = useState(false);
   const [narrowOpen, setNarrowOpen] = useState(false);
+  // W100 设置弹层：入口在侧栏空间切换菜单
+  const [settingsOpen, setSettingsOpen] = useState(false);
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 767px)");
     const sync = () => {
@@ -207,9 +210,10 @@ export function AppShell() {
       )}
       <TabBar />
       <SearchOverlay />
+      <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <div className="shell__body">
       <aside className={`shell__sidebar${sidebarCollapsed ? " shell__sidebar--collapsed" : ""}`}>
-        <Sidebar />
+        <Sidebar onOpenSettings={() => setSettingsOpen(true)} />
       </aside>
 
       <main className="shell__main">

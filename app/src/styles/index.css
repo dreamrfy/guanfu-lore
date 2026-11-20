@@ -5412,3 +5412,145 @@ html[data-theme="dark"] .winbtn--close:hover {
   background: var(--gf-bg-hover);
   color: var(--gf-text-primary);
 }
+
+/* ============ 设置弹层（W100 · 11 号 §2） ============ */
+.setdlg {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gf-overlay);
+}
+
+.setdlg__card {
+  display: flex;
+  width: var(--gf-settings-width);
+  height: var(--gf-settings-height);
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 32px);
+  background: var(--gf-bg-surface);
+  border: 1px solid var(--gf-border);
+  border-radius: var(--gf-radius-lg);
+  box-shadow: var(--gf-shadow-modal);
+  overflow: hidden;
+}
+
+.setdlg__nav {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: var(--gf-settings-nav-width);
+  padding: 16px 8px 12px;
+  border-right: 1px solid var(--gf-border);
+  overflow-y: auto;
+}
+
+.setdlg__group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+.setdlg__group--bottom {
+  margin-top: auto;
+  margin-bottom: 0;
+}
+
+.setdlg__group-name {
+  padding: 4px 12px;
+  font-size: 12px;
+  color: var(--gf-text-tertiary);
+}
+
+.setdlg__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--gf-control-height);
+  padding: 0 12px;
+  border: none;
+  border-radius: var(--gf-radius-sm);
+  background: none;
+  font-size: 13px;
+  color: var(--gf-text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.setdlg__item:hover {
+  background: var(--gf-bg-hover);
+}
+
+.setdlg__item--on {
+  background: var(--gf-bg-active);
+  color: var(--gf-text-primary);
+}
+
+.setdlg__item--off {
+  color: var(--gf-text-tertiary);
+  cursor: default;
+}
+
+.setdlg__item--off:hover {
+  background: none;
+}
+
+.setdlg__item--quit {
+  color: var(--gf-danger-text);
+}
+
+.setdlg__badge {
+  padding: 0 6px;
+  border-radius: var(--gf-radius-pill);
+  background: var(--gf-danger-soft);
+  font-size: 11px;
+  color: var(--gf-danger-text);
+}
+
+.setdlg__body {
+  position: relative;
+  flex: 1;
+  padding: 24px 32px;
+  overflow-y: auto;
+}
+
+.setdlg__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--gf-control-height);
+  height: var(--gf-control-height);
+  border: none;
+  border-radius: var(--gf-radius-sm);
+  background: none;
+  font-size: 18px;
+  color: var(--gf-text-secondary);
+  cursor: pointer;
+}
+
+.setdlg__close:hover {
+  background: var(--gf-bg-hover);
+  color: var(--gf-text-primary);
+}
+
+.setdlg__title {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--gf-text-primary);
+}
+
+.setdlg__content {
+  font-size: 13px;
+  color: var(--gf-text-secondary);
+}
+
+.setdlg__placeholder {
+  padding: 32px 0;
+  color: var(--gf-text-tertiary);
+}

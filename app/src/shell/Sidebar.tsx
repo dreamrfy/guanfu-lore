@@ -78,7 +78,7 @@ export function buildTree(pages: PageRow[], collapsed: ReadonlySet<string> = new
 const fmt = (t: number) =>
   new Date(t).toLocaleString("zh-CN", { hour12: false, month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
 
-export function Sidebar() {
+export function Sidebar({ onOpenSettings }: { onOpenSettings?: () => void }) {
   const pages = useStore((s) => s.pages);
   const trash = useStore((s) => s.trash);
   const activeTabId = useStore((s) => s.activeTabId);
@@ -722,8 +722,15 @@ export function Sidebar() {
               工作空间
             </div>
             <div className="tabctx__item tabctx__item--off">本地空间（当前）</div>
-            <div className="tabctx__item tabctx__item--off" title="待 W100 设置弹层">
-              空间管理【待 W100】
+            <div
+              className="tabctx__item"
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                setWsMenu(false);
+                onOpenSettings?.();
+              }}
+            >
+              空间设置
             </div>
             <div
               className="tabctx__item"

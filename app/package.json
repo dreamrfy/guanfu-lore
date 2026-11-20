@@ -85,7 +85,8 @@
     "homeai-check": "node tools/homeai-check.mjs",
     "notfound-check": "node tools/notfound-check.mjs",
     "ai-history-check": "node tools/ai-history-check.mjs",
-    "ai-entry-check": "node tools/ai-entry-check.mjs"
+    "ai-entry-check": "node tools/ai-entry-check.mjs",
+    "settings-check": "node tools/settings-check.mjs"
   },
   "keywords": [],
   "author": "",
