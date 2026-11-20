@@ -91,10 +91,11 @@
   "W120",
   "W121",
   "W122",
-  "W123"
+  "W123",
+  "W131"
  ],
- "nextTask": "W131",
- "doneCount": 82,
+ "nextTask": "W132",
+ "doneCount": 83,
  "totalCount": 90,
  "testBaseline": "cd app && npm test = 272/272 绿（36 个文件，勿退化）",
  "devServer": "cd app && npm run dev（5173）；截图 npm run shot -- <url> <out.png> [宽] [高] [等待ms]；主题点验 npm run theme-shot。原后台任务已失效，重起即可。",
@@ -394,6 +395,10 @@
   {
    "time": "2026-11-20T22:40:00+08:00",
    "event": "决策：用户拍板分享先做 UI 占位，公开链接域名/匿名策略以后定；W111–W114、W130 标 BLOCKED·等用户；W110 面板「复制页面链接」保留。下一 W131。"
+  },
+  {
+   "time": "2026-11-20T23:10:00+08:00",
+   "event": "W131 DONE（双主题全量走查）：8 模块×浅/深 16 图+拼图；关键表面颜色 2–4 个/模块随主题变化；无阻塞不一致；284 测试/check/build 过；本地 commit（不 push）。下一 W132 Tauri 打包。"
   }
  ],
  "modulesDone": [
