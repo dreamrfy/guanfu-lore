@@ -225,13 +225,28 @@ export function AppShell() {
 
           <div className="page__inner">
             {!page ? (
-              <div className="empty-state">
-                <AppIcon name="file" set={iconSet} size={20} />
-                <div style={{ marginTop: 8 }}>没有打开的页面</div>
+              /* W95 06 号 §2：404 空态（对应 FlowUs 访问不存在路由的通用形态）——
+                 触达路径：页签指向的文档被删（含远端同步删除）或无文档页签 */
+              <div className="notfound">
+                <div className="notfound__emoji">🎉</div>
+                <div className="notfound__text">欢迎使用</div>
+                <button
+                  className="notfound__btn"
+                  onClick={() => {
+                    /* 复用死页签：新建页后开新签、关死签，页签数恢复原状（不越点越多） */
+                    const s = useStore.getState();
+                    const deadId = s.activeTabId;
+                    void s.createPage(null, [], { open: false }).then((id) => {
+                      s.openTab(id);
+                      if (deadId) s.closeTab(deadId);
+                    });
+                  }}
+                >
+                  ＋ 创建新页面
+                </button>
               </div>
             ) : (
               <>
-                <PageIconPicker value={page.icon} onChange={(v) => setPageIcon(page.id, v)} iconSet={iconSet} />
 
                 {/* W44 页头 hover 浮条（07 §4：添加图标 / 添加封面 / 添加评论；评论待专项置灰） */}
                 <div className="pagehead-add">

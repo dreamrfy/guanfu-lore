@@ -467,6 +467,8 @@ body {
 
 .page {
   flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
   padding: 60px 0 120px;
 }
@@ -475,6 +477,9 @@ body {
   width: var(--gf-content-width);
   max-width: calc(100% - 96px);
   margin: 0 auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ---------- 多维表格 ---------- */
@@ -5373,4 +5378,37 @@ html[data-theme="dark"] .winbtn--close:hover {
 
 .homeai__chat--hidden {
   display: none;
+}
+
+/* ---------- 404 空态（W95 06 号 §2：居中 🎉 欢迎使用 + ＋ 创建新页面，通用 404 形态） ---------- */
+.notfound {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 80px 24px;
+  color: var(--gf-text-tertiary);
+}
+.notfound__emoji {
+  font-size: 40px;
+  line-height: 1;
+}
+.notfound__text {
+  font-size: 14px;
+}
+.notfound__btn {
+  margin-top: 6px;
+  padding: 6px 14px;
+  border: 1px solid var(--gf-border);
+  border-radius: 6px;
+  background: var(--gf-bg-elev);
+  color: var(--gf-text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+}
+.notfound__btn:hover {
+  background: var(--gf-bg-hover);
+  color: var(--gf-text-primary);
 }

@@ -17,3 +17,10 @@ createRoot(root).render(
     <App />
   </LangProvider>
 );
+
+// DEV 点验挂载：仅开发模式把 store 暴露给点验脚本（404 复现等），不进产物
+if (import.meta.env.DEV) {
+  import("./data/store").then(({ useStore }) => {
+    (window as unknown as { __gf_store: typeof useStore }).__gf_store = useStore;
+  });
+}
