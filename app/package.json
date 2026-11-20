@@ -88,7 +88,8 @@
     "ai-entry-check": "node tools/ai-entry-check.mjs",
     "settings-check": "node tools/settings-check.mjs",
     "settings-content-check": "node tools/settings-content-check.mjs",
-    "account-check": "node tools/account-check.mjs"
+    "account-check": "node tools/account-check.mjs",
+    "w104-shot": "node tools/w104-shot.mjs"
   },
   "keywords": [],
   "author": "",
