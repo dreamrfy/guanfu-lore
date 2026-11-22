@@ -30,7 +30,7 @@ import {
 import { AppIcon } from "../design/icons";
 import { useLang } from "../i18n";
 import { AiBatchDialog } from "./AiBatchDialog";
-import { ViewBar } from "./ViewBar";
+import { ViewBar, FilterPanel, SortPanel, GroupPanel } from "./ViewBar";
 import { KanbanView } from "./KanbanView";
 import { GalleryView } from "./GalleryView";
 import { CatalogView } from "./CatalogView";
@@ -706,6 +706,7 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
   const iconSet = useStore((s) => s.iconSet);
   const renameCollection = useStore((s) => s.renameCollection);
   const addField = useStore((s) => s.addField);
+  const removeField = useStore((s) => s.removeField);
   const addRecord = useStore((s) => s.addRecord);
   const setCell = useStore((s) => s.setCell);
   const removeRecord = useStore((s) => s.removeRecord);
@@ -1318,6 +1319,10 @@ function ViewTabs({ collection, view }: { collection: CollectionRow; view: ViewD
   const removeView = useStore((s) => s.removeView);
   const updateView = useStore((s) => s.updateView);
   const copyView = useStore((s) => s.copyView);
+  // 属性页签（W69 补齐）：字段新建/重命名/显示开关/删除
+  const addField = useStore((s) => s.addField);
+  const updateField = useStore((s) => s.updateField);
+  const removeField = useStore((s) => s.removeField);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [tab, setTab] = useState("view");
   const [menuFor, setMenuFor] = useState<string | null>(null);
@@ -1542,9 +1547,56 @@ function ViewTabs({ collection, view }: { collection: CollectionRow; view: ViewD
                     删除视图
                   </button>
                 </>
+              ) : tab === "props" ? (
+                /* 属性页签：字段管理（新建 / 重命名 / 显示开关 / 删除）——04 号 §1.3 + §2 */
+                <div className="vs-fields">
+                  {collection.fields.map((f, i) => (
+                    <div className="vs-field" key={f.id}>
+                      <input
+                        className="vs-field__name"
+                        defaultValue={f.name}
+                        onBlur={(e) => {
+                          const name = e.target.value.trim();
+                          if (name && name !== f.name) updateField(collection.id, f.id, { name });
+                        }}
+                      />
+                      <span className="vs-field__type">{FIELD_TYPE_LABEL[f.type]}</span>
+                      <label className="vs-field__show" title="在本表显示/隐藏这一列">
+                        <input
+                          type="checkbox"
+                          checked={!f.hidden}
+                          onChange={(e) => updateField(collection.id, f.id, { hidden: !e.target.checked })}
+                        />
+                        显示
+                      </label>
+                      <button
+                        className="icon-btn"
+                        title={i === 0 ? "标题列不可删除" : "删除属性"}
+                        disabled={i === 0}
+                        onClick={() => removeField(collection.id, f.id)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  <button className="btn btn--sm vs-fields__add" onClick={() => void addField(collection.id, "text")}>
+                    ＋ 创建新属性
+                  </button>
+                  <div className="vs-placeholder">「编辑属性」（类型 / 选项管理）在列头菜单与记录页属性菜单里已有入口。</div>
+                </div>
+              ) : tab === "filter" ? (
+                <FilterPanel collection={collection} view={view} onClose={() => setSettingsOpen(false)} />
+              ) : tab === "sort" ? (
+                <SortPanel collection={collection} view={view} onClose={() => setSettingsOpen(false)} />
+              ) : tab === "group" ? (
+                <GroupPanel collection={collection} view={view} onClose={() => setSettingsOpen(false)} />
+              ) : tab === "child" ? (
+                <div className="vs-placeholder">
+                  「子记录」页签在 FlowUs 观测中未取到内容（04 号 §5 如实记录）；观复暂未实现子记录功能。【暂定】等需求出现再定形态。
+                </div>
               ) : (
                 <div className="vs-placeholder">
-                  该页签内容待 W70 统一接入（筛选 / 排序 / 分组目前可在下方视图栏直接操作）
+                  该页签内容待接入（筛选 / 排序 / 分组目前可在下方视图栏直接操作）
                 </div>
               )}
             </div>

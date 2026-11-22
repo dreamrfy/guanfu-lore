@@ -6190,3 +6190,60 @@ html[data-theme="dark"] .winbtn--close:hover {
   background: var(--gf-bg-hover);
   font-size: 11px;
 }
+
+/* W69 补齐：视图设置「属性」页签——字段管理列表 */
+.vs-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vs-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vs-field__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--gf-border);
+  border-radius: var(--gf-radius-sm);
+  background: var(--gf-bg-surface);
+  color: var(--gf-text-primary);
+  font: inherit;
+  font-size: var(--gf-font-size-caption);
+}
+
+.vs-field__type {
+  flex: 0 0 auto;
+  color: var(--gf-text-tertiary);
+  font-size: var(--gf-font-size-caption);
+}
+
+.vs-field__show {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  color: var(--gf-text-secondary);
+  font-size: var(--gf-font-size-caption);
+  cursor: pointer;
+}
+
+.vs-fields__add {
+  align-self: flex-start;
+}
+
+/* W69 补齐：筛选/排序/分组面板内嵌进视图设置弹层时，取消浮层定位 */
+.viewsettings .viewpop {
+  position: static;
+  width: 100%;
+  max-width: none;
+  max-height: none;
+  box-shadow: none;
+  border: none;
+  padding: 4px 0;
+}

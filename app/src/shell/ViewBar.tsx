@@ -114,7 +114,7 @@ function ValueInput({
   );
 }
 
-function FilterPanel({ collection, view, onClose }: PanelProps) {
+export function FilterPanel({ collection, view, onClose }: PanelProps) {
   const updateView = useStore((s) => s.updateView);
   const patch = (p: Partial<ViewDef>) => updateView(collection.id, view.id, p);
   const byId = new Map(collection.fields.map((f) => [f.id, f]));
@@ -231,7 +231,7 @@ function FilterPanel({ collection, view, onClose }: PanelProps) {
   );
 }
 
-function SortPanel({ collection, view, onClose }: PanelProps) {
+export function SortPanel({ collection, view, onClose }: PanelProps) {
   const updateView = useStore((s) => s.updateView);
   const patch = (p: Partial<ViewDef>) => updateView(collection.id, view.id, p);
   const used = new Set(view.sorts.map((s) => s.fieldId));
@@ -359,7 +359,7 @@ export function ViewBar({ collection, view }: { collection: CollectionRow; view:
 
 
 /** 分组（V01）：选一个字段按它的值分桶展示；（空）垫底。与筛选/排序叠加共存 */
-function GroupPanel({ collection, view }: PanelProps) {
+export function GroupPanel({ collection, view }: PanelProps) {
   const updateView = useStore((s) => s.updateView);
   const patch = (p: Partial<ViewDef>) => updateView(collection.id, view.id, p);
 
