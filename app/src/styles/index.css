@@ -6121,6 +6121,48 @@ html[data-theme="dark"] .winbtn--close:hover {
   color: var(--gf-text-tertiary);
 }
 
+/* 自动备份（W110 批次外）：快照列表 */
+.setpane__row--stack {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.setpane__snapshots {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.setpane__snapshot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--gf-border);
+  border-radius: var(--gf-radius-sm);
+  font-size: var(--gf-font-size-caption);
+}
+
+.setpane__snapshot-time {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--gf-text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.setpane__snapshot-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 6px;
+}
+
+.setpane__hint-inline {
+  color: var(--gf-text-secondary);
+}
+
 .setpane__hint code {
   padding: 0 4px;
   border-radius: var(--gf-radius-sm);

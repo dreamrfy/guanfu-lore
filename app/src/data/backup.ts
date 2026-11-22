@@ -21,8 +21,8 @@ type BackupPayload = {
   meta: unknown[];
 };
 
-/** 导出成文件（浏览器/桌面都会弹出保存对话框） */
-export async function exportBackup(): Promise<{ pages: number; docs: number }> {
+/** 组装备份载荷（手动导出与自动定时备份共用） */
+export async function buildBackupPayload(): Promise<{ payload: BackupPayload; pages: number; docs: number }> {
   await flushDocs(); // 先把防抖里没落盘的正文写掉，避免"备份少了最后几秒的改动"
   const data = await repo.exportAll();
   const payload: BackupPayload = {
@@ -34,6 +34,12 @@ export async function exportBackup(): Promise<{ pages: number; docs: number }> {
     docs: data.docs,
     meta: data.meta,
   };
+  return { payload, pages: data.pages.length, docs: data.docs.length };
+}
+
+/** 导出成文件（浏览器/桌面都会弹出保存对话框） */
+export async function exportBackup(): Promise<{ pages: number; docs: number }> {
+  const { payload, pages, docs } = await buildBackupPayload();
 
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -46,7 +52,7 @@ export async function exportBackup(): Promise<{ pages: number; docs: number }> {
   a.remove();
   URL.revokeObjectURL(url);
 
-  return { pages: data.pages.length, docs: data.docs.length };
+  return { pages, docs };
 }
 
 /** 从文件恢复：**会覆盖当前全部数据**，调用方必须先跟用户确认 */
@@ -58,18 +64,24 @@ export async function importBackupFile(file: File): Promise<{ pages: number }> {
   } catch {
     throw new Error("这个文件不是合法的 JSON，可能选错了文件。");
   }
-  if (parsed?.kind !== BACKUP_KIND || !Array.isArray(parsed.pages)) {
+  return restoreFromPayload(parsed);
+}
+
+/** 从载荷恢复（自动备份快照的「恢复此份」共用；**会覆盖当前全部数据**） */
+export async function restoreFromPayload(parsed: unknown): Promise<{ pages: number }> {
+  const p = parsed as BackupPayload;
+  if (p?.kind !== BACKUP_KIND || !Array.isArray(p.pages)) {
     throw new Error("这不是本应用导出的备份文件。");
   }
-  if (parsed.version !== 1) {
-    throw new Error(`备份文件版本是 ${parsed.version}，当前程序只认识版本 1。`);
+  if (p.version !== 1) {
+    throw new Error(`备份文件版本是 ${p.version}，当前程序只认识版本 1。`);
   }
 
   await repo.importAll({
-    pages: parsed.pages as never,
-    docs: (parsed.docs ?? []) as never,
-    meta: (parsed.meta ?? []) as never,
+    pages: p.pages as never,
+    docs: (p.docs ?? []) as never,
+    meta: (p.meta ?? []) as never,
   });
-  if (parsed.prefs) savePrefs(parsed.prefs as never);
-  return { pages: parsed.pages.length };
+  if (p.prefs) savePrefs(p.prefs as never);
+  return { pages: p.pages.length };
 }

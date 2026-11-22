@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { flushDocs, useStore } from "./data/store";
+import { startAutoBackup } from "./data/backupAuto";
 import { fontStackOf } from "./design/fonts";
 import { useLang } from "./i18n";
 import { AppShell } from "./shell/AppShell";
@@ -43,6 +44,11 @@ export function App() {
     const stop = useStore.getState().stopAutoSync;
     start();
     return () => stop();
+  }, []);
+
+  // 自动定时备份：到点把整库快照写进独立的备份库（启动 + 每小时心跳）
+  useEffect(() => {
+    startAutoBackup();
   }, []);
 
   // 关窗/刷新前，把防抖里还没落盘的正文写掉

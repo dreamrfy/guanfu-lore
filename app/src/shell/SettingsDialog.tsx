@@ -1,5 +1,18 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useStore } from "../data/store";
+import {
+  deleteBackupSnapshot,
+  listBackupSnapshots,
+  loadBackupAutoPrefs,
+  loadBackupLastAt,
+  restoreBackupSnapshot,
+  runBackupSnapshot,
+  saveBackupAutoPrefs,
+  type BackupAutoPrefs,
+} from "../data/backupAuto";
+
+type BackupSnapshotInfo = { id: string; createdAt: number; pages: number; size: number };
+
 import { loadClipServerUrl, saveClipServerUrl, loadClipToken, saveClipToken } from "../data/clipApi";
 import {
   useLocalAccount,
@@ -261,11 +274,58 @@ function SyncPane() {
   const syncStatus = useStore((s) => s.syncStatus);
   const [server, setServer] = useState("");
   const [token, setToken] = useState("");
+  const [backupPrefs, setBackupPrefs] = useState<BackupAutoPrefs>(loadBackupAutoPrefs());
+  const [backupLastAt, setBackupLastAt] = useState(loadBackupLastAt());
+  const [snapshots, setSnapshots] = useState<BackupSnapshotInfo[]>([]);
+  const [backupBusy, setBackupBusy] = useState(false);
+  const [backupMsg, setBackupMsg] = useState<string | null>(null);
+
+  const refreshSnapshots = useCallback(() => {
+    void listBackupSnapshots().then(setSnapshots);
+  }, []);
 
   useEffect(() => {
     void loadClipServerUrl().then(setServer);
     void loadClipToken().then(setToken);
-  }, []);
+    refreshSnapshots();
+  }, [refreshSnapshots]);
+
+  const runNow = async () => {
+    setBackupBusy(true);
+    setBackupMsg(null);
+    try {
+      const r = await runBackupSnapshot();
+      setBackupLastAt(loadBackupLastAt());
+      refreshSnapshots();
+      setBackupMsg(`已备份：${r.pages} 页 / ${(r.size / 1024).toFixed(0)} KB`);
+    } catch (e) {
+      setBackupMsg("备份失败：" + String((e as Error).message ?? e));
+    } finally {
+      setBackupBusy(false);
+    }
+  };
+
+  const restoreOne = async (id: string) => {
+    if (!window.confirm("恢复会覆盖当前全部数据，确定用这份快照恢复吗？")) return;
+    setBackupBusy(true);
+    setBackupMsg(null);
+    try {
+      const r = await restoreBackupSnapshot(id);
+      setBackupMsg(`已恢复 ${r.pages} 页，正在重新载入…`);
+      // 与手动导入备份一致：importAll 只写库，界面状态要整页重载才对齐
+      setTimeout(() => window.location.reload(), 800);
+    } catch (e) {
+      setBackupMsg("恢复失败：" + String((e as Error).message ?? e));
+    } finally {
+      setBackupBusy(false);
+    }
+  };
+
+  const deleteOne = async (id: string) => {
+    if (!window.confirm("删除这份快照？")) return;
+    await deleteBackupSnapshot(id);
+    refreshSnapshots();
+  };
 
   return (
     <div className="setpane">
@@ -304,8 +364,77 @@ function SyncPane() {
           spellCheck={false}
         />
       </div>
+      <div className="setpane__row">
+        <label className="setpane__label">自动备份</label>
+        <span className="setpane__value" data-testid="backup-status">
+          <button
+            className="btn btn--sm"
+            data-testid="backup-toggle"
+            onClick={() => {
+              const next = { ...backupPrefs, on: !backupPrefs.on };
+              setBackupPrefs(next);
+              saveBackupAutoPrefs(next);
+            }}
+          >
+            {backupPrefs.on ? "已开启" : "已关闭"}
+          </button>
+          {backupPrefs.on && (
+            <>
+              <select
+                className="setpane__select"
+                value={backupPrefs.intervalHours}
+                onChange={(e) => {
+                  const next = { ...backupPrefs, intervalHours: Number(e.target.value) };
+                  setBackupPrefs(next);
+                  saveBackupAutoPrefs(next);
+                }}
+              >
+                {[1, 6, 12, 24].map((h) => (
+                  <option key={h} value={h}>
+                    每 {h} 小时
+                  </option>
+                ))}
+              </select>
+              <button className="btn btn--sm" data-testid="backup-run-now" onClick={() => void runNow()} disabled={backupBusy}>
+                立即备份
+              </button>
+            </>
+          )}
+        </span>
+      </div>
+      <div className="setpane__row">
+        <label className="setpane__label">上次备份</label>
+        <span className="setpane__value">
+          {backupLastAt ? new Date(backupLastAt).toLocaleString("zh-CN", { hour12: false }) : "尚未备份"}
+          {backupMsg && <span className="setpane__hint-inline"> · {backupMsg}</span>}
+        </span>
+      </div>
+      {snapshots.length > 0 && (
+        <div className="setpane__row setpane__row--stack">
+          <label className="setpane__label">快照（最近 5 份）</label>
+          <div className="setpane__snapshots" data-testid="backup-snapshots">
+            {snapshots.map((s) => (
+              <div className="setpane__snapshot" key={s.id}>
+                <span className="setpane__snapshot-time">
+                  {new Date(s.createdAt).toLocaleString("zh-CN", { hour12: false })} · {s.pages} 页 ·{" "}
+                  {(s.size / 1024).toFixed(0)} KB
+                </span>
+                <span className="setpane__snapshot-actions">
+                  <button className="btn btn--sm" onClick={() => void restoreOne(s.id)} disabled={backupBusy}>
+                    恢复
+                  </button>
+                  <button className="btn btn--sm" onClick={() => void deleteOne(s.id)} disabled={backupBusy}>
+                    删除
+                  </button>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="setpane__hint">
-        「空间信息 / 空间设置」槽位原位替换为观复独有「同步与凭证」（11 号 §5）：剪藏服务端地址 / Token / 同步状态。
+        「空间信息 / 空间设置」槽位原位替换为观复独有「同步与凭证」（11 号 §5）：剪藏服务端地址 / Token / 同步状态 / 自动备份。
+        备份快照存在独立于主库的本机数据库里，主库清空也不丢；导出成文件仍用上方菜单的手动导出。
       </div>
     </div>
   );
