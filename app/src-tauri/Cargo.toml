@@ -1,6 +1,6 @@
 [package]
 name = "guanfu-lore"
-version = "0.1.0"
+version = "0.1.1"
 description = "观复 · Lore · 桌面壳"
 edition = "2021"
 rust-version = "1.77"

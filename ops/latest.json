@@ -1,11 +1,11 @@
 {
-  "version": "0.1.0",
-  "notes": "观复 · Lore v0.1.0 —— 首个公开发布版本。块式双链笔记 + 本地优先同步 + Tauri 桌面端自动更新；安卓客户端持续开发中。",
-  "pub_date": "2026-11-15T22:22:00Z",
+  "version": "0.1.1",
+  "notes": "观复 · Lore v0.1.1 —— 公开分享上线（share.guanfu.app）、收集箱页、剪藏入口四态与剪贴板检测、深浅双主题走查；修快照乱码等真问题。",
+  "pub_date": "2026-11-22T03:58:55Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRRlFFK1AwZFl1QThDQzZCcWNQT0xmVHpVZVVlY1lITjQ0L0FhK093eXVTQlFPWmo3LzFGTFAxb1ZjZ1IyL3hKYytReVJIM1BhOXVwUk10NGtzUHhPdGN3TnpjcnMxcEF3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0NzUyNTI1CWZpbGU6Z3VhbmZ1LWxvcmVfMC4xLjBfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuMS4wClVMWktmZjVnekZ0UDR3YVpiSzRWeHEyNk9YU0d6UUg1NTRPeHhSYzRUZlFwRk8vWmNBRGFMVjFBOTVZcFU0d1JjZWw5YUtQWEh6ZnR0dUVHeEt4RUFRPT0K",
-      "url": "https://github.com/dreamrfy/guanfu-lore/releases/download/v0.1.0/guanfu-lore_0.1.0_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRRlFFK1AwZFl1QS85R2ljMU14Y0E0b0x5ZDZoQjhEcmpnZVpDZkw1cnU5UDhYenBGMVd3N2loQkFFRWVoeDVqdi9Pdm1HdnBDby9jZWxJelVjVjRvYmhpUUZuR0F4Y0FRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1MzE5NzQ3CWZpbGU6Z3VhbmZ1LWxvcmVfMC4xLjFfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuMS4xCmk3QkxHbXZCNU15RHpYcHg1WUdEZFd3VjlXaVYwT2pkNHl4eGFnQ3hnR2x2bnVIUnVkRmFQQm1hVElxZGpZaDMrWjczWC9pUTY3QnlidlZxQ2lQbEJ3PT0K",
+      "url": "https://github.com/dreamrfy/guanfu-lore/releases/download/v0.1.1/guanfu-lore_0.1.1_x64-setup.exe"
     }
   }
 }

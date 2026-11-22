@@ -1,11 +1,11 @@
 {
   "$schema": "https://raw.githubusercontent.com/ScoopInstaller/Scoop/master/schema/bucket.json",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "观复 · Lore · AI 原生的块式个人知识库（网页 + 桌面壳）",
   "homepage": "https://github.com/dreamrfy/guanfu-lore",
   "license": "MIT",
-  "url": "https://github.com/dreamrfy/guanfu-lore/releases/download/v0.1.0/guanfu-lore_0.1.0_x64-setup.exe",
-  "hash": "099f834c7080781e5509e9e57a0b52bc80e540770c9a7bd8dd339d9f34e84e52",
+  "url": "https://github.com/dreamrfy/guanfu-lore/releases/download/v0.1.1/guanfu-lore_0.1.1_x64-setup.exe",
+  "hash": "ef642e0aa828a4af76c7f39247bf8cd01d0d20cf46135aa35b3c463a2e7046f2",
   "architecture": "x64",
   "installer": {
     "args": [
