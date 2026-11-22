@@ -12,7 +12,14 @@ import {
   CLIP_COLLECTION_NAME,
   findExistingClipRecord,
   ingestClip,
+  processOneQueuedClip,
 } from "../data/clipIngest";
+import {
+  clipQueueAdd,
+  clipQueueProcess,
+  clipQueueSize,
+  notifyQueueChanged,
+} from "../data/clipQueue";
 import {
   fetchServerClipIndex,
   importServerClip,
@@ -31,6 +38,7 @@ import { AppIcon } from "../design/icons";
 export function ClipButton() {
   const [open, setOpen] = useState(false);
   const [initialUrl, setInitialUrl] = useState("");
+  const [queueSize, setQueueSize] = useState(clipQueueSize());
   const iconSet = useStore((s) => s.iconSet);
   const { t } = useLang();
 
@@ -41,8 +49,13 @@ export function ClipButton() {
       setInitialUrl(typeof detail?.url === "string" ? detail.url : "");
       setOpen(true);
     };
+    const onQueue = () => setQueueSize(clipQueueSize());
     window.addEventListener("gf:open-clip-dialog", onOpen);
-    return () => window.removeEventListener("gf:open-clip-dialog", onOpen);
+    window.addEventListener("gf:clip-queue-changed", onQueue);
+    return () => {
+      window.removeEventListener("gf:open-clip-dialog", onOpen);
+      window.removeEventListener("gf:clip-queue-changed", onQueue);
+    };
   }, []);
 
   return (
@@ -54,9 +67,11 @@ export function ClipButton() {
           setInitialUrl("");
           setOpen(true);
         }}
+        title={queueSize > 0 ? `${queueSize} 条链接待自动重试` : undefined}
       >
         <AppIcon name="inbox" set={iconSet} />
         {t("clipEntry")}
+        {queueSize > 0 && <span className="sidebar__badge" title="离线队列">{queueSize}</span>}
       </button>
       {open && (
         <ClipDialog
@@ -64,6 +79,7 @@ export function ClipButton() {
           onClose={() => {
             setOpen(false);
             setInitialUrl("");
+            setQueueSize(clipQueueSize());
           }}
         />
       )}
@@ -103,6 +119,16 @@ function ClipDialog({ onClose, initialUrl = "" }: { onClose: () => void; initial
   const [boxBusy, setBoxBusy] = useState<string | null>(null);
   const [boxMsg, setBoxMsg] = useState<string | null>(null);
   const [showServer, setShowServer] = useState(false);
+  // 离线队列（27 号 §3.1）：抓取失败的链接进队，联网后自动重试
+  const [queueSize, setQueueSize] = useState(clipQueueSize());
+  const [queueBusy, setQueueBusy] = useState(false);
+  const [queueMsg, setQueueMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    const onQueue = () => setQueueSize(clipQueueSize());
+    window.addEventListener("gf:clip-queue-changed", onQueue);
+    return () => window.removeEventListener("gf:clip-queue-changed", onQueue);
+  }, []);
 
   useEffect(() => {
     void loadClipServerUrl().then(setServer);
@@ -157,6 +183,8 @@ function ClipDialog({ onClose, initialUrl = "" }: { onClose: () => void; initial
     const result = await requestClip(value);
     if (!result.ok) {
       setError(result.error);
+      setQueueSize(clipQueueAdd(value)); // 失败 → 链接进离线队列，联网后自动重试
+      notifyQueueChanged();
       setBusy(false);
       return;
     }
@@ -170,10 +198,30 @@ function ClipDialog({ onClose, initialUrl = "" }: { onClose: () => void; initial
         duplicate: false,
       });
       setBusy(false);
+      // 成功 = 服务大概率恢复：顺手消化离线队列（27 号 §3.1「联网后自动重试」）
+      void drainQueue(false);
     } catch (e) {
       setError("已抓到内容，但写入本地库失败：" + String((e as Error)?.message ?? e));
       setBusy(false);
     }
+  };
+
+  /** 逐条重试离线队列（自动 or 手动） */
+  const drainQueue = async (manual: boolean) => {
+    if (queueBusy) return;
+    setQueueBusy(true);
+    if (manual) setQueueMsg(null);
+    const r = await clipQueueProcess((u) => processOneQueuedClip(u));
+    setQueueSize(r.remaining);
+    notifyQueueChanged();
+    if (manual) {
+      setQueueMsg(
+        r.succeeded > 0
+          ? `重试完成：${r.succeeded}/${r.attempted} 条入库成功${r.remaining ? `，剩 ${r.remaining} 条待下次` : "，队列已清空"}`
+          : `重试失败：${r.lastError ?? "服务仍不可达"}（链接保留在队列里）`,
+      );
+    }
+    setQueueBusy(false);
   };
 
   // 剪贴板提示条点「收进」：带链接打开弹层，直接开始抓取（≤2 次点击）
@@ -295,6 +343,20 @@ function ClipDialog({ onClose, initialUrl = "" }: { onClose: () => void; initial
 
           {!done && (
             <>
+              {(queueSize > 0 || queueMsg) && (
+                <div className="clip-queue" data-testid="clip-queue">
+                  <span className="clip-queue__text">
+                    {queueSize > 0
+                      ? `离线队列：${queueSize} 条链接待自动重试${queueMsg ? ` · ${queueMsg}` : ""}`
+                      : (queueMsg ?? "")}
+                  </span>
+                  {queueSize > 0 && (
+                    <button className="btn btn--sm" onClick={() => void drainQueue(true)} disabled={queueBusy}>
+                      {queueBusy ? "重试中…" : "立即重试"}
+                    </button>
+                  )}
+                </div>
+              )}
               <button className="clip-server__toggle" onClick={() => setShowBox((v) => !v)}>
                 服务器剪藏箱（微信转发自动收进来的）
               </button>

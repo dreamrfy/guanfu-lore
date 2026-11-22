@@ -11,7 +11,7 @@
 import { BlockNoteEditor } from "@blocknote/core";
 import type { PartialBlock } from "@blocknote/core";
 import { repo, type CollectionRow, type RecordRow } from "./db";
-import type { ClipPayload, ClipResult } from "./clipApi";
+import { requestClip, type ClipPayload, type ClipResult } from "./clipApi";
 import { schema } from "../editor/schema";
 import { CLIP_COLLECTION_NAME, useStore } from "./store";
 
@@ -215,3 +215,13 @@ export function findExistingClipRecord(url: string, collection: CollectionRow | 
 }
 
 export { CLIP_COLLECTION_NAME };
+
+/**
+ * 离线队列的单条处理器（27 号 §3.1「联网后自动重试」）：
+ * 抓取 + 入库（不打开记录）。失败抛错由 clipQueueProcess 统一计数与停。
+ */
+export async function processOneQueuedClip(url: string): Promise<void> {
+  const result = await requestClip(url);
+  if (!result.ok) throw new Error(result.error);
+  await ingestClip(result, { open: false });
+}

@@ -51,6 +51,18 @@ export function App() {
     startAutoBackup();
   }, []);
 
+  // 剪藏离线队列：启动后消化上次失败的链接（服务可达时自动入库）
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void import("./data/clipIngest").then(({ processOneQueuedClip }) =>
+        import("./data/clipQueue").then(({ clipQueueProcess, clipQueueSize }) => {
+          if (clipQueueSize() > 0) void clipQueueProcess((u) => processOneQueuedClip(u));
+        }),
+      );
+    }, 5000); // 等自动同步/剪藏服务探活稳定后再试
+    return () => clearTimeout(timer);
+  }, []);
+
   // 关窗/刷新前，把防抖里还没落盘的正文写掉
   useEffect(() => {
     const onLeave = () => {

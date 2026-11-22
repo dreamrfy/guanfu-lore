@@ -2444,6 +2444,28 @@ html[data-theme="dark"] .modal__ok {
   gap: 6px;
 }
 
+/* 离线队列提示行（27 号 §3.1） */
+.clip-queue {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 10px;
+  border: 1px dashed var(--gf-border);
+  border-radius: var(--gf-radius-sm);
+  background: var(--gf-bg-sunken);
+}
+
+.clip-queue__text {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--gf-text-secondary);
+  font-size: var(--gf-font-size-caption);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* W122 剪贴板入口：首页顶部提示条 */
 .clipbanner {
   display: flex;
