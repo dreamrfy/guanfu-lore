@@ -407,10 +407,14 @@ export function CellEditor({
 function ColumnMenu({
   collection,
   field,
+  viewId,
+  frozenFieldIds,
   onClose,
 }: {
   collection: CollectionRow;
   field: FieldDef;
+  viewId: string;
+  frozenFieldIds: string[];
   onClose: () => void;
 }) {
   const updateField = useStore((s) => s.updateField);
@@ -653,11 +657,17 @@ function ColumnMenu({
       >
         隐藏
       </button>
-      {/* W66：冻结列——浏览器对表格 td 横向 sticky 支持不稳定，实测无法固定，先诚实置灰 */}
-      <div className="menu-item menu-item--muted" title="表格单元格横向 sticky 在浏览器里不稳定，待专项（【暂定】）">
-        <span>冻结列</span>
-        <span className="menu-tag">待专项</span>
-      </div>
+      {/* W66 补齐：冻结/解冻列（作用于当前视图）。td sticky 用真实浏览器点验兜底 */}
+      <button
+        className="menu-item"
+        onClick={() => {
+          const frozen = frozenFieldIds.includes(field.id);
+          const next = frozen ? frozenFieldIds.filter((id) => id !== field.id) : [...frozenFieldIds, field.id];
+          updateView(collection.id, viewId, { frozenFieldIds: next });
+        }}
+      >
+        {frozenFieldIds.includes(field.id) ? "取消冻结列" : "冻结列"}
+      </button>
 
       <button
         className="menu-item"
@@ -807,7 +817,7 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
   const gridWidth = 48 + collection.fields.reduce((sum, f) => sum + widthOf(f), 0) + 40;
   // W66：隐藏列不进网格；冻结列（首列恒冻结）按累计宽度给出 sticky left
   const visibleFields = collection.fields.filter((f) => !f.hidden);
-  const frozenIds = collection.views[0]?.frozenFieldIds ?? [];
+  const frozenIds = view?.frozenFieldIds ?? [];
   const frozenLeft = new Map<string, number>();
   {
     let left = 66; // No. 列宽
@@ -934,7 +944,13 @@ export function CollectionView({ collectionId }: { collectionId: string }) {
                       <span className="grid__th-type">{FIELD_TYPE_LABEL[f.type]}</span>
                     </button>
                     {menuFieldId === f.id && (
-                      <ColumnMenu collection={collection} field={f} onClose={() => setMenuFieldId(null)} />
+                      <ColumnMenu
+                        collection={collection}
+                        field={f}
+                        viewId={view?.id ?? collection.views[0]!.id}
+                        frozenFieldIds={view?.frozenFieldIds ?? []}
+                        onClose={() => setMenuFieldId(null)}
+                      />
                     )}
                     <span
                       className="grid__resize"
