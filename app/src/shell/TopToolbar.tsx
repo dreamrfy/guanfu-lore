@@ -8,6 +8,7 @@ import { useStarred } from "../data/starred";
 import { PageMenu } from "./PageMenu";
 import { SyncButton } from "./SyncButton";
 import { openSearchOverlay } from "./SearchOverlay";
+import { SharePanelContent } from "./SharePanel";
 
 function useOutsideClose(onClose: () => void) {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -150,73 +151,7 @@ export function TopToolbar() {
           <AppIcon name="share" set={iconSet} />
         </button>
         {openMenu === "share" && activeTabId && (
-          <div className="popover share-popover" data-testid="share-panel">
-            <div className="share-tabs" role="tablist" aria-label="分享方式">
-              <button className="share-tab share-tab--active" role="tab" aria-selected="true">
-                公开分享
-              </button>
-              <button
-                className="share-tab"
-                role="tab"
-                aria-selected="false"
-                disabled
-                title="观复不做协作，邀请协作不在范围内"
-              >
-                邀请协作
-              </button>
-            </div>
-
-            <div className="share-public">
-              <div className="share-public__row">
-                <div className="share-public__text">
-                  <b>公开分享</b>
-                  <span>获得链接的人可以只读查看</span>
-                </div>
-                <span className="share-badge">待接入</span>
-              </div>
-              <div className="share-perms" role="group" aria-label="谁可以看">
-                <button className="share-perm share-perm--active" aria-pressed="true">
-                  仅自己
-                </button>
-                <button
-                  className="share-perm"
-                  disabled
-                  title="公开链接将在下一批接入"
-                >
-                  获得链接的人
-                </button>
-              </div>
-            </div>
-
-            <div className="share-sep" />
-
-            <button
-              className="menu-item"
-              onClick={() => {
-                const link = `${location.origin}${location.pathname}?page=${activeTabId}`;
-                void navigator.clipboard
-                  .writeText(link)
-                  .then(() => {
-                    flash("页面链接已复制");
-                    setOpenMenu(null);
-                  })
-                  .catch(() => flash("复制失败"));
-              }}
-            >
-              <AppIcon name="share" set={iconSet} size={14} />
-              复制页面链接
-            </button>
-            <div
-              className="share-link"
-              title={`${location.origin}${location.pathname}?page=${activeTabId}`}
-            >
-              {location.origin}
-              {location.pathname}?page={activeTabId}
-            </div>
-            <div className="share-footnote">
-              公开链接与匿名只读页暂未接入；当前可复制本页链接。
-            </div>
-          </div>
+          <SharePanelContent pageId={activeTabId} iconSet={iconSet} onToast={flash} />
         )}
       </div>
       <button className="icon-btn" title="评论（待评论体系专项）" disabled>

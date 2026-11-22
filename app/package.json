@@ -71,6 +71,7 @@
     "clip-walkthrough": "node tools/clip-walkthrough.mjs",
     "share-panel-check": "node tools/share-panel-check.mjs",
     "installed-w132-smoke": "node tools/installed-w132-smoke.mjs",
+    "share-page-shot": "node tools/share-page-shot.mjs",
     "cell-semantics-check": "node tools/cell-semantics-check.mjs",
     "cell-editor-check": "node tools/cell-editor-check.mjs",
     "colmenu-check": "node tools/colmenu-check.mjs",

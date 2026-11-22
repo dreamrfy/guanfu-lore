@@ -1,4 +1,4 @@
-// W110 分享面板点验：入口 → 面板形态 → 页签/权限选项 → 复制页面链接。
+// W111/W113 分享面板点验：真实状态流（GET/POST/DELETE mock）→ 开公开 → 链接展示与复制 → 关闭撤销。
 // 用法: npm run share-panel-check （需 dev server 已起）
 import { chromium } from "playwright-core";
 import { existsSync, mkdirSync } from "node:fs";
@@ -12,7 +12,7 @@ if (!executablePath) {
   console.error("未找到 Chrome");
   process.exit(2);
 }
-const OUT = "../docs/验收证据/重做批/W110";
+const OUT = "../docs/验收证据/重做批/W111";
 mkdirSync(OUT, { recursive: true });
 
 const browser = await chromium.launch({ executablePath, headless: true, args: ["--disable-gpu"] });
@@ -24,6 +24,13 @@ const fail = (msg) => {
   throw new Error(msg);
 };
 
+const CORS = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-headers": "content-type,authorization",
+  "access-control-allow-methods": "POST, GET, DELETE, OPTIONS",
+};
+
+// 服务端桩：内存里保存分享状态（GET/POST/DELETE 全走真 fetch，只是网络层替换）
 await page.addInitScript(() => {
   window.__copied = "";
   const clipboard = {
@@ -35,19 +42,43 @@ await page.addInitScript(() => {
   try {
     Object.defineProperty(navigator, "clipboard", { value: clipboard, configurable: true });
   } catch {
-    try {
-      Object.defineProperty(Navigator.prototype, "clipboard", { get: () => clipboard, configurable: true });
-    } catch {
-      /* ignore */
-    }
+    /* ignore */
   }
+});
+
+let shareState = { url: null };
+await page.route("**/api/share**", async (route) => {
+  if (route.request().method() === "OPTIONS") {
+    await route.fulfill({ status: 204, headers: CORS });
+    return;
+  }
+  const req = route.request();
+  const headers = { ...CORS, "content-type": "application/json" };
+  if (req.method() === "GET") {
+    await route.fulfill({
+      status: 200,
+      headers,
+      body: JSON.stringify({ ok: true, shared: Boolean(shareState.url), url: shareState.url, createdAt: null }),
+    });
+    return;
+  }
+  if (req.method() === "POST") {
+    shareState = { url: "https://share.guanfu.app/s/W111Token0123456789ab" };
+    await route.fulfill({
+      status: 200,
+      headers,
+      body: JSON.stringify({ ok: true, token: "W111Token0123456789ab", url: shareState.url, created: true }),
+    });
+    return;
+  }
+  shareState = { url: null };
+  await route.fulfill({ status: 200, headers, body: JSON.stringify({ ok: true, shared: false }) });
 });
 
 try {
   await page.goto("http://localhost:5173/", { waitUntil: "domcontentloaded", timeout: 30000 });
   await page.waitForFunction(() => Boolean(window.__gf_store?.getState().ready), null, { timeout: 15000 });
 
-  // 建一个页面，顶栏才会出现
   const pageId = await page.evaluate(async () => {
     const id = await window.__gf_store.getState().createPage(null);
     await new Promise((r) => setTimeout(r, 500));
@@ -56,43 +87,53 @@ try {
   if (!pageId) fail("新建页面失败");
 
   await page.locator(".toolbar").waitFor({ timeout: 5000 });
-  await page.locator('.toolbar .icon-btn[title="分享"]').waitFor({ timeout: 5000 });
   await page.locator('.toolbar .icon-btn[title="分享"]').click();
   const panel = page.locator('[data-testid="share-panel"]');
   await panel.waitFor({ timeout: 5000 });
+  await panel.getByText("读取分享状态…").waitFor({ state: "detached", timeout: 5000 });
 
   // 1) 页签：公开分享选中，邀请协作禁用
   const tabs = panel.locator(".share-tab");
   if ((await tabs.count()) !== 2) fail("分享页签数 ≠ 2");
-  if (!(await tabs.nth(0).getAttribute("aria-selected"))?.includes("true")) fail("公开分享未选中");
-  if (!(await tabs.nth(1).isDisabled())) fail("邀请协作应禁用（观复不做协作）");
+  if (!(await tabs.nth(1).isDisabled())) fail("邀请协作应禁用");
 
-  // 2) 公开分享 + 待接入 + 权限选项
-  const panelText = (await panel.textContent()) ?? "";
-  if (!panelText.includes("公开分享") || !panelText.includes("待接入")) fail("公开分享区缺内容");
+  // 2) 初始：仅自己
+  const badge = panel.locator('[data-testid="share-badge"]');
+  if (!(await badge.textContent())?.includes("仅自己")) fail("初始徽章应为「仅自己」");
   const perms = panel.locator(".share-perm");
   if ((await perms.count()) !== 2) fail("权限选项数 ≠ 2");
   if (!((await perms.nth(0).getAttribute("class")) ?? "").includes("share-perm--active")) {
-    fail("「仅自己」未选中");
+    fail("初始应选中「仅自己」");
   }
-  if (!(await perms.nth(1).isDisabled())) fail("「获得链接的人」应待接入禁用");
-  await page.screenshot({ path: OUT + "/分享面板.png" });
 
-  // 3) 复制页面链接
-  await panel.getByRole("button", { name: /复制页面链接/ }).click();
+  // 3) 开公开 → POST → 徽章「公开」+ 链接行出现
+  await perms.nth(1).click();
+  await panel.locator('[data-testid="share-linkrow"]').waitFor({ timeout: 5000 });
+  if (!(await badge.textContent())?.includes("公开")) fail("开公开后徽章应为「公开」");
+  const linkValue = await panel.locator(".share-linkrow input.share-link").inputValue();
+  if (!linkValue.startsWith("https://share.guanfu.app/s/")) fail("公开链接不对: " + linkValue);
+  await page.screenshot({ path: OUT + "/分享面板-公开.png" });
+
+  // 4) 复制公开链接
+  await panel.locator('[data-testid="share-copy"]').click();
   await page.waitForTimeout(300);
   const copied = await page.evaluate(() => window.__copied);
-  if (!copied.includes("?page=" + pageId)) fail("复制的链接不对: " + copied);
-  if ((await page.locator('[data-testid="share-panel"]').count()) !== 0) fail("复制后面板应收起");
+  if (copied !== linkValue) fail("复制公开链接失败: " + copied);
 
-  // 4) 再开一次 → 点外部关闭
-  await page.locator('.toolbar .icon-btn[title="分享"]').click();
-  await panel.waitFor({ timeout: 3000 });
-  await page.mouse.click(20, 400);
+  // 5) 关公开 → DELETE → 链接行消失，徽章回「仅自己」
+  await perms.nth(0).click();
+  await panel.locator('[data-testid="share-linkrow"]').waitFor({ state: "detached", timeout: 5000 });
+  if (!(await badge.textContent())?.includes("仅自己")) fail("关闭后徽章应回「仅自己」");
+
+  // 6) 复制页面链接（菜单项仍在）
+  await perms.nth(1).click();
+  await panel.locator('[data-testid="share-linkrow"]').waitFor({ timeout: 5000 });
+  await panel.getByRole("button", { name: /复制页面链接/ }).click();
   await page.waitForTimeout(300);
-  if ((await page.locator('[data-testid="share-panel"]').count()) !== 0) fail("点外部未关闭分享面板");
+  const copiedPage = await page.evaluate(() => window.__copied);
+  if (!copiedPage.includes("?page=" + pageId)) fail("复制页面链接失败: " + copiedPage);
 
-  console.log("PASS: 分享面板 入口/页签/权限选项/复制链接/外部关闭 全过");
+  console.log("PASS: 分享面板 状态流/开关/链接/复制/撤销 全过");
 } catch (e) {
   failed++;
   await page.screenshot({ path: OUT + "/失败现场.png" }).catch(() => {});

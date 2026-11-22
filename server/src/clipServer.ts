@@ -38,6 +38,8 @@ import {
 } from "./cloud/assetSync.ts";
 import { R2ClipStore } from "./store/r2ClipStore.ts";
 import { loadR2Config, getObject } from "./store/r2Store.ts";
+import { createShare, getShareByPage, getShareByToken, revokeShare } from "./share/shareStore.ts";
+import { collectAssetIds, renderShareHtml, renderShareNotFound } from "./share/sharePage.ts";
 
 /** 读一个对象的原始字节（图片代理用） */
 async function readAssetBytes(key: string): Promise<Uint8Array | null> {
@@ -136,7 +138,7 @@ function corsHeaders(origin: string | undefined, allowed: Set<string>): Record<s
   if (!origin || !allowed.has(origin)) return {};
   return {
     "Access-Control-Allow-Origin": origin,
-    "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+    "Access-Control-Allow-Methods": "POST, GET, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "content-type, authorization",
     "Access-Control-Max-Age": "600",
     Vary: "Origin",
@@ -196,6 +198,69 @@ export function createClipServer(): http.Server {
       return;
     }
 
+    // 公开分享（W111/W112）：/s/<token> 匿名只读。token 本身就是钥匙，不走鉴权。
+    // 图片走 /s/<token>/a/<assetId>，只放行本页正文里出现过的附件。
+    // 注意：这段在 `const url` 声明之前，路径要从 req.url 现取。
+    const sharePath = (req.url ?? "").split("?")[0].match(/^\/s\/([A-Za-z0-9_-]{10,64})(?:\/a\/([A-Za-z0-9_-]{1,64}))?$/);
+    if (req.method === "GET" && sharePath) {
+      const [, shareToken, assetId] = sharePath;
+      const share = getShareByToken(shareToken);
+      if (!share) {
+        res.writeHead(404, {
+          "Content-Type": "text/html; charset=utf-8",
+          "X-Robots-Tag": "noindex, nofollow",
+          "Cache-Control": "no-store",
+        });
+        res.end(renderShareNotFound());
+        return;
+      }
+      const row = readRow("page", share.pageId);
+      const payload =
+        row && !row.deleted && row.payload ? (row.payload as { page?: Record<string, unknown>; blocks?: unknown[] }) : null;
+      if (assetId) {
+        const allowed = collectAssetIds(payload?.blocks ?? []);
+        const idx = allowed.has(assetId) ? getAssetIndex(assetId) : null;
+        if (!idx) {
+          sendJson(res, 404, { ok: false, code: "asset_not_found", error: "附件不存在或不属于该分享" });
+          return;
+        }
+        const buf = await readAssetBytes(`assets/${assetId}.${idx.ext}`);
+        if (!buf) {
+          sendJson(res, 404, { ok: false, code: "asset_not_found", error: "附件不存在" });
+          return;
+        }
+        const ext = idx.ext.toLowerCase();
+        const contentType =
+          ext === "jpg" || ext === "jpeg"
+            ? "image/jpeg"
+            : ext === "png"
+              ? "image/png"
+              : ext === "gif"
+                ? "image/gif"
+                : ext === "webp"
+                  ? "image/webp"
+                  : ext === "svg"
+                    ? "image/svg+xml"
+                    : ext === "pdf"
+                      ? "application/pdf"
+                      : "application/octet-stream";
+        res.writeHead(200, { "Content-Type": contentType, "Cache-Control": "public, max-age=86400" });
+        res.end(buf);
+        return;
+      }
+      const ok = Boolean(payload);
+      const html = payload
+        ? renderShareHtml((payload.page ?? {}) as { title?: unknown; updatedAt?: unknown }, payload.blocks ?? [])
+        : renderShareNotFound();
+      res.writeHead(ok ? 200 : 404, {
+        "Content-Type": "text/html; charset=utf-8",
+        "X-Robots-Tag": "noindex, nofollow",
+        "Cache-Control": "no-store",
+      });
+      res.end(html);
+      return;
+    }
+
     const url = (req.url ?? "").split("?")[0];
     const known =
       (req.method === "POST" && url === "/api/clip") ||
@@ -210,7 +275,10 @@ export function createClipServer(): http.Server {
       (req.method === "GET" && url === "/api/sync/row") ||
       (req.method === "GET" && url === "/api/sync/conflicts") ||
       (req.method === "POST" && url === "/api/highlights") ||
-      (req.method === "GET" && url === "/api/highlights");
+      (req.method === "GET" && url === "/api/highlights") ||
+      (req.method === "POST" && url === "/api/share") ||
+      (req.method === "GET" && url === "/api/share") ||
+      (req.method === "DELETE" && url === "/api/share");
     if (!known) {
       sendJson(
         res,
@@ -336,6 +404,73 @@ export function createClipServer(): http.Server {
       }
       sendJson(res, 200, { ok: true, entity, entityId, ...row }, cors);
       return;
+    }
+
+    // 公开分享管理（W111/W113）：页面级开关 + 链接。链接域名取请求 Host，
+    // 本地联调是 http://127.0.0.1:8787，线上经隧道就是 https://share.guanfu.app。
+    if (url === "/api/share") {
+      const host = req.headers.host ?? "share.guanfu.app";
+      const scheme = /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host) ? "http" : "https";
+      const shareUrl = (token: string) => `${scheme}://${host}/s/${token}`;
+      if (req.method === "POST") {
+        let body: { pageId?: unknown };
+        try {
+          body = JSON.parse(await readBody(req));
+        } catch {
+          body = {};
+        }
+        const pageId = typeof body.pageId === "string" ? body.pageId.trim() : "";
+        if (!pageId) {
+          sendJson(res, 400, { ok: false, code: "bad_page_id", error: "缺少 pageId" }, cors);
+          return;
+        }
+        const row = readRow("page", pageId);
+        if (!row || row.deleted || !row.payload) {
+          sendJson(res, 404, { ok: false, code: "page_not_found", error: "这个页面还没同步到服务器（先开一次同步）" }, cors);
+          return;
+        }
+        const page = (row.payload as { page?: { title?: unknown } }).page ?? {};
+        const result = createShare(pageId, page.title);
+        sendJson(res, 200, { ok: true, ...result, url: shareUrl(result.token) }, cors);
+        return;
+      }
+      if (req.method === "GET") {
+        const query = new URL(req.url ?? "http://x", "http://x").searchParams;
+        const pageId = (query.get("pageId") ?? "").trim();
+        if (!pageId) {
+          sendJson(res, 400, { ok: false, code: "bad_page_id", error: "缺少 pageId" }, cors);
+          return;
+        }
+        const share = getShareByPage(pageId);
+        sendJson(
+          res,
+          200,
+          {
+            ok: true,
+            shared: Boolean(share),
+            url: share ? shareUrl(share.token) : null,
+            createdAt: share?.createdAt ?? null,
+          },
+          cors,
+        );
+        return;
+      }
+      if (req.method === "DELETE") {
+        let body: { pageId?: unknown };
+        try {
+          body = JSON.parse(await readBody(req));
+        } catch {
+          body = {};
+        }
+        const pageId = typeof body.pageId === "string" ? body.pageId.trim() : "";
+        if (!pageId) {
+          sendJson(res, 400, { ok: false, code: "bad_page_id", error: "缺少 pageId" }, cors);
+          return;
+        }
+        revokeShare(pageId);
+        sendJson(res, 200, { ok: true, shared: false }, cors);
+        return;
+      }
     }
 
     // 资产上传（S01）：assetId/ext 走 query，图片字节走 body（二进制，不走 JSON 门）

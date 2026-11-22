@@ -1250,6 +1250,41 @@ body {
   font-size: 11px;
 }
 
+.share-badge--on {
+  background: var(--gf-success-soft);
+  color: var(--gf-success-text);
+}
+
+/* W111：公开链接展示行与错误提示 */
+.share-linkrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.share-linkrow .share-link {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  height: 28px;
+  border: 1px solid var(--gf-border);
+  font-family: inherit;
+}
+
+.share-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: var(--gf-radius-sm);
+  background: var(--gf-danger-soft);
+  color: var(--gf-danger-text);
+  font-size: var(--gf-font-size-caption);
+}
+
 .share-perms {
   display: flex;
   gap: 2px;
