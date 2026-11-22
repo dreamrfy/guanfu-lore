@@ -21,6 +21,7 @@ const KEEP_SNAPSHOTS = 5;
 const CHECK_TICK_MS = 60 * 60 * 1000; // 每小时心跳，到点才备
 
 const AUTO_KEY = "guanfu.backup.auto";
+const SERVER_KEY = "guanfu.backup.server";
 
 export type BackupAutoPrefs = { on: boolean; intervalHours: number };
 
@@ -67,6 +68,25 @@ export function saveBackupAutoPrefs(prefs: BackupAutoPrefs): void {
     localStorage.setItem(AUTO_KEY, JSON.stringify(prefs));
   } catch {
     /* localStorage 不可用就算了 */
+  }
+}
+
+export type BackupServerPref = { on: boolean };
+
+export function loadBackupServerPref(): BackupServerPref {
+  try {
+    const raw = localStorage.getItem(SERVER_KEY);
+    return raw ? (JSON.parse(raw) as BackupServerPref) : { on: false };
+  } catch {
+    return { on: false };
+  }
+}
+
+export function saveBackupServerPref(p: BackupServerPref): void {
+  try {
+    localStorage.setItem(SERVER_KEY, JSON.stringify(p));
+  } catch {
+    /* ignore */
   }
 }
 
@@ -126,6 +146,14 @@ export function startAutoBackup(): void {
     try {
       const r = await runBackupSnapshot();
       console.log(`[backup] 自动备份完成：${r.pages} 页 / ${(r.size / 1024).toFixed(0)} KB`);
+      if (loadBackupServerPref().on) {
+        // 服务端半边：失败只记日志，不打扰本地备份的成功语义
+        const { buildBackupPayload } = await import("./backup");
+        const { uploadServerBackup } = await import("./backupApi");
+        const { payload, pages } = await buildBackupPayload();
+        await uploadServerBackup(JSON.stringify(payload), pages);
+        console.log("[backup] 已同步到服务端");
+      }
     } catch (e) {
       console.error("[backup] 自动备份失败：", e);
     }

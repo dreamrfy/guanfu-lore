@@ -42,7 +42,15 @@ try {
   page.once("dialog", (d) => d.dismiss());
   await page.locator(".setpane__snapshot-actions button", { hasText: "恢复" }).first().click();
   await page.waitForTimeout(600);
-  if (failed === 0) console.log("PASS: 自动备份设置页 开关/立即备份/快照列表/恢复确认 全过");
+
+  // 5) 服务端备份：dev 无 R2 → 按钮点了给出可读错误（不静默、不假成功）
+  await page.locator('[data-testid="backup-server-upload"]').click();
+  await page
+    .locator('[data-testid="backup-server-msg"]')
+    .filter({ hasText: /未配置 R2|连不上剪藏服务/ })
+    .waitFor({ timeout: 10000 });
+  await page.screenshot({ path: OUT + "/服务端未配置提示.png" });
+  if (failed === 0) console.log("PASS: 备份设置页 本机快照/开关/恢复确认/服务端报错 全过");
 } catch (e) {
   failed++;
   await page.screenshot({ path: OUT + "/失败现场.png" }).catch(() => {});

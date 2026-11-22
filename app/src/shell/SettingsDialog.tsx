@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { useStore } from "../data/store";
 import {
+  fetchServerBackup,
+  listServerBackups,
+  uploadServerBackup,
+} from "../data/backupApi";
+import { loadBackupServerPref, saveBackupServerPref } from "../data/backupAuto";
+import {
   deleteBackupSnapshot,
   listBackupSnapshots,
   loadBackupAutoPrefs,
@@ -12,7 +18,9 @@ import {
 } from "../data/backupAuto";
 
 type BackupSnapshotInfo = { id: string; createdAt: number; pages: number; size: number };
+type ServerBackupItem = { key: string; ts: number; pages: number; size: number };
 
+import { buildBackupPayload, restoreFromPayload } from "../data/backup";
 import { loadClipServerUrl, saveClipServerUrl, loadClipToken, saveClipToken } from "../data/clipApi";
 import {
   useLocalAccount,
@@ -279,6 +287,46 @@ function SyncPane() {
   const [snapshots, setSnapshots] = useState<BackupSnapshotInfo[]>([]);
   const [backupBusy, setBackupBusy] = useState(false);
   const [backupMsg, setBackupMsg] = useState<string | null>(null);
+  const [serverPref, setServerPref] = useState(loadBackupServerPref());
+  const [serverItems, setServerItems] = useState<ServerBackupItem[]>([]);
+  const [serverBusy, setServerBusy] = useState(false);
+  const [serverMsg, setServerMsg] = useState<string | null>(null);
+
+  const refreshServer = useCallback(() => {
+    void listServerBackups()
+      .then(setServerItems)
+      .catch((e) => setServerMsg(String((e as Error).message ?? e)));
+  }, []);
+
+  const uploadNow = async () => {
+    setServerBusy(true);
+    setServerMsg(null);
+    try {
+      const { payload, pages } = await buildBackupPayload();
+      const item = await uploadServerBackup(JSON.stringify(payload), pages);
+      setServerItems((prev) => [item, ...prev.filter((x) => x.key !== item.key)]);
+      setServerMsg(`已上传：${item.pages} 页 / ${(item.size / 1024).toFixed(0)} KB`);
+    } catch (e) {
+      setServerMsg(String((e as Error).message ?? e));
+    } finally {
+      setServerBusy(false);
+    }
+  };
+
+  const restoreFromServer = async (key: string) => {
+    if (!window.confirm("恢复会覆盖当前全部数据，确定用这份服务端快照恢复吗？")) return;
+    setServerBusy(true);
+    setServerMsg(null);
+    try {
+      const payload = await fetchServerBackup(key);
+      const r = await restoreFromPayload(payload);
+      setServerMsg(`已恢复 ${r.pages} 页，正在重新载入…`);
+      setTimeout(() => window.location.reload(), 800);
+    } catch (e) {
+      setServerMsg(String((e as Error).message ?? e));
+      setServerBusy(false);
+    }
+  };
 
   const refreshSnapshots = useCallback(() => {
     void listBackupSnapshots().then(setSnapshots);
@@ -432,9 +480,63 @@ function SyncPane() {
           </div>
         </div>
       )}
+      <div className="setpane__row">
+        <label className="setpane__label">服务端备份</label>
+        <span className="setpane__value">
+          <button
+            className="btn btn--sm"
+            data-testid="backup-server-upload"
+            onClick={() => void uploadNow()}
+            disabled={serverBusy}
+            title="把整库快照上传到服务端 R2（跨设备保险）"
+          >
+            备份到服务端
+          </button>
+          <label className="vs-field__show">
+            <input
+              type="checkbox"
+              checked={serverPref.on}
+              onChange={(e) => {
+                const next = { on: e.target.checked };
+                setServerPref(next);
+                saveBackupServerPref(next);
+              }}
+            />
+            自动备份时同步上传
+          </label>
+        </span>
+      </div>
+      {serverItems.length > 0 && (
+        <div className="setpane__row setpane__row--stack">
+          <label className="setpane__label">服务端快照（最新在前）</label>
+          <div className="setpane__snapshots" data-testid="backup-server-snapshots">
+            {serverItems.map((it) => (
+              <div className="setpane__snapshot" key={it.key}>
+                <span className="setpane__snapshot-time">
+                  {new Date(it.ts).toLocaleString("zh-CN", { hour12: false })}
+                  {it.pages ? ` · ${it.pages} 页` : ""} · {(it.size / 1024).toFixed(0)} KB
+                </span>
+                <span className="setpane__snapshot-actions">
+                  <button className="btn btn--sm" onClick={() => void restoreFromServer(it.key)} disabled={serverBusy}>
+                    恢复
+                  </button>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {(serverMsg || backupMsg) && (
+        <div className="setpane__row">
+          <label className="setpane__label" />
+          <span className="setpane__value setpane__hint-inline" data-testid="backup-server-msg">
+            {serverMsg ?? backupMsg}
+          </span>
+        </div>
+      )}
       <div className="setpane__hint">
         「空间信息 / 空间设置」槽位原位替换为观复独有「同步与凭证」（11 号 §5）：剪藏服务端地址 / Token / 同步状态 / 自动备份。
-        备份快照存在独立于主库的本机数据库里，主库清空也不丢；导出成文件仍用上方菜单的手动导出。
+        备份快照存在独立于主库的本机数据库里，主库清空也不丢；服务端快照进 R2（跨设备保险）；导出成文件仍用上方菜单的手动导出。
       </div>
     </div>
   );

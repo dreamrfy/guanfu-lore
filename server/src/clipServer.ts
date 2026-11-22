@@ -40,6 +40,7 @@ import { R2ClipStore } from "./store/r2ClipStore.ts";
 import { loadR2Config, getObject } from "./store/r2Store.ts";
 import { createShare, getShareByPage, getShareByToken, revokeShare } from "./share/shareStore.ts";
 import { collectAssetIds, renderShareHtml, renderShareNotFound } from "./share/sharePage.ts";
+import { downloadBackup, listBackups, r2Configured, uploadBackup } from "./backup/backupStore.ts";
 
 /** 读一个对象的原始字节（图片代理用） */
 async function readAssetBytes(key: string): Promise<Uint8Array | null> {
@@ -278,7 +279,10 @@ export function createClipServer(): http.Server {
       (req.method === "GET" && url === "/api/highlights") ||
       (req.method === "POST" && url === "/api/share") ||
       (req.method === "GET" && url === "/api/share") ||
-      (req.method === "DELETE" && url === "/api/share");
+      (req.method === "DELETE" && url === "/api/share") ||
+      (req.method === "POST" && url === "/api/backup") ||
+      (req.method === "GET" && url === "/api/backup") ||
+      (req.method === "GET" && url.startsWith("/api/backup/get"));
     if (!known) {
       sendJson(
         res,
@@ -473,6 +477,54 @@ export function createClipServer(): http.Server {
         }
         revokeShare(pageId);
         sendJson(res, 200, { ok: true, shared: false }, cors);
+        return;
+      }
+    }
+
+    // 服务端整库备份（M10-05 服务端半边）：快照进 R2；未配 R2 时如实报错
+    if (url === "/api/backup" || url.startsWith("/api/backup/get")) {
+      if (!r2Configured()) {
+        sendJson(res, 400, { ok: false, code: "r2_not_configured", error: "服务端未配置 R2 存储，无法使用服务端备份" }, cors);
+        return;
+      }
+      if (req.method === "POST") {
+        let raw: Buffer;
+        try {
+          raw = await readBodyRaw(req, 20 * 1024 * 1024);
+        } catch {
+          sendJson(res, 413, { ok: false, code: "body_too_large", error: "备份超过 20MB 上限" }, cors);
+          return;
+        }
+        const payload = raw.toString("utf8");
+        let pages = 0;
+        try {
+          pages = (JSON.parse(payload) as { pages?: unknown[] }).pages?.length ?? 0;
+        } catch {
+          sendJson(res, 400, { ok: false, code: "bad_json", error: "备份内容不是合法 JSON" }, cors);
+          return;
+        }
+        const item = await uploadBackup(payload, pages);
+        sendJson(res, 200, { ok: true, ...item }, cors);
+        return;
+      }
+      if (req.method === "GET" && url === "/api/backup") {
+        sendJson(res, 200, { ok: true, items: listBackups() }, cors);
+        return;
+      }
+      if (req.method === "GET" && url.startsWith("/api/backup/get")) {
+        const key = new URL(req.url ?? "http://x", "http://x").searchParams.get("key") ?? "";
+        let payload: string | null = null;
+        try {
+          payload = await downloadBackup(key);
+        } catch (e) {
+          sendJson(res, 400, { ok: false, code: String((e as Error).message ?? e), error: "备份读取失败" }, cors);
+          return;
+        }
+        if (payload === null) {
+          sendJson(res, 404, { ok: false, code: "not_found", error: "这份服务端备份不存在" }, cors);
+          return;
+        }
+        sendJson(res, 200, { ok: true, payload: JSON.parse(payload) }, cors);
         return;
       }
     }
