@@ -406,12 +406,16 @@ export function createClipServer(): http.Server {
       return;
     }
 
-    // 公开分享管理（W111/W113）：页面级开关 + 链接。链接域名取请求 Host，
-    // 本地联调是 http://127.0.0.1:8787，线上经隧道就是 https://share.guanfu.app。
+    // 公开分享管理（W111/W113）：页面级开关 + 链接。
+    // 链接域名固定用公开分享域（KF_SHARE_HOST，默认 share.guanfu.app）——
+    // 不能跟着请求 Host 走：App 调 API 走的是 clip 域，链接必须落在用户拍板的 share 域上。
+    // 仅本地联调（localhost/127.0.0.1）时跟随请求 Host，方便起服务直测。
     if (url === "/api/share") {
-      const host = req.headers.host ?? "share.guanfu.app";
-      const scheme = /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host) ? "http" : "https";
-      const shareUrl = (token: string) => `${scheme}://${host}/s/${token}`;
+      const host = req.headers.host ?? "";
+      const isLocal = /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host);
+      const shareHost = process.env.KF_SHARE_HOST?.trim() || "share.guanfu.app";
+      const shareOrigin = isLocal ? `http://${host}` : `https://${shareHost}`;
+      const shareUrl = (token: string) => `${shareOrigin}/s/${token}`;
       if (req.method === "POST") {
         let body: { pageId?: unknown };
         try {

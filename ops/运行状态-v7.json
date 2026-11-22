@@ -88,16 +88,21 @@
   "W103",
   "W104",
   "W110",
+  "W111",
+  "W112",
+  "W113",
+  "W114",
   "W120",
   "W121",
   "W122",
   "W123",
+  "W130",
   "W131",
   "W132",
   "W133"
  ],
  "nextTask": null,
- "doneCount": 85,
+ "doneCount": 90,
  "totalCount": 90,
  "testBaseline": "cd app && npm test = 272/272 绿（36 个文件，勿退化）",
  "devServer": "cd app && npm run dev（5173）；截图 npm run shot -- <url> <out.png> [宽] [高] [等待ms]；主题点验 npm run theme-shot。原后台任务已失效，重起即可。",
@@ -409,6 +414,10 @@
   {
    "time": "2026-11-21T00:55:00+08:00",
    "event": "W133 DONE（文档收尾）+ v3.5 批次收口：85/90（81 DONE+4 部分），0 TODO；5 BLOCKED·等用户（W111–W114/W130，公开分享策略）。状态文档全量对齐；两远程统一 push。批次封存。"
+  },
+  {
+   "time": "2026-11-22T12:00:00+08:00",
+   "event": "公开分享批收口：用户拍板 share.guanfu.app + 匿名策略；W111–W114、W130 全部完成并 📦（DNS/隧道/服务端已部署，生产 E2E 全过）；W84 补 Tauri 双验转 DONE。90/90 全部收口，0 TODO 0 BLOCKED；统一 push 两远程。"
   }
  ],
  "modulesDone": [
@@ -430,11 +439,5 @@
  ],
  "note7_1": "2026-11-20 用户要求提速：*/5 触发、写码串行+走查并行≤2、push 豁免两远程、W132 最后。2026-11-20 起已无定时任务（人工/会话驱动）。",
  "cronTask": null,
- "blockedTasks": [
-  "W111",
-  "W112",
-  "W113",
-  "W114",
-  "W130"
- ]
+ "blockedTasks": []
 }
